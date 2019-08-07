@@ -1,11 +1,16 @@
-const GenerateUtil = require("./lib/Utils");
+const GeneralUtil = require("./lib/Utils");
 const fs = require("fs");
 const jsonld = require("jsonld");
 const Util = require('componentsjs/lib/Util');
 const Path = require("path");
 const parser = require('@typescript-eslint/typescript-estree');
 const program = require('commander');
-
+const ContextParser = require('jsonld-context-parser').ContextParser;
+const contextParser = new ContextParser();
+const commentParse = require("comment-parser");
+const xsdRangeTag = "xsd_range";
+const requiredTag = "required";
+const defaultTag = "default";
 program
     .command("generate")
     .description("Generate a component file for a class")
@@ -29,106 +34,124 @@ async function generate(args) {
     let className = args.className;
     const packagePath = Path.join(directory, 'package.json');
     if (!fs.existsSync(packagePath)) {
-        console.log("Not a valid package, no package.json")
+        console.log("Not a valid package, no package.json");
         return;
     }
-    const packageContent = JSON.parse(fs.readFileSync(packagePath, 'utf8'))
+    const packageContent = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
     let componentsPath = Path.join(directory, packageContent["lsd:components"]);
     if (!fs.existsSync(componentsPath)) {
-        console.log("Not a valid components path")
+        console.log("Not a valid components path");
         return;
     }
     const componentsContent = JSON.parse(fs.readFileSync(componentsPath, 'utf8'));
-    let classDeclaration = GenerateUtil.getClass(directory, className);
-    if(classDeclaration == null) {
-        console.log("Did not find a matching function, please check the name")
+    let classDeclaration = GeneralUtil.getClass(directory, className);
+    if (classDeclaration == null) {
+        console.log("Did not find a matching function, please check the name");
         return;
     }
+    let ast = classDeclaration.ast;
     let declaration = classDeclaration.declaration;
-    let declarationComment = classDeclaration.comment;
+
+    let declarationComment = GeneralUtil.getComment(ast.comments, declaration);
+    let classComment = null;
+    if(declarationComment != null) {
+        let parsedDeclarationComment = commentParse(declarationComment);
+        let firstDeclarationComment = parsedDeclarationComment[0];
+        if (firstDeclarationComment.description.length !== 0) {
+            classComment = firstDeclarationComment.description;
+        }
+    }
+
+    let newConfig = {};
+    newConfig["@context"] = Object.keys(packageContent["lsd:contexts"]);
+    newConfig["@id"] = componentsContent["@id"];
     let newComponent = {};
-    newComponent["@context"] = Object.keys(packageContent["lsd:contexts"]);
-    newComponent["@id"] = componentsContent["@id"];
-    console.log(JSON.stringify(newComponent, null, 4));
+    let jsonContexts = Object.values(packageContent["lsd:contexts"])
+        .map(file => JSON.parse(
+            fs.readFileSync(Path.join(directory, file),
+                'utf8')));
 
+    const parsedContext = await contextParser.parse(jsonContexts);
 
+    // TODO we probably want to use something different here a className
+    let fullPath = componentsContent["@id"] + "/" + className;
+    // TODO compaction is not working properly, check on bug in library
+    let compactPath = ContextParser.compactIri(fullPath, parsedContext);
+    newComponent["@id"] = compactPath;
+
+    newComponent["@type"] = declaration.abstract ? "AbstractClass" : "Class";
+    if (classComment != null) newComponent["comment"] = classComment;
+    let parameters = [];
+    for (let property of declaration.body.body) {
+        if (property.type === parser.AST_NODE_TYPES.ClassProperty) {
+            let field = property.key.name;
+            let fieldType = property.typeAnnotation.typeAnnotation.type;
+            let isArray = fieldType === parser.AST_NODE_TYPES.TSArrayType;
+            if(isArray) {
+                fieldType = property.typeAnnotation.typeAnnotation.elementType.type;
+                // TODO can we allow multidimensional arrays?
+            }
+            let comment = GeneralUtil.getComment(ast.comments, property);
+            let xsdType = null;
+            let required = false;
+            let defaultValue = null;
+            // Try deriving details
+            let commentDescription = null;
+            if(comment != null) {
+                let parsedComment = commentParse(comment);
+                if(parsedComment.length === 0) continue;
+                // TODO check why there can be multiple comments
+                let firstComment = parsedComment[0];
+                if(firstComment.description.length !== 0) {
+                    commentDescription = firstComment.description;
+                }
+                for (let tag of firstComment.tags) {
+                    switch(tag.tag) {
+                        case xsdRangeTag:
+                            let type = tag.type;
+                            if(GeneralUtil.isValidXsd(fieldType, type)) {
+                                xsdType = "xsd:" + type;
+                            } else {
+                                console.log(`Found xsd type ${type} but could not match with ${fieldType}`);
+                            }
+                            break;
+                        case requiredTag:
+                            required = true;
+                            break;
+                        case defaultTag:
+                            if(tag.type.length !== 0) defaultValue = tag.type;
+                            break;
+                        default:
+                            console.log(`Could not understand tag ${tag.tag}`);
+                            break;
+                    }
+                }
+            }
+            if(xsdType == null) xsdType = GeneralUtil.convertTypeToXsd(fieldType);
+            // TODO check if xsd: is always included in the current context
+            if (xsdType == null) {
+                console.log(`Skipping field '${field}' with type '${fieldType}', could not convert to xsd type`);
+                continue;
+            }
+            console.log(`Checking field '${field}' with xsd type '${xsdType}'`);
+            // TODO perhaps we want a different naming strategy for fields?
+            let parameterPath = compactPath + "/" + field;
+            let newParameter = {
+                "@id": parameterPath,
+                "range": xsdType,
+                "required": required,
+                "unique": !isArray,
+            };
+            if(defaultValue != null) {
+                newParameter["default"] = defaultValue;
+            }
+            if (commentDescription != null) {
+                newParameter["comment"] = commentDescription;
+            }
+            parameters.push(newParameter);
+        }
+    }
+    newComponent["parameters"] = parameters;
+    newConfig["components"] = [newComponent];
+    console.log(JSON.stringify(newConfig, null, 4));
 }
-
-// // TODO find way to 'scan' package
-// // TODO we probably don't want to use filenames here
-// async function scan(inputFile, outputFile) {
-//     const parser = new tsparser.TypescriptParser();
-//     const parsed = await parser.parseFile(inputFile);
-//     const rawOutput = fs.readFileSync(outputFile, 'utf8');
-//     let output = JSON.parse(rawOutput);
-//     // TODO handle this better
-//     const compactedOutput = await jsonld.compact(output, []);
-//     let id = compactedOutput["@id"];
-//     let matchedParameters = [];
-//     for(let declaration of parsed.declarations) {
-//         // We're in the main class
-//         // TODO check edge cases
-//         if(declaration instanceof tsparser.ClassDeclaration) {
-//             console.log(declaration);
-//             for(let property of declaration.properties) {
-//                 if(property instanceof tsparser.PropertyDeclaration) {
-//                     let matched = null;
-//                     for(let component of getArray(compactedOutput, "https://linkedsoftwaredependencies.org/vocabularies/object-oriented#component")) {
-//                         for(let parameter of getArray(component, "https://linkedsoftwaredependencies.org/vocabularies/object-oriented#parameter")) {
-//                             if(parameter["@id"] === (id + "/" + property.name)) {
-//                                 let parameterRange = parameter["http://www.w3.org/2000/01/rdf-schema#range"]["@id"];
-//                                 let rdfField = convertFromType(property.type);
-//                                 if(parameterRange === rdfField) {
-//                                     matched = parameter;
-//                                     break
-//                                 } else {
-//                                     console.log(`❌ Could not match configured type '${parameterRange}' with actual type '${property.type}' on field '${property.name}', skipping`);
-//                                 }
-//                             }
-//                         }
-//                     }
-//                     if(matched === null) {
-//                         console.log(`❌ Field '${property.name}' did not match any configured parameter`);
-//                     } else {
-//                         console.log(`✓ Matched field '${property.name}'`);
-//                         matchedParameters.push(paramater);
-//                     }
-//                 }
-//             }
-//             // TODO test class without parameter
-//             for(let parameter of declaration.ctor.parameters) {
-//                 // console.log(`Property ${parameter.name} ${parameter.type}`);
-//             }
-//         }
-//     }
-//     for(let component of getArray(compactedOutput, "https://linkedsoftwaredependencies.org/vocabularies/object-oriented#component")) {
-//         for (let parameter of getArray(component, "https://linkedsoftwaredependencies.org/vocabularies/object-oriented#parameter")) {
-//             if(!matchedParameters.includes(parameter)) {
-//                 console.log(`❌ Configured parameter '${parameter["@id"]}' did not match any field`);
-//             }
-//
-//         }
-//     }
-// }
-// // From rdfs:range to parameter type
-// const rdfTypes = {
-//     "boolean": "boolean",
-//     "integer": "number",
-//     "number": "number",
-//     "int": "number",
-//     "byte": "number",
-//     "long": "number",
-//     "float": "float",
-//     "decimal": "float",
-//     "double": "float"
-// };
-// /**
-//  * Converts a rdfs:range to a parameter type
-//  */
-// function convertFromType(type) {
-//     return rdfTypes[type] || "http://www.w3.org/2001/XMLSchema#string";
-// }
-// function getArray(structure, path) {
-//     let result = structure[path];
-//     return Array.isArray(result) ? result : [result];
-// }

@@ -3,15 +3,16 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {
-  },
+  "scripts": {},
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "commander": "^2.20.0",
+    "comment-parser": "^0.6.1",
     "componentsjs": "^3.2.1",
     "jsonld": "^1.6.2",
+    "jsonld-context-parser": "^1.2.0",
     "typescript": "^3.5.3",
     "typescript-parser": "^2.6.1"
   },
