@@ -1,9 +1,5 @@
-1. Check xsd:range, kan ook bestaande klasse zijn (zie Actor)?
-2. Welke constructor extenden we van wanneer er een meerlagige hierachie is?
-3. requireElement invullen, zie bericht op Mattermost
-4. requireElement invullen, zie bericht op Mattermost
-5. Voeg `.jsonld` file toe aan `import` van de `component.json`
-. Constructorarguments:
+1. Voeg `.jsonld` file toe aan `import` van de `component.json`
+2. Constructorarguments:
     ```
     for arg in constr:
         if 'simple object':
