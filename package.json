@@ -14,7 +14,8 @@
     "jsonld": "^1.6.2",
     "jsonld-context-parser": "^1.2.0",
     "typescript": "^3.5.3",
-    "typescript-parser": "^2.6.1"
+    "typescript-parser": "^2.6.1",
+    "@comunica/core": "latest"
   },
   "devDependencies": {
     "@types/node": "^12.6.9",

@@ -36,21 +36,19 @@ async function generate(args) {
         console.log("Not a valid package, no package.json");
         return;
     }
-    const packageContent = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+    const packageContent = Utils.getJSON(packagePath);
     let componentsPath = Path.join(directory, packageContent["lsd:components"]);
     if (!fs.existsSync(componentsPath)) {
         console.log("Not a valid components path");
         return;
     }
-    const componentsContent = JSON.parse(fs.readFileSync(componentsPath, 'utf8'));
+    const componentsContent = Utils.getJSON(componentsPath);
     let classDeclaration = AstUtils.getClass(directory, className);
-    if (classDeclaration == null) {
-        console.log("Did not find a matching function, please check the name");
+    if (classDeclaration === null) {
+        console.log("Did not find a matching class, please check the name");
         return;
     }
-    let ast = classDeclaration.ast;
-    let declaration = classDeclaration.declaration;
-
+    let {ast, declaration, filePath} = classDeclaration;
     let declarationComment = Utils.getComment(ast.comments, declaration);
     let classComment = null;
     if (declarationComment != null) {
@@ -83,13 +81,11 @@ async function generate(args) {
 
     // TODO move to ast utils and document
     let imports = AstUtils.getImportDeclarations(ast);
-
-
     // Resolve superClass and add it to the extends attribute
     let superClass = AstUtils.getSuperClass(declaration);
-    if(superClass !== null) {
-        let superClassInformation = AstUtils.getComponent(superClass, imports, nodeModules);
-        if(superClassInformation !== null) {
+    if (superClass !== null) {
+        let superClassInformation = AstUtils.getComponent(superClass, imports, nodeModules, directory, filePath);
+        if (superClassInformation !== null) {
             newComponent["extends"] = superClassInformation.component["@id"];
             for (let contextFile of Utils.getArray(superClassInformation.componentsContent, "@context")) {
                 if (!newConfig["@context"].includes(contextFile)) {
@@ -115,8 +111,8 @@ async function generate(args) {
             if (range == null) range = Utils.convertTypeToXsd(fieldType);
             if (range == null) {
                 let fieldClassInformation = AstUtils.getFieldClass(property);
-                let fieldInformation = AstUtils.getComponent(fieldClassInformation, imports, nodeModules);
-                if(fieldInformation !== null) {
+                let fieldInformation = AstUtils.getComponent(fieldClassInformation, imports, nodeModules, directory, filePath);
+                if (fieldInformation !== null) {
                     range = fieldInformation.component["@id"];
                     for (let contextFile of Utils.getArray(fieldInformation.componentsContent, "@context")) {
                         if (!newConfig["@context"].includes(contextFile)) {

@@ -1,5 +1,6 @@
-1. Voeg `.jsonld` file toe aan `import` van de `component.json`
-2. Constructorarguments:
+* Voeg `.jsonld` file toe aan `import` van de `component.json`
+* requireElement invullen, zie bericht op Mattermost	
+* Constructorarguments:
     ```
     for arg in constr:
         if 'simple object':
