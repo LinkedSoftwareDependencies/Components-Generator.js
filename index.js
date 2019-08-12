@@ -18,12 +18,12 @@ program
     .action(generate);
 
 // TODO scan command
-program
-    .command("scan")
-    .description("SCAN TODO")
-    .option('-p, --package <package>', 'The package to look in')
-    .option('-c, --class-name <className>', 'The class to generate a component for')
-    .action(generate);
+// program
+//     .command("scan")
+//     .description("SCAN TODO")
+//     .option('-p, --package <package>', 'The package to look in')
+//     .option('-c, --class-name <className>', 'The class to generate a component for')
+//     .action(generate);
 
 program.parse(process.argv);
 
@@ -43,7 +43,7 @@ async function generate(args) {
         return;
     }
     const componentsContent = Utils.getJSON(componentsPath);
-    let classDeclaration = AstUtils.getClass(directory, className);
+    let classDeclaration = AstUtils.getClassDefinition(directory, className);
     if (classDeclaration === null) {
         console.log("Did not find a matching class, please check the name");
         return;
@@ -53,9 +53,11 @@ async function generate(args) {
     let classComment = null;
     if (declarationComment != null) {
         let parsedDeclarationComment = commentParse(declarationComment);
-        let firstDeclarationComment = parsedDeclarationComment[0];
-        if (firstDeclarationComment.description.length !== 0) {
-            classComment = firstDeclarationComment.description;
+        if(parsedDeclarationComment.length !== 0) {
+            let firstDeclarationComment = parsedDeclarationComment[0];
+            if (firstDeclarationComment.description.length !== 0) {
+                classComment = firstDeclarationComment.description;
+            }
         }
     }
     // Analyze imports first, otherwise we can't access package information
@@ -95,7 +97,7 @@ async function generate(args) {
     }
 
     if (classComment != null) newComponent["comment"] = classComment;
-    let parameters = [];
+    let parameters = {};
     for (let property of declaration.body.body) {
         if (property.type === parser.AST_NODE_TYPES.ClassProperty) {
             let field = property.key.name;
@@ -106,7 +108,8 @@ async function generate(args) {
                 // TODO can we allow multidimensional arrays?
             }
             let comment = Utils.getComment(ast.comments, property);
-            let {range, required, defaultValue, commentDescription} = Utils.parseFieldComment(comment, fieldType);
+            let {range, required, defaultValue, commentDescription, _} = Utils.parseFieldComment(comment, fieldType);
+            if ("optional" in property) required = !property["optional"];
             if (range == null) range = Utils.convertTypeToXsd(fieldType);
             if (range == null) {
                 let fieldClassInformation = AstUtils.getFieldClass(property);
@@ -134,10 +137,92 @@ async function generate(args) {
             if (commentDescription != null) {
                 newParameter["comment"] = commentDescription;
             }
-            parameters.push(newParameter);
+            parameters[field] = newParameter;
+        }
+    }
+    let exportedParameters = [];
+    let constructorArguments = [];
+    // TODO move this to AstUtils
+    // TODO clean this up
+    for (let property of declaration.body.body) {
+        if (property.type === parser.AST_NODE_TYPES.MethodDefinition && property.key.name === "constructor") {
+            // This is the constructor
+            // TODO can there be multiple 'ExpresionStatement' elements?
+            let constructorParams = property.value.params;
+            let previousEnd = property.loc.start;
+            for (let constructorParam of constructorParams) {
+                let constructorParamName = constructorParam.name;
+                let constructorType = constructorParam.typeAnnotation.typeAnnotation;
+                let fieldType = constructorParam.typeAnnotation.typeAnnotation.type;
+                let isArray = fieldType === parser.AST_NODE_TYPES.TSArrayType;
+                if (isArray) {
+                    fieldType = property.typeAnnotation.typeAnnotation.elementType.type;
+                    // TODO can we allow multidimensional arrays?
+                }
+                let comment = Utils.getInBetweenComment(ast.comments, previousEnd, constructorParam.loc.start);
+                previousEnd = constructorParam.loc.end;
+                let {range, required, defaultValue, commentDescription, ignored} = Utils.parseFieldComment(comment, fieldType);
+                if(ignored) {
+                    console.log(`Field ${constructorParamName} has an ignore attribute, skipping`);
+                    continue
+                }
+                if (range === null) range = Utils.convertTypeToXsd(fieldType);
+                if (range !== null) {
+                    // We're dealing with a 'simple' object, which means we can just get its xsd type
+                    if (constructorParamName in parameters) {
+                        // Try matching it with the existing parameter
+                        let matchingParameter = parameters[constructorParamName];
+                        if (matchingParameter["range"] !== range) {
+                            console.log(`Range of parameter ${constructorParamName} and parameter ${constructorParamName} is not the same, ignoring`)
+                            continue;
+                        }
+                        if (matchingParameter["unique"] !== !isArray) {
+                            console.log(`Unique property of parameter ${constructorParamName} and parameter ${constructorParamName} is not the same, ignoring`)
+                            continue;
+                        }
+                        exportedParameters.push(matchingParameter);
+                        constructorArguments.push({
+                            "@id": matchingParameter["@id"]
+                        })
+                    } else {
+                        // The parameter didn't match, let's just do our best to parse it and add it as a parameter
+                        let required = "optional" in constructorParam ? !constructorParam["optional"] : true;
+                        let parameterPath = compactPath + "/" + constructorParamName;
+                        let newParameter = {
+                            "@id": parameterPath,
+                            "range": range,
+                            "required": required,
+                            "unique": !isArray,
+                        };
+                        exportedParameters.push(newParameter);
+                        constructorArguments.push({
+                            "@id": parameterPath
+                        })
+                    }
+                } else {
+                    // Now for the difficult part...
+                    // Search for the extending class as a a constructor argument of another component
+                    // First search it's class declaration
+                    let constructorClassName = constructorType.typeName.name;
+                    let constructorReference = AstUtils.getTypeAnnotationClass(constructorType);
+                    // TODO exportName == null edge case
+                    let {pckg, exportedName} = AstUtils.findExportedClass(constructorReference, imports);
+                    let classInfo = AstUtils.getClass(pckg, exportedName);
+                    console.log(classInfo);
+
+
+                    // Zoek in extends chain (?) naar exacte klasse
+                    // Mapping component file naar ast
+                    // If exists => gewoon extends, geen extra velden
+                    // else => lees fields en gebruik @extends -> extending klasse
+
+                }
+            }
         }
     }
     newComponent["parameters"] = parameters;
+    // newComponent["parameters"] = exportedParameters;
+    newComponent["constructorArguments"] = constructorArguments;
     newConfig["components"] = [newComponent];
-    console.log(JSON.stringify(newConfig, null, 4));
+    // console.log(JSON.stringify(newConfig, null, 4));
 }
