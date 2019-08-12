@@ -66,9 +66,8 @@ async function generate(args) {
     newConfig["@id"] = componentsContent["@id"];
     let newComponent = {};
     let jsonContexts = Object.values(packageContent["lsd:contexts"])
-        .map(file => JSON.parse(
-            fs.readFileSync(Path.join(directory, file),
-                'utf8')));
+        .map(file => Path.join(directory, file))
+        .map(Utils.getJSON);
 
     const parsedContext = await contextParser.parse(jsonContexts);
 
