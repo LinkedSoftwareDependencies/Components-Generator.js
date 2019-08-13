@@ -31,7 +31,7 @@ program.parse(process.argv);
 async function generate(args) {
     let directory = args.package;
     let className = args.className;
-    const packagePath = Path.join(directory, 'package.json');
+    const packagePath = Path.join(directory, "package.json");
     if (!fs.existsSync(packagePath)) {
         console.log("Not a valid package, no package.json");
         return;
@@ -53,7 +53,7 @@ async function generate(args) {
     let classComment = null;
     if (declarationComment != null) {
         let parsedDeclarationComment = commentParse(declarationComment);
-        if(parsedDeclarationComment.length !== 0) {
+        if (parsedDeclarationComment.length !== 0) {
             let firstDeclarationComment = parsedDeclarationComment[0];
             if (firstDeclarationComment.description.length !== 0) {
                 classComment = firstDeclarationComment.description;
@@ -162,7 +162,7 @@ async function generate(args) {
                 let comment = Utils.getInBetweenComment(ast.comments, previousEnd, constructorParam.loc.start);
                 previousEnd = constructorParam.loc.end;
                 let {range, required, defaultValue, commentDescription, ignored} = Utils.parseFieldComment(comment, fieldType);
-                if(ignored) {
+                if (ignored) {
                     console.log(`Field ${constructorParamName} has an ignore attribute, skipping`);
                     continue
                 }
@@ -207,9 +207,8 @@ async function generate(args) {
                     let constructorReference = AstUtils.getTypeAnnotationClass(constructorType);
                     // TODO exportName == null edge case
                     let {pckg, exportedName} = AstUtils.findExportedClass(constructorReference, imports);
-                    let classInfo = AstUtils.getClass(pckg, exportedName);
-                    console.log(classInfo);
-
+                    let constructorInfo = AstUtils.getClass(pckg, exportedName);
+                    console.log(constructorInfo);
 
                     // Zoek in extends chain (?) naar exacte klasse
                     // Mapping component file naar ast
@@ -220,7 +219,37 @@ async function generate(args) {
             }
         }
     }
-    newComponent["parameters"] = parameters;
+    // Chain of extends
+    let chain = superClass === null ? [] : [superClass];
+    let currentSuperClass = superClass;
+    let currentSuperClassImports = imports;
+    let lastKnownPackage = null;
+    let lastKnownFilePath = null;
+    while (currentSuperClass !== null) {
+        // TODO edge case = exported class NOT found
+        let parsedSuperClass = AstUtils.findExportedClass(currentSuperClass, currentSuperClassImports);
+        if (parsedSuperClass !== null) {
+            console.log(lastKnownPackage);
+            console.log(lastKnownFilePath);
+            let currentSuperClassInfo;
+            if(Utils.isLocalFile(parsedSuperClass.pckg)) {
+                // TODO this *probably* won't work if the first element in the chain is local
+                currentSuperClassInfo = AstUtils.getLocalClass(parsedSuperClass.exportedName, parsedSuperClass.pckg,
+                    lastKnownPackage, lastKnownFilePath);
+            } else {
+                currentSuperClassInfo = AstUtils.getClass(parsedSuperClass.pckg, parsedSuperClass.exportedName);
+            }
+            currentSuperClassImports = AstUtils.getImportDeclarations(currentSuperClassInfo.ast);
+            currentSuperClass = AstUtils.getSuperClass(currentSuperClassInfo.declaration);
+            if (!Utils.isLocalFile(parsedSuperClass.pckg)) {
+                lastKnownPackage = parsedSuperClass.pckg;
+                lastKnownFilePath = currentSuperClassInfo.filePath;
+            }
+        }
+    }
+
+
+    newComponent["parameters"] = exportedParameters;
     // newComponent["parameters"] = exportedParameters;
     newComponent["constructorArguments"] = constructorArguments;
     newConfig["components"] = [newComponent];

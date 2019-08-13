@@ -17,16 +17,23 @@
   
             // We have to deal with a class that potentially extends another class
             // We have to deal with a class that potentially has some own fields
-            for field in object:
-                if name and type match with parameter x:
-                    voeg {"value":"bestaande parameter x"} nested toe
-                else:
-                    // TODO welke value?
-                    voeg {"value":"???"} nested toe
-                voeg keyRaw toe als naam van veld
+ 
   
-            if has extending class:
-                zoek declaratie van class
-                
-                zoek @id van extending class in 'chain of extends'  
+            stel 'chain of extends' op
+            mapping van klasse -> constructorargumenten
+  
+        
+            zoek in 'chain of extends' naar die klasse als argument
+            if gevonden:
+                kies uniek ID en gebruik extends voor die klasse
+            else:    
+                for field in object:
+                    voeg keyRaw toe als naam van veld
+                if has extending class:
+                    zoek @id van extending class in 'chain of extends'
+                    if gevonden:
+                        zet in extends attribute
+                    else
+                        error !
+          
    ```
