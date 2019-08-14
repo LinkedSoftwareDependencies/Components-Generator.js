@@ -17,14 +17,6 @@ program
     .option('-c, --class-name <className>', 'The class to generate a component for')
     .action(generate);
 
-// TODO scan command
-// program
-//     .command("scan")
-//     .description("SCAN TODO")
-//     .option('-p, --package <package>', 'The package to look in')
-//     .option('-c, --class-name <className>', 'The class to generate a component for')
-//     .action(generate);
-
 program.parse(process.argv);
 
 
@@ -43,12 +35,14 @@ async function generate(args) {
         return;
     }
     const componentsContent = Utils.getJSON(componentsPath);
-    let classDeclaration = AstUtils.getClassDefinition(directory, className);
+    // TODO consider clazz=true?
+    let classDeclaration = AstUtils.getDeclaration(packageContent["name"], className, directory);
     if (classDeclaration === null) {
         console.log("Did not find a matching class, please check the name");
         return;
     }
-    let {ast, declaration, filePath} = classDeclaration;
+    // TODO these names are confusing
+    let {ast, declaration, filePath, _} = classDeclaration;
     let declarationComment = Utils.getComment(ast.comments, declaration);
     let classComment = null;
     if (declarationComment != null) {
@@ -71,187 +65,179 @@ async function generate(args) {
         .map(file => Path.join(directory, file))
         .map(Utils.getJSON);
 
-    const parsedContext = await contextParser.parse(jsonContexts);
-
+    // const parsedContext = await contextParser.parse(jsonContexts);
     // TODO we probably want to use something different here a className
     let fullPath = componentsContent["@id"] + "/" + className;
     // TODO compaction is not working properly, check on bug in library
-    let compactPath = ContextParser.compactIri(fullPath, parsedContext);
+
+    // let compactPath = ContextParser.compactIri(fullPath, parsedContext);
+    let compactPath = fullPath;
     newComponent["@id"] = compactPath;
     newComponent["@type"] = declaration.abstract ? "AbstractClass" : "Class";
 
+
     // TODO move to ast utils and document
     let imports = AstUtils.getImportDeclarations(ast);
-    // Resolve superClass and add it to the extends attribute
-    let superClass = AstUtils.getSuperClass(declaration);
-    if (superClass !== null) {
-        let superClassInformation = AstUtils.getComponent(superClass, imports, nodeModules, directory, filePath);
-        if (superClassInformation !== null) {
-            newComponent["extends"] = superClassInformation.component["@id"];
-            for (let contextFile of Utils.getArray(superClassInformation.componentsContent, "@context")) {
-                if (!newConfig["@context"].includes(contextFile)) {
-                    newConfig["@context"].push(contextFile);
-                }
-            }
-        }
-    }
-
     if (classComment != null) newComponent["comment"] = classComment;
     let parameters = {};
-    for (let property of declaration.body.body) {
-        if (property.type === parser.AST_NODE_TYPES.ClassProperty) {
-            let field = property.key.name;
-            let fieldType = property.typeAnnotation.typeAnnotation.type;
-            let isArray = fieldType === parser.AST_NODE_TYPES.TSArrayType;
-            if (isArray) {
-                fieldType = property.typeAnnotation.typeAnnotation.elementType.type;
-                // TODO can we allow multidimensional arrays?
-            }
-            let comment = Utils.getComment(ast.comments, property);
-            let {range, required, defaultValue, commentDescription, _} = Utils.parseFieldComment(comment, fieldType);
-            if ("optional" in property) required = !property["optional"];
-            if (range == null) range = Utils.convertTypeToXsd(fieldType);
-            if (range == null) {
-                let fieldClassInformation = AstUtils.getFieldClass(property);
-                let fieldInformation = AstUtils.getComponent(fieldClassInformation, imports, nodeModules, directory, filePath);
-                if (fieldInformation !== null) {
-                    range = fieldInformation.component["@id"];
-                    for (let contextFile of Utils.getArray(fieldInformation.componentsContent, "@context")) {
-                        if (!newConfig["@context"].includes(contextFile)) {
-                            newConfig["@context"].push(contextFile);
-                        }
-                    }
-                }
-            }
-            // TODO perhaps we want a different naming strategy for fields?
-            let parameterPath = compactPath + "/" + field;
-            let newParameter = {
-                "@id": parameterPath,
-                "range": range,
-                "required": required,
-                "unique": !isArray,
-            };
-            if (defaultValue != null) {
-                newParameter["default"] = defaultValue;
-            }
-            if (commentDescription != null) {
-                newParameter["comment"] = commentDescription;
-            }
-            parameters[field] = newParameter;
+    // Chain of extends
+    // TODO use this for the normal @extends attribute maybe?
+    let superClassChain = [];
+    let previousSuperClassDeclaration = classDeclaration;
+    let previousSuperClassImports = imports;
+    while (previousSuperClassDeclaration !== null) {
+        // Search for the next superclass here
+        let constructorParams = AstUtils.getConstructorParams(previousSuperClassDeclaration, previousSuperClassImports, nodeModules);
+        // We don't want to get the first component because that would be for the class that we're currently
+        // creating a component for
+        let superClassComponent = superClassChain.length === 0 ? null : AstUtils.getComponentByDeclaration(previousSuperClassDeclaration, nodeModules);
+        superClassChain.push({
+            declaration: previousSuperClassDeclaration,
+            component: superClassComponent,
+            constructorParams: constructorParams
+        });
+        // Find the next superclass
+        let nextSuperClassInfo = AstUtils.getSuperClass(previousSuperClassDeclaration.declaration);
+        if (nextSuperClassInfo === null) break;
+        previousSuperClassDeclaration = AstUtils.getDeclarationWithContext(nextSuperClassInfo,
+            previousSuperClassDeclaration, previousSuperClassImports);
+        if (previousSuperClassDeclaration !== null) {
+            // Do stuff with your current declaration here
+            previousSuperClassImports = AstUtils.getImportDeclarations(previousSuperClassDeclaration.ast);
         }
     }
+    if (2 <= superClassChain.length) {
+        let chainElement = superClassChain[1];
+        newComponent["extends"] = chainElement.component.component["@id"];
+        for (let contextFile of Utils.getArray(chainElement.component.componentsContent, "@context")) {
+            if (!newConfig["@context"].includes(contextFile)) {
+                newConfig["@context"].push(contextFile);
+            }
+        }
+    }
+
+    function classDeclarationEquals(c1, c2) {
+        return c1["pckg"] === c2["pckg"] && c1["filePath"] === c2["filePath"] && c1["internalClass"] === c2["internalClass"];
+    }
+
     let exportedParameters = [];
     let constructorArguments = [];
-    // TODO move this to AstUtils
-    // TODO clean this up
-    for (let property of declaration.body.body) {
-        if (property.type === parser.AST_NODE_TYPES.MethodDefinition && property.key.name === "constructor") {
-            // This is the constructor
-            // TODO can there be multiple 'ExpresionStatement' elements?
-            let constructorParams = property.value.params;
-            let previousEnd = property.loc.start;
-            for (let constructorParam of constructorParams) {
-                let constructorParamName = constructorParam.name;
-                let constructorType = constructorParam.typeAnnotation.typeAnnotation;
-                let fieldType = constructorParam.typeAnnotation.typeAnnotation.type;
-                let isArray = fieldType === parser.AST_NODE_TYPES.TSArrayType;
-                if (isArray) {
-                    fieldType = property.typeAnnotation.typeAnnotation.elementType.type;
-                    // TODO can we allow multidimensional arrays?
-                }
-                let comment = Utils.getInBetweenComment(ast.comments, previousEnd, constructorParam.loc.start);
-                previousEnd = constructorParam.loc.end;
-                let {range, required, defaultValue, commentDescription, ignored} = Utils.parseFieldComment(comment, fieldType);
-                if (ignored) {
-                    console.log(`Field ${constructorParamName} has an ignore attribute, skipping`);
-                    continue
-                }
-                if (range === null) range = Utils.convertTypeToXsd(fieldType);
-                if (range !== null) {
-                    // We're dealing with a 'simple' object, which means we can just get its xsd type
-                    if (constructorParamName in parameters) {
-                        // Try matching it with the existing parameter
-                        let matchingParameter = parameters[constructorParamName];
-                        if (matchingParameter["range"] !== range) {
-                            console.log(`Range of parameter ${constructorParamName} and parameter ${constructorParamName} is not the same, ignoring`)
-                            continue;
+    // TODO this is way to d e e p imo
+    let chosenParametersName = new Set();
+    function getUniqueFieldId(path, field) {
+        function getId(i) {
+            return path + "#" + field + (i === 0 ? "" : i);
+        }
+        let i = -1;
+        while(chosenParametersName.has(getId(++i))) {}
+        let id = getId(i);
+        chosenParametersName.add(id);
+        return id;
+    }
+    if (1 <= superClassChain.length) {
+        for (let constructorParam of superClassChain[0].constructorParams) {
+            if (constructorParam.type === "complex") {
+                function findSimilarParam(constructorParam) {
+                    for (let i = 1; i < superClassChain.length; i++) {
+                        for (let x = 0; x < superClassChain[i].constructorParams.length; x++) {
+                            let otherConstructorParam = superClassChain[i].constructorParams[x];
+                            if (otherConstructorParam.type === "complex") {
+                                // Check if same
+                                if (classDeclarationEquals(constructorParam, otherConstructorParam.declaration)) {
+                                    return superClassChain[i].component.component.constructorArguments[x];
+                                }
+                            }
                         }
-                        if (matchingParameter["unique"] !== !isArray) {
-                            console.log(`Unique property of parameter ${constructorParamName} and parameter ${constructorParamName} is not the same, ignoring`)
-                            continue;
-                        }
-                        exportedParameters.push(matchingParameter);
-                        constructorArguments.push({
-                            "@id": matchingParameter["@id"]
-                        })
-                    } else {
-                        // The parameter didn't match, let's just do our best to parse it and add it as a parameter
-                        let required = "optional" in constructorParam ? !constructorParam["optional"] : true;
-                        let parameterPath = compactPath + "/" + constructorParamName;
-                        let newParameter = {
-                            "@id": parameterPath,
-                            "range": range,
-                            "required": required,
-                            "unique": !isArray,
-                        };
-                        exportedParameters.push(newParameter);
-                        constructorArguments.push({
-                            "@id": parameterPath
-                        })
                     }
-                } else {
-                    // Now for the difficult part...
-                    // Search for the extending class as a a constructor argument of another component
-                    // First search it's class declaration
-                    let constructorClassName = constructorType.typeName.name;
-                    let constructorReference = AstUtils.getTypeAnnotationClass(constructorType);
-                    // TODO exportName == null edge case
-                    let {pckg, exportedName} = AstUtils.findExportedClass(constructorReference, imports);
-                    let constructorInfo = AstUtils.getClass(pckg, exportedName);
-                    console.log(constructorInfo);
-
-                    // Zoek in extends chain (?) naar exacte klasse
-                    // Mapping component file naar ast
-                    // If exists => gewoon extends, geen extra velden
-                    // else => lees fields en gebruik @extends -> extending klasse
-
+                    return null;
                 }
-            }
-        }
-    }
-    // Chain of extends
-    let chain = superClass === null ? [] : [superClass];
-    let currentSuperClass = superClass;
-    let currentSuperClassImports = imports;
-    let lastKnownPackage = null;
-    let lastKnownFilePath = null;
-    while (currentSuperClass !== null) {
-        // TODO edge case = exported class NOT found
-        let parsedSuperClass = AstUtils.findExportedClass(currentSuperClass, currentSuperClassImports);
-        if (parsedSuperClass !== null) {
-            console.log(lastKnownPackage);
-            console.log(lastKnownFilePath);
-            let currentSuperClassInfo;
-            if(Utils.isLocalFile(parsedSuperClass.pckg)) {
-                // TODO this *probably* won't work if the first element in the chain is local
-                currentSuperClassInfo = AstUtils.getLocalClass(parsedSuperClass.exportedName, parsedSuperClass.pckg,
-                    lastKnownPackage, lastKnownFilePath);
+                let id = getUniqueFieldId(compactPath, "constructorArgumentsObject");
+                let similarParam = findSimilarParam(constructorParam.declaration);
+                if (similarParam != null) {
+                    // TODO copy context!
+                    console.log("Found an identical constructor argument");
+                    let newParameter = {
+                        "@id": id,
+                    };
+                    if ("@id" in similarParam) {
+                        newParameter["extends"] = similarParam["@id"];
+                    } else if ("extends" in similarParam) {
+                        newParameter["extends"] = similarParam["extends"];
+                    } else {
+                        console.log("Could not find @id nor extend!")
+                    }
+                    constructorArguments.push(newParameter);
+                    continue;
+                }
+                // Search extending class
+                // TODO kies id
+                let superClass = AstUtils.getSuperClass(constructorParam.declaration.declaration);
+                if(superClass !== null) {
+                    let superClassDeclaration = AstUtils.getDeclarationWithContext(superClass,
+                        constructorParam.declaration,
+                        AstUtils.getImportDeclarations(constructorParam.declaration.ast));
+                    similarParam = findSimilarParam(superClassDeclaration);
+                    console.log(similarParam);
+                    if (similarParam != null) {
+                    } else {
+                        console.log("Error, we could not find a matching argument in a superclass");
+                        continue;
+                    }
+                    let exportedFields = [];
+                    let fieldData = AstUtils.getFields(constructorParam.declaration, nodeModules);
+                    for (let field of fieldData) {
+                        let fieldId = getUniqueFieldId(compactPath, field["key"]);
+                        exportedFields.push({
+                            "keyRaw": field["key"],
+                            "value": fieldId
+                        });
+                        let parameter = field["parameter"];
+                        // Some people might find this to be 'hacky', but it makes sure the @id key is the first one
+                        parameter = {...{"@id": fieldId}, ...parameter};
+                        exportedParameters.push(parameter);
+                    }
+                    // TODO copy context
+                    let newArgument = {
+                        "@id": id
+                    };
+                    if ("@id" in similarParam) {
+                        newArgument["extends"] = similarParam["@id"];
+                    } else if ("extends" in similarParam) {
+                        newArgument["extends"] = similarParam["extends"];
+                    } else {
+                        console.log("Could not find @id nor extend!")
+                    }
+                    if (exportedFields.length !== 0) {
+                        newArgument["fields"] = exportedFields;
+                    }
+                    constructorArguments.push(newArgument);
+                } else {
+                    // TODO copy context
+                    if(constructorParam.component === null) {
+                        console.log(`Found a constructor param '${constructorParam["key"]}' that isn't used in a superclass nor is it a component`);
+                        continue;
+                    }
+                    let id = getUniqueFieldId(compactPath, constructorParam["key"]);
+                    let parameter = constructorParam["parameter"];
+                    parameter = {...{"@id": id}, ...parameter};
+                    exportedParameters.push(parameter);
+                    constructorArguments.push({
+                        "@id": id
+                    });
+                }
             } else {
-                currentSuperClassInfo = AstUtils.getClass(parsedSuperClass.pckg, parsedSuperClass.exportedName);
-            }
-            currentSuperClassImports = AstUtils.getImportDeclarations(currentSuperClassInfo.ast);
-            currentSuperClass = AstUtils.getSuperClass(currentSuperClassInfo.declaration);
-            if (!Utils.isLocalFile(parsedSuperClass.pckg)) {
-                lastKnownPackage = parsedSuperClass.pckg;
-                lastKnownFilePath = currentSuperClassInfo.filePath;
+                let id = getUniqueFieldId(compactPath, constructorParam["key"]);
+                let parameter = constructorParam["parameter"];
+                parameter = {...{"@id": id}, ...parameter};
+                exportedParameters.push(parameter);
+                constructorArguments.push({
+                    "@id": id
+                });
             }
         }
     }
-
-
     newComponent["parameters"] = exportedParameters;
-    // newComponent["parameters"] = exportedParameters;
     newComponent["constructorArguments"] = constructorArguments;
     newConfig["components"] = [newComponent];
-    // console.log(JSON.stringify(newConfig, null, 4));
+    console.log(JSON.stringify(newConfig, null, 4));
 }
