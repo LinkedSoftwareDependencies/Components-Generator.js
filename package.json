@@ -8,6 +8,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@comunica/core": "latest",
     "commander": "^2.20.0",
     "comment-parser": "^0.6.1",
     "componentsjs": "^3.2.1",
@@ -15,7 +16,7 @@
     "jsonld-context-parser": "^1.2.0",
     "typescript": "^3.5.3",
     "typescript-parser": "^2.6.1",
-    "@comunica/core": "latest"
+    "winston": "^3.2.1"
   },
   "devDependencies": {
     "@types/node": "^12.6.9",
