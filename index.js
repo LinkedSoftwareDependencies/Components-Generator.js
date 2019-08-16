@@ -47,7 +47,7 @@ async function generate(args) {
     const componentsContent = Utils.getJSON(componentsPath);
     let classDeclaration = AstUtils.getDeclaration(packageContent["name"], className, directory);
     if (classDeclaration === null) {
-        logger.error("Did not find a matching class, please check the name and make sure it has been exported");
+        logger.error(`Did not find a matching class for name ${className}, please check the name and make sure it has been exported`);
         return;
     }
     let {ast, declaration} = classDeclaration;
