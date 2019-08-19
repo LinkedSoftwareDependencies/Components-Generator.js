@@ -23,8 +23,8 @@ program
     .option('-p, --package <package>', 'The package to look in')
     .option('-c, --class-name <className>', 'The class to generate a component for')
     .option('-l, --level <level>', 'The level for the logger')
-    .option('--print', 'Print to standard output')
     .option('-o --output-path <outputPath>', 'Write output to a specific file')
+    .option('--print', 'Print to standard output')
     .action(generate);
 
 program.parse(process.argv);
@@ -58,7 +58,7 @@ async function generate(args) {
     const componentsContent = Utils.getJSON(componentsPath);
     let classDeclaration = AstUtils.getDeclaration(packageContent["name"], className, directory);
     if (classDeclaration === null) {
-        logger.debug(`Did not find a matching class for name ${className}, please check the name and make sure it has been exported`);
+        logger.error(`Did not find a matching class for name ${className}, please check the name and make sure it has been exported`);
         return;
     }
     let {ast, declaration} = classDeclaration;

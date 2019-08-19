@@ -363,7 +363,7 @@ function getDeclaration(pckg, exportedName, directory = null) {
             }
         }
         if (searchNames.size === 0) {
-            logger.debug(`Did not find a matching class function in ${file}`);
+            logger.debug(`Did not find a matching class in ${file}`);
             continue;
         }
         logger.debug(`Found potential file ${file} with exported declarations ${[...searchNames].join(", ")}`);
@@ -420,12 +420,13 @@ function getField(property, declaration, imports, nodeModules, commentStart = nu
                 return property.name;
         }
     }
+    let required = false;
     let fieldName = getName(property);
     let fieldType = property.typeAnnotation.typeAnnotation.type;
     let isArray = fieldType === parser.AST_NODE_TYPES.TSArrayType;
     let comment = commentStart === null ? Utils.getComment(declaration.ast.comments, property) :
         Utils.getInBetweenComment(declaration.ast.comments, commentStart, property.loc.start);
-    let {range, required, defaultValue, commentDescription, ignored} = Utils.parseFieldComment(comment,
+    let {range, defaultValue, ignored, commentDescription} = Utils.parseFieldComment(comment,
         property.typeAnnotation.typeAnnotation);
     if (ignored) {
         logger.debug(`Field ${fieldName} has an ignore attribute, skipping`);

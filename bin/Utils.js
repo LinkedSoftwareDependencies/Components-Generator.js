@@ -5,7 +5,6 @@ const commentParse = require("comment-parser");
 const logger = require("./runner").logger;
 
 const rangeTag = "range";
-const requiredTag = "required";
 const defaultTag = "default";
 const ignoredTag = "ignored";
 
@@ -89,11 +88,10 @@ function getArray(object, key) {
  * Parses a comment and its tags
  * @param comment the comment as a string
  * @param fieldType the class of this field
- * @returns {{range:*, required:boolean, defaultValue:*, commentDescription:*, ignored:boolean}}
+ * @returns {{range:*, defaultValue:*, ignored:boolean, commentDescription:*}}
  */
 function parseFieldComment(comment, fieldType) {
     let range = null;
-    let required = true;
     let defaultValue = null;
     let commentDescription = null;
     let ignored = false;
@@ -115,9 +113,6 @@ function parseFieldComment(comment, fieldType) {
                             logger.error(`Found range type ${type} but could not match to ${fieldType.type}`);
                         }
                         break;
-                    case requiredTag:
-                        required = true;
-                        break;
                     case defaultTag:
                         if (tag.type.length !== 0) defaultValue = tag.type;
                         break;
@@ -133,10 +128,9 @@ function parseFieldComment(comment, fieldType) {
     }
     return {
         range: range,
-        required: required,
         defaultValue: defaultValue,
-        commentDescription: commentDescription,
-        ignored: ignored
+        ignored: ignored,
+        commentDescription: commentDescription
     };
 
 }
