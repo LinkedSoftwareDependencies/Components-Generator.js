@@ -23,6 +23,8 @@ program
     .option('-p, --package <package>', 'The package to look in')
     .option('-c, --class-name <className>', 'The class to generate a component for')
     .option('-l, --level <level>', 'The level for the logger')
+    .option('--print', 'Print to standard output')
+    .option('-o --output-path <outputPath>', 'Write to a specific file')
     .action(generate);
 
 program.parse(process.argv);
@@ -56,7 +58,7 @@ async function generate(args) {
     const componentsContent = Utils.getJSON(componentsPath);
     let classDeclaration = AstUtils.getDeclaration(packageContent["name"], className, directory);
     if (classDeclaration === null) {
-        logger.error(`Did not find a matching class for name ${className}, please check the name and make sure it has been exported`);
+        logger.debug(`Did not find a matching class for name ${className}, please check the name and make sure it has been exported`);
         return;
     }
     let {ast, declaration} = classDeclaration;
@@ -111,5 +113,15 @@ async function generate(args) {
     newComponent["constructorArguments"] = constructorArguments;
     newConfig["components"] = [newComponent];
     // TODO we'll need to decide what we do here: write to file, write to console?
-    console.log(JSON.stringify(newConfig, null, 4));
+    if(args["print"]) {
+        console.log(JSON.stringify(newConfig, null, 4));
+    } else {
+        let path = Path.join(directory, "components", "Actor", className + ".jsonld");
+        if(args["outputPath"] !== undefined)
+            path = args["outputPath"];
+        let dir = Path.dirname(path);
+        if (!fs.existsSync(dir))
+            fs.mkdirSync(dir);
+        fs.writeFileSync(path, JSON.stringify(newConfig, null, 4));
+    }
 }
