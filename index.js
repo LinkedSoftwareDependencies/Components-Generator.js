@@ -22,17 +22,26 @@ program
     .description("Generate a .jsonld component file for a class")
     .option('-p, --package <package>', 'The package to look in')
     .option('-c, --class-name <className>', 'The class to generate a component for')
+    .option('-l, --level <level>', 'The level for the logger')
     .action(generate);
 
 program.parse(process.argv);
 
 
 async function generate(args) {
-    // TODO This should be temporary
-    let level = "debug";
+    let level = args["level"];
+    if(level === undefined) level = "debug";
     logger.level = level;
     let directory = args["package"];
+    if(directory === undefined) {
+        logger.error("Missing argument package");
+        return;
+    }
     let className = args["className"];
+    if(className === undefined) {
+        logger.error("Missing argument class-name");
+        return;
+    }
     const packagePath = Path.join(directory, "package.json");
     if (!fs.existsSync(packagePath)) {
         logger.error("Not a valid package, no package.json");
@@ -88,10 +97,12 @@ async function generate(args) {
     // of the class we're checking
     if (2 <= superClassChain.length) {
         let chainElement = superClassChain[1];
-        newComponent["extends"] = chainElement.component.component["@id"];
-        for (let contextFile of Utils.getArray(chainElement.component.componentsContent, "@context")) {
-            if (!newConfig["@context"].includes(contextFile)) {
-                newConfig["@context"].push(contextFile);
+        if(chainElement.component !== null) {
+            newComponent["extends"] = chainElement.component.component["@id"];
+            for (let contextFile of Utils.getArray(chainElement.component.componentsContent, "@context")) {
+                if (!newConfig["@context"].includes(contextFile)) {
+                    newConfig["@context"].push(contextFile);
+                }
             }
         }
     }
