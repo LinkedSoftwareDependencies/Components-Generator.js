@@ -3,7 +3,7 @@ const ComponentsJsUtil = require('componentsjs/lib/Util');
 const Utils = require("./Utils");
 const Path = require("path");
 const fs = require("fs");
-const logger = require("../index.js").logger;
+const logger = require("./runner").logger;
 
 /**
  * Gets the class of a type annotation

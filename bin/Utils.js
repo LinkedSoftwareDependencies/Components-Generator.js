@@ -2,7 +2,7 @@ const parser = require('@typescript-eslint/typescript-estree');
 const Path = require("path");
 const fs = require("fs");
 const commentParse = require("comment-parser");
-const logger = require("../index.js").logger;
+const logger = require("./runner").logger;
 
 const rangeTag = "range";
 const requiredTag = "required";

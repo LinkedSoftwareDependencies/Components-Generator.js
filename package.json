@@ -1,12 +1,18 @@
 {
-  "name": "auto-generate",
+  "name": "componentjs-generator",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "bin/runner.js",
   "scripts": {},
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
+  "bin": {
+    "componentsjs-generator": "./bin/runner.js"
+  },
+  "files": [
+    "bin/**/*.js"
+  ],
   "dependencies": {
     "@comunica/core": "latest",
     "commander": "^2.20.0",

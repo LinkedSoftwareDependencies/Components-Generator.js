@@ -6,8 +6,8 @@ const logger = winston.createLogger({
 module.exports = {
     logger: logger
 };
-const Utils = require("./lib/Utils");
-const AstUtils = require("./lib/AstUtils");
+const Utils = require("./Utils");
+const AstUtils = require("./AstUtils");
 const fs = require("fs");
 const jsonld = require("jsonld");
 const ComponentsJsUtil = require('componentsjs/lib/Util');
@@ -24,7 +24,7 @@ program
     .option('-c, --class-name <className>', 'The class to generate a component for')
     .option('-l, --level <level>', 'The level for the logger')
     .option('--print', 'Print to standard output')
-    .option('-o --output-path <outputPath>', 'Write to a specific file')
+    .option('-o --output-path <outputPath>', 'Write output to a specific file')
     .action(generate);
 
 program.parse(process.argv);
