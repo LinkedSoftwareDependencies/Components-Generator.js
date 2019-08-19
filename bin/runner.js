@@ -32,7 +32,7 @@ program.parse(process.argv);
 
 async function generate(args) {
     let level = args["level"];
-    if(level === undefined) level = "debug";
+    if(level === undefined) level = "info";
     logger.level = level;
     let directory = args["package"];
     if(directory === undefined) {
@@ -112,7 +112,6 @@ async function generate(args) {
     newComponent["parameters"] = parameters;
     newComponent["constructorArguments"] = constructorArguments;
     newConfig["components"] = [newComponent];
-    // TODO we'll need to decide what we do here: write to file, write to console?
     if(args["print"]) {
         console.log(JSON.stringify(newConfig, null, 4));
     } else {
@@ -122,6 +121,7 @@ async function generate(args) {
         let dir = Path.dirname(path);
         if (!fs.existsSync(dir))
             fs.mkdirSync(dir);
+        logger.info(`Writing output to ${path}`);
         fs.writeFileSync(path, JSON.stringify(newConfig, null, 4));
     }
 }

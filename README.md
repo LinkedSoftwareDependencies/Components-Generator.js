@@ -21,7 +21,7 @@ Using this command you can generate a `.jsonld` file for a specific component.
 
 * `<package>`: the filepath to the directory of the package that your component is located in. It is important that you first used `npm install` in this package's directory to make sure all the dependencies can be found.
 * `<className>`: the name of the class that represents your component. Your class must be exported in the `index.ts` file of your package and this must be the name that the class was exported as.
-* `<level>`: the level of the logger. Options: `emerg, alert, crit, error, warning, notice, info, debug`.
+* `<level>`: the level of the logger. Options: `emerg, alert, crit, error, warning, notice, info, debug`. Defaults to `info`.
 * `--print`: if this flag is used, the output will be printed to console
 * `<outputPath>`: if this is set and `--print` is not used, the output will be written to this file. If this is not set and `--print` is not used, the output will be written to a file in the `component` folder of the package.
 
@@ -31,6 +31,15 @@ Using this command you can generate a `.jsonld` file for a specific component.
 // TODO 
 
 ## Tweaking the files
+
+### General guidelines
+
+* The superclass of a class that you parse must also be linked to a component
+* Each argument in the constructor of the class that you parse must be either:
+    - A simple type that can be matched to an XSD type such as `boolean, number, string`
+    - Linked to an existing component
+    - A subclass of a constructor argument of either the parsed class' superclass, the superclass of that superclass and so forth
+
 
 ### Imports and exports
 
@@ -66,14 +75,16 @@ This tool allows you to put tags in comments above fields and constructor argume
 ## For fields
 
 Here's an example of how these annotations can be used to give additional information about the fields of a class.
+Comments must be placed above your field and they must end the line before the declaration of your field starts.  
+An example:
 ```typescript
 export class MyActor extends OtherActor {
-  constructor(args: IActorBindingHashArgs) {
+  constructor(args: IActorBindingArgs) {
     super(args)
   }
 }
 
-export interface IActorBindingHashArgs extends IActoOtherBindingArgs {
+export interface IActorBindingArgs extends IActoOtherBindingArgs {
   /**
    * This field is very important
    * @range {float}
@@ -121,7 +132,8 @@ As you can see the tool recognized `floatField` as an optional field and set its
 ## For constructor arguments
 
 Here's an example of how these annotations can be used to give additional information about the constructor arguments of a class and how you can make the parser ignore specific fields.
-
+These comments must be placed inline in your constructor.  
+An example:
 ```typescript
 export class MyActor {
     constructor(/** This is an array of bytes
