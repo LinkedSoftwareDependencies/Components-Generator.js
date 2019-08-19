@@ -2,24 +2,25 @@
   "name": "componentjs-generator",
   "version": "1.0.0",
   "description": "",
-  "main": "bin/runner.js",
+  "main": "bin/GenerateRunner.js",
   "scripts": {},
   "keywords": [],
   "author": "",
   "license": "MIT",
   "bin": {
-    "componentsjs-generator": "./bin/runner.js"
+    "componentsjs-generator": "bin/GenerateRunner.js"
   },
   "files": [
-    "bin/**/*.js"
+    "bin/**/*.js",
+    "lib/**/*.js"
   ],
   "dependencies": {
     "@comunica/core": "latest",
-    "commander": "^2.20.0",
     "comment-parser": "^0.6.1",
     "componentsjs": "^3.2.1",
     "jsonld": "^1.6.2",
     "jsonld-context-parser": "^1.2.0",
+    "minimist": "^1.2.0",
     "typescript": "^3.5.3",
     "typescript-parser": "^2.6.1",
     "winston": "^3.2.1"

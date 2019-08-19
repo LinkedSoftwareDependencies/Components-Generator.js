@@ -1,21 +1,30 @@
 # Components.js Generator
 
-A tool to generate `.jsonld` component files for [Components.js](https://github.com/LinkedSoftwareDependencies/Components.js) TypeScript classes. 
+A tool to generateRunner `.jsonld` component files for [Components.js](https://github.com/LinkedSoftwareDependencies/Components.js) TypeScript classes. 
+
+## Install
+
+1. Clone this repo
+2. Go to the root of the repo
+3. `npm install -g`
 
 ## Using the tool
 
 ### Generating a `.jsonld` file using the CLI tool
 
 ```
-componentsjs-generator generate
-       -p <package>      # The package to look in
+Usage:
+  componentsjs-generator -p ./ -c MyActor -l info -o ./components/Actor/MyActor.jsonld
+  Options:
+       -p <package>      # The directory of the package to look in
        -c <className>    # The class to generate a component for
-       -l, <level>       # The level for the logger
+       -l <level>        # The level for the logger
        -o <outputPath>   # Write output to a specific file
        --print           # Print to standard output
+       --help            # Show information about this command
 ```
 
-Using this command you can generate a `.jsonld` file for a specific component.
+Using this command you can generateRunner a `.jsonld` file for a specific component.
 
 #### Options
 
@@ -24,7 +33,6 @@ Using this command you can generate a `.jsonld` file for a specific component.
 * `<level>`: the level of the logger. Options: `emerg, alert, crit, error, warning, notice, info, debug`. Defaults to `info`.
 * `--print`: if this flag is used, the output will be printed to console
 * `<outputPath>`: if this is set and `--print` is not used, the output will be written to this file. If this is not set and `--print` is not used, the output will be written to a file in the `component` folder of the package.
-
 
 ### Using the tool in your code
 
@@ -62,17 +70,19 @@ export {FooClass, FooClass as BarClass} from "/foo/bar"
 ```
 It is very important that each of your existing components has a `requireElement` attribute in their `.jsonld` file. This value must be equal to the exported name of the matching class of that package.
 
-### Tags on fields
+### Tags for fields and constructors arguments
 
 This tool allows you to put tags in comments above fields and constructor arguments to add additional information.
 
-### Tags
+#### Tags
 
-`@ignored`: this field will be ignored by the tool  
-`@default {<value>}`: the `default` attribute of the parameter will be set to `<value`  
-`@range {<type>}`: the `range` attribute of the parameter will be set to `<type>`. You can only use values that fit the type of field.  Options: `boolean, int, integer, number, byte, long, float, decimal, double, string`. For example, if your field has the type `number`, you could explicitly mark it as a `float` by using `@range {float}`. 
+| Tag | Action
+|---|---
+| `@ignored` | This field will be ignored by the tool  
+| `@default {<value>}` |  The `default` attribute of the parameter will be set to `<value>` 
+|  `@range {<type>}` |  The `range` attribute of the parameter will be set to `<type>`. You can only use values that fit the type of field.  Options: `boolean, int, integer, number, byte, long, float, decimal, double, string`. For example, if your field has the type `number`, you could explicitly mark it as a `float` by using `@range {float}`. 
 
-## For fields
+#### For fields
 
 Here's an example of how these annotations can be used to give additional information about the fields of a class.
 Comments must be placed above your field and they must end the line before the declaration of your field starts.  
@@ -129,7 +139,7 @@ will become
 
 As you can see the tool recognized `floatField` as an optional field and set its value of `required` to `false`.
 
-## For constructor arguments
+#### For constructor arguments
 
 Here's an example of how these annotations can be used to give additional information about the constructor arguments of a class and how you can make the parser ignore specific fields.
 These comments must be placed inline in your constructor.  
