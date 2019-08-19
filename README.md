@@ -1,6 +1,6 @@
 # Components.js Generator
 
-A tool to generateRunner `.jsonld` component files for [Components.js](https://github.com/LinkedSoftwareDependencies/Components.js) TypeScript classes. 
+A tool to generate `.jsonld` component files for [Components.js](https://github.com/LinkedSoftwareDependencies/Components.js) TypeScript classes. 
 
 ## Install
 
@@ -24,7 +24,7 @@ Usage:
        --help            # Show information about this command
 ```
 
-Using this command you can generateRunner a `.jsonld` file for a specific component.
+Using this command you can generate a `.jsonld` file for a specific component.
 
 #### Options
 
