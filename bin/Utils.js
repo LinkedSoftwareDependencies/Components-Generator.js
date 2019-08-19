@@ -27,18 +27,25 @@ const javascriptTypes = {
  * @param matchedType the xsd range
  * @returns {boolean} whether this combination if valid
  */
-function isValidXsd(type, matchedType) {
-    if (type.type === parser.AST_NODE_TYPES.TSTypeReference) {
-        // We do this to deal with JavaScript types such as Boolean, Number, String
-        let typeName = type.typeName.name;
-        if (typeName in javascriptTypes) {
-            let nodeType = javascriptTypes[typeName];
-            return typeToXsd[nodeType].includes(matchedType);
-        }
-        return false;
-    } else {
-        let literal = type.type;
-        return literal in typeToXsd ? typeToXsd[literal].includes(matchedType) : false;
+function isValidXsd(type, matchedType, isArray=false) {
+    switch(type.type) {
+        case(parser.AST_NODE_TYPES.TSTypeReference):
+            // We do this to deal with JavaScript types such as Boolean, Number, String
+            let typeName = type.typeName.name;
+            if (typeName in javascriptTypes) {
+                let nodeType = javascriptTypes[typeName];
+                return typeToXsd[nodeType].includes(matchedType);
+            }
+            return false;
+        case(parser.AST_NODE_TYPES.TSArrayType):
+            if (isArray) {
+                logger.error(`Cannot parse nested array types`);
+                return false;
+            }
+            return isValidXsd(type.elementType, matchedType, true);
+        default:
+            let literal = type.type;
+            return literal in typeToXsd ? typeToXsd[literal].includes(matchedType) : false;
     }
 }
 

@@ -37,7 +37,7 @@ Using this command you can generate a `.jsonld` file for a specific component.
 #### Imports
 When the tool analyzes your TypeScript class, it will use the import declarations to link names of classes to filepaths.
 The following ways of importing classes are supported:
-```
+```typescript
 import * as bar from "/foo/bar";
 import {FooClass, FooClass as BarClass} from "@bar";
 import foo = require("./bar");
@@ -47,7 +47,7 @@ import foo = require("./bar");
 When the tool analyzes your TypeScript class, it will use the `index.ts` of all dependent packages to link names of classes to existing components.
 It does this by checking all the names of the exported classes in the `index.ts` and comparing them with the `requireElement` attribute of each component.
 The following ways of exporting classes are supported:
-``` 
+```typescript
 export * from "./bar"
 export {FooClass, FooClass as BarClass} from "/foo/bar"
 ```
@@ -68,12 +68,12 @@ This tool allows you to put tags in comments above fields and constructor argume
 Here's an example of how these annotations can be used to give additional information about the fields of a class.
 ```typescript
 export class MyActor extends OtherActor {
-  constructor(args: IActorInitBindingArgs) {
-    super(args, 'reduced');
+  constructor(args: IActorBindingHashArgs) {
+    super(args)
   }
 }
 
-export interface IActorInitRdfBindingHashArgs extends IActorInitOtherBindingArgs {
+export interface IActorBindingHashArgs extends IActoOtherBindingArgs {
   /**
    * This field is very important
    * @range {float}
@@ -114,6 +114,50 @@ will become
         }
     ]
 }
-
 ```
+
+As you can see the tool recognized `floatField` as an optional field and set its value of `required` to `false`.
+
 ## For constructor arguments
+
+Here's an example of how these annotations can be used to give additional information about the constructor arguments of a class and how you can make the parser ignore specific fields.
+
+```typescript
+export class MyActor {
+    constructor(/** This is an array of bytes
+                    @range {byte}
+                 */ myByte: number[], /** @ignored */ ignoredArg: string) {
+        console.log(myByte);
+    }
+}
+```
+will become
+
+```json
+{
+    ...
+    "components": [
+        {
+            ...
+            "parameters": [
+                {
+                    "@id": "my-actor#TestClass#myByte",
+                    "range": "xsd:byte",
+                    "required": false,
+                    "unique": false,
+                    "comment": "This is an array of bytes"
+                }
+            ],
+            "constructorArguments": [
+                {
+                    "@id": "my-actor#TestClass#myByte"
+                }
+            ]
+        }
+    ]
+}
+```
+
+As you can see the tool recognized `myByte` as an array field and set its value of `unique` to `false`.
+The tool also noticed the `@ignored` tag on the `ignoredArg` field and did not parse it.
+
