@@ -3,7 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "main": "bin/GenerateRunner.js",
-  "scripts": {},
+  "scripts": {
+    "test": "jest"
+  },
+  "jest": {
+    "setupFilesAfterEnv": [
+      "jest-extended"
+    ]
+  },
   "keywords": [],
   "author": "",
   "license": "MIT",
@@ -16,6 +23,7 @@
   ],
   "dependencies": {
     "@comunica/core": "latest",
+    "child_process": "^1.0.2",
     "comment-parser": "^0.6.1",
     "componentsjs": "^3.2.1",
     "jsonld": "^1.6.2",
@@ -23,10 +31,13 @@
     "minimist": "^1.2.0",
     "typescript": "^3.5.3",
     "typescript-parser": "^2.6.1",
-    "winston": "^3.2.1"
+    "winston": "^3.2.1",
+    "rimraf": "latest"
   },
   "devDependencies": {
     "@types/node": "^12.6.9",
-    "@typescript-eslint/typescript-estree": "^1.13.0"
+    "@typescript-eslint/typescript-estree": "^1.13.0",
+    "jest": "^24.9.0",
+    "jest-extended": "^0.11.2"
   }
 }

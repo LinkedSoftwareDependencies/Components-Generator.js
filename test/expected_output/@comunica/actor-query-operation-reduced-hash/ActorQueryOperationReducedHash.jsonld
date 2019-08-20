@@ -1,0 +1,15 @@
+{
+  "@context": [
+    "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/actor-query-operation-reduced-hash/^1.0.0/components/context.jsonld"
+  ],
+  "@id": "npmd:@comunica/actor-query-operation-reduced-hash",
+  "components": [
+    {
+      "@id": "npmd:@comunica/actor-query-operation-reduced-hash/ActorQueryOperationReducedHash",
+      "@type": "Class",
+      "comment": "A comunica Reduced Hash Query Operation Actor.",
+      "parameters": [],
+      "constructorArguments": []
+    }
+  ]
+}

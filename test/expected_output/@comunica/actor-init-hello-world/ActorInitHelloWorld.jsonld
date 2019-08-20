@@ -1,0 +1,35 @@
+{
+  "@context": [
+    "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/actor-init-hello-world/^1.0.0/components/context.jsonld",
+    "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/bus-init/^1.0.0/components/context.jsonld"
+  ],
+  "@id": "npmd:@comunica/actor-init-hello-world",
+  "components": [
+    {
+      "@id": "npmd:@comunica/actor-init-hello-world/ActorInitHelloWorld",
+      "@type": "Class",
+      "comment": "A Hello World actor that listens on the 'init' bus.\n\nIt takes an optional `hello` parameter, which defaults to 'Hello'.\nWhen run, it will print the `hello` parameter to the console,\nfollowed by all arguments it received.",
+      "extends": "cbi:Actor/Init",
+      "parameters": [
+        {
+          "@id": "npmd:@comunica/actor-init-hello-world/ActorInitHelloWorld#hello",
+          "range": "xsd:string",
+          "required": true,
+          "unique": true
+        }
+      ],
+      "constructorArguments": [
+        {
+          "@id": "npmd:@comunica/actor-init-hello-world/ActorInitHelloWorld#constructorArgumentsObject",
+          "extends": "cbi:Actor/Init/constructorArgumentsObject",
+          "fields": [
+            {
+              "keyRaw": "hello",
+              "value": "npmd:@comunica/actor-init-hello-world/ActorInitHelloWorld#hello"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
