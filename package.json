@@ -9,7 +9,8 @@
   "jest": {
     "setupFilesAfterEnv": [
       "jest-extended"
-    ]
+    ],
+    "collectCoverage": true
   },
   "keywords": [],
   "author": "",
@@ -26,13 +27,14 @@
     "child_process": "^1.0.2",
     "comment-parser": "^0.6.1",
     "componentsjs": "^3.2.1",
+    "fs-extra": "^8.1.0",
     "jsonld": "^1.6.2",
     "jsonld-context-parser": "^1.2.0",
     "minimist": "^1.2.0",
+    "rimraf": "latest",
     "typescript": "^3.5.3",
     "typescript-parser": "^2.6.1",
-    "winston": "^3.2.1",
-    "rimraf": "latest"
+    "winston": "^3.2.1"
   },
   "devDependencies": {
     "@types/node": "^12.6.9",

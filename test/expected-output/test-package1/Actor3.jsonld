@@ -1,0 +1,12 @@
+{
+  "@context": [],
+  "@id": "test-package",
+  "components": [
+    {
+      "@id": "test-package/Actor3",
+      "@type": "Class",
+      "parameters": [],
+      "constructorArguments": []
+    }
+  ]
+}

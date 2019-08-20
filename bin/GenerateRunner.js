@@ -36,7 +36,7 @@ if(args.help) {
                 path = args["outputPath"];
             let dir = Path.dirname(path);
 
-            // Make recursive
+            // TODO Make recursive
             if (!fs.existsSync(dir))
                 fs.mkdirSync(dir);
             logger.info(`Writing output to ${path}`);

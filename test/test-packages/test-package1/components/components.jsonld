@@ -1,0 +1,8 @@
+{
+  "@context": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/actor-init-hello-world/^1.0.0/components/context.jsonld",
+  "@id": "test-package",
+  "@type": "Module",
+  "requireName": "test-package",
+  "import": [
+  ]
+}
