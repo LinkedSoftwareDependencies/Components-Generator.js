@@ -32,7 +32,7 @@ Using this command you can generate a `.jsonld` file for a specific component.
 * `<className>`: the name of the class that represents your component. Your class must be exported in the `index.ts` file of your package and this must be the name that the class was exported as.
 * `<level>`: the level of the logger. Options: `emerg, alert, crit, error, warning, notice, info, debug`. Defaults to `info`.
 * `--print`: if this flag is used, the output will be printed to console
-* `<outputPath>`: if this is set and `--print` is not used, the output will be written to this file. If this is not set and `--print` is not used, the output will be written to a file in the `component` folder of the package.
+* `<outputPath>`: if this is set and `--print` is not used, the output will be written to this file. If this is not set and `--print` is not used, the output will be written to a file in the `components` folder of the package.
 
 ### Using the tool in your code
 
