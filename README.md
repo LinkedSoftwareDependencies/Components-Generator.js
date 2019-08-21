@@ -71,7 +71,7 @@ Here is an example that showcases all of these options:
    ```typescript
   import {Logger} from "@comunica/core";
   export class SampleActor {
-      constructor(args:HashArg,testArray:HashArg[], numberSample: number) {}
+      constructor(args:HashArg,testArray:HashArg[], numberSample: number, componentExample: Logger) {}
   }
   export interface HashArg {
       args: NestedHashArg;
