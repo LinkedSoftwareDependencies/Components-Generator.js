@@ -36,7 +36,6 @@ Using this command you can generate a `.jsonld` file for a specific component.
 
 ### Using the tool in your code
 
-Importing the tool
 ```typescript
 // Importing the tool
 const Generate = require("componentjs-generator").Generate;
@@ -47,7 +46,7 @@ let level = "debug";
 
 // Returns a Javascript object that represents the contents of the components file
 // No actual file will be created.
-Generate.generateComponents(directory, className, level);
+let components = Generate.generateComponents(directory, className, level);
 
 let print = false;
 let outputPath = "test-output";
@@ -222,3 +221,8 @@ will become
 As you can see the tool recognized `myByte` as an array field and set its value of `unique` to `false`.
 The tool also noticed the `@ignored` tag on the `ignoredArg` field and did not parse it.
 
+## Running tests
+
+`npm run test`
+
+This will run some local tests and fetch some of the [Comunica](https://github.com/comunica/comunica) packages via NPM and run some tests on them.
