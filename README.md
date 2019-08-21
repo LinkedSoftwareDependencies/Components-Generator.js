@@ -36,7 +36,26 @@ Using this command you can generate a `.jsonld` file for a specific component.
 
 ### Using the tool in your code
 
-// TODO 
+Importing the tool
+```typescript
+// Importing the tool
+const Generate = require("componentjs-generator").Generate;
+
+let directory = "test-module";
+let className = "MyActor";
+let level = "debug";
+
+// Returns a Javascript object that represents the contents of the components file
+// No actual file will be created.
+Generate.generateComponents(directory, className, level);
+
+let print = false;
+let outputPath = "test-output";
+
+// Creates a file with the generated componens content
+// The other options are the same as in the CLI tool
+Generate.generateComponentsFile(directory, className, level, print, outputPath);
+```
 
 ## Tweaking the files
 
@@ -44,11 +63,29 @@ Using this command you can generate a `.jsonld` file for a specific component.
 
 * The superclass of a class that you parse must also be linked to a component
 * Each argument in the constructor of the class that you parse must be either:
-    - A simple type that can be matched to an XSD type such as `boolean, number, string`
+    - A simple type that can be matched to an [XSD type](https://componentsjs.readthedocs.io/en/latest/configuration/components/parameters/) such as `boolean, number, string`
     - Linked to an existing component
-    - A hash containing key-value pairs (e.g. an interface that is a subclass of a constructor argument of either the parsed class' superclass, the superclass of that superclass and so forth)
-    
-
+    - A hash containing key-value pairs where each value matches one of the possible options. This means you can used nested classes. This class can also extend another hash.  
+    - An array containing a type that matches one of the above options
+  
+Here is an example that showcases all of these options:  
+   ```typescript
+  import {Logger} from "@comunica/core";
+  export class SampleActor {
+      constructor(args:HashArg,testArray:HashArg[], numberSample: number) {}
+  }
+  export interface HashArg {
+      args: NestedHashArg;
+      arraySample: NestedHashArg[];
+  }
+  export interface NestedHashArg extends ExtendsTest {
+      test: boolean;
+      componentTest: Logger;
+  }
+  export interface ExtendsTest {
+      stringTest: String;
+  }
+``` 
 ### Imports and exports
 
 #### Imports
@@ -81,8 +118,8 @@ This tool allows you to put tags in comments above fields and constructor argume
 | Tag | Action
 |---|---
 | `@ignored` | This field will be ignored by the tool  
-| `@default {<value>}` |  The `default` attribute of the parameter will be set to `<value>` 
-|  `@range {<type>}` |  The `range` attribute of the parameter will be set to `<type>`. You can only use values that fit the type of field.  Options: `boolean, int, integer, number, byte, long, float, decimal, double, string`. For example, if your field has the type `number`, you could explicitly mark it as a `float` by using `@range {float}`. 
+| `@default {<value>}` | The `default` attribute of the parameter will be set to `<value>` 
+| `@range {<type>}` | The `range` attribute of the parameter will be set to `<type>`. You can only use values that fit the type of field.  Options: `boolean, int, integer, number, byte, long, float, decimal, double, string`. For example, if your field has the type `number`, you could explicitly mark it as a `float` by using `@range {float}`. 
 
 #### For fields
 

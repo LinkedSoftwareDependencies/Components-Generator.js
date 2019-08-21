@@ -22,27 +22,7 @@ let args = minimist(process.argv.slice(2));
 if(args.help) {
     showHelp();
 } else {
-    Generate.generateComponentsFile(args.p, args.c, args.l).then(function (components) {
-        if(components === null) {
-            logger.info("Failed to generate components file");
-            return;
-        }
-        let jsonString = JSON.stringify(components, null, 4);
-        if(args["print"]) {
-            console.log(jsonString);
-        } else {
-            let path = Path.join(args.p, "components", "Actor", args.c + ".jsonld");
-            if(args["outputPath"] !== undefined)
-                path = args["outputPath"];
-            let dir = Path.dirname(path);
-
-            // TODO Make recursive
-            if (!fs.existsSync(dir))
-                fs.mkdirSync(dir);
-            logger.info(`Writing output to ${path}`);
-            fs.writeFileSync(path, jsonString);
-        }
-    });
+    Generate.generateComponentsFile(args.p, args.c, args.l, args.print, args.outputPath);
 }
 
 

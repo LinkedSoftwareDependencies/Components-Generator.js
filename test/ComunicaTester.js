@@ -26,7 +26,7 @@ function testModules(modules) {
                 stdio: "pipe"});
             execSync(`npm install`, {cwd: pckgDir, stdio: "pipe"});
             for (let [className, expectedOutputFile] of Object.entries(components)) {
-                let generatedComponents = await Generate.generateComponentsFile(pckgDir, className, "debug");
+                let generatedComponents = await Generate.generateComponents(pckgDir, className, "debug");
                 ComponentTester.testComponents(generatedComponents, pckg, expectedOutputFile);
             }
         });
