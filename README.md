@@ -45,7 +45,7 @@ let className = "MyActor";
 let level = "debug";
 
 // Returns a Javascript object that represents the contents of the components file
-// No actual file will be created.
+// No actual file will be created
 let components = Generate.generateComponents(directory, className, level);
 
 let print = false;
