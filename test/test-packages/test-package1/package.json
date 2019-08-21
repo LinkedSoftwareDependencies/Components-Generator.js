@@ -2,5 +2,9 @@
   "name": "test-package",
   "version": "1.0.0",
   "lsd:components": "components/components.jsonld",
-  "lsd:contexts": []
+  "lsd:contexts": [],
+  "lsd:module": "https://example.com/test-package",
+  "dependencies": {
+    "@comunica/core": "^1.9.0"
+  }
 }

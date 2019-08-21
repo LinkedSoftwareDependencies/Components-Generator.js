@@ -4,9 +4,50 @@
   "components": [
     {
       "@id": "test-package/Actor1",
+      "requireElement": "Actor1",
       "@type": "Class",
-      "parameters": [],
-      "constructorArguments": []
+      "extends": "test-package/Actor2Alt",
+      "parameters": [
+        {
+          "@id": "test-package/Actor1#ownArgs",
+          "required": false,
+          "unique": true,
+          "range": "xsd:string"
+        },
+        {
+          "@id": "test-package/Actor1#optionalNumber",
+          "required": true,
+          "unique": true,
+          "range": "xsd:float",
+          "default": "5.0",
+          "comment": "Testing arguments with similar names"
+        },
+        {
+          "@id": "test-package/Actor1#optionalNumber1",
+          "required": false,
+          "unique": true,
+          "range": "xsd:int"
+        }
+      ],
+      "constructorArguments": [
+        {
+          "@id": "test-package/Actor1#constructorArgumentsObject",
+          "extends": "test-package/Actor2Alt#constructorArgumentsObject",
+          "fields": [
+            {
+              "keyRaw": "ownArgs",
+              "value": "test-package/Actor1#ownArgs"
+            },
+            {
+              "keyRaw": "optionalNumber",
+              "value": "test-package/Actor1#optionalNumber"
+            }
+          ]
+        },
+        {
+          "@id": "test-package/Actor1#optionalNumber1"
+        }
+      ]
     }
   ]
 }

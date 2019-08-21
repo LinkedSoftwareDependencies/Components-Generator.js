@@ -46,8 +46,8 @@ Using this command you can generate a `.jsonld` file for a specific component.
 * Each argument in the constructor of the class that you parse must be either:
     - A simple type that can be matched to an XSD type such as `boolean, number, string`
     - Linked to an existing component
-    - A subclass of a constructor argument of either the parsed class' superclass, the superclass of that superclass and so forth
-
+    - A hash containing key-value pairs (e.g. an interface that is a subclass of a constructor argument of either the parsed class' superclass, the superclass of that superclass and so forth)
+    
 
 ### Imports and exports
 
@@ -56,7 +56,8 @@ When the tool analyzes your TypeScript class, it will use the import declaration
 The following ways of importing classes are supported:
 ```typescript
 import * as bar from "/foo/bar";
-import {FooClass, FooClass as BarClass} from "@bar";
+import {FooClass} from "@bar";
+import {FooClass as BarClass} from "@bar";
 import foo = require("./bar");
 ```
 
@@ -65,8 +66,9 @@ When the tool analyzes your TypeScript class, it will use the `index.ts` of all 
 It does this by checking all the names of the exported classes in the `index.ts` and comparing them with the `requireElement` attribute of each component.
 The following ways of exporting classes are supported:
 ```typescript
-export * from "./bar"
-export {FooClass, FooClass as BarClass} from "/foo/bar"
+export * from "./bar";
+export {FooClass} from "/foo/bar";
+export {FooClass as BarClass} from "/foo/bar";
 ```
 It is very important that each of your existing components has a `requireElement` attribute in their `.jsonld` file. This value must be equal to the exported name of the matching class of that package.
 

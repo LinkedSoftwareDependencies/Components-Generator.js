@@ -1,5 +1,7 @@
 **/.idea/
 **/node_modules/
 **/coverage/
+**/comunica_temp/
+**/local_temp/
 test_files/
 output/

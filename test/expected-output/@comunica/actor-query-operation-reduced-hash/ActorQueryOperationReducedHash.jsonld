@@ -6,6 +6,7 @@
   "components": [
     {
       "@id": "npmd:@comunica/actor-query-operation-reduced-hash/ActorQueryOperationReducedHash",
+      "requireElement": "ActorQueryOperationReducedHash",
       "@type": "Class",
       "comment": "A comunica Reduced Hash Query Operation Actor.",
       "parameters": [],

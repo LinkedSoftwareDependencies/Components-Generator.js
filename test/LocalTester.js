@@ -25,7 +25,7 @@ function testComponents(modules) {
             fs.copySync(Path.join(testDirectory, testPackages, pckg), pckgDir);
             execSync(`npm install`, {cwd: pckgDir, stdio: "pipe"});
             for (let [className, expectedOutputFile] of Object.entries(components)) {
-                let generatedComponents = await Generate.generateComponentsFile(pckgDir, className);
+                let generatedComponents = await Generate.generateComponentsFile(pckgDir, className, "debug");
                 ComponentTester.testComponents(generatedComponents, pckg, expectedOutputFile);
             }
         });

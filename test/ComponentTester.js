@@ -6,7 +6,7 @@ const testDirectory = "test";
 
 function testComponents(generatedComponents, pckg, expectedOutputFile) {
     let expectedComponents = Utils.getJSON(Path.join(testDirectory, outputPath, pckg, expectedOutputFile));
-    // console.log(JSON.stringify(generatedComponents));
+    console.log(JSON.stringify(generatedComponents));
     expect(generatedComponents["@id"]).toBe(expectedComponents["@id"]);
     expect(generatedComponents["@context"]).toIncludeSameMembers(expectedComponents["@context"]);
     expect(generatedComponents).toHaveProperty("components");
@@ -14,7 +14,7 @@ function testComponents(generatedComponents, pckg, expectedOutputFile) {
     let generatedComponent = generatedComponents["components"][0];
     let expectedComponent = expectedComponents["components"][0];
     // We can enforce that the constructorArguments property needs to have the same order for its values
-    for (let property of ["@id", "@type", "comment", "constructorArguments"]) {
+    for (let property of ["@id", "@type", "comment", "constructorArguments","requireElement"]) {
         expect(generatedComponent[property]).toEqual(expectedComponent[property]);
     }
     // We can't enforce the same order on the parameters

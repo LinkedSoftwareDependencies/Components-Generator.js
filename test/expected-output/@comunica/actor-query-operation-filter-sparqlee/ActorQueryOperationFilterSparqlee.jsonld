@@ -1,23 +1,24 @@
 {
   "@context": [
-    "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/^1.0.0/components/context.jsonld",
     "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/actor-query-operation-filter-sparqlee/^1.0.0/components/context.jsonld",
-    "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/bus-query-operation/^1.0.0/components/context.jsonld"
+    "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/bus-query-operation/^1.0.0/components/context.jsonld",
+    "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/^1.0.0/components/context.jsonld"
   ],
   "@id": "npmd:@comunica/actor-query-operation-filter-sparqlee",
   "components": [
     {
       "@id": "npmd:@comunica/actor-query-operation-filter-sparqlee/ActorQueryOperationFilterSparqlee",
+      "requireElement": "ActorQueryOperationFilterSparqlee",
       "@type": "Class",
       "comment": "A comunica Filter Sparqlee Query Operation Actor.",
+      "extends": "cbqo:Actor/QueryOperationTypedMediated",
+      "parameters": [],
       "constructorArguments": [
         {
           "@id": "npmd:@comunica/actor-query-operation-filter-sparqlee/ActorQueryOperationFilterSparqlee#constructorArgumentsObject",
           "extends": "cbqo:Actor/QueryOperationTypedMediated/constructorArgumentsObject"
         }
-      ],
-      "extends": "cbqo:Actor/QueryOperationTypedMediated",
-      "parameters": []
+      ]
     }
   ]
 }

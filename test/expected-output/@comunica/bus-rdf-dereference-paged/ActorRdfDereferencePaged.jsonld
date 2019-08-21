@@ -1,15 +1,23 @@
 {
   "@context": [
-    "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/bus-rdf-dereference-paged/^1.0.0/components/context.jsonld"
+    "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/bus-rdf-dereference-paged/^1.0.0/components/context.jsonld",
+    "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/^1.0.0/components/context.jsonld"
   ],
   "@id": "npmd:@comunica/bus-rdf-dereference-paged",
   "components": [
     {
       "@id": "npmd:@comunica/bus-rdf-dereference-paged/ActorRdfDereferencePaged",
+      "requireElement": "ActorRdfDereferencePaged",
       "@type": "AbstractClass",
       "comment": "A base actor for dereferencing URLs to quad streams and following pages.\n\nActor types:\n* Input:  IActionRdfDereferencePaged:      A URL.\n* Test:   <none>\n* Output: IActorRdfDereferencePagedOutput: A quad data and optional metadata stream",
+      "extends": "cc:Actor",
       "parameters": [],
-      "constructorArguments": []
+      "constructorArguments": [
+        {
+          "@id": "npmd:@comunica/bus-rdf-dereference-paged/ActorRdfDereferencePaged#constructorArgumentsObject",
+          "extends": "cc:Actor/constructorArgumentsObject"
+        }
+      ]
     }
   ]
 }
