@@ -31,7 +31,7 @@ Using this command you can generate a `.jsonld` file for a specific component.
 * `<package>`: the filepath to the directory of the package that your component is located in. It is important that you first used `npm install` in this package's directory to make sure all the dependencies can be found.
 * `<className>`: the name of the class that represents your component. Your class must be exported in the `index.ts` file of your package and this must be the name that the class was exported as.
 * `<level>`: the level of the logger. Options: `emerg, alert, crit, error, warning, notice, info, debug`. Defaults to `info`.
-* `--print`: if this flag is used, the output will be printed to console
+* `--print`: if this flag is used, the output will be printed to console.
 * `<outputPath>`: if this is set and `--print` is not used, the output will be written to this file. If this is not set and `--print` is not used, the output will be written to a file in the `components` folder of the package.
 
 ### Using the tool in your code
@@ -110,7 +110,7 @@ It is very important that each of your existing components has a `requireElement
 
 ### Tags for fields and constructors arguments
 
-This tool allows you to put tags in comments above fields and constructor arguments to add additional information.
+This tool allows you to put tags in comments above fields and constructor arguments to add additional information to the generated files.
 
 #### Tags
 
@@ -175,7 +175,7 @@ will become
 }
 ```
 
-As you can see the tool recognized `floatField` as an optional field and set its value of `required` to `false`.
+As you can see the tool recognized `floatField` as an optional field and set its value of `required` to `false`. It also parses the header of each comment and puts it in the `comment` attribute. 
 
 #### For constructor arguments
 
@@ -221,8 +221,20 @@ will become
 As you can see the tool recognized `myByte` as an array field and set its value of `unique` to `false`.
 The tool also noticed the `@ignored` tag on the `ignoredArg` field and did not parse it.
 
-## Running tests
+## Examples and test tests
 
-`npm run test`
+
+### Running tests
+
+Requirements:
+- Linux
+
+`npm run test`  
+
 
 This will run some local tests and fetch some of the [Comunica](https://github.com/comunica/comunica) packages via NPM and run some tests on them.
+You can find the Comunica test cases [here](test/ComunicaTestCases.test.js) and their expected output [here](test/expected-output);
+
+### Local examples
+
+For more examples on how the tool analyzes your TypeScript files, you can visit the [test package](test/test-packages/test-package1) and its [generated components](test/expected-output/test-package1).
