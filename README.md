@@ -14,7 +14,7 @@ A tool to generate `.jsonld` component files for [Components.js](https://github.
 
 ```
 Usage:
-  componentsjs-generator -p ./ -c MyActor -l info -o ./components/Actor/MyActor.jsonld
+  componentsjs-generator -p ./packages/my-package -c MyActor -l info -o ./components/Actor/MyActor.jsonld
   Options:
        -p <package>      # The directory of the package to look in
        -c <className>    # The class to generate a component for

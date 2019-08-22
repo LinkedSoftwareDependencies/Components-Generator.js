@@ -21,7 +21,7 @@ function testModules(modules) {
         test(pckg, async () => {
             let pckgDir = Path.join(tmp, pckg);
             if (!fs.existsSync(pckgDir)) Utils.mkdirRecursive(pckgDir);
-            execSync(`npm v ${pckg} dist.tarball | xargs curl | tar -zx -C ${pckg} --strip-components 1`, {
+            execSync(`npm view ${pckg} dist.tarball | xargs curl | tar -zx -C ${pckg} --strip-components 1`, {
                 cwd: tmp,
                 stdio: "pipe"});
             execSync(`npm install`, {cwd: pckgDir, stdio: "pipe"});
