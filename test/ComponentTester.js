@@ -6,7 +6,7 @@ const testDirectory = "test";
 
 function testComponents(generatedComponents, pckg, expectedOutputFile) {
     let expectedComponents = Utils.getJSON(Path.join(testDirectory, outputPath, pckg, expectedOutputFile));
-    // console.log(JSON.stringify(generatedComponents));
+    console.log(JSON.stringify(generatedComponents));
     expect(generatedComponents["@id"]).toBe(expectedComponents["@id"]);
     expect(generatedComponents["@context"]).toIncludeSameMembers(expectedComponents["@context"]);
     expect(generatedComponents).toHaveProperty("components");

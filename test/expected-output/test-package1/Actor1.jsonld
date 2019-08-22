@@ -1,5 +1,9 @@
 {
-  "@context": [],
+  "@context": [
+    "http://example.com/actor3",
+    "http://example.com/actor2",
+    "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/^1.0.0/components/context.jsonld"
+  ],
   "@id": "test-package",
   "components": [
     {
@@ -43,6 +47,10 @@
               "value": "test-package/Actor1#optionalNumber"
             }
           ]
+        },
+        {
+          "@id": "test-package/Actor1#constructorArgumentsObject1",
+          "extends": "test-package/Actor2Alt#constructorArgumentsObject"
         },
         {
           "@id": "test-package/Actor1#optionalNumber1"

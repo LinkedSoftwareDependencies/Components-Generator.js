@@ -1,5 +1,8 @@
 {
-  "@context": [],
+  "@context": [
+    "http://example.com/actor3",
+    "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/^1.0.0/components/context.jsonld"
+  ],
   "@id": "test-package",
   "components": [
     {
