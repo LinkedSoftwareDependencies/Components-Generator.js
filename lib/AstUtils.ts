@@ -5,14 +5,16 @@ import {Utils} from "./Utils";
 import {logger} from "./Core";
 import * as Path from "path";
 import {
-    ClassDeclaration,
+    ClassDeclaration, ClassElement,
+    ClassProperty,
+    ExportAllDeclaration,
+    ExportNamedDeclaration,
     Identifier,
     ImportClause,
     LineAndColumnData,
     Program,
     Statement,
-    TSInterfaceDeclaration,
-    TSPropertySignature,
+    TSInterfaceDeclaration, TSPropertySignature,
     TypeElement,
     TypeNode
 } from "@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree";
@@ -24,6 +26,7 @@ import {
     ExportDeclaration,
     ExportReference,
     FieldDeclaration,
+    FieldDeclarationType,
     FieldType,
     ImportDeclaration,
     NodeModules,
@@ -42,7 +45,7 @@ export class AstUtils {
      * multi-dimensional arrays
      * @returns information about the class
      */
-    private static getTypeAnnotationReference(annotation:TypeNode, isArray: boolean = false): ClassReference {
+    private static getTypeAnnotationReference(annotation: TypeNode, isArray: boolean = false): ClassReference {
         switch (annotation.type) {
             // A regular class reference
             case AST_NODE_TYPES.TSTypeReference:
@@ -82,7 +85,7 @@ export class AstUtils {
      * @param property the field to look at
      * @returns reference to the class
      */
-    public static getFieldClassReference(property: Identifier | TSPropertySignature): ClassReference {
+    public static getFieldClassReference(property: FieldDeclarationType): ClassReference {
         let typeAnnotation = property.typeAnnotation;
         return AstUtils.getTypeAnnotationReference(typeAnnotation.typeAnnotation);
     }
@@ -121,15 +124,15 @@ export class AstUtils {
                 return {namespace: null, className: identifier.name};
             default:
                 logger.error(`Could not recognize identifier ${identifier} for the superclass`);
-                return;
         }
     }
 
     /**
-     * Searches for the exact package (or local package path) a class was imported from and what its original name is
-     * @param classReference the name of the class
+     * Finds reference of a class according to how it was referenced in the code and imported
+     *
+     * @param classReference how the class was referenced in the code
      * @param imports the imports of the class that the specific class was referenced in
-     * @returns {null|{pckg: *, exportedName: *}}
+     * @returns reference to exported class
      */
     public static findExportedClass(classReference: ClassReference, imports: ClassImportDeclarations): ExportReference {
         for (const [pckg, importClasses] of Object.entries(imports)) {
@@ -146,16 +149,14 @@ export class AstUtils {
                 }
             }
         }
-        return;
     }
 
     /**
      * Finds the component in a package based on its exported name
      *
      * @param exportedName the name that the class was exported with in the index.ts
-     * @param componentsFilePath the filepath of the components filew
-     * @returns {{component:*, componentsContent:*}|null} component information where component is the component matched to the
-     * exportedName and componentsContent is the content of the file that the component was matched in
+     * @param componentsFilePath the filepath of the components file
+     * @returns information about the component
      */
     public static findComponent(exportedName: string, componentsFilePath: string): ComponentInformation {
         let blacklist = [Path.basename(componentsFilePath), "context.jsonld"];
@@ -177,16 +178,14 @@ export class AstUtils {
 
             }
         }
-        return;
     }
 
 
     /**
      * Parses the imports of the source tree
+     *
      * @param ast the syntax tree to look in
-     * @returns {{className:string, importName:string}[]} the parsed imports
-     * where className is the actual name of the import as this package sees it and importName
-     * is the name that this specific class is giving to the export
+     * @returns the parsed import declarations
      */
     public static getImportDeclarations(ast: Program): ClassImportDeclarations {
         function getSpecifierImport(specifier: ImportClause) {
@@ -255,12 +254,12 @@ export class AstUtils {
 
     /**
      * Parses the exports of the source tree
+     *
      * @param ast the syntax tree to look in
-     * @returns the parsed exports
+     * @returns the parsed export declarations
      */
     public static getExportDeclarations(ast: Program): ClassExportDeclarations {
-        // TODO messages if not string or Literal
-        function getExports(declaration: Statement): { exportSource: string, exports: ExportDeclaration[] } {
+        function getExports(declaration: ExportAllDeclaration | ExportNamedDeclaration): { exportSource: string, exports: ExportDeclaration[] } {
             switch (declaration.type) {
                 case AST_NODE_TYPES.ExportAllDeclaration: {
                     let exportSource = declaration.source;
@@ -299,31 +298,34 @@ export class AstUtils {
                     }
                     return;
                 }
-                default:
-                    logger.error(`Skipping line with type ${declaration.type}`);
-                    return;
             }
         }
 
         let files: ClassExportDeclarations = {};
         for (let declaration of ast.body) {
-            let parsedExport = getExports(declaration);
-            if (parsedExport == null) continue;
-            if(parsedExport.exports.length === 0) continue;
-            let file = Path.normalize(parsedExport.exportSource);
-            files[file] = Utils.union(files[file], parsedExport.exports);
+            if(declaration.type === AST_NODE_TYPES.ExportAllDeclaration ||
+                declaration.type === AST_NODE_TYPES.ExportNamedDeclaration) {
+                let parsedExport = getExports(declaration);
+                if (parsedExport == null) continue;
+                if (parsedExport.exports.length === 0) continue;
+                let file = Path.normalize(parsedExport.exportSource);
+                files[file] = Utils.union(files[file], parsedExport.exports);
+            } else {
+                logger.error(`Skipping line with type ${declaration.type}`);
+            }
         }
         return files;
     }
 
     /**
      * Searches for the root directory of a package
+     *
      * @param name the name of the package as declared in the `package.json`
-     * @returns {string|null} the root directory of the package
+     * @returns the root directory of the package
      */
     public static getPackageRootDirectory(name: string): string {
-        for (const [pckgJsonPath, pckgInfo] of Object.entries(ComponentsJsUtil.NODE_MODULES_PACKAGE_CONTENTS)) {
-            // @ts-ignore
+        let entries: [string, any][] = Object.entries(ComponentsJsUtil.NODE_MODULES_PACKAGE_CONTENTS);
+        for (const [pckgJsonPath, pckgInfo] of entries) {
             if (name === pckgInfo["name"]) {
                 return Path.dirname(pckgJsonPath);
             }
@@ -332,12 +334,13 @@ export class AstUtils {
 
     /**
      * Searches for a class in a package, given its class name and class filepath
+     *
      * @param internalClass the internal name of the class
      * @param internalClassPath the filepath that was used to import this class
      * @param pckg the name of the package
      * @param filePath the filepath of the file that this class was imported in. This is import if we're dealing with relative
      * imports
-     * @returns {null|{ast: *, declaration: *,filePath:string, pckg:string,internalClass:string}} the result of parsing the class
+     * @returns the result of parsing the class
      */
     public static getLocalDeclaration(internalClass: string, internalClassPath: string, pckg: string, filePath: string): ParsedClassDeclaration {
         let directory = AstUtils.getPackageRootDirectory(pckg);
@@ -369,7 +372,6 @@ export class AstUtils {
                 }
             }
         }
-        return;
     }
 
 
@@ -447,7 +449,6 @@ export class AstUtils {
             }
             logger.debug(`Did not find a matching exported class in ${file} for name ${classInfo.className}`);
         }
-        return;
     }
 
     /**
@@ -457,22 +458,23 @@ export class AstUtils {
      * @param imports the imports of the class where this field was found in
      * @param nodeModules the node modules to search in
      * @param commentStart if this parameter is set, we will look for an inline comment starting after this position
-     * @returns {{component:{component:*, componentsContent:*}, parameter: *, type:string, declaration: *, key:string}|null}
-     * the information about this field
+     * @returns information about this field
      */
-    public static getField(property: any,
+    public static getField(property: FieldDeclarationType,
                            declaration: ParsedClassDeclaration, imports: ClassImportDeclarations,
                            nodeModules: NodeModules,
                            commentStart: LineAndColumnData = null): FieldDeclaration {
-        // TODO find actual type
-        function getName(property: any) {
+        function getName(property: FieldDeclarationType) {
             switch (property.type) {
-                case AST_NODE_TYPES.TSPropertySignature:
-                    return property.key.name;
                 case AST_NODE_TYPES.Identifier:
                     return property.name;
+                case AST_NODE_TYPES.TSPropertySignature:
                 case AST_NODE_TYPES.ClassProperty:
-                    return property.key.name;
+                    if(property.key.type === AST_NODE_TYPES.Identifier) {
+                        return property.key.name;
+                    } else {
+                        logger.debug(`Could not understand type ${property.key.type}, skipping`);
+                    }
             }
         }
         let required = false;
@@ -535,11 +537,19 @@ export class AstUtils {
      */
     public static getFields(declaration: ParsedClassDeclaration, nodeModules: NodeModules): FieldDeclaration[] {
         let imports = AstUtils.getImportDeclarations(declaration.ast);
-        // TODO check which type we actually need
-        // @ts-ignore
-        return declaration.declaration.body.body
-            .map((property: TypeElement) => AstUtils.getField(property, declaration, imports, nodeModules))
-            .filter((x: FieldDeclaration) => x != null);
+        switch(declaration.declaration.type) {
+            case AST_NODE_TYPES.ClassDeclaration: {
+                return declaration.declaration.body.body
+                    .filter((x: ClassElement) => x.type === AST_NODE_TYPES.ClassProperty)
+                    .map((x: ClassProperty) => AstUtils.getField(x, declaration, imports, nodeModules))
+                    .filter((x: FieldDeclaration) => x != null);
+            }
+            case AST_NODE_TYPES.TSInterfaceDeclaration:
+                return declaration.declaration.body.body
+                    .filter((x: TypeElement) => x.type === AST_NODE_TYPES.TSPropertySignature)
+                    .map((x: TSPropertySignature) => AstUtils.getField(x, declaration, imports, nodeModules))
+                    .filter((x: FieldDeclaration) => x != null);
+        }
     }
 
     /**
@@ -561,9 +571,13 @@ export class AstUtils {
                 let constructorParamDeclarations = property.value.params;
                 let previousEnd = property.loc.start;
                 for (let constructorParamDeclaration of constructorParamDeclarations) {
-                    let constructorParam = AstUtils.getField(constructorParamDeclaration, declaration, imports, nodeModules, previousEnd);
-                    if (constructorParam != null) constructorParams.push(constructorParam);
-                    previousEnd = constructorParamDeclaration.loc.end;
+                    if(constructorParamDeclaration.type === AST_NODE_TYPES.Identifier) {
+                        let constructorParam = AstUtils.getField(constructorParamDeclaration, declaration, imports, nodeModules, previousEnd);
+                        if (constructorParam != null) constructorParams.push(constructorParam);
+                        previousEnd = constructorParamDeclaration.loc.end;
+                    } else {
+                        logger.error(`Could not understand parameter type ${constructorParamDeclaration.type}`);
+                    }
                 }
             }
         }

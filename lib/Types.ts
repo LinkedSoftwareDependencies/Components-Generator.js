@@ -3,10 +3,10 @@
  * e.g. `namespace.ClassName`
  */
 import {
-    ClassDeclaration,
+    ClassDeclaration, ClassProperty, Identifier,
     Program,
     Statement,
-    TSInterfaceBody, TSInterfaceDeclaration
+    TSInterfaceBody, TSInterfaceDeclaration, TSPropertySignature
 } from "@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree";
 
 export interface ClassReference {
@@ -79,3 +79,4 @@ export interface ComponentInformation {
     component: {};
     componentsContent: {};
 }
+export type FieldDeclarationType = TSPropertySignature | Identifier | ClassProperty

@@ -1,4 +1,10 @@
-import {Comment, LineAndColumnData, Statement} from "@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree";
+import {
+    BaseNode,
+    Comment,
+    LineAndColumnData,
+    Statement
+} from "@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree";
+import {FieldDeclarationType} from "./Types";
 
 
 export class CommentUtils {
@@ -37,7 +43,7 @@ export class CommentUtils {
      * @param declaration the declaration to match
      * @returns the matched comment as a string
      */
-    public static getComment(comments: Comment[], declaration: Statement): string {
+    public static getComment(comments: Comment[], declaration: BaseNode): string {
         let line = declaration.loc.start.line;
         for (let comment of comments) {
             if (comment.loc.end.line === line - 1) {

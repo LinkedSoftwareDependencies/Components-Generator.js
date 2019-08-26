@@ -36,7 +36,7 @@ export class Utils {
     // TODO type?
     public static isValidXsd(type: any, matchedType: string, isArray: boolean = false): boolean {
         switch (type.type) {
-            case(parser.AST_NODE_TYPES.TSTypeReference):
+            case parser.AST_NODE_TYPES.TSTypeReference:
                 // We do this to deal with JavaScript types such as Boolean, Number, String
                 let typeName = type.typeName.name;
                 if (typeName in javascriptTypes) {
@@ -44,7 +44,7 @@ export class Utils {
                     return typeToXsd[nodeType].includes(matchedType);
                 }
                 return false;
-            case(parser.AST_NODE_TYPES.TSArrayType):
+            case parser.AST_NODE_TYPES.TSArrayType:
                 if (isArray) {
                     logger.error(`Cannot parse nested array types`);
                     return false;
