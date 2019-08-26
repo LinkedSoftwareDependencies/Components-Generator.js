@@ -27,7 +27,7 @@ export class ComunicaTester {
                 });
                 execSync(`npm install`, {cwd: pckgDir, stdio: "pipe"});
                 for (let [className, expectedOutputFile] of Object.entries(components)) {
-                    let generatedComponents = await Generate.generateComponents(pckgDir, className, "debug");
+                    let generatedComponents = await Generate.generateComponents(pckgDir, className, "info");
                     ComponentTester.testComponents(generatedComponents, pckg, expectedOutputFile);
                 }
             });

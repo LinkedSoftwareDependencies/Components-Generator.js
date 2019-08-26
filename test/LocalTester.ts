@@ -24,7 +24,7 @@ export class LocalTester {
                 fs.copySync(Path.join(testDirectory, testPackages, pckg), pckgDir);
                 execSync(`npm install`, {cwd: pckgDir, stdio: "pipe"});
                 for (let [className, expectedOutputFile] of Object.entries(components)) {
-                    let generatedComponents = await Generate.generateComponents(pckgDir, className, "debug");
+                    let generatedComponents = await Generate.generateComponents(pckgDir, className, "info");
                     ComponentTester.testComponents(generatedComponents, pckg, expectedOutputFile);
                 }
             });

@@ -1,10 +1,4 @@
-import {ClassDeclaration, FieldDeclaration} from "./AstUtils";
-import {
-    Statement,
-    Comment,
-    SourceLocation,
-    LineAndColumnData
-} from "@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree";
+import {ParsedClassDeclaration, FieldDeclaration} from "./Types";
 
 const parser = require('@typescript-eslint/typescript-estree');
 const Path = require("path");
@@ -155,53 +149,6 @@ export class Utils {
         };
 
     }
-
-    /** Fixes a comment so it can be parsed by the library we're using
-     * @returns the comment with proper surrounding slashes
-     */
-    public static fixComment(comment: Comment): string {
-        // The TypeScript parser removes some parts of a comment, we add them back
-        return `/*${comment.value}*/`;
-    }
-
-    /**
-     * Gets comment from a declaration by checking if the comment ends on the line before the start of the declaration
-     * @param comments to comments to search through
-     * @param declaration the declaration to match
-     * @returns the matched comment as a string
-     */
-    public static getComment(comments: Comment[], declaration: Statement): string {
-        let line = declaration.loc.start.line;
-        for (let comment of comments) {
-            if (comment.loc.end.line === line - 1) {
-                return Utils.fixComment(comment);
-            }
-        }
-    }
-
-    /**
-     * Gets comment from a declaration by checking if the comment ends just before the start of the declaration
-     * @param comments to comments to search through
-     * @param {{line:int,column:int}} start the place after which a comment should be matched
-     * @param {{line:int,column:int}} end the place before which a comment should be matched
-     * @returns {string|null} the matched comment as a string
-     */
-    public static getInBetweenComment(comments: Comment[], start: LineAndColumnData, end: LineAndColumnData) {
-        /**
-         * @returns whether loc1 occurs after loc2
-         */
-        function isAfter(loc1: LineAndColumnData, loc2: LineAndColumnData): boolean {
-            return loc2.line < loc1.line || (loc1.line === loc2.line && loc2.column <= loc1.column);
-        }
-
-        for (let comment of comments) {
-            if (isAfter(comment.loc.start, start) && isAfter(end, comment.loc.end)) {
-                return Utils.fixComment(comment);
-            }
-        }
-    }
-
-
     /**
      * Reads the content of a file
      * @param filePath the file path
@@ -267,7 +214,7 @@ export class Utils {
      * @param c2 other class
      * @returns {boolean} whether they are equal
      */
-    public static classDeclarationEquals(c1: ClassDeclaration, c2: ClassDeclaration): boolean {
+    public static classDeclarationEquals(c1: ParsedClassDeclaration, c2: ParsedClassDeclaration): boolean {
         return c1.pckg === c2.pckg &&
             c1.filePath === c2.filePath &&
             c1.internalClass === c2.internalClass;

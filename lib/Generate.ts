@@ -5,6 +5,7 @@ import * as Path from "path";
 import {Utils} from "./Utils";
 import commentParse = require("comment-parser");
 import {logger} from "./Core";
+import {CommentUtils} from "./CommentUtils";
 
 // const Utils = require("./Utils");
 // const AstUtils = require("./AstUtils");
@@ -30,11 +31,11 @@ export class Generate {
     public static async generateComponents(directory: string, className: string, level: string = "info"): Promise<Object> {
         if (level === null) level = "info";
         logger.level = level;
-        if (directory === undefined) {
+        if (directory == null) {
             logger.error("Missing argument package");
             return;
         }
-        if (className === undefined) {
+        if (className == null) {
             logger.error("Missing argument class-name");
             return;
         }
@@ -57,15 +58,15 @@ export class Generate {
             className: className,
             exportedFrom: pckg
         });
-        if (classDeclaration === undefined) {
+        if (classDeclaration == null) {
             logger.error(`Did not find a matching class for name ${className}, please check the name and make sure it has been exported`);
             return;
         }
         let ast = classDeclaration.ast;
         let declaration = classDeclaration.declaration;
-        let declarationComment = Utils.getComment(ast.comments, declaration);
+        let declarationComment = CommentUtils.getComment(ast.comments, declaration);
         let classComment;
-        if (declarationComment !== undefined) {
+        if (declarationComment != null) {
             let parsedDeclarationComment = commentParse(declarationComment);
             let firstDeclarationComment = parsedDeclarationComment[0];
             if (firstDeclarationComment.description.length !== 0) {
@@ -86,14 +87,14 @@ export class Generate {
         newComponent["requireElement"] = className;
         // @ts-ignore
         newComponent["@type"] = declaration.abstract ? "AbstractClass" : "Class";
-        if (classComment !== undefined) newComponent["comment"] = classComment;
+        if (classComment != null) newComponent["comment"] = classComment;
         let imports = AstUtils.getImportDeclarations(ast);
         let superClassChain = AstUtils.getSuperClassChain(classDeclaration, imports, nodeModules);
         // We can use the second element in the chain for the `extends` attribute because it's the superclass
         // of the class we're checking
         if (2 <= superClassChain.length) {
             let chainElement = superClassChain[1];
-            if (chainElement.component !== undefined) {
+            if (chainElement.component != null) {
                 // @ts-ignore
                 newComponent["extends"] = chainElement.component.component["@id"];
                 for (let contextFile of Utils.getArray(chainElement.component.componentsContent, "@context")) {
@@ -126,7 +127,7 @@ export class Generate {
      */
     public static async generateComponentsFile(directory: string, className: string, level: string, print:boolean, outputPath:string) {
         let components = await this.generateComponents(directory, className, level);
-        if (components === undefined) {
+        if (components == null) {
             logger.info("Failed to generate components file");
             return;
         }
@@ -135,7 +136,7 @@ export class Generate {
             console.log(jsonString);
         } else {
             let path = Path.join(directory, "components", "Actor", className + ".jsonld");
-            if (outputPath !== undefined)
+            if (outputPath != null)
                 path = outputPath;
             let dir = Path.dirname(path);
             if (!fs.existsSync(dir))
