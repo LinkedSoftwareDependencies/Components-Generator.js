@@ -1,4 +1,4 @@
-const ComunicaTester = require("./ComunicaTester");
+import {ComunicaTester} from "./ComunicaTester"
 
 const tests = {
     "@comunica/actor-query-operation-filter-sparqlee@1.9.0": {
@@ -17,4 +17,4 @@ const tests = {
         "ActorQueryOperationReducedHash": "ActorQueryOperationReducedHash.jsonld"
     }
 };
-ComunicaTester(tests);
+ComunicaTester.testModules(tests);

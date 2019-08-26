@@ -1,5 +1,5 @@
 import QQQ = require("./../lib/Actor2");
-import ZZZ = require("./../lib/../lib/Actor2");
+import * as ZZZ from "./../lib/../lib/Actor2";
 import EEE = require("./../lib/Actor2");
 
 export class Actor1 extends QQQ.Actor2 {

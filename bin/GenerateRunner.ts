@@ -1,9 +1,6 @@
 #!/usr/bin/env node
-const minimist = require('minimist');
-const Generate = require("../lib/Generate");
-const Path = require("path");
-const fs = require("fs");
-const logger = require("../lib/Core.js").logger;
+import * as minimist from "minimist";
+import { Generate } from "../lib/Generate";
 
 function showHelp() {
     console.error(`Usage:

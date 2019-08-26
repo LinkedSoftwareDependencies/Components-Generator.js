@@ -1,4 +1,4 @@
-const LocalTester = require("./LocalTester");
+import {LocalTester} from "./LocalTester";
 
 const tests = {
     "test-package1": {
@@ -8,4 +8,4 @@ const tests = {
     }
 
 };
-LocalTester(tests);
+LocalTester.testComponents(tests);

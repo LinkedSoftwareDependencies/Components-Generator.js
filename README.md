@@ -233,7 +233,7 @@ Requirements:
 
 
 This will run some local tests and fetch some of the [Comunica](https://github.com/comunica/comunica) packages via NPM and run some tests on them.
-You can find the Comunica test cases [here](test/ComunicaTestCases.test.js) and their expected output [here](test/expected-output);
+You can find the Comunica test cases [here](test/ComunicaTestCases.test.ts) and their expected output [here](test/expected-output);
 
 ### Local examples
 
