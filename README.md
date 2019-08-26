@@ -12,7 +12,7 @@ A tool to generate `.jsonld` component files for [Components.js](https://github.
 
 ### Generating a `.jsonld` file using the CLI tool
 
-```
+```bash
 Usage:
   componentsjs-generator -p ./packages/my-package -c MyActor -l info -o ./components/Actor/MyActor.jsonld
   Options:
@@ -229,7 +229,9 @@ The tool also noticed the `@ignored` tag on the `ignoredArg` field and did not p
 Requirements:
 - Linux
 
-`npm run test`  
+```bash
+npm run test
+```
 
 
 This will run some local tests and fetch some of the [Comunica](https://github.com/comunica/comunica) packages via NPM and run some tests on them.
