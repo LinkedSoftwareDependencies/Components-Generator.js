@@ -5,32 +5,23 @@ import {Utils} from "./Utils";
 import {logger} from "./Core";
 import * as Path from "path";
 import {
-    ClassDeclaration,
     ClassElement,
     ClassProperty,
-    ExportAllDeclaration,
-    ExportNamedDeclaration,
-    ImportClause,
     LineAndColumnData,
     Program,
-    Statement,
-    TSInterfaceDeclaration,
     TSPropertySignature,
     TypeElement,
     TypeNode
 } from "@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree";
 import {
     ClassDeclarationType,
-    ClassExportDeclarations,
     ClassImportDeclarations,
     ClassReference,
     ComponentInformation,
-    ExportDeclaration,
     ExportReference,
     FieldDeclaration,
     FieldDeclarationType,
     FieldType,
-    ImportDeclaration,
     NodeModules,
     ParsedClassDeclaration,
     SuperClassChain, SuperClassChainElement

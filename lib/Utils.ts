@@ -1,12 +1,10 @@
 import {ParsedClassDeclaration} from "./Types";
-import {TSTypeReference, TypeNode} from "@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree";
+import {TypeNode} from "@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree";
 import {AST_NODE_TYPES} from "@typescript-eslint/typescript-estree";
 import ComponentsJsUtil = require("componentsjs/lib/Util");
-
-const parser = require('@typescript-eslint/typescript-estree');
-const Path = require("path");
-const fs = require("fs");
-const logger = require("./Core").logger;
+import {logger} from "./Core";
+import * as fs from "fs";
+import * as Path from "path";
 
 const typescriptExtensions = [".ts", ".d.ts"];
 
@@ -76,7 +74,7 @@ export class Utils {
      */
     public static convertTypeToXsd(type: TypeNode, isArray = false): string {
         switch (type.type) {
-            case(AST_NODE_TYPES.TSTypeReference):
+            case AST_NODE_TYPES.TSTypeReference:
                 if (type.typeName.type === AST_NODE_TYPES.Identifier) {
                     // We do this to deal with JavaScript types such as Boolean, Number, String
                     let typeName = type.typeName.name;
@@ -91,7 +89,7 @@ export class Utils {
                     logger.debug(`Could not understand type ${type.typeName.type}`);
                     return;
                 }
-            case(AST_NODE_TYPES.TSArrayType):
+            case AST_NODE_TYPES.TSArrayType:
                 if (isArray) {
                     logger.error(`Cannot parse nested array types`);
                     return;

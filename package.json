@@ -19,7 +19,8 @@
   "author": "",
   "license": "MIT",
   "bin": {
-    "componentsjs-generator": "bin/GenerateRunner.js"
+    "componentsjs-generate": "bin/GenerateRunner.js",
+    "componentsjs-fix": "bin/FixRunner.js"
   },
   "files": [
     "bin/**/*.d.ts",

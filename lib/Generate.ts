@@ -19,7 +19,6 @@ export class Generate {
      * @returns the contents of the components file as an object
      */
     public static async generateComponent(directory: string, className: string, level: string = "info"): Promise<Object> {
-        if (level === null) level = "info";
         logger.level = level;
         if (directory == null) {
             logger.error("Missing argument package");
@@ -37,7 +36,7 @@ export class Generate {
             return;
         }
         const packageContent = Utils.getJSON(packagePath);
-        const pckg = packageContent["name"];
+        const packageName = packageContent["name"];
         let componentsPath = Path.join(directory, packageContent["lsd:components"]);
         if (!fs.existsSync(componentsPath)) {
             logger.error("Not a valid components path");
@@ -46,7 +45,7 @@ export class Generate {
         const componentsContent = Utils.getJSON(componentsPath);
         let classDeclaration = AstUtils.getDeclaration({
             className: className,
-            exportedFrom: pckg
+            exportedFrom: packageName
         });
         if (classDeclaration == null) {
             logger.error(`Did not find a matching class for name ${className}, please check the name and make sure it has been exported`);
@@ -115,12 +114,13 @@ export class Generate {
      * @returns upon completion
      */
     public static async generateComponentFile(directory: string, className: string, level: string, print:boolean, outputPath:string) {
-        let components = await this.generateComponent(directory, className, level);
-        if (components == null) {
-            logger.info("Failed to generate components file");
+        logger.level = level;
+        let component = await this.generateComponent(directory, className, level);
+        if (component == null) {
+            logger.info("Failed to generate component file");
             return;
         }
-        let jsonString = JSON.stringify(components, null, 4);
+        let jsonString = JSON.stringify(component, null, 4);
         if (print) {
             console.log(jsonString);
         } else {

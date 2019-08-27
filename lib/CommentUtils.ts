@@ -2,7 +2,7 @@ import {
     BaseNode,
     Comment,
     LineAndColumnData,
-    Statement, TypeNode
+    TypeNode
 } from "@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree";
 import {logger} from "./Core";
 import {Utils} from "./Utils";

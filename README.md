@@ -13,8 +13,9 @@ A tool to generate `.jsonld` component files for [Components.js](https://github.
 ### Generating a `.jsonld` file using the CLI tool
 
 ```bash
+Generates a component file for a specific component
 Usage:
-  componentsjs-generator -p ./packages/my-package -c MyActor -l info -o ./components/Actor/MyActor.jsonld
+  componentsjs-generate -p ./packages/my-package -c MyActor -l info -o ./components/Actor/MyActor.jsonld
   Options:
        -p <package>      # The directory of the package to look in
        -c <className>    # The class to generate a component for
@@ -23,8 +24,6 @@ Usage:
        --print           # Print to standard output
        --help            # Show information about this command
 ```
-
-Using this command you can generate a `.jsonld` file for a specific component.
 
 #### Options
 
@@ -44,16 +43,16 @@ let directory = "test-module";
 let className = "MyActor";
 let level = "debug";
 
-// Returns a Javascript object that represents the contents of the components file
+// Returns a Javascript object that represents the contents of the component file
 // No actual file will be created
-let components = Generate.generateComponents(directory, className, level);
+let components = Generate.generateComponent(directory, className, level);
 
 let print = false;
 let outputPath = "test-output";
 
 // Creates a file with the generated componens content
 // The other options are the same as in the CLI tool
-Generate.generateComponentsFile(directory, className, level, print, outputPath);
+Generate.generateComponentFile(directory, className, level, print, outputPath);
 ```
 
 ## Tweaking the files
