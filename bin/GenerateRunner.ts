@@ -19,7 +19,7 @@ let args = minimist(process.argv.slice(2));
 if(args.help) {
     showHelp();
 } else {
-    Generate.generateComponentsFile(args.p, args.c, args.l, args.print, args.outputPath);
+    Generate.generateComponentFile(args.p, args.c, args.l, args.print, args.outputPath);
 }
 
 

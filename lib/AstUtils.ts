@@ -5,20 +5,22 @@ import {Utils} from "./Utils";
 import {logger} from "./Core";
 import * as Path from "path";
 import {
-    ClassDeclaration, ClassElement,
+    ClassDeclaration,
+    ClassElement,
     ClassProperty,
     ExportAllDeclaration,
     ExportNamedDeclaration,
-    Identifier,
     ImportClause,
     LineAndColumnData,
     Program,
     Statement,
-    TSInterfaceDeclaration, TSPropertySignature,
+    TSInterfaceDeclaration,
+    TSPropertySignature,
     TypeElement,
     TypeNode
 } from "@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree";
 import {
+    ClassDeclarationType,
     ClassExportDeclarations,
     ClassImportDeclarations,
     ClassReference,
@@ -31,10 +33,15 @@ import {
     ImportDeclaration,
     NodeModules,
     ParsedClassDeclaration,
-    SuperClassChain
+    SuperClassChain, SuperClassChainElement
 } from "./Types";
 import {CommentUtils} from "./CommentUtils";
+import {ImportExportReader} from "./ImportExportReader";
 
+
+/**
+ * A utility class to parse information from a syntax tree
+ */
 export class AstUtils {
     /**
      * Gets the reference to the class of a type annotation
@@ -62,6 +69,7 @@ export class AstUtils {
                         }
                         return;
                     case AST_NODE_TYPES.Identifier:
+                        // A normal reference e.g. `q.B`
                         return {namespace: undefined, className: annotation.typeName.name};
                     default:
                         logger.error(`Could not recognize inner name type ${annotation.typeName}`);
@@ -96,8 +104,8 @@ export class AstUtils {
      * @param declaration the class declaration to search in
      * @returns information about the class
      */
-    public static getSuperClass(declaration: ClassDeclaration | TSInterfaceDeclaration): ClassReference {
-        function getIdentifier(declaration: ClassDeclaration | TSInterfaceDeclaration) {
+    public static getSuperClass(declaration: ClassDeclarationType): ClassReference {
+        function getIdentifier(declaration: ClassDeclarationType) {
             switch (declaration.type) {
                 case AST_NODE_TYPES.ClassDeclaration:
                     return declaration.superClass;
@@ -159,181 +167,30 @@ export class AstUtils {
      * @returns information about the component
      */
     public static findComponent(exportedName: string, componentsFilePath: string): ComponentInformation {
+        // We won't look at files whose name is in the blacklist
         let blacklist = [Path.basename(componentsFilePath), "context.jsonld"];
         // TODO ideally we'll look at the `import` part of the components file, but parsing these IRI's isn't trivial
         let componentsFolder = Path.dirname(componentsFilePath);
-        for (let {filePath, json} of Utils.visitJSONFiles(componentsFolder)) {
+        for (let {filePath, json} of Utils.visitJSONLDFiles(componentsFolder)) {
             let baseName = Path.basename(filePath);
             if (blacklist.includes(baseName)) continue;
             if (!("components" in json)) continue;
             for (let component of json["components"]) {
-                // Sometimes people might forget to add a requireElement field. We can 'guess' it based
                 if (!("requireElement" in component)) {
                     logger.debug(`Component ${component["@id"]} is lacking a requireElement key`)
                 }
-                // We temporarily use a check here that tries to 'guess' the requireElement value in
+                // Sometimes people might forget to add a requireElement field. We can 'guess' it based
+                // on the value of `@id`
                 if (component["requireElement"] === exportedName ||
                     component["@id"].split(/[:/]/).slice(-1)[0] === exportedName)
-                    return {component: component, componentsContent: json};
+                    return {component: component, componentContent: json};
 
             }
         }
     }
 
-
     /**
-     * Parses the imports of the source tree
-     *
-     * @param ast the syntax tree to look in
-     * @returns the parsed import declarations
-     */
-    public static getImportDeclarations(ast: Program): ClassImportDeclarations {
-        function getSpecifierImport(specifier: ImportClause) {
-            switch (specifier.type) {
-                case AST_NODE_TYPES.ImportSpecifier:
-                    return {
-                        // It is possible this name is also different from the actual class, because of export names
-                        // e.g. `export {A as B}` and `import {B as C}`
-                        className: specifier.imported.name,
-                        importName: specifier.local.name
-                    };
-                case AST_NODE_TYPES.ImportNamespaceSpecifier:
-                    // e.g. `import * as A from "b"`
-                    return {
-                        className: "*",
-                        importName: specifier.local.name
-                    };
-                default:
-                    logger.error(`Can't understand specifier ${specifier.type}`);
-                    return;
-            }
-        }
-        function getImports(declaration: Statement): { importSource: string, imports: ImportDeclaration[] } {
-            switch (declaration.type) {
-                case AST_NODE_TYPES.ImportDeclaration: {
-                    let importSource = declaration.source;
-                    let imports = declaration.specifiers
-                        .map(getSpecifierImport)
-                        .filter(x => x != null);
-                    if (importSource.type === AST_NODE_TYPES.Literal &&
-                        typeof importSource.value === "string") {
-                        return {
-                            importSource: importSource.value, imports: imports
-                        };
-                    }
-                    return;
-                }
-                case AST_NODE_TYPES.TSImportEqualsDeclaration: {
-                    let namespace = declaration.id.name;
-                    let module = declaration.moduleReference;
-                    // TODO check other possibilities?
-                    if(module.type === AST_NODE_TYPES.TSExternalModuleReference
-                        && module.expression.type === AST_NODE_TYPES.Literal
-                        && typeof module.expression.value === "string") {
-                        return {
-                            importSource: module.expression.value, imports: [{
-                                className: "*",
-                                importName: namespace
-                            }]
-                        }
-                    }
-                    return;
-                }
-            }
-        }
-        let files: ClassImportDeclarations = {};
-        for (let declaration of ast.body) {
-            let parsedExport = getImports(declaration);
-            if (parsedExport == null) continue;
-            if(parsedExport.imports.length === 0) continue;
-            let file = parsedExport.importSource;
-            files[file] = Utils.union(files[file], parsedExport.imports);
-        }
-        return files;
-    }
-
-    /**
-     * Parses the exports of the source tree
-     *
-     * @param ast the syntax tree to look in
-     * @returns the parsed export declarations
-     */
-    public static getExportDeclarations(ast: Program): ClassExportDeclarations {
-        function getExports(declaration: ExportAllDeclaration | ExportNamedDeclaration): { exportSource: string, exports: ExportDeclaration[] } {
-            switch (declaration.type) {
-                case AST_NODE_TYPES.ExportAllDeclaration: {
-                    let exportSource = declaration.source;
-                    if (exportSource.type === AST_NODE_TYPES.Literal &&
-                        typeof exportSource.value === "string") {
-                        return {
-                            exportSource: exportSource.value, exports: [{
-                                className: "*",
-                                exportName: "*"
-                            }]
-                        };
-                    }
-                    return;
-                }
-                case AST_NODE_TYPES.ExportNamedDeclaration: {
-                    let exportSource = declaration.source;
-                    const specifiers = declaration.specifiers;
-                    let exports: ExportDeclaration[] = [];
-                    for (let specifier of specifiers) {
-                        if (specifier.type === AST_NODE_TYPES.ExportSpecifier) {
-                            exports.push({
-                                className: specifier.local.name,
-                                exportName: specifier.exported.name
-                            });
-                        } else {
-                            logger.error(`Can't understand specifier ${specifier.type}`);
-                        }
-                    }
-                    if (exportSource.type === AST_NODE_TYPES.Literal) {
-                        if (typeof exportSource.value === "string") {
-                            return {
-                                exportSource: exportSource.value,
-                                exports: exports
-                            };
-                        }
-                    }
-                    return;
-                }
-            }
-        }
-
-        let files: ClassExportDeclarations = {};
-        for (let declaration of ast.body) {
-            if(declaration.type === AST_NODE_TYPES.ExportAllDeclaration ||
-                declaration.type === AST_NODE_TYPES.ExportNamedDeclaration) {
-                let parsedExport = getExports(declaration);
-                if (parsedExport == null) continue;
-                if (parsedExport.exports.length === 0) continue;
-                let file = Path.normalize(parsedExport.exportSource);
-                files[file] = Utils.union(files[file], parsedExport.exports);
-            } else {
-                logger.error(`Skipping line with type ${declaration.type}`);
-            }
-        }
-        return files;
-    }
-
-    /**
-     * Searches for the root directory of a package
-     *
-     * @param name the name of the package as declared in the `package.json`
-     * @returns the root directory of the package
-     */
-    public static getPackageRootDirectory(name: string): string {
-        let entries: [string, any][] = Object.entries(ComponentsJsUtil.NODE_MODULES_PACKAGE_CONTENTS);
-        for (const [pckgJsonPath, pckgInfo] of entries) {
-            if (name === pckgInfo["name"]) {
-                return Path.dirname(pckgJsonPath);
-            }
-        }
-    }
-
-    /**
-     * Searches for a class in a package, given its class name and class filepath
+     * Searches for a class in a package, given its class name and relative class filepath
      *
      * @param internalClass the internal name of the class
      * @param internalClassPath the filepath that was used to import this class
@@ -343,7 +200,7 @@ export class AstUtils {
      * @returns the result of parsing the class
      */
     public static getLocalDeclaration(internalClass: string, internalClassPath: string, pckg: string, filePath: string): ParsedClassDeclaration {
-        let directory = AstUtils.getPackageRootDirectory(pckg);
+        let directory = Utils.getPackageRootDirectory(pckg);
         let normalizedFile = Path.normalize(Path.join(Path.dirname(filePath), internalClassPath));
         let fileContent = Utils.getTypeScriptFile(Path.join(directory, normalizedFile));
         let ast;
@@ -365,8 +222,8 @@ export class AstUtils {
                             ast: ast,
                             declaration: declaration,
                             filePath: normalizedFile,
-                            pckg: pckg,
-                            internalClass: declaration.id.name
+                            packageName: pckg,
+                            className: declaration.id.name
                         };
                     }
                 }
@@ -376,13 +233,13 @@ export class AstUtils {
 
 
     /**
-     * Searches for a class or interface in a package based on the exports
-     * @param classInfo {pckg:string,exportedName:string} where pckg is the name of the package to search in
-     * and exportedName the exported name of the class or interface to look for. This is the exported name, not the internal name.
-     * @returns {null|{ast: *, declaration: *,filePath:string, pckg:string, internalClass:string}} the result of parsing the class or interface
+     * Searches for a class or interface in a package based on the exports of the package
+     *
+     * @param classInfo how the class can be referenced externally
+     * @returns the result of parsing the class or interface
      */
     public static getDeclaration(classInfo: ExportReference): ParsedClassDeclaration {
-        let rootFolder = AstUtils.getPackageRootDirectory(classInfo.exportedFrom);
+        let rootFolder = Utils.getPackageRootDirectory(classInfo.exportedFrom);
         if (rootFolder == null) {
             logger.error(`Could not find root directory of package ${classInfo.exportedFrom}`);
             return;
@@ -399,7 +256,7 @@ export class AstUtils {
             logger.error(`Could not parse the index file of ${classInfo.exportedFrom}, invalid syntax at line ${e.lineNumber}, column ${e.column}. Message: ${e.message}`);
             return;
         }
-        let exports = AstUtils.getExportDeclarations(ast);
+        let exports = ImportExportReader.getExportDeclarations(ast);
         // Go through all exported files and search for class name
         for (const [file, exportDetails] of Object.entries(exports)) {
             // We need to check all combinations, a function could be exported as {A as B} and {A as C} so we have to check B and C
@@ -440,8 +297,8 @@ export class AstUtils {
                                 ast: ast,
                                 declaration: declaration,
                                 filePath: file,
-                                pckg: classInfo.exportedFrom,
-                                internalClass: declaration.id.name
+                                packageName: classInfo.exportedFrom,
+                                className: declaration.id.name
                             };
                         }
                     }
@@ -452,6 +309,7 @@ export class AstUtils {
     }
 
     /**
+     * Parses a field or parameter based on its declaration
      *
      * @param property the property that represents the field
      * @param declaration the declaration of the class where this field was found in
@@ -483,7 +341,7 @@ export class AstUtils {
         let isArray = fieldType === AST_NODE_TYPES.TSArrayType;
         let comment = commentStart == null ? CommentUtils.getComment(declaration.ast.comments, property) :
             CommentUtils.getInBetweenComment(declaration.ast.comments, commentStart, property.loc.start);
-        let {range, defaultValue, ignored, commentDescription} = Utils.parseFieldComment(comment,
+        let {range, defaultValue, ignored, description} = CommentUtils.parseFieldComment(comment,
             property.typeAnnotation.typeAnnotation);
         if (ignored) {
             logger.debug(`Field ${fieldName} has an ignore attribute, skipping`);
@@ -504,7 +362,6 @@ export class AstUtils {
             }
             component = AstUtils.getComponentByDeclaration(fieldDeclaration, nodeModules);
             if (component != null) {
-                // @ts-ignore
                 range = component.component["@id"];
             } else {
                 logger.debug(`Could not match class ${constructorReference.className} with any component`);
@@ -518,7 +375,7 @@ export class AstUtils {
             newParameter["range"] = range;
         }
         if (defaultValue != null) newParameter["default"] = defaultValue;
-        if (commentDescription != null) newParameter["comment"] = commentDescription;
+        if (description != null) newParameter["comment"] = description;
         return {
             "key": fieldName,
             "type": type,
@@ -529,14 +386,14 @@ export class AstUtils {
     }
 
     /**
-     * Gets information about all the fields in the declaration of a class
+     * Gets information about all the fields in the declaration of a class or interface
+     *
      * @param declaration the class to get the fields from
      * @param nodeModules the node modules to look in
-     * @returns [{component:{component:*, componentsContent:*}, parameter: *, type:string, declaration: *, key:string}]
-     * information about all the fields
+     * @returns information about all the fields
      */
     public static getFields(declaration: ParsedClassDeclaration, nodeModules: NodeModules): FieldDeclaration[] {
-        let imports = AstUtils.getImportDeclarations(declaration.ast);
+        let imports = ImportExportReader.getImportDeclarations(declaration.ast);
         switch(declaration.declaration.type) {
             case AST_NODE_TYPES.ClassDeclaration: {
                 return declaration.declaration.body.body
@@ -554,20 +411,19 @@ export class AstUtils {
 
     /**
      * Gets the constructor arguments of a class
+     *
      * @param declaration the class to get the constructor parameters from
-     * @param imports
-     * @param nodeModules
-     * @returns [{component:{component:*, componentsContent:*}, parameter: *, type:string, declaration: *, key:string}]
-     * the parameters
+     * @param imports the imports of the class
+     * @param nodeModules the node modules to search in
+     * @returns the parsed parameters
      */
-    public static getConstructorParams(declaration: ParsedClassDeclaration, imports: ClassImportDeclarations, nodeModules: NodeModules) {
-        let constructorParams = [];
-        // @ts-ignore
+    public static getConstructorParams(declaration: ParsedClassDeclaration, imports: ClassImportDeclarations, nodeModules: NodeModules): FieldDeclaration[] {
+        let constructorParams: FieldDeclaration[] = [];
         for (let property of declaration.declaration.body.body) {
-            // @ts-ignore
-            if (property.type === AST_NODE_TYPES.MethodDefinition && property.key.name === "constructor") {
-                // This is the constructor
-                logger.debug(`Found a constructor for class ${declaration.internalClass}`);
+            if (property.type === AST_NODE_TYPES.MethodDefinition && property.key.type === AST_NODE_TYPES.Identifier
+                && property.key.name === "constructor") {
+                // We found the constructor
+                logger.debug(`Found a constructor for class ${declaration.className}`);
                 let constructorParamDeclarations = property.value.params;
                 let previousEnd = property.loc.start;
                 for (let constructorParamDeclaration of constructorParamDeclarations) {
@@ -586,25 +442,23 @@ export class AstUtils {
 
     /**
      * Gets the component of a class based on its declaration
+     *
      * @param declaration the declaration of the class to search the component of
      * @param nodeModules the node modules to search in
-     * @returns {{component:*, componentsContent:*}|null} component information where component is the component matched to the
-     * exportedName and componentsContent is the content of the file that the component was matched in
+     * @returns information about the component
      */
     public static getComponentByDeclaration(declaration: ParsedClassDeclaration, nodeModules: NodeModules): ComponentInformation {
         let possibleNames = AstUtils.getPossibleExportNames(declaration);
-        for (const pckgInfo of Object.values(ComponentsJsUtil.NODE_MODULES_PACKAGE_CONTENTS)) {
-            // @ts-ignore
-            let pckgName = pckgInfo["name"];
-            // @ts-ignore
-            if (!("lsd:module" in pckgInfo)) {
-                logger.debug(`Skipping package ${pckgName} with missing lsd:module attribute`);
+        let values: any[] = Object.values(ComponentsJsUtil.NODE_MODULES_PACKAGE_CONTENTS);
+        for (const packageInfo of values) {
+            let packageName = packageInfo["name"];
+            if (!("lsd:module" in packageInfo)) {
+                logger.debug(`Skipping package ${packageName} with missing lsd:module attribute`);
                 continue;
             }
-            if (declaration.pckg === pckgName) {
+            if (declaration.packageName === packageName) {
                 for (let possibleName of possibleNames) {
-                    // @ts-ignore
-                    let lsdModule = pckgInfo["lsd:module"];
+                    let lsdModule = packageInfo["lsd:module"];
                     let componentsFile = nodeModules[lsdModule];
                     let component = AstUtils.findComponent(possibleName, componentsFile);
                     if (component != null) {
@@ -619,25 +473,27 @@ export class AstUtils {
 
 
     /**
-     * Gets the possible names a declaration has been exported with in its package
+     * Gets the possible names a declaration has been exported with in its package base on the index.ts file of
+     * the package
+     *
      * @param declaration the declaration of the class
-     * @returns {Set<string>} the possible names. This is a set of names because a single class might be exported
+     * @returns the possible names. This is a set of names because a single class might be exported
      * multiple times with different names
      */
     public static getPossibleExportNames(declaration: ParsedClassDeclaration): Set<string> {
         let possibleNames = new Set<string>();
-        let directory = AstUtils.getPackageRootDirectory(declaration.pckg);
+        let directory = Utils.getPackageRootDirectory(declaration.packageName);
         let indexContent = Utils.getTypeScriptFile(Path.join(directory, "index"));
         let ast = parser.parse(indexContent);
-        let exports = AstUtils.getExportDeclarations(ast);
+        let exports = ImportExportReader.getExportDeclarations(ast);
         for (const [file, exportDetails] of Object.entries(exports)) {
             let normalizedFile = Path.normalize(file);
             // The same file is being exported
             if (declaration.filePath === normalizedFile) {
                 for (let exportDetail of exportDetails) {
                     if (exportDetail.className === "*") {
-                        possibleNames.add(declaration.internalClass);
-                    } else if (exportDetail.className === declaration.internalClass) {
+                        possibleNames.add(declaration.className);
+                    } else if (exportDetail.className === declaration.className) {
                         possibleNames.add(exportDetail.exportName);
                     }
                 }
@@ -648,13 +504,13 @@ export class AstUtils {
 
 
     /**
-     * Get the 'chain of extending classes'
+     * Get the chain of extending classes
+     *
      * We do this by parsing the current class, parsing its superclass, parsing that class' superclass and so forth
      * @param classDeclaration the declaration of the class to start from
      * @param imports the declaration of the class to start from
-     * @param nodeModules the node modules to look in
-     * @returns [{declaration:{ast: *, declaration: *,filePath:string, pckg:string, internalClass:string},component:{component:*, componentsContent:*},constructorParams:[{component:{component:*, componentsContent:*}, parameter: *, type:string, declaration: *, key:string}]}]
-     * information about all superclasses
+     * @param nodeModules the node modules to search in
+     * @returns information about all superclasses
      */
     public static getSuperClassChain(classDeclaration: ParsedClassDeclaration,
                                      imports: ClassImportDeclarations,
@@ -671,7 +527,7 @@ export class AstUtils {
             if (superClassChain.length !== 0) {
                 superClassComponent = AstUtils.getComponentByDeclaration(previousSuperClassDeclaration, nodeModules);
                 if (superClassComponent == null)
-                    logger.error(`Did not find a component for superclass ${previousSuperClassDeclaration.internalClass}`);
+                    logger.error(`Did not find a component for superclass ${previousSuperClassDeclaration.className}`);
             }
             superClassChain.push({
                 declaration: previousSuperClassDeclaration,
@@ -680,13 +536,15 @@ export class AstUtils {
             });
             // Find the next superclass
             let nextSuperClassInfo = AstUtils.getSuperClass(previousSuperClassDeclaration.declaration);
-            if (nextSuperClassInfo == null) break;
+            if (nextSuperClassInfo == null)
+                // We reached the end of the chain
+                break;
             // Get its declaration
             previousSuperClassDeclaration = AstUtils.getDeclarationWithContext(nextSuperClassInfo,
                 previousSuperClassDeclaration, previousSuperClassImports);
             if (previousSuperClassDeclaration != null) {
                 // Do stuff with your current declaration here
-                previousSuperClassImports = AstUtils.getImportDeclarations(previousSuperClassDeclaration.ast);
+                previousSuperClassImports = ImportExportReader.getImportDeclarations(previousSuperClassDeclaration.ast);
             } else {
                 logger.error(`Could not find declaration of superclass ${nextSuperClassInfo.className}`);
             }
@@ -698,10 +556,11 @@ export class AstUtils {
      * Searches for a class or interface in a package based on the exports and local context. The important factor here
      * is that the class might be declared in the file of another class, which means it wouldn't be included in the import
      * statements
-     * @param classReference information about the class
-     * @param contextClass declaration of the class that the class was used in
-     * @param contextImports imports of the class that the class was used in
-     * @returns {null|{ast: *, declaration: *,filePath:string, pckg:string, internalClass:string}} the result of parsing the class or interface
+     *
+     * @param classReference information about the class that we want to get the declaration of
+     * @param contextClass declaration of the class that the class was referenced in
+     * @param contextImports imports of the class that the class was referenced in
+     * @returns the result of parsing the class or interface
      */
     public static getDeclarationWithContext(classReference: ClassReference,
                                             contextClass: ParsedClassDeclaration,
@@ -720,8 +579,8 @@ export class AstUtils {
                                 ast: contextClass.ast,
                                 declaration: declaration,
                                 filePath: contextClass.filePath,
-                                pckg: contextClass.pckg,
-                                internalClass: classReference.className
+                                packageName: contextClass.packageName,
+                                className: classReference.className
                             };
                         }
                     }
@@ -735,7 +594,7 @@ export class AstUtils {
         }
         if (Utils.isLocalFile(nextClass.exportedFrom)) {
             return AstUtils.getLocalDeclaration(nextClass.className, nextClass.exportedFrom,
-                contextClass.pckg, contextClass.filePath);
+                contextClass.packageName, contextClass.filePath);
         } else {
             return AstUtils.getDeclaration(nextClass);
         }
@@ -743,10 +602,11 @@ export class AstUtils {
 
     /**
      * Converts the superclass chain to the correct jsonld `parameters` and `constructorArguments`
+     *
      * @param superClassChain the superclass chain
      * @param compactPath the id of the component we're creating
-     * @param nodeModules the node modules to look in
-     * @returns {{constructorArguments: *, parameters: *}}
+     * @param nodeModules the node modules to search in
+     * @returns the parsed parameters and arguments as objects
      */
     public static getParametersAndArguments(superClassChain: SuperClassChain,
                                             compactPath: string,
@@ -771,14 +631,15 @@ export class AstUtils {
             return id;
         }
 
-        function getConstructorArgument(constructorParam: FieldDeclaration, root: boolean = false) {
+        function getConstructorArgument(constructorParam: FieldDeclaration, root: boolean = false): any {
             if (constructorParam.type === FieldType.Complex) {
                 /**
                  * Searches in the constructors of the superclasses to find an argument with the same class declaration
+                 *
                  * @param param the declaration of the parameter to match
-                 * @returns {null|*} the matching parameter, if any
+                 * @returns the matching parameter, if any
                  */
-                function findSimilarParam(param: ParsedClassDeclaration) {
+                function findSimilarParam(param: ParsedClassDeclaration): {field:SuperClassChainElement, param:any} {
                     for (let i = 1; i < superClassChain.length; i++) {
                         for (let x = 0; x < superClassChain[i].constructorParams.length; x++) {
                             let otherConstructorParam = superClassChain[i].constructorParams[x];
@@ -788,7 +649,6 @@ export class AstUtils {
                             if (superClassChain[i].component == null) continue;
                             return {
                                 field: superClassChain[i],
-                                // @ts-ignore
                                 param: superClassChain[i].component.component["constructorArguments"][x]
                             };
                         }
@@ -799,7 +659,8 @@ export class AstUtils {
                  * If this class is a superclass of a parameter, we find an id value that we can use
                  * in the `extends` attribute of its subclass
                  * @param param the parameter
-                 * @returns {null|*}
+                 *
+                 * @returns the value for the `extends` attribute
                  */
                 function getExtendsId(param: {}): string {
                     if ("@id" in param) {
@@ -812,8 +673,10 @@ export class AstUtils {
                 }
 
                 /**
-                 * Gets the fields of a hash class. These fields will also be parsed as if they are constructor arguments.
-                 * @returns [{keyRaw:*,value:*}] the fields
+                 * Gets the fields of a hash class as jsonld objects
+                 * These fields will also be parsed as if they are constructor arguments
+                 *
+                 * @returns the parsed fields
                  */
                 function getHashFields(): {keyRaw: string, value: {}}[] {
                     let exportedFields: {keyRaw: string, value: {}}[] = [];
@@ -822,7 +685,6 @@ export class AstUtils {
                         let parsedField = getConstructorArgument(field);
                         if (Object.keys(parsedField).length === 1
                             && parsedField["@id"] != null) {
-                                // @ts-ignore
                                 parsedField = parsedField["@id"];
                             }
                         exportedFields.push({
@@ -833,18 +695,16 @@ export class AstUtils {
                     return exportedFields;
                 }
 
-                let parameter = root ? {"@id": getUniqueFieldId(compactPath, "constructorArgumentsObject")} : {};
+                let parameter: any = root ? {"@id": getUniqueFieldId(compactPath, "constructorArgumentsObject")} : {};
                 let similarParam = findSimilarParam(constructorParam.declaration);
                 // This means we have found a similar parameter in the constructor of a superclass
                 if (similarParam != null) {
                     logger.debug(`Found an identical constructor argument in other component for argument ${constructorParam.key}`);
                     let extendsAttribute = getExtendsId(similarParam.param);
                     if (extendsAttribute != null) {
-                        // @ts-ignore
                         parameter["extends"] = extendsAttribute;
                     }
-                    // @ts-ignore
-                    Utils.copyContext(similarParam.field, contexts);
+                    Utils.copyContext(similarParam.field.component.componentContent, contexts);
                     return parameter;
                 }
                 // If the parameter is not similar to the parameter of a superclass' constructor, we search if
@@ -853,7 +713,7 @@ export class AstUtils {
                 if (superClass != null) {
                     let superClassDeclaration = AstUtils.getDeclarationWithContext(superClass,
                         constructorParam.declaration,
-                        AstUtils.getImportDeclarations(constructorParam.declaration.ast));
+                        ImportExportReader.getImportDeclarations(constructorParam.declaration.ast));
                     similarParam = findSimilarParam(superClassDeclaration);
                     if (similarParam == null) {
                         logger.error(`We could not find a matching argument for ${superClass.className} in a superclass`);
@@ -862,25 +722,19 @@ export class AstUtils {
                     let exportedFields = getHashFields();
                     let extendsAttribute = getExtendsId(similarParam.param);
                     if (extendsAttribute != null) {
-                        // @ts-ignore
                         parameter["extends"] = extendsAttribute;
                     }
-                    // @ts-ignore
                     parameter["fields"] = exportedFields;
-                    // @ts-ignore
-                    Utils.copyContext(similarParam.field, contexts);
+                    Utils.copyContext(similarParam.field.component.componentContent, contexts);
                     return parameter;
                 } else {
                     if (constructorParam.component == null) {
                         // In this case we have a hash class that doesn't extend another class
-                        let parameter = root ? {"@id": getUniqueFieldId(compactPath, constructorParam["key"])} : {};
+                        let parameter: any = root ? {"@id": getUniqueFieldId(compactPath, constructorParam["key"])} : {};
                         let exportedFields = getHashFields();
-                        // @ts-ignore
                         if (constructorParam.parameter.unique) {
-                            // @ts-ignore
                             parameter["fields"] = exportedFields;
                         } else {
-                            // @ts-ignore
                             parameter["elements"] = exportedFields;
                         }
                         return parameter;
@@ -889,7 +743,7 @@ export class AstUtils {
                         let id = getUniqueFieldId(compactPath, constructorParam["key"]);
                         let parameter = {"@id": id, ...constructorParam.parameter};
                         parameters.push(parameter);
-                        Utils.copyContext(constructorParam, contexts);
+                        Utils.copyContext(constructorParam.component.componentContent, contexts);
                         return {"@id": id};
                     }
                 }

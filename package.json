@@ -19,7 +19,7 @@
   "author": "",
   "license": "MIT",
   "bin": {
-    "componentsjs-generator": "bin/GenerateRunner.ts"
+    "componentsjs-generator": "bin/GenerateRunner.js"
   },
   "files": [
     "bin/**/*.d.ts",

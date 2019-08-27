@@ -1,50 +1,60 @@
-import {ParsedClassDeclaration, FieldDeclaration} from "./Types";
+import {ParsedClassDeclaration} from "./Types";
+import {TSTypeReference, TypeNode} from "@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree";
+import {AST_NODE_TYPES} from "@typescript-eslint/typescript-estree";
+import ComponentsJsUtil = require("componentsjs/lib/Util");
 
 const parser = require('@typescript-eslint/typescript-estree');
 const Path = require("path");
 const fs = require("fs");
-const commentParse = require("comment-parser");
 const logger = require("./Core").logger;
 
-const rangeTag = "range";
-const defaultTag = "default";
-const ignoredTag = "ignored";
+const typescriptExtensions = [".ts", ".d.ts"];
 
-const extensions = [".ts", ".d.ts"];
-
-const typeToXsd = {
-    [parser.AST_NODE_TYPES.TSBooleanKeyword]: ["boolean"],
+const typeToXsd: {
+    [key in AST_NODE_TYPES]?:string[];
+} = {
+    [AST_NODE_TYPES.TSBooleanKeyword]: ["boolean"],
     // We default to xsd:int because there's no way to detect the exact number type
-    [parser.AST_NODE_TYPES.TSNumberKeyword]: ["int", "integer", "number", "byte", "long", "float", "decimal", "double"],
-    [parser.AST_NODE_TYPES.TSStringKeyword]: ["string"],
+    [AST_NODE_TYPES.TSNumberKeyword]: ["int", "integer", "number", "byte", "long", "float", "decimal", "double"],
+    [AST_NODE_TYPES.TSStringKeyword]: ["string"]
 };
-const javascriptTypes: {[key: string]:any} = {
-    "Boolean": parser.AST_NODE_TYPES.TSBooleanKeyword,
-    "Number": parser.AST_NODE_TYPES.TSNumberKeyword,
-    "String": parser.AST_NODE_TYPES.TSStringKeyword
+const javascriptTypes: {
+    [key: string]:AST_NODE_TYPES;
+} = {
+    "Boolean": AST_NODE_TYPES.TSBooleanKeyword,
+    "Number": AST_NODE_TYPES.TSNumberKeyword,
+    "String": AST_NODE_TYPES.TSStringKeyword
 };
 
 
-
+/**
+ * General utility class
+ */
 export class Utils {
+
     /**
      * Checks validity of a type and its xsd range
+     *
      * @param type the node type from the parser
      * @param matchedType the xsd range
+     * @param isArray whether this annotation is the child of an array annotation. We do this to avoid parsing
+     * multi-dimensional arrays
      * @returns whether this combination if valid
      */
-    // TODO type?
-    public static isValidXsd(type: any, matchedType: string, isArray: boolean = false): boolean {
+    public static isValidXsd(type: TypeNode, matchedType: string, isArray: boolean = false): boolean {
         switch (type.type) {
-            case parser.AST_NODE_TYPES.TSTypeReference:
-                // We do this to deal with JavaScript types such as Boolean, Number, String
-                let typeName = type.typeName.name;
-                if (typeName in javascriptTypes) {
-                    let nodeType = javascriptTypes[typeName];
-                    return typeToXsd[nodeType].includes(matchedType);
+            case AST_NODE_TYPES.TSTypeReference: {
+                if (type.typeName.type === AST_NODE_TYPES.Identifier) {
+                    // We do this to deal with JavaScript types such as Boolean, Number, String
+                    let typeName = type.typeName.name;
+                    if (typeName in javascriptTypes) {
+                        let nodeType = javascriptTypes[typeName];
+                        return typeToXsd[nodeType].includes(matchedType);
+                    }
                 }
                 return false;
-            case parser.AST_NODE_TYPES.TSArrayType:
+            }
+            case AST_NODE_TYPES.TSArrayType:
                 if (isArray) {
                     logger.error(`Cannot parse nested array types`);
                     return false;
@@ -57,24 +67,31 @@ export class Utils {
     }
 
     /**
-     * Converts a type to a xsd range
+     * Converts a type to a xsd range if there's a matching one
+     *
      * @param type
-     * @returns {string|null}
+     * @param isArray whether this annotation is the child of an array annotation. We do this to avoid parsing
+     * multi-dimensional arrays
+     * @returns the xsd type
      */
-    // TODO type?
-    public static convertTypeToXsd(type: any, isArray = false): string {
+    public static convertTypeToXsd(type: TypeNode, isArray = false): string {
         switch (type.type) {
-            case(parser.AST_NODE_TYPES.TSTypeReference):
-                // We do this to deal with JavaScript types such as Boolean, Number, String
-                let typeName = type.typeName.name;
-                if (typeName in javascriptTypes) {
-                    let nodeType = javascriptTypes[typeName];
-                    return `xsd:${typeToXsd[nodeType][0]}`;
+            case(AST_NODE_TYPES.TSTypeReference):
+                if (type.typeName.type === AST_NODE_TYPES.Identifier) {
+                    // We do this to deal with JavaScript types such as Boolean, Number, String
+                    let typeName = type.typeName.name;
+                    if (typeName in javascriptTypes) {
+                        let nodeType = javascriptTypes[typeName];
+                        return `xsd:${typeToXsd[nodeType][0]}`;
+                    } else {
+                        logger.debug(`Could not match type ${typeName} with a JavaScript type`);
+                        return;
+                    }
                 } else {
-                    logger.debug(`Could not match type ${typeName} with a JavaScript type`);
+                    logger.debug(`Could not understand type ${type.typeName.type}`);
                     return;
                 }
-            case(parser.AST_NODE_TYPES.TSArrayType):
+            case(AST_NODE_TYPES.TSArrayType):
                 if (isArray) {
                     logger.error(`Cannot parse nested array types`);
                     return;
@@ -89,70 +106,21 @@ export class Utils {
     /**
      * Returns an array representing the value in the object
      * Returns an array if the value is already an array, otherwise wraps it
+     *
      * @param object
      * @param key
-     * @returns {*[]}
+     * @returns the value as an array
      */
-    public static getArray(object: {[key: string]: any}, key: string) {
+    public static getArray(object: {[key: string]: any}, key: string): any[] {
         let result = object[key];
         if (result == null) return [];
         return Array.isArray(result) ? result : [result];
     }
-
-    /**
-     * Parses a comment and its tags
-     * @param comment the comment as a string
-     * @param fieldType the class of this field
-     * @returns {{range:*, defaultValue:*, ignored:boolean, commentDescription:*}}
-     */
-    // TODO type?
-    public static parseFieldComment(comment: string, fieldType: any) {
-        let range;
-        let defaultValue;
-        let commentDescription;
-        let ignored = false;
-        if (comment != null) {
-            let parsedComment = commentParse(comment);
-            if (parsedComment.length !== 0) {
-                let firstComment = parsedComment[0];
-                if (firstComment.description.length !== 0) {
-                    commentDescription = firstComment.description;
-                }
-                for (let tag of firstComment.tags) {
-                    switch (tag.tag.toLowerCase()) {
-                        case rangeTag:
-                            let type = tag.type.toLowerCase();
-                            if (Utils.isValidXsd(fieldType, type)) {
-                                range = "xsd:" + type;
-                            } else {
-                                logger.error(`Found range type ${type} but could not match to ${fieldType.type}`);
-                            }
-                            break;
-                        case defaultTag:
-                            if (tag.type.length !== 0) defaultValue = tag.type;
-                            break;
-                        case ignoredTag:
-                            ignored = true;
-                            break;
-                        default:
-                            logger.debug(`Could not understand tag ${tag.tag}`);
-                            break;
-                    }
-                }
-            }
-        }
-        return {
-            range: range,
-            defaultValue: defaultValue,
-            ignored: ignored,
-            commentDescription: commentDescription
-        };
-
-    }
     /**
      * Reads the content of a file
+     *
      * @param filePath the file path
-     * @returns {string} the content of the file
+     * @returns the content of the file
      */
     public static getContent(filePath: string): string {
         return fs.readFileSync(filePath, "utf8");
@@ -161,7 +129,7 @@ export class Utils {
     /**
      * Parses the content of a file as json
      * @param filePath the file path
-     * @returns {object} the content of the file as an object
+     * @returns the content of the file as an object
      */
     public static getJSON(filePath: string): any {
         return JSON.parse(Utils.getContent(filePath));
@@ -171,7 +139,7 @@ export class Utils {
      * Visits the files of a directory and its subdirectories recursively
      *
      * @param directory the root to start
-     * @yields {filePath} the path of the currently visited file
+     * @returns a generator that yields the path of the currently visited file
      */
     public static *visitFiles(directory: string): IterableIterator<string> {
         const files = fs.readdirSync(directory);
@@ -187,22 +155,36 @@ export class Utils {
     }
 
     /**
-     * Visits the json files of a directory and its subdirectories recursively
+     * Visits the jsonld files of a directory and its subdirectories recursively
      *
      * @param directory the root to start
-     * @yields {{filePath:string,json}} the path of the currently visited file
+     * @returns a generator that yields the path of the currently visited file
      */
-    public static * visitJSONFiles(directory: string) {
+    public static * visitJSONLDFiles(directory: string) {
         let filePaths = Utils.visitFiles(directory);
         for (let filePath of filePaths) {
-            yield {filePath: filePath, json: Utils.getJSON(filePath)};
+            if(!filePath.endsWith(".jsonld")) {
+                logger.debug(`Skipping file ${filePath} without .jsonld extension`);
+                continue;
+            }
+            let json;
+            try {
+                json = Utils.getJSON(filePath);
+            } catch (e) {
+                logger.debug(`Skipping file ${filePath} with invalid json`);
+                logger.debug(e);
+                continue;
+            }
+            yield {filePath: filePath, json: json};
         }
     }
 
     /**
      * Checks if a file belongs to this package or to an external package
+     *
      * @param file the file to check
      * @returns {boolean} whether this file belongs to this package or to an external package
+     * @see https://www.typescriptlang.org/docs/handbook/module-resolution.html
      */
     public static isLocalFile(file: string): boolean {
         return file.startsWith("/") || file.startsWith("./") || file.startsWith("../");
@@ -212,20 +194,23 @@ export class Utils {
      * Checks if two class declarations represent the same class
      * @param c1 first class
      * @param c2 other class
-     * @returns {boolean} whether they are equal
+     * @returns whether they are equal
      */
     public static classDeclarationEquals(c1: ParsedClassDeclaration, c2: ParsedClassDeclaration): boolean {
-        return c1.pckg === c2.pckg &&
+        return c1.packageName === c2.packageName &&
             c1.filePath === c2.filePath &&
-            c1.internalClass === c2.internalClass;
+            c1.className === c2.className;
     }
 
     /**
-     * Unions a set by adding the content of the second collection to the first one
-     * @param original the first set, can be null or undefined. In that case, a new set will be created.
-     * @param other the set to copy the contents from
+     * Unions a list by adding the content of the second collection to the first one
+     * This modifies the original list
+     * No duplicate elements will be added
+     *
+     * @param original the first list, can be null or undefined. In that case, a new list will be created.
+     * @param other the list to copy the contents from
+     * @returns the union list
      */
-    // TODO doc
     public static union<T>(original: T[], other: T[]): T[] {
         original = original == null ? [] : original;
         for (let item of other) {
@@ -238,6 +223,7 @@ export class Utils {
 
     /**
      * Creates a directory structure recursively
+     *
      * @param dir the directory create
      */
     public static mkdirRecursive(dir: string) {
@@ -252,25 +238,40 @@ export class Utils {
 
     /**
      * Copies the context of a component
-     * @param fromDeclaration the declaration object that contains the component
+     *
+     * @param componentContent the content of the component file
      * @param to destination collection
      */
-    public static copyContext(fromDeclaration: FieldDeclaration, to: String[]) {
-        for (let contextFile of Utils.getArray(fromDeclaration.component.componentsContent, "@context")) {
+    public static copyContext(componentContent: any, to: String[]) {
+        for (let contextFile of Utils.getArray(componentContent, "@context")) {
             if (!to.includes(contextFile)) {
                 to.push(contextFile);
             }
         }
     }
-
+    /**
+     * Searches for the root directory of a package
+     *
+     * @param name the name of the package as declared in the `package.json`
+     * @returns the root directory of the package
+     */
+    public static getPackageRootDirectory(name: string): string {
+        let entries: [string, any][] = Object.entries(ComponentsJsUtil.NODE_MODULES_PACKAGE_CONTENTS);
+        for (const [packageJsonPath, packageInfo] of entries) {
+            if (name === packageInfo["name"]) {
+                return Path.dirname(packageJsonPath);
+            }
+        }
+    }
 
     /**
      * Gets the content of a TypeScript file based on its filepath without extension
      * @param path the filepath without extension
-     * @returns {string|null} the content of the file
+     *
+     * @returns the content of the file
      */
     public static getTypeScriptFile(path: string): string {
-        for (let extension of extensions) {
+        for (let extension of typescriptExtensions) {
             let filePath = path + extension;
             if (fs.existsSync(filePath)) return Utils.getContent(filePath);
         }

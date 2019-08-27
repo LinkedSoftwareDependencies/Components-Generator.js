@@ -13,7 +13,10 @@ export interface OwnArgs extends ZZZ.Actor2Args {
      * @ignored
      */
     ignoredField: Number,
-    ownArgs?: string,
+    /**
+     * @range {string}
+     */
+    ownArgs?: String,
     /**
      * Testing arguments with similar names
      * @default {5.0}

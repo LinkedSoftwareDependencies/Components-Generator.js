@@ -6,29 +6,19 @@ import {Utils} from "./Utils";
 import commentParse = require("comment-parser");
 import {logger} from "./Core";
 import {CommentUtils} from "./CommentUtils";
-
-// const Utils = require("./Utils");
-// const AstUtils = require("./AstUtils");
-// const fs = require("fs");
-// const jsonld = require("jsonld");
-// const Path = require("path");
-// const parser = require('@typescript-eslint/typescript-estree');
-// const ContextParser = require('jsonld-context-parser').ContextParser;
-// const contextParser = new ContextParser();
-// const commentParse = require("comment-parser");
-// const minimist = require('minimist');
-// const logger = require("./Core").logger;
+import {ImportExportReader} from "./ImportExportReader";
 
 export class Generate {
 
     /**
-     * Generates a components file for a class
+     * Generates a component file for a class
+     *
      * @param directory the directory of the package to look in
      * @param className the class to generate a component for
      * @param level the level for the logger
      * @returns the contents of the components file as an object
      */
-    public static async generateComponents(directory: string, className: string, level: string = "info"): Promise<Object> {
+    public static async generateComponent(directory: string, className: string, level: string = "info"): Promise<Object> {
         if (level === null) level = "info";
         logger.level = level;
         if (directory == null) {
@@ -85,19 +75,17 @@ export class Generate {
         let newComponent: any = {};
         newComponent["@id"] = compactPath;
         newComponent["requireElement"] = className;
-        // @ts-ignore
         newComponent["@type"] = declaration.abstract ? "AbstractClass" : "Class";
         if (classComment != null) newComponent["comment"] = classComment;
-        let imports = AstUtils.getImportDeclarations(ast);
+        let imports = ImportExportReader.getImportDeclarations(ast);
         let superClassChain = AstUtils.getSuperClassChain(classDeclaration, imports, nodeModules);
         // We can use the second element in the chain for the `extends` attribute because it's the superclass
         // of the class we're checking
         if (2 <= superClassChain.length) {
             let chainElement = superClassChain[1];
             if (chainElement.component != null) {
-                // @ts-ignore
                 newComponent["extends"] = chainElement.component.component["@id"];
-                for (let contextFile of Utils.getArray(chainElement.component.componentsContent, "@context")) {
+                for (let contextFile of Utils.getArray(chainElement.component.componentContent, "@context")) {
                     if (!newConfig["@context"].includes(contextFile)) {
                         newConfig["@context"].push(contextFile);
                     }
@@ -117,16 +105,17 @@ export class Generate {
     }
 
     /**
-     * Creates a components file for a class
-     * @param directory The directory of the package to look in
-     * @param className The class to generate a component for
-     * @param level The level for the logger
-     * @param print Whether to print to standard output
-     * @param outputPath Write output to a specific file
-     * @returns {Promise<void>} upon completion
+     * Creates a component file for a class
+     *
+     * @param directory the directory of the package to look in
+     * @param className the class to generate a component for
+     * @param level the level for the logger
+     * @param print whether to print to standard output
+     * @param outputPath write output to a specific file
+     * @returns upon completion
      */
-    public static async generateComponentsFile(directory: string, className: string, level: string, print:boolean, outputPath:string) {
-        let components = await this.generateComponents(directory, className, level);
+    public static async generateComponentFile(directory: string, className: string, level: string, print:boolean, outputPath:string) {
+        let components = await this.generateComponent(directory, className, level);
         if (components == null) {
             logger.info("Failed to generate components file");
             return;
