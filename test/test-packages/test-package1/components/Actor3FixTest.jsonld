@@ -4,42 +4,29 @@
     "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/^1.0.0/components/context.jsonld"
   ],
   "@id": "test-package",
-  "componaents": [
+  "components": [
     {
       "@id": "test-package/Actor3",
       "requireElement": "Actor3",
       "@type": "AbstractClass",
       "parameters": [
         {
-          "@id": "test-package/Actor3#booleanTest",
-          "required": true,
-          "unique": true,
-          "range": "xsd:boolean",
-          "comment": "Boolean field comment"
+          "@id": "test-package/Actor3#booleanTest"
         },
         {
-          "@id": "test-package/Actor3#javascriptBooleanTest",
-          "required": true,
-          "unique": true,
-          "range": "xsd:boolean"
+          "@id": "test-package/Actor3#javascriptBooleanTest"
         },
         {
           "@id": "test-package/Actor3#stringTest",
-          "required": true,
-          "unique": true,
-          "range": "xsd:string"
+          "required": true
         },
         {
           "@id": "test-package/Actor3#javascriptStringTest",
-          "required": true,
-          "unique": true,
-          "range": "xsd:string"
+          "unique": true
         },
         {
           "@id": "test-package/Actor3#numberTest",
-          "required": true,
-          "unique": true,
-          "range": "xsd:int"
+          "required": true
         },
         {
           "@id": "test-package/Actor3#javascriptNumberTest",
@@ -58,18 +45,15 @@
         {
           "@id": "test-package/Actor3#arrayTest",
           "required": true,
-          "unique": false,
           "range": "xsd:int"
         },
         {
           "@id": "test-package/Actor3#arrayTagTest",
           "required": true,
           "unique": false,
-          "range": "xsd:byte",
           "comment": "We test the range tag on an array"
         },
         {
-          "@id": "test-package/Actor3#componentTest",
           "required": true,
           "unique": true,
           "range": "cc:Logger",
@@ -84,13 +68,6 @@
         {
           "@id": "test-package/Actor3#nestedField1",
           "required": false,
-          "unique": true,
-          "range": "xsd:int"
-        },
-        {
-          "@id": "test-package/Actor3#nestedField2",
-          "required": false,
-          "unique": true,
           "range": "xsd:int"
         }
       ],
@@ -99,8 +76,7 @@
           "@id": "test-package/Actor3#args",
           "fields": [
             {
-              "keyRaw": "booleanTest",
-              "value": "test-package/Actor3#booleanTest"
+              "keyRaw": "booleanTest"
             },
             {
               "keyRaw": "javascriptBooleanTest",
@@ -111,7 +87,6 @@
               "value": "test-package/Actor3#stringTest"
             },
             {
-              "keyRaw": "javascriptStringTest",
               "value": "test-package/Actor3#javascriptStringTest"
             },
             {
@@ -127,8 +102,7 @@
               "value": "test-package/Actor3#tagTest"
             },
             {
-              "keyRaw": "arrayTest",
-              "value": "test-package/Actor3#arrayTest"
+              "keyRaw": "arrayTest"
             },
             {
               "keyRaw": "arrayTagTest",
@@ -143,7 +117,6 @@
               "value": {
                 "fields": [
                   {
-                    "keyRaw": "nestedField",
                     "value": "test-package/Actor3#nestedField"
                   },
                   {
@@ -160,12 +133,7 @@
                   {
                     "keyRaw": "nestedDoubleArray",
                     "value": {
-                      "elements": [
-                        {
-                          "keyRaw": "nestedField",
-                          "value": "test-package/Actor3#nestedField2"
-                        }
-                      ]
+
                     }
                   }
                 ]

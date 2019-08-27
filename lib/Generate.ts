@@ -18,7 +18,7 @@ export class Generate {
      * @param level the level for the logger
      * @returns the contents of the components file as an object
      */
-    public static async generateComponent(directory: string, className: string, level: string = "info"): Promise<Object> {
+    public static async generateComponent(directory: string, className: string, level: string = "info"): Promise<any> {
         logger.level = level;
         if (directory == null) {
             logger.error("Missing argument package");

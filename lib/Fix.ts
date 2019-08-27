@@ -3,6 +3,9 @@ import * as fs from "fs";
 import ComponentsJsUtil = require("componentsjs/lib/Util");
 import * as Path from "path";
 import {Utils} from "./Utils";
+import {AstUtils} from "./AstUtils";
+import {Generate} from "./Generate";
+import {FixUtils} from "./FixUtils";
 
 export class Fix {
 
@@ -35,7 +38,32 @@ export class Fix {
             logger.error(`No components entry in component file`);
             return;
         }
-        return {};
+        let componentsEntry = componentContent["components"];
+        componentLoop: for(let i = 0; i < componentsEntry.length; i++) {
+            let componentObject = componentsEntry[i];
+            const requiredAttributes = ["@id", "requireElement", "@type"];
+            // Check if required attributes are set
+            for(let attribute of requiredAttributes) {
+                if (!(attribute in componentObject)) {
+                    logger.error(`Missing attribute ${attribute} in component ${i}`);
+                    continue componentLoop;
+                }
+            }
+            let className = componentObject["requireElement"];
+            let classDeclaration = AstUtils.getDeclaration({
+                className: className,
+                exportedFrom: packageName
+            });
+            if (classDeclaration == null) {
+                logger.error(`Did not find a matching class for name ${className}, please check the name and make sure it has been exported`);
+                return;
+            }
+            let generatedComponent = await Generate.generateComponent(directory, className, level);
+            // Check if required context objects are there
+            let fixedComponent = FixUtils.additiveFix(componentObject, generatedComponent["components"][0]);
+            componentsEntry[i] = fixedComponent;
+        }
+        return componentContent;
     }
 
     public static async fixComponentFile(directory: string, componentPath: string, level: string, print:boolean) {
