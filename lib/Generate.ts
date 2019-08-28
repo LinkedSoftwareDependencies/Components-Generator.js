@@ -63,11 +63,11 @@ export class Generate {
             }
         }
         let newConfig: any = {};
-        if (!("lsd:contexts" in packageContent)) {
-            logger.error(`Package.json did not include lsd:contexts field`);
-            return;
+        if ("lsd:contexts" in packageContent) {
+            newConfig["@context"] = Object.keys(packageContent["lsd:contexts"]);
+        } else {
+            newConfig["@context"] = [];
         }
-        newConfig["@context"] = Object.keys(packageContent["lsd:contexts"]);
         newConfig["@id"] = componentsContent["@id"];
 
         let compactPath = `${componentsContent["@id"]}/${className}`;

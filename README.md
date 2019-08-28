@@ -33,11 +33,53 @@ Usage:
 * `--print`: if this flag is used, the output will be printed to console.
 * `<outputPath>`: if this is set and `--print` is not used, the output will be written to this file. If this is not set and `--print` is not used, the output will be written to a file in the `components` folder of the package.
 
+### Enhancing an existing `.jsonld` file using the CLI tool
+
+```bash
+Enhances an existing .jsonld file and gives feedback about possible misconfigurations
+Usage:
+  componentsjs-fix -p ./packages/my-package -c components/MyActor.jsonld -l info
+  Options:
+       -p <package>      # The directory of the package to look in
+       -c <component>    # The path to the existing component file, relative to package root
+       -l <level>        # The level for the logger
+       --print           # Print to standard output
+       --help            # Show information about this command
+```
+
+#### Options
+
+* `<package>`: the package that the existing `.jsonld` file is located in.
+* `<component>`: the filepath to your existing `.jsonld` file. It is important this path is relative to the root of your package
+* `<level>`: the level of the logger. Options: `emerg, alert, crit, error, warning, notice, info, debug`. Defaults to `info`.
+* `--print`: if this flag is used, the output will be printed to console. Otherwise, the existing file will be overwritten.
+
+### Enhancing all existing `.jsonld` files in a package using the CLI tool
+
+```bash
+Enhances all existing .jsonld files in a packages and gives feedback about possible misconfigurations
+Usage:
+  componentsjs-fixpackage -p ./packages/my-package -l info
+  Options:
+       -p <package>      # The directory of the package to look in
+       -l <level>        # The level for the logger
+       --print           # Print to standard output
+       --help            # Show information about this command
+```
+
+#### Options
+
+* `<package>`: the package that the existing `.jsonld` files are located in.
+* `<level>`: the level of the logger. Options: `emerg, alert, crit, error, warning, notice, info, debug`. Defaults to `info`.
+* `--print`: if this flag is used, the output will be printed to console. Otherwise, the existing files will be overwritten.
+
 ### Using the tool in your code
 
 ```typescript
 // Importing the tool
 const Generate = require("componentjs-generator").Generate;
+const Fix = require("componentjs-generator").Fix;
+const FixPackage = require("componentjs-generator").FixPackage;
 
 let directory = "test-module";
 let className = "MyActor";
@@ -53,6 +95,8 @@ let outputPath = "test-output";
 // Creates a file with the generated componens content
 // The other options are the same as in the CLI tool
 Generate.generateComponentFile(directory, className, level, print, outputPath);
+
+// TODO more examples
 ```
 
 ## Tweaking the files

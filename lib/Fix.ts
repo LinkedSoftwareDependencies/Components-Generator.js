@@ -9,7 +9,7 @@ import {FixUtils} from "./FixUtils";
 
 export class Fix {
 
-    public static async fixComponent(directory: string, component: string, level: string): Promise<Object> {
+    public static async fixComponent(directory: string, component: string, level: string): Promise<any> {
         logger.level = level;
         if (directory == null) {
             logger.error("Missing argument package");
@@ -49,6 +49,11 @@ export class Fix {
                     continue componentLoop;
                 }
             }
+            const validTypes = ["Class", "AbstractClass", "Instance"];
+            if(!validTypes.includes(componentObject["@type"])) {
+                logger.error(`Attribute @type must have one of the following values: ${validTypes.join(", ")}`);
+                continue;
+            }
             let className = componentObject["requireElement"];
             let classDeclaration = AstUtils.getDeclaration({
                 className: className,
@@ -59,13 +64,11 @@ export class Fix {
                 return;
             }
             let generatedComponent = await Generate.generateComponent(directory, className, level);
-            // Check if required context objects are there
-            let fixedComponent = FixUtils.additiveFix(componentObject, generatedComponent["components"][0]);
-            componentsEntry[i] = fixedComponent;
+            componentsEntry[i] = FixUtils.additiveComponentFix(componentObject, generatedComponent["components"][0]);
         }
         return componentContent;
     }
-
+    // TODO doc
     public static async fixComponentFile(directory: string, componentPath: string, level: string, print:boolean) {
         logger.level = level;
         let fixedComponent = await this.fixComponent(directory, componentPath, level);
@@ -75,7 +78,7 @@ export class Fix {
         }
         let jsonString = JSON.stringify(fixedComponent, null, 4);
         if (print) {
-            console.log(jsonString);
+            // console.log(jsonString);
         } else {
             logger.info(`Writing output to ${componentPath}`);
             // fs.writeFileSync(componentPath, jsonString);

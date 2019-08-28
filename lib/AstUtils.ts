@@ -161,6 +161,7 @@ export class AstUtils {
         // We won't look at files whose name is in the blacklist
         let blacklist = [Path.basename(componentsFilePath), "context.jsonld"];
         // TODO ideally we'll look at the `import` part of the components file, but parsing these IRI's isn't trivial
+        // see issue #8
         let componentsFolder = Path.dirname(componentsFilePath);
         for (let {filePath, json} of Utils.visitJSONLDFiles(componentsFolder)) {
             let baseName = Path.basename(filePath);
@@ -674,6 +675,7 @@ export class AstUtils {
                     let fieldData = AstUtils.getFields(constructorParam.declaration, nodeModules);
                     for (let field of fieldData) {
                         let parsedField = getConstructorArgument(field);
+                        // TODO avoid this and just normalize the file at the end
                         if (Object.keys(parsedField).length === 1
                             && parsedField["@id"] != null) {
                                 parsedField = parsedField["@id"];
