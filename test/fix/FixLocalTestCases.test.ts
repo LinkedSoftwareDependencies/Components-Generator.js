@@ -1,6 +1,10 @@
-import {LocalTester} from "./LocalTester";
+import {FixLocalTester} from "./FixLocalTester";
 
-const tests = {
+/**
+ * Local test cases to test the fix tool
+ * Uses a per-package mapping of component file to expected result
+ */
+const tests: { [packageName: string]: { [componentFile: string]: string } } = {
     "test-package1": {
         "fix-components/Actor3Scrambled.jsonld": "Actor3Scrambled.jsonld",
         "fix-components/Actor3MissingParameter.jsonld": "Actor3MissingParameter.jsonld",
@@ -8,4 +12,4 @@ const tests = {
     }
 
 };
-LocalTester.testComponents(tests);
+FixLocalTester.testPackages(tests);

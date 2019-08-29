@@ -14,8 +14,9 @@ Usage:
        --help            # Show information about this command`);
     process.exit(1);
 }
+
 let args = minimist(process.argv.slice(2));
-if(args.help || args.p == null || args.c == null) {
+if (args.help || args.p == null || args.c == null) {
     showHelp();
 } else {
     Fix.fixComponentFile(args.p, args.c, args.print, args.l);

@@ -1,8 +1,12 @@
-import {ComunicaTester} from "./ComunicaTester"
+import {GeneratorComunicaTester} from "./GeneratorComunicaTester"
 
 
-// TODO doc
-const tests = {
+/**
+ * NPM Comunica test cases to test the generator tool
+ * Uses a per-package mapping of exported class name to file to expected result
+ */
+const tests: { [packageName: string]: { [className: string]: string } } = {
+
     "@comunica/actor-query-operation-filter-sparqlee@1.9.0": {
         "ActorQueryOperationFilterSparqlee": "ActorQueryOperationFilterSparqlee.jsonld"
     },
@@ -34,4 +38,4 @@ const tests = {
         "ActorRdfSourceIdentifierSparql": "ActorRdfSourceIdentifierSparql.jsonld"
     }
 };
-ComunicaTester.testModules(tests);
+GeneratorComunicaTester.testPackages(tests);

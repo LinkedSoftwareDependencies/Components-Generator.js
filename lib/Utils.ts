@@ -1,23 +1,30 @@
 import {ParsedClassDeclaration} from "./Types";
 import {TypeNode} from "@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree";
 import {AST_NODE_TYPES} from "@typescript-eslint/typescript-estree";
-import ComponentsJsUtil = require("componentsjs/lib/Util");
 import {logger} from "./Core";
 import * as fs from "fs";
 import * as Path from "path";
+import ComponentsJsUtil = require("componentsjs/lib/Util");
 
 const typescriptExtensions = [".ts", ".d.ts"];
 
+/**
+ * A mapping from AST node type to xsd type
+ */
 const typeToXsd: {
-    [key in AST_NODE_TYPES]?:string[];
+    [key in AST_NODE_TYPES]?: string[];
 } = {
     [AST_NODE_TYPES.TSBooleanKeyword]: ["boolean"],
     // We default to xsd:int because there's no way to detect the exact number type
     [AST_NODE_TYPES.TSNumberKeyword]: ["int", "integer", "number", "byte", "long", "float", "decimal", "double"],
     [AST_NODE_TYPES.TSStringKeyword]: ["string"]
 };
+/**
+ * A mapping from built-in Javascript type to AST node type
+ * Notice the uppercase names, indicating these are Javascript types
+ */
 const javascriptTypes: {
-    [key: string]:AST_NODE_TYPES;
+    [key: string]: AST_NODE_TYPES;
 } = {
     "Boolean": AST_NODE_TYPES.TSBooleanKeyword,
     "Number": AST_NODE_TYPES.TSNumberKeyword,
@@ -109,11 +116,12 @@ export class Utils {
      * @param key
      * @returns the value as an array
      */
-    public static getArray(object: {[key: string]: any}, key: string): any[] {
+    public static getArray(object: { [key: string]: any }, key: string): any[] {
         let result = object[key];
         if (result == null) return [];
         return Array.isArray(result) ? result : [result];
     }
+
     /**
      * Reads the content of a file
      *
@@ -139,7 +147,7 @@ export class Utils {
      * @param directory the root to start
      * @returns a generator that yields the path of the currently visited file
      */
-    public static *visitFiles(directory: string): IterableIterator<string> {
+    public static* visitFiles(directory: string): IterableIterator<string> {
         const files = fs.readdirSync(directory);
         for (const file of files) {
             let filePath = Path.join(directory, file);
@@ -158,10 +166,10 @@ export class Utils {
      * @param directory the root to start
      * @returns a generator that yields the path of the currently visited file
      */
-    public static * visitJSONLDFiles(directory: string) {
+    public static* visitJSONLDFiles(directory: string) {
         let filePaths = Utils.visitFiles(directory);
         for (let filePath of filePaths) {
-            if(!filePath.endsWith(".jsonld")) {
+            if (!filePath.endsWith(".jsonld")) {
                 logger.debug(`Skipping file ${filePath} without .jsonld extension`);
                 continue;
             }
@@ -212,7 +220,7 @@ export class Utils {
     public static union<T>(original: T[], other: T[]): T[] {
         original = original == null ? [] : original;
         for (let item of other) {
-            if(!(original.includes(item))) {
+            if (!(original.includes(item))) {
                 original.push(item);
             }
         }
@@ -247,6 +255,7 @@ export class Utils {
             }
         }
     }
+
     /**
      * Searches for the root directory of a package
      *

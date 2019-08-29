@@ -1,5 +1,6 @@
 import {
-    ExportAllDeclaration, ExportNamedDeclaration,
+    ExportAllDeclaration,
+    ExportNamedDeclaration,
     ImportClause,
     Program,
     Statement
@@ -41,6 +42,7 @@ export class ImportExportReader {
                     return;
             }
         }
+
         function getImports(declaration: Statement): { importSource: string, imports: ImportDeclaration[] } {
             switch (declaration.type) {
                 case AST_NODE_TYPES.ImportDeclaration: {
@@ -53,14 +55,15 @@ export class ImportExportReader {
                         return {
                             importSource: importSource.value, imports: imports
                         };
+                    } else {
+                        logger.error("Could not understand import declaration");
                     }
                     return;
                 }
                 case AST_NODE_TYPES.TSImportEqualsDeclaration: {
                     let namespace = declaration.id.name;
                     let module = declaration.moduleReference;
-                    // TODO check other possibilities?
-                    if(module.type === AST_NODE_TYPES.TSExternalModuleReference
+                    if (module.type === AST_NODE_TYPES.TSExternalModuleReference
                         && module.expression.type === AST_NODE_TYPES.Literal
                         && typeof module.expression.value === "string") {
                         return {
@@ -69,16 +72,19 @@ export class ImportExportReader {
                                 importName: namespace
                             }]
                         }
+                    } else {
+                        logger.error("Could not understand import-equals declaration");
                     }
                     return;
                 }
             }
         }
+
         let files: ClassImportDeclarations = {};
         for (let declaration of ast.body) {
             let parsedExport = getImports(declaration);
             if (parsedExport == null) continue;
-            if(parsedExport.imports.length === 0) continue;
+            if (parsedExport.imports.length === 0) continue;
             let file = parsedExport.importSource;
             files[file] = Utils.union(files[file], parsedExport.imports);
         }
@@ -109,7 +115,7 @@ export class ImportExportReader {
                 }
                 case AST_NODE_TYPES.ExportNamedDeclaration: {
                     let exportSource = declaration.source;
-                    if(exportSource == null) {
+                    if (exportSource == null) {
                         logger.debug("Can not understand exported constant");
                         return;
                     }
@@ -140,7 +146,7 @@ export class ImportExportReader {
 
         let files: ClassExportDeclarations = {};
         for (let declaration of ast.body) {
-            if(declaration.type === AST_NODE_TYPES.ExportAllDeclaration ||
+            if (declaration.type === AST_NODE_TYPES.ExportAllDeclaration ||
                 declaration.type === AST_NODE_TYPES.ExportNamedDeclaration) {
                 let parsedExport = getExports(declaration);
                 if (parsedExport == null) continue;

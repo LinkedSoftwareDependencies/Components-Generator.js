@@ -1,9 +1,9 @@
 import ComponentsJsUtil = require("componentsjs/lib/Util");
+import commentParse = require("comment-parser");
 import * as fs from "fs";
 import {AstUtils} from "./AstUtils";
 import * as Path from "path";
 import {Utils} from "./Utils";
-import commentParse = require("comment-parser");
 import {logger} from "./Core";
 import {CommentUtils} from "./CommentUtils";
 import {ImportExportReader} from "./ImportExportReader";
@@ -108,12 +108,12 @@ export class Generate {
      *
      * @param directory the directory of the package to look in
      * @param className the class to generate a component for
-     * @param level the level for the logger
-     * @param print whether to print to standard output
      * @param outputPath write output to a specific file
+     * @param print whether to print to standard output
+     * @param level the level for the logger
      * @returns upon completion
      */
-    public static async generateComponentFile(directory: string, className: string, outputPath:string, print:boolean, level: string = "info") {
+    public static async generateComponentFile(directory: string, className: string, outputPath: string, print: boolean, level: string = "info") {
         logger.level = level;
         let component = await this.generateComponent(directory, className, level);
         if (component == null) {

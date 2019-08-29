@@ -24,7 +24,8 @@ import {
     FieldType,
     NodeModules,
     ParsedClassDeclaration,
-    SuperClassChain, SuperClassChainElement
+    SuperClassChain,
+    SuperClassChainElement
 } from "./Types";
 import {CommentUtils} from "./CommentUtils";
 import {ImportExportReader} from "./ImportExportReader";
@@ -34,50 +35,6 @@ import {ImportExportReader} from "./ImportExportReader";
  * A utility class to parse information from a syntax tree
  */
 export class AstUtils {
-    /**
-     * Gets the reference to the class of a type annotation
-     * If the type is an array, it will check the type of that array
-     *
-     * @param annotation the type annotation to look at
-     * @param isArray whether this annotation is the child of an array annotation. We do this to avoid parsing
-     * multi-dimensional arrays
-     * @returns information about the class
-     */
-    private static getTypeAnnotationReference(annotation: TypeNode, isArray: boolean = false): ClassReference {
-        switch (annotation.type) {
-            // A regular class reference
-            case AST_NODE_TYPES.TSTypeReference:
-                switch (annotation.typeName.type) {
-                    case AST_NODE_TYPES.TSQualifiedName:
-                        // A namespace reference e.g. `q.B`
-                        if(annotation.typeName.left.type === AST_NODE_TYPES.Identifier) {
-                            return {
-                                namespace: annotation.typeName.left.name,
-                                className: annotation.typeName.right.name
-                            };
-                        } else {
-                            logger.error(`Could not understand left type ${annotation.typeName.left.type}`);
-                        }
-                        return;
-                    case AST_NODE_TYPES.Identifier:
-                        // A normal reference e.g. `q.B`
-                        return {namespace: undefined, className: annotation.typeName.name};
-                    default:
-                        logger.error(`Could not recognize inner name type ${annotation.typeName}`);
-                        return;
-                }
-            case AST_NODE_TYPES.TSArrayType:
-                if (isArray) {
-                    logger.error(`Cannot parse nested array types`);
-                    return;
-                }
-                return AstUtils.getTypeAnnotationReference(annotation.elementType, true);
-            default:
-                logger.error(`Could not recognize annotation type ${annotation.type}`);
-                return;
-        }
-    }
-
     /**
      * Gets reference to the class of a field declaration
      *
@@ -106,8 +63,9 @@ export class AstUtils {
                 }
             }
         }
+
         let identifier = getIdentifier(declaration);
-        if(identifier == null) return;
+        if (identifier == null) return;
         switch (identifier.type) {
             case AST_NODE_TYPES.MemberExpression:
                 if (identifier.object.type !== AST_NODE_TYPES.Identifier) {
@@ -134,17 +92,17 @@ export class AstUtils {
      * @returns reference to exported class
      */
     public static findExportedClass(classReference: ClassReference, imports: ClassImportDeclarations): ExportReference {
-        for (const [pckg, importClasses] of Object.entries(imports)) {
+        for (const [packageName, importClasses] of Object.entries(imports)) {
             for (let importClass of importClasses) {
                 // Qualified name e.g. `q.B`
                 if (classReference.namespace != null) {
                     if (importClass.className === "*" && importClass.importName === classReference.namespace) {
                         // Class is imported under it's own name, but through a wildcard
-                        return {className: classReference.className, exportedFrom: pckg};
+                        return {className: classReference.className, exportedFrom: packageName};
                     }
                 } else if (importClass.importName === classReference.className) {
                     // Class is not imported under its own name, we find the real name
-                    return {className: importClass.className, exportedFrom: pckg};
+                    return {className: importClass.className, exportedFrom: packageName};
                 }
             }
         }
@@ -186,13 +144,13 @@ export class AstUtils {
      *
      * @param internalClass the internal name of the class
      * @param internalClassPath the filepath that was used to import this class
-     * @param pckg the name of the package
+     * @param packageName the name of the package
      * @param filePath the filepath of the file that this class was imported in. This is import if we're dealing with relative
      * imports
      * @returns the result of parsing the class
      */
-    public static getLocalDeclaration(internalClass: string, internalClassPath: string, pckg: string, filePath: string): ParsedClassDeclaration {
-        let directory = Utils.getPackageRootDirectory(pckg);
+    public static getLocalDeclaration(internalClass: string, internalClassPath: string, packageName: string, filePath: string): ParsedClassDeclaration {
+        let directory = Utils.getPackageRootDirectory(packageName);
         let normalizedFile = Path.normalize(Path.join(Path.dirname(filePath), internalClassPath));
         let fileContent = Utils.getTypeScriptFile(Path.join(directory, normalizedFile));
         let ast;
@@ -214,7 +172,7 @@ export class AstUtils {
                             ast: ast,
                             declaration: declaration,
                             filePath: normalizedFile,
-                            packageName: pckg,
+                            packageName: packageName,
                             className: declaration.id.name
                         };
                     }
@@ -222,7 +180,6 @@ export class AstUtils {
             }
         }
     }
-
 
     /**
      * Searches for a class or interface in a package based on the exports of the package
@@ -320,13 +277,14 @@ export class AstUtils {
                     return property.name;
                 case AST_NODE_TYPES.TSPropertySignature:
                 case AST_NODE_TYPES.ClassProperty:
-                    if(property.key.type === AST_NODE_TYPES.Identifier) {
+                    if (property.key.type === AST_NODE_TYPES.Identifier) {
                         return property.key.name;
                     } else {
                         logger.debug(`Could not understand type ${property.key.type}, skipping`);
                     }
             }
         }
+
         let required = false;
         let fieldName = getName(property);
         let fieldType = property.typeAnnotation.typeAnnotation.type;
@@ -386,7 +344,7 @@ export class AstUtils {
      */
     public static getFields(declaration: ParsedClassDeclaration, nodeModules: NodeModules): FieldDeclaration[] {
         let imports = ImportExportReader.getImportDeclarations(declaration.ast);
-        switch(declaration.declaration.type) {
+        switch (declaration.declaration.type) {
             case AST_NODE_TYPES.ClassDeclaration: {
                 return declaration.declaration.body.body
                     .filter((x: ClassElement) => x.type === AST_NODE_TYPES.ClassProperty)
@@ -419,7 +377,7 @@ export class AstUtils {
                 let constructorParamDeclarations = property.value.params;
                 let previousEnd = property.loc.start;
                 for (let constructorParamDeclaration of constructorParamDeclarations) {
-                    if(constructorParamDeclaration.type === AST_NODE_TYPES.Identifier) {
+                    if (constructorParamDeclaration.type === AST_NODE_TYPES.Identifier) {
                         let constructorParam = AstUtils.getField(constructorParamDeclaration, declaration, imports, nodeModules, previousEnd);
                         if (constructorParam != null) constructorParams.push(constructorParam);
                         previousEnd = constructorParamDeclaration.loc.end;
@@ -463,7 +421,6 @@ export class AstUtils {
         return;
     }
 
-
     /**
      * Gets the possible names a declaration has been exported with in its package base on the index.ts file of
      * the package
@@ -493,7 +450,6 @@ export class AstUtils {
         }
         return possibleNames;
     }
-
 
     /**
      * Get the chain of extending classes
@@ -529,7 +485,7 @@ export class AstUtils {
             // Find the next superclass
             let nextSuperClassInfo = AstUtils.getSuperClass(previousSuperClassDeclaration.declaration);
             if (nextSuperClassInfo == null)
-                // We reached the end of the chain
+            // We reached the end of the chain
                 break;
             // Get its declaration
             previousSuperClassDeclaration = AstUtils.getDeclarationWithContext(nextSuperClassInfo,
@@ -603,7 +559,7 @@ export class AstUtils {
     public static getParametersAndArguments(superClassChain: SuperClassChain,
                                             compactPath: string,
                                             nodeModules: NodeModules):
-         {contexts: string[], parameters: {}[], constructorArguments: {}[]} {
+        { contexts: string[], parameters: {}[], constructorArguments: {}[] } {
 
         let parameters: {}[] = [];
         let constructorArguments: {}[] = [];
@@ -631,7 +587,7 @@ export class AstUtils {
                  * @param param the declaration of the parameter to match
                  * @returns the matching parameter, if any
                  */
-                function findSimilarParam(param: ParsedClassDeclaration): {field:SuperClassChainElement, param:any} {
+                function findSimilarParam(param: ParsedClassDeclaration): { field: SuperClassChainElement, param: any } {
                     for (let i = 1; i < superClassChain.length; i++) {
                         for (let x = 0; x < superClassChain[i].constructorParams.length; x++) {
                             let otherConstructorParam = superClassChain[i].constructorParams[x];
@@ -670,16 +626,17 @@ export class AstUtils {
                  *
                  * @returns the parsed fields
                  */
-                function getHashFields(): {keyRaw: string, value: {}}[] {
-                    let exportedFields: {keyRaw: string, value: {}}[] = [];
+                function getHashFields(): { keyRaw: string, value: {} }[] {
+                    let exportedFields: { keyRaw: string, value: {} }[] = [];
                     let fieldData = AstUtils.getFields(constructorParam.declaration, nodeModules);
                     for (let field of fieldData) {
                         let parsedField = getConstructorArgument(field);
-                        // TODO avoid this and just normalize the file at the end
+                        // This little check verifies whether the field consists
+                        // of solely one `@id` attribute
                         if (Object.keys(parsedField).length === 1
                             && parsedField["@id"] != null) {
-                                parsedField = parsedField["@id"];
-                            }
+                            parsedField = parsedField["@id"];
+                        }
                         exportedFields.push({
                             "keyRaw": field.key,
                             "value": parsedField
@@ -755,5 +712,49 @@ export class AstUtils {
             if (arg != null) constructorArguments.push(arg);
         }
         return {contexts: contexts, parameters: parameters, constructorArguments: constructorArguments};
+    }
+
+    /**
+     * Gets the reference to the class of a type annotation
+     * If the type is an array, it will check the type of that array
+     *
+     * @param annotation the type annotation to look at
+     * @param isArray whether this annotation is the child of an array annotation. We do this to avoid parsing
+     * multi-dimensional arrays
+     * @returns information about the class
+     */
+    private static getTypeAnnotationReference(annotation: TypeNode, isArray: boolean = false): ClassReference {
+        switch (annotation.type) {
+            // A regular class reference
+            case AST_NODE_TYPES.TSTypeReference:
+                switch (annotation.typeName.type) {
+                    case AST_NODE_TYPES.TSQualifiedName:
+                        // A namespace reference e.g. `q.B`
+                        if (annotation.typeName.left.type === AST_NODE_TYPES.Identifier) {
+                            return {
+                                namespace: annotation.typeName.left.name,
+                                className: annotation.typeName.right.name
+                            };
+                        } else {
+                            logger.error(`Could not understand left type ${annotation.typeName.left.type}`);
+                        }
+                        return;
+                    case AST_NODE_TYPES.Identifier:
+                        // A normal reference e.g. `q.B`
+                        return {namespace: undefined, className: annotation.typeName.name};
+                    default:
+                        logger.error(`Could not recognize inner name type ${annotation.typeName}`);
+                        return;
+                }
+            case AST_NODE_TYPES.TSArrayType:
+                if (isArray) {
+                    logger.error(`Cannot parse nested array types`);
+                    return;
+                }
+                return AstUtils.getTypeAnnotationReference(annotation.elementType, true);
+            default:
+                logger.error(`Could not recognize annotation type ${annotation.type}`);
+                return;
+        }
     }
 }

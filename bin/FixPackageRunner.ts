@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import * as minimist from "minimist";
-import {Fix} from "../lib/Fix";
 import {FixPackage} from "../lib/FixPackage";
 
 function showHelp() {
@@ -14,8 +13,9 @@ Usage:
        --help            # Show information about this command`);
     process.exit(1);
 }
+
 let args = minimist(process.argv.slice(2));
-if(args.help || args.p == null) {
+if (args.help || args.p == null) {
     showHelp();
 } else {
     FixPackage.fixPackage(args.p, args.print, args.l);

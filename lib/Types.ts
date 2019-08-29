@@ -1,7 +1,10 @@
 import {
-    ClassDeclaration, ClassProperty, Identifier,
+    ClassDeclaration,
+    ClassProperty,
+    Identifier,
     Program,
-    TSInterfaceDeclaration, TSPropertySignature
+    TSInterfaceDeclaration,
+    TSPropertySignature
 } from "@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree";
 
 
@@ -82,6 +85,7 @@ export interface FieldDeclaration {
     /** Component information of the class that the field references */
     component: ComponentInformation
 }
+
 /**
  * Represents how a class was exported
  * e.g. `import {A as B} from C` tells us C exports A
@@ -117,6 +121,7 @@ export interface ComponentInformation {
     /** Object that represents the entire content of the component file */
     componentContent: any;
 }
+
 export type FieldDeclarationType = TSPropertySignature | Identifier | ClassProperty
 export type ClassDeclarationType = ClassDeclaration | TSInterfaceDeclaration
 

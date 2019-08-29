@@ -6,8 +6,8 @@ import {
 } from "@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree";
 import {logger} from "./Core";
 import {Utils} from "./Utils";
-import commentParse = require("comment-parser");
 import {ParsedComment} from "./Types";
+import commentParse = require("comment-parser");
 
 const rangeTag = "range";
 const defaultTag = "default";
@@ -50,6 +50,7 @@ export class CommentUtils {
         // The TypeScript parser removes some parts of a comment, we add them back
         return `/*${comment.value}*/`;
     }
+
     /**
      * Gets comment from a declaration by checking if the comment ends on the line before the start of the declaration
      *
@@ -65,6 +66,7 @@ export class CommentUtils {
             }
         }
     }
+
     /**
      * Parses a comment and its tags
      *
@@ -111,7 +113,6 @@ export class CommentUtils {
             ignored: ignored,
             description: commentDescription
         };
-
     }
 }
 

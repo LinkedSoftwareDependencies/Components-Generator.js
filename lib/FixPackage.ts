@@ -1,20 +1,22 @@
 import {logger} from "./Core";
 import * as fs from "fs";
-import ComponentsJsUtil = require("componentsjs/lib/Util");
 import * as Path from "path";
 import {Utils} from "./Utils";
-import {AstUtils} from "./AstUtils";
-import {Generate} from "./Generate";
-import {FixUtils} from "./FixUtils";
 import {Fix} from "./Fix";
+
 
 export class FixPackage {
 
+
     /**
-     * A simple tool for using the fix-tool on an entire package
+     * Creates a fixed component file for all existing components in a package
+     *
+     * @param directory the directory of the package to look in
+     * @param print whether to print to standard output, otherwise files will be overwritten
+     * @param level the level for the logger
+     * @returns upon completion
      */
-    // TODO doc
-    public static async fixPackage(directory: string, print:boolean, level: string) {
+    public static async fixPackage(directory: string, print: boolean, level: string) {
         const packagePath = Path.join(directory, "package.json");
         if (!fs.existsSync(packagePath)) {
             logger.error("Not a valid package, no package.json");
