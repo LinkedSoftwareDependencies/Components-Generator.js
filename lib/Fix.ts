@@ -35,7 +35,7 @@ export class Fix {
         }
         let componentContent = Utils.getJSON(componentPath);
         if(!("components" in componentContent)) {
-            logger.error(`No components entry in component file`);
+            logger.error(`No components entry in component file ${componentPath}, skipping`);
             return;
         }
         let componentsEntry = componentContent["components"];
@@ -45,7 +45,7 @@ export class Fix {
             // Check if required attributes are set
             for(let attribute of requiredAttributes) {
                 if (!(attribute in componentObject)) {
-                    logger.error(`Missing attribute ${attribute} in component ${i}`);
+                    logger.error(`Missing attribute ${attribute} in component ${0} in file ${componentPath}`);
                     continue componentLoop;
                 }
             }
@@ -73,7 +73,7 @@ export class Fix {
         logger.level = level;
         let fixedComponent = await this.fixComponent(directory, componentPath, level);
         if (fixedComponent == null) {
-            logger.info("Failed to generate fixed component file");
+            logger.info(`Failed to generate fixed component file for file ${componentPath}`);
             return;
         }
         let jsonString = JSON.stringify(fixedComponent, null, 4);

@@ -1,5 +1,4 @@
 import {logger} from "./Core";
-import {Fix} from "./Fix";
 
 export class FixUtils {
     /**
@@ -12,10 +11,18 @@ export class FixUtils {
     public static additiveComponentFix(original: any, other: any): any {
         // Quick and dirty trick to copy the nested original
         let originalCopy = JSON.parse(JSON.stringify(original));
+        let otherCopy = JSON.parse(JSON.stringify(other));
         let originalParameters = originalCopy["parameters"];
-        delete originalCopy["parameters"];
-        FixUtils.fixRecursive(originalCopy, other);
-        FixUtils.fixParameters(originalParameters, other["parameters"]);
+        // TODO why?
+        originalCopy["parameters"] = [];
+        otherCopy["parameters"] = [];
+        FixUtils.fixRecursive(originalCopy, otherCopy);
+        if(originalParameters != null) {
+            FixUtils.fixParameters(originalParameters, other["parameters"]);
+        } else {
+            logger.debug("Found no existing parameters, filling them in");
+            originalParameters = other["parameters"];
+        }
         originalCopy["parameters"] = originalParameters;
         return originalCopy;
     }
@@ -44,9 +51,9 @@ export class FixUtils {
         }
         for(let originalParameter of unmatchedOriginalParameters) {
             if(unmatchedOtherParameters.length === 0) {
-                logger.info(`Could not match the parameter ${originalParameter["@id"]} to any of the parameters that our tool generated. Perhaps you should delete this parameter?`);
+                logger.info(`Could not match the parameter ${originalParameter["@id"]} to any of the parameters that the tool generated. Perhaps you should delete this parameter?`);
             } else {
-                logger.info(`Could not match the parameter ${originalParameter["@id"]} to any of the parameters that our tool generated. Perhaps the @id is different?`);
+                logger.info(`Could not match the parameter ${originalParameter["@id"]} to any of the parameters that the tool generated. Perhaps the @id is different?`);
             }
         }
         for(let otherParameterIndex of unmatchedOtherParameters) {
@@ -72,7 +79,7 @@ export class FixUtils {
         for(let [key, value] of Object.entries(other)) {
             if(key in original) {
                 let newOriginalValue = original[key];
-                // We consider the edge case where our existing content has something like {"a": "my-id"}
+                // We consider the edge case where our existing component has something like {"a": "my-id"}
                 // and our generated version has something like {"a": { "@id": "my-id", "xyz": "abc"}}
                 if(typeof newOriginalValue === "string") {
                     // Our original value is a string, possibly an IRI

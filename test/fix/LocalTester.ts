@@ -1,13 +1,14 @@
 import * as fs from "fs-extra";
 import * as Path from "path";
 import * as rimraf from "rimraf";
-import {Generate} from "../lib/Generate"
-import {ComponentTester, testDirectory} from "./ComponentTester";
+import {Generate} from "../../lib/Generate"
+import {ComponentTester, testDirectory} from "../ComponentTester";
 import {execSync} from "child_process";
+import {Fix} from "../../lib/Fix";
+import {testPackages} from "../LocalCore";
 
-const tmpDirectory = "local-tmp";
+const tmpDirectory = "local-fix-tmp";
 const tmp = Path.join(testDirectory, tmpDirectory);
-const testPackages = "test-packages";
 
 
 export class LocalTester {
@@ -22,10 +23,10 @@ export class LocalTester {
             test(pckg, async () => {
                 let pckgDir = Path.join(tmp, pckg);
                 fs.copySync(Path.join(testDirectory, testPackages, pckg), pckgDir);
-                execSync(`npm install`, {cwd: pckgDir, stdio: "pipe"});
-                for (let [className, expectedOutputFile] of Object.entries(components)) {
-                    let generatedComponents = await Generate.generateComponent(pckgDir, className, "info");
-                    ComponentTester.testComponents(generatedComponents, pckg, expectedOutputFile);
+                execSync("npm install", {cwd: pckgDir, stdio: "pipe"});
+                for (let [originalComponent, expectedComponent] of Object.entries(components)) {
+                    let fixedComponent = await Fix.fixComponent(pckgDir, originalComponent, "info");
+                    ComponentTester.testComponents(fixedComponent, expectedComponent, pckg);
                 }
             });
         }

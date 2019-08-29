@@ -1,5 +1,6 @@
 import {LocalTester} from "./LocalTester";
 
+// TODO doc
 const tests = {
     "test-package1": {
         "Actor3": "Actor3.jsonld",

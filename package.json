@@ -21,7 +21,7 @@
   "bin": {
     "componentsjs-generate": "bin/GenerateRunner.js",
     "componentsjs-fix": "bin/FixRunner.js",
-    "componentsjs-packagefix": "bin/FixPackageRunner.js"
+    "componentsjs-fixpackage": "bin/FixPackageRunner.js"
   },
   "files": [
     "bin/**/*.d.ts",

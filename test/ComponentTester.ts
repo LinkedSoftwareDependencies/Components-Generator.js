@@ -7,10 +7,10 @@ const outputPath = "expected-output";
 export class ComponentTester {
 
 
-
-    public static testComponents(generatedComponents: any, pckg: string, expectedOutputFile: string) {
+    // TODO doc
+    public static testComponents(generatedComponents: any, expectedOutputFile: string, pckg: string) {
         let expectedComponents = Utils.getJSON(Path.join(testDirectory, outputPath, pckg, expectedOutputFile));
-        // console.log(JSON.stringify(generatedComponents));
+        console.log(JSON.stringify(generatedComponents));
         expect(generatedComponents["@id"]).toBe(expectedComponents["@id"]);
         // @ts-ignore
         expect(generatedComponents["@context"]).toIncludeSameMembers(expectedComponents["@context"]);

@@ -1,9 +1,9 @@
 import * as rimraf from "rimraf";
-import {ComponentTester, testDirectory} from "./ComponentTester";
+import {ComponentTester, testDirectory} from "../ComponentTester";
 import * as fs from "fs"
 import * as Path from "path"
-import {Utils} from "../lib/Utils";
-import {Generate} from "../lib/Generate";
+import {Utils} from "../../lib/Utils";
+import {Generate} from "../../lib/Generate";
 import {execSync} from "child_process";
 
 const tmpDirectory = "comunica-temp";
@@ -25,10 +25,10 @@ export class ComunicaTester {
                     cwd: tmp,
                     stdio: "pipe"
                 });
-                execSync(`npm install`, {cwd: pckgDir, stdio: "pipe"});
+                execSync("npm install", {cwd: pckgDir, stdio: "pipe"});
                 for (let [className, expectedOutputFile] of Object.entries(components)) {
                     let generatedComponents = await Generate.generateComponent(pckgDir, className, "info");
-                    ComponentTester.testComponents(generatedComponents, pckg, expectedOutputFile);
+                    ComponentTester.testComponents(generatedComponents, expectedOutputFile, pckg);
                 }
             });
         }

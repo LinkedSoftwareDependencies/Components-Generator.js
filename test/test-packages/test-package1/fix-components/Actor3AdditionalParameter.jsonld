@@ -1,6 +1,5 @@
 {
   "@context": [
-    "http://example.com/actor3",
     "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/^1.0.0/components/context.jsonld"
   ],
   "@id": "test-package",
@@ -9,95 +8,69 @@
       "@id": "test-package/Actor3",
       "requireElement": "Actor3",
       "@type": "AbstractClass",
+      "comment": "A version of the Actor3 component with an additional parameter",
       "parameters": [
         {
-          "@id": "test-package/Actor3#booleanTest",
-          "required": true,
-          "unique": true,
-          "range": "xsd:boolean",
-          "comment": "Boolean field comment"
-        },
-        {
           "@id": "test-package/Actor3#javascriptBooleanTest",
-          "required": true,
           "unique": true,
           "range": "xsd:boolean"
         },
         {
           "@id": "test-package/Actor3#stringTest",
-          "required": true,
-          "unique": true,
-          "range": "xsd:string"
-        },
-        {
-          "@id": "test-package/Actor3#javascriptStringTest",
-          "required": true,
-          "unique": true,
-          "range": "xsd:string"
-        },
-        {
-          "@id": "test-package/Actor3#numberTest",
-          "required": true,
-          "unique": true,
-          "range": "xsd:int"
-        },
-        {
-          "@id": "test-package/Actor3#javascriptNumberTest",
-          "required": true,
-          "unique": true,
-          "range": "xsd:int"
+          "unique": true
         },
         {
           "@id": "test-package/Actor3#tagTest",
           "required": true,
-          "unique": true,
-          "range": "xsd:byte",
-          "default": "1",
           "comment": "We test some tags here"
         },
         {
-          "@id": "test-package/Actor3#arrayTest",
+          "@id": "test-package/Actor3#javascriptStringTest"
+        },
+        {
+          "@id": "test-package/Actor3#numberTest",
+          "unique": true,
+          "comment": "This should remain a float",
+          "range": "xsd:float"
+        },
+        {
+          "@id": "test-package/Actor3#unmatched",
+          "comment": "This parameter won't be matched"
+        },
+        {
+          "@id": "test-package/Actor3#booleanTest",
           "required": true,
-          "unique": false,
-          "range": "xsd:int"
+          "comment": "DONT OVERWRITE ME"
         },
         {
           "@id": "test-package/Actor3#arrayTagTest",
-          "required": true,
-          "unique": false,
-          "range": "xsd:byte",
           "comment": "We test the range tag on an array"
         },
         {
           "@id": "test-package/Actor3#componentTest",
-          "required": true,
-          "unique": true,
-          "range": "cc:Logger",
-          "comment": "This is a component from another package"
+          "required": true
         },
         {
           "@id": "test-package/Actor3#nestedField",
-          "required": true,
-          "unique": true,
-          "range": "xsd:int"
-        },
-        {
-          "@id": "test-package/Actor3#nestedField1",
-          "required": false,
-          "unique": true,
-          "range": "xsd:int"
+          "required": true
         },
         {
           "@id": "test-package/Actor3#nestedField2",
-          "required": false,
+          "unique": true
+        },
+        {
+          "@id": "test-package/Actor3#nestedField1",
+          "unique": true,
+          "range": "xsd:int"
+        },{
+          "@id": "test-package/Actor3#javascriptNumberTest",
           "unique": true,
           "range": "xsd:int"
         },
         {
-          "@id": "test-package/Actor3#extraParam",
-          "required": false,
-          "unique": true,
-          "range": "xsd:int"
+          "@id": "test-package/Actor3#arrayTest",
+          "required": true,
+          "unique": false
         }
       ],
       "constructorArguments": [
@@ -109,28 +82,23 @@
               "value": "test-package/Actor3#booleanTest"
             },
             {
-              "keyRaw": "javascriptBooleanTest",
               "value": "test-package/Actor3#javascriptBooleanTest"
             },
             {
-              "keyRaw": "stringTest",
               "value": "test-package/Actor3#stringTest"
             },
             {
-              "keyRaw": "javascriptStringTest",
-              "value": "test-package/Actor3#javascriptStringTest"
+              "keyRaw": "javascriptStringTest"
             },
             {
               "keyRaw": "numberTest",
               "value": "test-package/Actor3#numberTest"
             },
             {
-              "keyRaw": "javascriptNumberTest",
               "value": "test-package/Actor3#javascriptNumberTest"
             },
             {
-              "keyRaw": "tagTest",
-              "value": "test-package/Actor3#tagTest"
+              "keyRaw": "tagTest"
             },
             {
               "keyRaw": "arrayTest",
@@ -149,27 +117,18 @@
               "value": {
                 "fields": [
                   {
-                    "keyRaw": "nestedField",
-                    "value": "test-package/Actor3#nestedField"
+                    "keyRaw": "nestedField"
                   },
                   {
                     "keyRaw": "nestedDouble",
                     "value": {
-                      "fields": [
-                        {
-                          "keyRaw": "nestedField",
-                          "value": "test-package/Actor3#nestedField1"
-                        }
-                      ]
                     }
                   },
                   {
-                    "keyRaw": "nestedDoubleArray",
                     "value": {
                       "elements": [
                         {
-                          "keyRaw": "nestedField",
-                          "value": "test-package/Actor3#nestedField2"
+                          "keyRaw": "nestedField"
                         }
                       ]
                     }

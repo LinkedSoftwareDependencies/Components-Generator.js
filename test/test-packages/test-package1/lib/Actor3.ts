@@ -3,6 +3,8 @@
  */
 import {Logger} from "@comunica/core";
 
+export const xyz = "abc";
+
 export abstract class Actor3 {
 
     constructor(args: Actor3Args) {

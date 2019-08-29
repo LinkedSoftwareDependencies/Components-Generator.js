@@ -1,5 +1,7 @@
 import {ComunicaTester} from "./ComunicaTester"
 
+
+// TODO doc
 const tests = {
     "@comunica/actor-query-operation-filter-sparqlee@1.9.0": {
         "ActorQueryOperationFilterSparqlee": "ActorQueryOperationFilterSparqlee.jsonld"
@@ -30,8 +32,6 @@ const tests = {
     },
     "@comunica/actor-rdf-source-identifier-sparql@1.9.0": {
         "ActorRdfSourceIdentifierSparql": "ActorRdfSourceIdentifierSparql.jsonld"
-    },
-
-
+    }
 };
 ComunicaTester.testModules(tests);

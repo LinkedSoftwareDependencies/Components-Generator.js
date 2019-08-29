@@ -38,8 +38,8 @@ Usage:
 
 ### Enhancing an existing `.jsonld` file using the CLI tool
 
-This tool can aid during the development of components by analyzing an existing `.jsonld` file, filling in additional attributes and giving feedback about parameters that should be renamed, added or deleted.
-
+This tool can aid during the development of components by analyzing an existing `.jsonld` file, filling in additional attributes and giving feedback about parameters that should be renamed, added or deleted on a best-efforts basis.  
+When choosing the `@id`'s of your parameters, it is recommended to follow the naming convention and name them `<component>/<fieldName>` where `<component>` is the `@id` of your component and `<fieldName>` is the name of your field. If you have multiple fields with the same name, you should name them `field`, `field1`, `field2` and so forth. This is not necessary, but it will make sure the tool can properly match your existing parameters with the existing ones.
 ```bash
 Enhances an existing .jsonld file and gives feedback about possible misconfigurations
 Usage:
@@ -301,7 +301,7 @@ npm run test
 
 
 This will run some local tests and fetch some of the [Comunica](https://github.com/comunica/comunica) packages via NPM and run some tests on them.
-You can find the Comunica test cases [here](test/ComunicaTestCases.test.ts) and their expected output [here](test/expected-output);
+You can find the Comunica test cases [here](test/generator/ComunicaTestCases.test.ts) and their expected output [here](test/expected-output);
 
 ### Local examples
 

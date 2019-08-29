@@ -109,6 +109,10 @@ export class ImportExportReader {
                 }
                 case AST_NODE_TYPES.ExportNamedDeclaration: {
                     let exportSource = declaration.source;
+                    if(exportSource == null) {
+                        logger.debug("Can not understand exported constant");
+                        return;
+                    }
                     const specifiers = declaration.specifiers;
                     let exports: ExportDeclaration[] = [];
                     for (let specifier of specifiers) {
