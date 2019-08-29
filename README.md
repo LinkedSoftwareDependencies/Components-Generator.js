@@ -1,6 +1,7 @@
 # Components.js Generator
 
-A tool to generate `.jsonld` component files for [Components.js](https://github.com/LinkedSoftwareDependencies/Components.js) TypeScript classes. 
+A tool to generate `.jsonld` component files for [Components.js](https://github.com/LinkedSoftwareDependencies/Components.js) TypeScript classes.  
+Please check the [Components.js documentation](https://componentsjs.readthedocs.io/en/latest/) first.
 
 ## Install
 
@@ -12,6 +13,8 @@ A tool to generate `.jsonld` component files for [Components.js](https://github.
 
 ### Generating a `.jsonld` file using the CLI tool
 
+This tool can assist you in developing components by creating and filling in the boilerplate `.jsonld` file that is linked to your component. It does this by analyzing the TypeScript file that contains your class declaration.
+
 ```bash
 Generates a component file for a specific component
 Usage:
@@ -19,9 +22,9 @@ Usage:
   Options:
        -p <package>      # The directory of the package to look in
        -c <className>    # The class to generate a component for
-       -l <level>        # The level for the logger
        -o <outputPath>   # Write output to a specific file
-       --print           # Print to standard output
+       -l <level>        # The level for the logger
+       --print           # Print output to standard output
        --help            # Show information about this command
 ```
 
@@ -30,10 +33,12 @@ Usage:
 * `<package>`: the filepath to the directory of the package that your component is located in. It is important that you first used `npm install` in this package's directory to make sure all the dependencies can be found.
 * `<className>`: the name of the class that represents your component. Your class must be exported in the `index.ts` file of your package and this must be the name that the class was exported as.
 * `<level>`: the level of the logger. Options: `emerg, alert, crit, error, warning, notice, info, debug`. Defaults to `info`.
-* `--print`: if this flag is used, the output will be printed to console.
 * `<outputPath>`: if this is set and `--print` is not used, the output will be written to this file. If this is not set and `--print` is not used, the output will be written to a file in the `components` folder of the package.
+* `--print`: if this flag is used, the output will be printed to console.
 
 ### Enhancing an existing `.jsonld` file using the CLI tool
+
+This tool can aid during the development of components by analyzing an existing `.jsonld` file, filling in additional attributes and giving feedback about parameters that should be renamed, added or deleted.
 
 ```bash
 Enhances an existing .jsonld file and gives feedback about possible misconfigurations
@@ -43,7 +48,7 @@ Usage:
        -p <package>      # The directory of the package to look in
        -c <component>    # The path to the existing component file, relative to package root
        -l <level>        # The level for the logger
-       --print           # Print to standard output
+       --print           # Print output to standard output
        --help            # Show information about this command
 ```
 
@@ -63,7 +68,7 @@ Usage:
   Options:
        -p <package>      # The directory of the package to look in
        -l <level>        # The level for the logger
-       --print           # Print to standard output
+       --print           # Print output to standard output
        --help            # Show information about this command
 ```
 
@@ -81,22 +86,40 @@ const Generate = require("componentjs-generator").Generate;
 const Fix = require("componentjs-generator").Fix;
 const FixPackage = require("componentjs-generator").FixPackage;
 
-let directory = "test-module";
+// Path to the root of the package
+let directory = "modules/test-module";
+// Name of the class
 let className = "MyActor";
+// Logger level
 let level = "debug";
 
-// Returns a Javascript object that represents the contents of the component file
-// No actual file will be created
-let components = Generate.generateComponent(directory, className, level);
+async function run() {
+    
+    // Returns a Javascript object that represents the contents of the component file
+    // No actual file will be created
+    let component = await Generate.generateComponent(directory, className, level);
+    
+    let print = false;
+    let outputPath = "components/MyActor.jsonld";
+    
+    // Creates a file with the generated component content
+    // The other options are the same as in the CLI tool
+    await Generate.generateComponentFile(directory, className, outputPath, print, level);
+    
+    // Returns a Javascript object that represents of the fixed component file
+    // No actual file will be created. Additional feedback about misconfigurations will be logged
+    let fixedComponent = await Fix.fixComponent(directory, outputPath, level);
 
-let print = false;
-let outputPath = "test-output";
-
-// Creates a file with the generated componens content
-// The other options are the same as in the CLI tool
-Generate.generateComponentFile(directory, className, level, print, outputPath);
-
-// TODO more examples
+    // Creates a file with the content of the fixed component
+    // The other options are the same as in the CLI tool
+    // Additional feedback about misconfigurations will be logged
+    await Fix.fixComponentFile(directory, outputPath, print, level);
+    
+    // Overwrites all files with their fixed component content     
+    // The other options are the same as in the CLI tool
+    // Additional feedback about misconfigurations will be logged
+    await FixPackage.fixPackage(directory, print, level);
+}
 ```
 
 ## Tweaking the files
@@ -132,7 +155,7 @@ Here is an example that showcases all of these options:
 
 #### Imports
 When the tool analyzes your TypeScript class, it will use the import declarations to link names of classes to filepaths.
-The following ways of importing classes are supported:
+The following ways of importing classes in your TypeScript files are supported:
 ```typescript
 import * as bar from "/foo/bar";
 import {FooClass} from "@bar";
@@ -149,24 +172,24 @@ export * from "./bar";
 export {FooClass} from "/foo/bar";
 export {FooClass as BarClass} from "/foo/bar";
 ```
-It is very important that each of your existing components has a `requireElement` attribute in their `.jsonld` file. This value must be equal to the exported name of the matching class of that package.
+It is very important that each of your existing components has a `requireElement` attribute in their `.jsonld` file. This value must be equal to the exported name of the matching class of that package. Otherwise, the tool might make a guess to match, but it can fail.
 
 ### Tags for fields and constructors arguments
 
-This tool allows you to put tags in comments above fields and constructor arguments to add additional information to the generated files.
+This tool allows you to put tags in comments above fields and constructor arguments in your TypeScript file to add additional information to the generated files.
 
 #### Tags
 
 | Tag | Action
 |---|---
-| `@ignored` | This field will be ignored by the tool  
+| `@ignored` | This field will be ignored by the tool and will not be added to the generated file.
 | `@default {<value>}` | The `default` attribute of the parameter will be set to `<value>` 
-| `@range {<type>}` | The `range` attribute of the parameter will be set to `<type>`. You can only use values that fit the type of field.  Options: `boolean, int, integer, number, byte, long, float, decimal, double, string`. For example, if your field has the type `number`, you could explicitly mark it as a `float` by using `@range {float}`. 
+| `@range {<type>}` | The `range` attribute of the parameter will be set to `<type>`. You can only use values that fit the type of field. Options: `boolean, int, integer, number, byte, long, float, decimal, double, string`. For example, if your field has the type `number`, you could explicitly mark it as a `float` by using `@range {float}`. See [the documentation](https://componentsjs.readthedocs.io/en/latest/configuration/components/parameters/).
 
 #### For fields
 
 Here's an example of how these annotations can be used to give additional information about the fields of a class.
-Comments must be placed above your field and they must end the line before the declaration of your field starts.  
+Comments must be placed above your field and they must end on the line before the line that the declaration of your field starts on.  
 An example:
 ```typescript
 export class MyActor extends OtherActor {

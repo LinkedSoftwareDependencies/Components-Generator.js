@@ -10,7 +10,7 @@ Usage:
   Options:
        -p <package>      # The directory of the package to look in
        -l <level>        # The level for the logger
-       --print           # Print to standard output
+       --print           # Print output to standard output
        --help            # Show information about this command`);
     process.exit(1);
 }
@@ -18,7 +18,7 @@ let args = minimist(process.argv.slice(2));
 if(args.help || args.p == null) {
     showHelp();
 } else {
-    FixPackage.fixPackage(args.p, args.l, args.print);
+    FixPackage.fixPackage(args.p, args.print, args.l);
 
 }
 

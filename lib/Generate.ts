@@ -113,7 +113,7 @@ export class Generate {
      * @param outputPath write output to a specific file
      * @returns upon completion
      */
-    public static async generateComponentFile(directory: string, className: string, level: string, print:boolean, outputPath:string) {
+    public static async generateComponentFile(directory: string, className: string, outputPath:string, print:boolean, level: string = "info") {
         logger.level = level;
         let component = await this.generateComponent(directory, className, level);
         if (component == null) {

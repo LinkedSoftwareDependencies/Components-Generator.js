@@ -9,9 +9,9 @@ Usage:
   Options:
        -p <package>      # The directory of the package to look in
        -c <className>    # The class to generate a component for
-       -l <level>        # The level for the logger
        -o <outputPath>   # Write output to a specific file
-       --print           # Print to standard output
+       -l <level>        # The level for the logger
+       --print           # Print output to standard output
        --help            # Show information about this command`);
     process.exit(1);
 }
@@ -19,7 +19,7 @@ let args = minimist(process.argv.slice(2));
 if(args.help || args.p == null || args.c == null) {
     showHelp();
 } else {
-    Generate.generateComponentFile(args.p, args.c, args.l, args.print, args.o);
+    Generate.generateComponentFile(args.p, args.c, args.l, args.o, args.print);
 }
 
 

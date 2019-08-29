@@ -14,7 +14,7 @@ export class FixPackage {
      * A simple tool for using the fix-tool on an entire package
      */
     // TODO doc
-    public static async fixPackage(directory: string, level: string, print:boolean) {
+    public static async fixPackage(directory: string, print:boolean, level: string) {
         const packagePath = Path.join(directory, "package.json");
         if (!fs.existsSync(packagePath)) {
             logger.error("Not a valid package, no package.json");
@@ -31,7 +31,7 @@ export class FixPackage {
             let baseName = Path.basename(filePath);
             if (blacklist.includes(baseName)) continue;
             let relativePath = Path.relative(directory, filePath);
-            await Fix.fixComponentFile(directory, relativePath, level, print);
+            await Fix.fixComponentFile(directory, relativePath, print, level);
         }
 
     }

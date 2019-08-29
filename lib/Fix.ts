@@ -69,7 +69,7 @@ export class Fix {
         return componentContent;
     }
     // TODO doc
-    public static async fixComponentFile(directory: string, componentPath: string, level: string, print:boolean) {
+    public static async fixComponentFile(directory: string, componentPath: string, print:boolean, level: string) {
         logger.level = level;
         let fixedComponent = await this.fixComponent(directory, componentPath, level);
         if (fixedComponent == null) {
@@ -78,10 +78,10 @@ export class Fix {
         }
         let jsonString = JSON.stringify(fixedComponent, null, 4);
         if (print) {
-            // console.log(jsonString);
+            console.log(jsonString);
         } else {
             logger.info(`Writing output to ${componentPath}`);
-            // fs.writeFileSync(componentPath, jsonString);
+            fs.writeFileSync(componentPath, jsonString);
         }
     }
 }
