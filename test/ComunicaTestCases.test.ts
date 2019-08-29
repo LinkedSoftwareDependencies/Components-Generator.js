@@ -15,6 +15,23 @@ const tests = {
     },
     "@comunica/actor-query-operation-reduced-hash@1.9.0": {
         "ActorQueryOperationReducedHash": "ActorQueryOperationReducedHash.jsonld"
-    }
+    },
+    "@comunica/actor-rdf-resolve-hypermedia-sparql@1.9.0": {
+        "ActorRdfResolveHypermediaSparql": "ActorRdfResolveHypermediaSparql.jsonld"
+    },
+    "@comunica/mediator-combine-pipeline@1.9.0": {
+        "MediatorCombinePipeline": "MediatorCombinePipeline.jsonld"
+    },
+    "@comunica/actor-context-preprocess-rdf-source-identifier@1.9.0": {
+        "ActorContextPreprocessRdfSourceIdentifier": "ActorContextPreprocessRdfSourceIdentifier.jsonld"
+    },
+    "@comunica/mediator-race@1.9.0": {
+        "MediatorRace": "MediatorRace.jsonld"
+    },
+    "@comunica/actor-rdf-source-identifier-sparql@1.9.0": {
+        "ActorRdfSourceIdentifierSparql": "ActorRdfSourceIdentifierSparql.jsonld"
+    },
+
+
 };
 ComunicaTester.testModules(tests);

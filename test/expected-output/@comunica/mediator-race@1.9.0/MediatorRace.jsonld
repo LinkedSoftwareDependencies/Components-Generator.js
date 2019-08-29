@@ -1,0 +1,23 @@
+{
+  "@context": [
+    "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/mediator-race/^1.0.0/components/context.jsonld",
+    "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/^1.0.0/components/context.jsonld"
+  ],
+  "@id": "npmd:@comunica/mediator-race",
+  "components": [
+    {
+      "@id": "npmd:@comunica/mediator-race/MediatorRace",
+      "requireElement": "MediatorRace",
+      "@type": "Class",
+      "comment": "A mediator that picks the first actor that resolves its test.",
+      "extends": "cc:Mediator",
+      "parameters": [],
+      "constructorArguments": [
+        {
+          "@id": "npmd:@comunica/mediator-race/MediatorRace#constructorArgumentsObject",
+          "extends": "cc:Mediator/constructorArgumentsObject"
+        }
+      ]
+    }
+  ]
+}
