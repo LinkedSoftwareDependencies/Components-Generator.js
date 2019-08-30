@@ -1,7 +1,7 @@
 {
   "name": "componentjs-generator",
   "version": "1.0.0",
-  "description": "",
+  "description": "A tool to generate and fix .jsonld component files for Components.js TypeScript classes",
   "main": "bin/GenerateRunner.ts",
   "scripts": {
     "build": "tsc",
