@@ -24,6 +24,10 @@ export class FixPackage {
             return;
         }
         const packageContent = Utils.getJSON(packagePath);
+        if (!("lsd:components" in packageContent)) {
+            logger.error("package.json doesn't contain lsd:components");
+            return;
+        }
         let componentsPath = Path.join(directory, packageContent["lsd:components"]);
         if (!fs.existsSync(componentsPath)) {
             logger.error("Not a valid components path");

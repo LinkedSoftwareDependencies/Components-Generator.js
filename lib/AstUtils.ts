@@ -639,8 +639,10 @@ export class AstUtils {
                     let fieldData = AstUtils.getFields(constructorParam.declaration, nodeModules);
                     for (let field of fieldData) {
                         let parsedField = getConstructorArgument(field);
+                        if(parsedField == null) continue;
                         // This little check verifies whether the field consists
                         // of solely one `@id` attribute
+                        // If so, it converts the result to a string
                         if (Object.keys(parsedField).length === 1
                             && parsedField["@id"] != null) {
                             parsedField = parsedField["@id"];
@@ -653,6 +655,16 @@ export class AstUtils {
                     return exportedFields;
                 }
                 if(constructorParam.declaration == null) return;
+
+                if(constructorParam.component != null) {
+                    // In this case our field references a component
+                    let id = getUniqueFieldId(compactPath, constructorParam["key"]);
+                    let parameter = {"@id": id, ...constructorParam.parameter};
+                    parameters.push(parameter);
+                    Utils.copyContext(constructorParam.component.componentContent, contexts);
+                    return {"@id": id};
+                }
+
                 let similarParam = findSimilarParam(constructorParam.declaration);
                 // This means we have found a similar parameter in the constructor of a superclass
                 if (similarParam != null) {
@@ -692,24 +704,15 @@ export class AstUtils {
                     Utils.copyContext(similarParam.field.component.componentContent, contexts);
                     return parameter;
                 } else {
-                    if (constructorParam.component == null) {
-                        // In this case we have a hash class that doesn't extend another class
-                        let parameter: any = root ? {"@id": getUniqueFieldId(compactPath, constructorParam["key"])} : {};
-                        let exportedFields = getHashFields();
-                        if (constructorParam.parameter.unique) {
-                            parameter["fields"] = exportedFields;
-                        } else {
-                            parameter["elements"] = exportedFields;
-                        }
-                        return parameter;
+                    // In this case we have a hash class that doesn't extend another class
+                    let parameter: any = root ? {"@id": getUniqueFieldId(compactPath, constructorParam["key"])} : {};
+                    let exportedFields = getHashFields();
+                    if (constructorParam.parameter.unique) {
+                        parameter["fields"] = exportedFields;
                     } else {
-                        // In this case our field references a component
-                        let id = getUniqueFieldId(compactPath, constructorParam["key"]);
-                        let parameter = {"@id": id, ...constructorParam.parameter};
-                        parameters.push(parameter);
-                        Utils.copyContext(constructorParam.component.componentContent, contexts);
-                        return {"@id": id};
+                        parameter["elements"] = exportedFields;
                     }
+                    return parameter;
                 }
             } else {
                 // In this case we have a simple parameter such as string, number, boolean
