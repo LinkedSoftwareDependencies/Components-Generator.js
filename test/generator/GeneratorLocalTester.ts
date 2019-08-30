@@ -29,7 +29,7 @@ export class GeneratorLocalTester {
                 fs.copySync(Path.join(testDirectory, testPackages, packageName), packageDir);
                 execSync("npm install", {cwd: packageDir, stdio: "pipe"});
                 for (let [className, expectedOutputFile] of Object.entries(components)) {
-                    let generatedComponents = await Generate.generateComponent(packageDir, className, "info");
+                    let generatedComponents = await Generate.generateComponent(packageDir, className, ".","info");
                     ComponentTester.testComponents(generatedComponents, expectedOutputFile, packageName);
                 }
             });

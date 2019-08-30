@@ -28,7 +28,7 @@ export class FixLocalTester {
                 fs.copySync(Path.join(testDirectory, testPackages, packageName), packageDir);
                 execSync("npm install", {cwd: packageDir, stdio: "pipe"});
                 for (let [originalComponent, expectedComponent] of Object.entries(components)) {
-                    let fixedComponent = await Fix.fixComponent(packageDir, originalComponent, "info");
+                    let fixedComponent = await Fix.fixComponent(packageDir, originalComponent, ".", "info");
                     ComponentTester.testComponents(fixedComponent, expectedComponent, packageName);
                 }
             });

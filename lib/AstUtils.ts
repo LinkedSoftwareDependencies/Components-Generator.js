@@ -235,6 +235,10 @@ export class AstUtils {
             for (let declarationBox of ast.body) {
                 if (declarationBox.type === AST_NODE_TYPES.ExportNamedDeclaration) {
                     let declaration = declarationBox.declaration;
+                    if(declaration == null)  {
+                        logger.debug("Can not parse non-declaration export");
+                        continue;
+                    }
                     if (declaration.type === AST_NODE_TYPES.ClassDeclaration ||
                         declaration.type === AST_NODE_TYPES.TSInterfaceDeclaration) {
                         // Check if it has been exported using the wildcard or if it has been exported normally
@@ -518,6 +522,10 @@ export class AstUtils {
             for (let declarationBox of contextClass.ast.body) {
                 if (declarationBox.type === AST_NODE_TYPES.ExportNamedDeclaration) {
                     let declaration = declarationBox.declaration;
+                    if(declaration == null)  {
+                        logger.debug("Can not parse non-declaration export");
+                        continue;
+                    }
                     if (declaration.type === AST_NODE_TYPES.ClassDeclaration ||
                         declaration.type === AST_NODE_TYPES.TSInterfaceDeclaration) {
                         if (classReference.className === declaration.id.name) {
@@ -644,11 +652,11 @@ export class AstUtils {
                     }
                     return exportedFields;
                 }
-
-                let parameter: any = root ? {"@id": getUniqueFieldId(compactPath, "constructorArgumentsObject")} : {};
+                if(constructorParam.declaration == null) return;
                 let similarParam = findSimilarParam(constructorParam.declaration);
                 // This means we have found a similar parameter in the constructor of a superclass
                 if (similarParam != null) {
+                    let parameter: any = root ? {"@id": getUniqueFieldId(compactPath, "constructorArgumentsObject")} : {};
                     logger.debug(`Found an identical constructor argument in other component for argument ${constructorParam.key}`);
                     let extendsAttribute = getExtendsId(similarParam.param);
                     if (extendsAttribute != null) {
@@ -661,14 +669,20 @@ export class AstUtils {
                 // the superclass of the argument is a parameter of a superclass's constructor
                 let superClass = AstUtils.getSuperClass(constructorParam.declaration.declaration);
                 if (superClass != null) {
+
                     let superClassDeclaration = AstUtils.getDeclarationWithContext(superClass,
                         constructorParam.declaration,
                         ImportExportReader.getImportDeclarations(constructorParam.declaration.ast));
+                    if(superClassDeclaration == null) {
+                        logger.error("Could not find superclass declaration");
+                        return;
+                    }
                     similarParam = findSimilarParam(superClassDeclaration);
                     if (similarParam == null) {
                         logger.error(`We could not find a matching argument for ${superClass.className} in a superclass`);
                         return;
                     }
+                    let parameter: any = root ? {"@id": getUniqueFieldId(compactPath, "constructorArgumentsObject")} : {};
                     let exportedFields = getHashFields();
                     let extendsAttribute = getExtendsId(similarParam.param);
                     if (extendsAttribute != null) {

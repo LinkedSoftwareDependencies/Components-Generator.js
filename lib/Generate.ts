@@ -15,10 +15,11 @@ export class Generate {
      *
      * @param directory the directory of the package to look in
      * @param className the class to generate a component for
+     * @param moduleRoot directory where we should look for dependencies, relative to the package directory
      * @param level the level for the logger
      * @returns the contents of the components file as an object
      */
-    public static async generateComponent(directory: string, className: string, level: string = "info"): Promise<any> {
+    public static async generateComponent(directory: string, className: string, moduleRoot: string = ".", level: string = "info"): Promise<any> {
         logger.level = level;
         if (directory == null) {
             logger.error("Missing argument package");
@@ -28,15 +29,29 @@ export class Generate {
             logger.error("Missing argument class-name");
             return;
         }
-        // Analyze imports first, otherwise we can't access package information
-        let nodeModules = await ComponentsJsUtil.getModuleComponentPaths(directory);
+        if (!fs.existsSync(directory)) {
+            logger.error("Not a valid package, directory does not exist");
+            return;
+        }
         const packagePath = Path.join(directory, "package.json");
         if (!fs.existsSync(packagePath)) {
             logger.error("Not a valid package, no package.json");
             return;
         }
+        const modulesPath = Path.join(directory, moduleRoot);
+        if (!fs.existsSync(modulesPath)) {
+            logger.error(`Modules path ${modulesPath} does not exist`);
+            return;
+        }
+        // Analyze imports first, otherwise we can't access package information
+        let nodeModules = await ComponentsJsUtil.getModuleComponentPaths(modulesPath);
+        logger.debug(`Loaded ${nodeModules.length} node modules`);
         const packageContent = Utils.getJSON(packagePath);
         const packageName = packageContent["name"];
+        if (!("lsd:components" in packageContent)) {
+            logger.error("package.json doesn't contain lsd:components");
+            return;
+        }
         let componentsPath = Path.join(directory, packageContent["lsd:components"]);
         if (!fs.existsSync(componentsPath)) {
             logger.error("Not a valid components path");
@@ -56,10 +71,9 @@ export class Generate {
         let declarationComment = CommentUtils.getComment(ast.comments, declaration);
         let classComment;
         if (declarationComment != null) {
-            let parsedDeclarationComment = commentParse(declarationComment);
-            let firstDeclarationComment = parsedDeclarationComment[0];
-            if (firstDeclarationComment.description.length !== 0) {
-                classComment = firstDeclarationComment.description;
+            let parsedDeclarationComment = commentParse(declarationComment)[0];
+            if (parsedDeclarationComment != null && parsedDeclarationComment.description.length !== 0) {
+                classComment = parsedDeclarationComment.description;
             }
         }
         let newConfig: any = {};
@@ -109,13 +123,14 @@ export class Generate {
      * @param directory the directory of the package to look in
      * @param className the class to generate a component for
      * @param outputPath write output to a specific file
+     * @param moduleRoot directory where we should look for dependencies, relative to the package directory
      * @param print whether to print to standard output
      * @param level the level for the logger
      * @returns upon completion
      */
-    public static async generateComponentFile(directory: string, className: string, outputPath: string, print: boolean, level: string = "info") {
+    public static async generateComponentFile(directory: string, className: string, outputPath: string, moduleRoot:string=".", print: boolean, level: string = "info") {
         logger.level = level;
-        let component = await this.generateComponent(directory, className, level);
+        let component = await this.generateComponent(directory, className, moduleRoot, level);
         if (component == null) {
             logger.info("Failed to generate component file");
             return;

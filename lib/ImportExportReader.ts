@@ -154,7 +154,7 @@ export class ImportExportReader {
                 let file = Path.normalize(parsedExport.exportSource);
                 files[file] = Utils.union(files[file], parsedExport.exports);
             } else {
-                logger.error(`Skipping line with type ${declaration.type}`);
+                logger.debug(`Skipping line with type ${declaration.type}`);
             }
         }
         return files;

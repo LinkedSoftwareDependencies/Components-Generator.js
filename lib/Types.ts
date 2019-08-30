@@ -129,7 +129,9 @@ export type ClassDeclarationType = ClassDeclaration | TSInterfaceDeclaration
  * Parsed comment
  */
 export interface ParsedComment {
-    /** The range of the field */
+    /** The range of
+     *
+     * field */
     range: string,
     /** The default value of the field */
     defaultValue: string,

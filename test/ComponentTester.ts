@@ -15,8 +15,9 @@ export class ComponentTester {
      * @param packageName the name of the package of the component
      */
     public static testComponents(generatedComponentsContent: any, expectedOutputFile: string, packageName: string) {
+        expect(generatedComponentsContent).not.toBeNull();
+        expect(generatedComponentsContent).not.toBeUndefined();
         let expectedComponents = Utils.getJSON(Path.join(testDirectory, outputPath, packageName, expectedOutputFile));
-        console.log(JSON.stringify(generatedComponentsContent));
         expect(generatedComponentsContent["@id"]).toBe(expectedComponents["@id"]);
         // @ts-ignore
         expect(generatedComponentsContent["@context"]).toIncludeSameMembers(expectedComponents["@context"]);

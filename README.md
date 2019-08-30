@@ -24,6 +24,7 @@ Usage:
        -c <className>    # The class to generate a component for
        -o <outputPath>   # Write output to a specific file
        -l <level>        # The level for the logger
+       -m <moduleRoot>   # Directory where we should look for dependencies, relative to the package directory
        --print           # Print output to standard output
        --help            # Show information about this command
 ```
@@ -31,9 +32,10 @@ Usage:
 #### Options
 
 * `<package>`: the filepath to the directory of the package that your component is located in. It is important that you first used `npm install` in this package's directory to make sure all the dependencies can be found.
+* `<outputPath>`: if this is set and `--print` is not used, the output will be written to this file. If this is not set and `--print` is not used, the output will be written to a file in the `components` folder of the package.
 * `<className>`: the name of the class that represents your component. Your class must be exported in the `index.ts` file of your package and this must be the name that the class was exported as.
 * `<level>`: the level of the logger. Options: `emerg, alert, crit, error, warning, notice, info, debug`. Defaults to `info`.
-* `<outputPath>`: if this is set and `--print` is not used, the output will be written to this file. If this is not set and `--print` is not used, the output will be written to a file in the `components` folder of the package.
+* `<moduleRoot>`: directory where we should look for dependencies, relative to the package directory. Defaults to `.` .
 * `--print`: if this flag is used, the output will be printed to console.
 
 ### Enhancing an existing `.jsonld` file using the CLI tool
@@ -48,6 +50,7 @@ Usage:
        -p <package>      # The directory of the package to look in
        -c <component>    # The path to the existing component file, relative to package root
        -l <level>        # The level for the logger
+       -m <moduleRoot>   # Directory where we should look for dependencies, relative to the package directory
        --print           # Print output to standard output
        --help            # Show information about this command
 ```
@@ -57,6 +60,7 @@ Usage:
 * `<package>`: the package that the existing `.jsonld` file is located in.
 * `<component>`: the filepath to your existing `.jsonld` file. It is important this path is relative to the root of your package
 * `<level>`: the level of the logger. Options: `emerg, alert, crit, error, warning, notice, info, debug`. Defaults to `info`.
+* `<moduleRoot>`: directory where we should look for dependencies, relative to the package directory. Defaults to `.` .
 * `--print`: if this flag is used, the output will be printed to console. Otherwise, the existing file will be overwritten.
 
 ### Enhancing all existing `.jsonld` files in a package using the CLI tool
@@ -68,6 +72,7 @@ Usage:
   Options:
        -p <package>      # The directory of the package to look in
        -l <level>        # The level for the logger
+       -m <moduleRoot>   # Directory where we should look for dependencies, relative to the package directory
        --print           # Print output to standard output
        --help            # Show information about this command
 ```
@@ -76,6 +81,7 @@ Usage:
 
 * `<package>`: the package that the existing `.jsonld` files are located in.
 * `<level>`: the level of the logger. Options: `emerg, alert, crit, error, warning, notice, info, debug`. Defaults to `info`.
+* `<moduleRoot>`: directory where we should look for dependencies, relative to the package directory. Defaults to `.` .
 * `--print`: if this flag is used, the output will be printed to console. Otherwise, the existing files will be overwritten.
 
 ### Using the tool in your code
@@ -90,6 +96,8 @@ const FixPackage = require("componentjs-generator").FixPackage;
 let directory = "modules/test-module";
 // Name of the class
 let className = "MyActor";
+// Module directory
+let moduleRoot = ".";
 // Logger level
 let level = "debug";
 
@@ -97,28 +105,27 @@ async function run() {
     
     // Returns a Javascript object that represents the contents of the component file
     // No actual file will be created
-    let component = await Generate.generateComponent(directory, className, level);
-    
+    let component = await Generate.generateComponent(directory, className, moduleRoot, level);
     let print = false;
-    let outputPath = "components/MyActor.jsonld";
+    let outputPath = "components/Actor/MyActor.jsonld";
     
     // Creates a file with the generated component content
     // The other options are the same as in the CLI tool
-    await Generate.generateComponentFile(directory, className, outputPath, print, level);
+    await Generate.generateComponentFile(directory, className, outputPath, moduleRoot, print, level);
     
     // Returns a Javascript object that represents of the fixed component file
     // No actual file will be created. Additional feedback about misconfigurations will be logged
-    let fixedComponent = await Fix.fixComponent(directory, outputPath, level);
+    let fixedComponent = await Fix.fixComponent(directory, outputPath, moduleRoot, level);
 
     // Creates a file with the content of the fixed component
     // The other options are the same as in the CLI tool
     // Additional feedback about misconfigurations will be logged
-    await Fix.fixComponentFile(directory, outputPath, print, level);
+    await Fix.fixComponentFile(directory, outputPath, moduleRoot, print, level);
     
     // Overwrites all files with their fixed component content     
     // The other options are the same as in the CLI tool
     // Additional feedback about misconfigurations will be logged
-    await FixPackage.fixPackage(directory, print, level);
+    await FixPackage.fixPackage(directory, moduleRoot, print, level);
 }
 ```
 
@@ -198,7 +205,7 @@ export class MyActor extends OtherActor {
   }
 }
 
-export interface IActorBindingArgs extends IActoOtherBindingArgs {
+export interface IActorBindingArgs extends IActorOtherBindingArgs {
   /**
    * This field is very important
    * @range {float}

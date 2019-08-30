@@ -13,10 +13,11 @@ export class Fix {
      *
      * @param directory the directory of the package to look in
      * @param componentPath the the filepath to your existing .jsonld file
+     * @param moduleRoot directory where we should look for dependencies, relative to the package directory
      * @param level the level for the logger
      * @returns upon completion
      */
-    public static async fixComponent(directory: string, componentPath: string, level: string): Promise<any> {
+    public static async fixComponent(directory: string, componentPath: string, moduleRoot: string = ".", level: string = "info"): Promise<any> {
         logger.level = level;
         if (directory == null) {
             logger.error("Missing argument package");
@@ -26,13 +27,23 @@ export class Fix {
             logger.error("Missing argument component");
             return;
         }
-        // Analyze imports first, otherwise we can't access package information
-        let nodeModules = await ComponentsJsUtil.getModuleComponentPaths(directory);
+        if (!fs.existsSync(directory)) {
+            logger.error("Not a valid package, directory does not exist");
+            return;
+        }
         const packagePath = Path.join(directory, "package.json");
         if (!fs.existsSync(packagePath)) {
             logger.error("Not a valid package, no package.json");
             return;
         }
+        const modulesPath = Path.join(directory, moduleRoot);
+        if (!fs.existsSync(modulesPath)) {
+            logger.error(`Modules path ${modulesPath} does not exist`);
+            return;
+        }
+        // Analyze imports first, otherwise we can't access package information
+        let nodeModules = await ComponentsJsUtil.getModuleComponentPaths(modulesPath);
+        logger.debug(`Loaded ${nodeModules.length} node modules`);
         const packageContent = Utils.getJSON(packagePath);
         const packageName = packageContent["name"];
         const absoluteComponentPath = Path.join(directory, componentPath);
@@ -71,7 +82,7 @@ export class Fix {
                 logger.error(`Did not find a matching class for name ${className}, please check the name and make sure it has been exported`);
                 continue;
             }
-            let generatedComponent = await Generate.generateComponent(directory, className, level);
+            let generatedComponent = await Generate.generateComponent(directory, className, moduleRoot, level);
             componentsEntry[i] = FixUtils.additiveComponentFix(componentObject, generatedComponent["components"][0]);
         }
         return componentContent;
@@ -82,13 +93,14 @@ export class Fix {
      *
      * @param directory the directory of the package to look in
      * @param componentPath the the filepath to your existing .jsonld file
+     * @param moduleRoot directory where we should look for dependencies, relative to the package directory
      * @param print whether to print to standard output, otherwise files will be overwritten
      * @param level the level for the logger
      * @returns upon completion
      */
-    public static async fixComponentFile(directory: string, componentPath: string, print: boolean, level: string) {
+    public static async fixComponentFile(directory: string, componentPath: string, moduleRoot: string = ".", print: boolean, level: string = "info") {
         logger.level = level;
-        let fixedComponent = await this.fixComponent(directory, componentPath, level);
+        let fixedComponent = await this.fixComponent(directory, componentPath, moduleRoot, level);
         if (fixedComponent == null) {
             logger.info(`Failed to generate fixed component file for file ${componentPath}`);
             return;
@@ -97,8 +109,9 @@ export class Fix {
         if (print) {
             console.log(jsonString);
         } else {
-            logger.info(`Writing output to ${componentPath}`);
-            fs.writeFileSync(componentPath, jsonString);
+            const absoluteComponentPath = Path.join(directory, componentPath);
+            logger.info(`Writing output to ${absoluteComponentPath}`);
+            fs.writeFileSync(absoluteComponentPath, jsonString);
         }
     }
 }

@@ -12,11 +12,12 @@ export class FixPackage {
      * Creates a fixed component file for all existing components in a package
      *
      * @param directory the directory of the package to look in
+     * @param moduleRoot directory where we should look for dependencies, relative to the package directory
      * @param print whether to print to standard output, otherwise files will be overwritten
      * @param level the level for the logger
      * @returns upon completion
      */
-    public static async fixPackage(directory: string, print: boolean, level: string) {
+    public static async fixPackage(directory: string, moduleRoot: string = ".", print: boolean, level: string) {
         const packagePath = Path.join(directory, "package.json");
         if (!fs.existsSync(packagePath)) {
             logger.error("Not a valid package, no package.json");
@@ -33,7 +34,7 @@ export class FixPackage {
             let baseName = Path.basename(filePath);
             if (blacklist.includes(baseName)) continue;
             let relativePath = Path.relative(directory, filePath);
-            await Fix.fixComponentFile(directory, relativePath, print, level);
+            await Fix.fixComponentFile(directory, relativePath, moduleRoot, print, level);
         }
 
     }

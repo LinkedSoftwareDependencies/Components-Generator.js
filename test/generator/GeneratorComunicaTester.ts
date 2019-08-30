@@ -32,9 +32,9 @@ export class GeneratorComunicaTester {
                     stdio: "pipe"
                 });
                 // Install all the dependencies of the clone NPM package
-                execSync("npm install", {cwd: packageDir, stdio: "pipe"});
+                execSync("yarn install", {cwd: packageDir, stdio: "pipe"});
                 for (let [className, expectedOutputFile] of Object.entries(components)) {
-                    let generatedComponents = await Generate.generateComponent(packageDir, className, "info");
+                    let generatedComponents = await Generate.generateComponent(packageDir, className, ".", "info");
                     ComponentTester.testComponents(generatedComponents, expectedOutputFile, packageName);
                 }
             });
