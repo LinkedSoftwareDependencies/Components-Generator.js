@@ -66,7 +66,7 @@ Usage:
 ### Enhancing all existing `.jsonld` files in a package using the CLI tool
 
 ```bash
-Enhances all existing .jsonld files in a packages and gives feedback about possible misconfigurations
+Enhances all existing .jsonld files in a package and gives feedback about possible misconfigurations
 Usage:
   componentsjs-fixpackage -p ./packages/my-package -l info
   Options:
