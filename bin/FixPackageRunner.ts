@@ -3,7 +3,7 @@ import * as minimist from "minimist";
 import {FixPackage} from "../lib/FixPackage";
 
 function showHelp() {
-    console.error(`Enhances all existing .jsonld files in a packages and gives feedback about possible misconfigurations
+    console.error(`Enhances all existing .jsonld files in a package and gives feedback about possible misconfigurations
 Usage:
   componentsjs-fixpackage -p ./packages/my-package -l info
   Options:
