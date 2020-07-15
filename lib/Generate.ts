@@ -54,7 +54,7 @@ export class Generate {
         }
         let componentsPath = Path.join(directory, packageContent["lsd:components"]);
         if (!fs.existsSync(componentsPath)) {
-            logger.error("Not a valid components path");
+            logger.error("Not a valid components path: " + componentsPath);
             return;
         }
         const componentsContent = Utils.getJSON(componentsPath);
