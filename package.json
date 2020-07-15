@@ -46,7 +46,7 @@
     "@typescript-eslint/typescript-estree": "^1.13.0"
   },
   "devDependencies": {
-    "@comunica/core": "1.9.0",
+    "@comunica/core": "1.13.0",
     "@types/fs-extra": "^8.0.0",
     "@types/jest": "^24.0.18",
     "@types/jsonld": "^1.5.0",
