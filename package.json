@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc",
     "test": "jest ${1}",
+    "lint": "echo \"TODO\"",
     "prepare": "npm run build"
   },
   "jest": {
