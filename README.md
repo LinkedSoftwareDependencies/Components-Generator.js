@@ -1,5 +1,9 @@
 # Components.js Generator
 
+[![Build Status](https://travis-ci.org/LinkedSoftwareDependencies/Components.js-Generator.svg?branch=master)](https://travis-ci.org/LinkedSoftwareDependencies/Components.js-Generator)
+[![Coverage Status](https://coveralls.io/repos/github/LinkedSoftwareDependencies/Components.js-Generator/badge.svg?branch=master)](https://coveralls.io/github/LinkedSoftwareDependencies/Components.js-Generator?branch=master)
+[![npm version](https://badge.fury.io/js/componentjs-generator.svg)](https://www.npmjs.com/package/componentjs-generator)
+
 A tool to generate `.jsonld` component files for [Components.js](https://github.com/LinkedSoftwareDependencies/Components.js) TypeScript classes.  
 Please check the [Components.js documentation](https://componentsjs.readthedocs.io/en/latest/) first.
 
