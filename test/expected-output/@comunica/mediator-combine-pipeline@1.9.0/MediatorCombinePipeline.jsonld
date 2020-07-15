@@ -6,7 +6,7 @@
   "@id": "npmd:@comunica/mediator-combine-pipeline",
   "components": [
     {
-      "@id": "npmd:@comunica/mediator-combine-pipeline/MediatorCombinePipeline",
+      "@id": "cmcp:MediatorCombinePipeline",
       "requireElement": "MediatorCombinePipeline",
       "@type": "Class",
       "comment": "A comunica mediator that goes over all actors in sequence and forwards I/O.\nThis required the action input and the actor output to be of the same type.",
@@ -14,7 +14,7 @@
       "parameters": [],
       "constructorArguments": [
         {
-          "@id": "npmd:@comunica/mediator-combine-pipeline/MediatorCombinePipeline#constructorArgumentsObject",
+          "@id": "cmcp:MediatorCombinePipeline#constructorArgumentsObject",
           "extends": "cc:Mediator/constructorArgumentsObject"
         }
       ]

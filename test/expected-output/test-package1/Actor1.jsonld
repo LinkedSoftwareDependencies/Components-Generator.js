@@ -2,24 +2,25 @@
   "@context": [
     "http://example.com/actor3",
     "http://example.com/actor2",
+    "https://linkedsoftwaredependencies.org/bundles/npm/test-package/^1.0.0/components/context.jsonld",
     "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/^1.0.0/components/context.jsonld"
   ],
-  "@id": "test-package",
+  "@id": "ex:test-package",
   "components": [
     {
-      "@id": "test-package/Actor1",
+      "@id": "ex:test-package/Actor1",
       "requireElement": "Actor1",
       "@type": "Class",
-      "extends": "test-package/Actor2Alt",
+      "extends": "ex:test-package/Actor2Alt",
       "parameters": [
         {
-          "@id": "test-package/Actor1#ownArgs",
+          "@id": "ex:test-package/Actor1#ownArgs",
           "required": false,
           "unique": true,
           "range": "xsd:string"
         },
         {
-          "@id": "test-package/Actor1#optionalNumber",
+          "@id": "ex:test-package/Actor1#optionalNumber",
           "required": true,
           "unique": true,
           "range": "xsd:float",
@@ -27,7 +28,7 @@
           "comment": "Testing arguments with similar names"
         },
         {
-          "@id": "test-package/Actor1#optionalNumber1",
+          "@id": "ex:test-package/Actor1#optionalNumber1",
           "required": false,
           "unique": true,
           "range": "xsd:int"
@@ -35,25 +36,25 @@
       ],
       "constructorArguments": [
         {
-          "@id": "test-package/Actor1#constructorArgumentsObject",
-          "extends": "test-package/Actor2Alt#constructorArgumentsObject",
+          "@id": "ex:test-package/Actor1#constructorArgumentsObject",
+          "extends": "ex:test-package/Actor2Alt#constructorArgumentsObject",
           "fields": [
             {
               "keyRaw": "ownArgs",
-              "value": "test-package/Actor1#ownArgs"
+              "value": "ex:test-package/Actor1#ownArgs"
             },
             {
               "keyRaw": "optionalNumber",
-              "value": "test-package/Actor1#optionalNumber"
+              "value": "ex:test-package/Actor1#optionalNumber"
             }
           ]
         },
         {
-          "@id": "test-package/Actor1#constructorArgumentsObject1",
-          "extends": "test-package/Actor2Alt#constructorArgumentsObject"
+          "@id": "ex:test-package/Actor1#constructorArgumentsObject1",
+          "extends": "ex:test-package/Actor2Alt#constructorArgumentsObject"
         },
         {
-          "@id": "test-package/Actor1#optionalNumber1"
+          "@id": "ex:test-package/Actor1#optionalNumber1"
         }
       ]
     }

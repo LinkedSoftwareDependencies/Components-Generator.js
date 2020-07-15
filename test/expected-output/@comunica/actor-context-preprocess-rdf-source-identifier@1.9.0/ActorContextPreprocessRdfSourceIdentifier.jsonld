@@ -7,14 +7,14 @@
   "@id": "npmd:@comunica/actor-context-preprocess-rdf-source-identifier",
   "components": [
     {
-      "@id": "npmd:@comunica/actor-context-preprocess-rdf-source-identifier/ActorContextPreprocessRdfSourceIdentifier",
+      "@id": "cacprsi:ActorContextPreprocessRdfSourceIdentifier",
       "requireElement": "ActorContextPreprocessRdfSourceIdentifier",
       "@type": "Class",
       "comment": "A comunica RDF Source Identifier Context Preprocess Actor.",
       "extends": "cbcp:Actor/ContextPreprocess",
       "parameters": [
         {
-          "@id": "npmd:@comunica/actor-context-preprocess-rdf-source-identifier/ActorContextPreprocessRdfSourceIdentifier#mediatorRdfSourceIdentifier",
+          "@id": "cacprsi:ActorContextPreprocessRdfSourceIdentifier#mediatorRdfSourceIdentifier",
           "required": true,
           "unique": true,
           "range": "cc:Mediator"
@@ -22,12 +22,12 @@
       ],
       "constructorArguments": [
         {
-          "@id": "npmd:@comunica/actor-context-preprocess-rdf-source-identifier/ActorContextPreprocessRdfSourceIdentifier#constructorArgumentsObject",
+          "@id": "cacprsi:ActorContextPreprocessRdfSourceIdentifier#constructorArgumentsObject",
           "extends": "cbcp:Actor/ContextPreprocess/constructorArgumentsObject",
           "fields": [
             {
               "keyRaw": "mediatorRdfSourceIdentifier",
-              "value": "npmd:@comunica/actor-context-preprocess-rdf-source-identifier/ActorContextPreprocessRdfSourceIdentifier#mediatorRdfSourceIdentifier"
+              "value": "cacprsi:ActorContextPreprocessRdfSourceIdentifier#mediatorRdfSourceIdentifier"
             }
           ]
         }

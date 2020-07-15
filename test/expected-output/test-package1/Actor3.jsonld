@@ -1,53 +1,54 @@
 {
   "@context": [
+    "https://linkedsoftwaredependencies.org/bundles/npm/test-package/^1.0.0/components/context.jsonld",
     "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/^1.0.0/components/context.jsonld"
   ],
-  "@id": "test-package",
+  "@id": "ex:test-package",
   "components": [
     {
-      "@id": "test-package/Actor3",
+      "@id": "ex:test-package/Actor3",
       "requireElement": "Actor3",
       "@type": "AbstractClass",
       "parameters": [
         {
-          "@id": "test-package/Actor3#booleanTest",
+          "@id": "ex:test-package/Actor3#booleanTest",
           "required": true,
           "unique": true,
           "range": "xsd:boolean",
           "comment": "Boolean field comment"
         },
         {
-          "@id": "test-package/Actor3#javascriptBooleanTest",
+          "@id": "ex:test-package/Actor3#javascriptBooleanTest",
           "required": true,
           "unique": true,
           "range": "xsd:boolean"
         },
         {
-          "@id": "test-package/Actor3#stringTest",
+          "@id": "ex:test-package/Actor3#stringTest",
           "required": true,
           "unique": true,
           "range": "xsd:string"
         },
         {
-          "@id": "test-package/Actor3#javascriptStringTest",
+          "@id": "ex:test-package/Actor3#javascriptStringTest",
           "required": true,
           "unique": true,
           "range": "xsd:string"
         },
         {
-          "@id": "test-package/Actor3#numberTest",
+          "@id": "ex:test-package/Actor3#numberTest",
           "required": true,
           "unique": true,
           "range": "xsd:int"
         },
         {
-          "@id": "test-package/Actor3#javascriptNumberTest",
+          "@id": "ex:test-package/Actor3#javascriptNumberTest",
           "required": true,
           "unique": true,
           "range": "xsd:int"
         },
         {
-          "@id": "test-package/Actor3#tagTest",
+          "@id": "ex:test-package/Actor3#tagTest",
           "required": true,
           "unique": true,
           "range": "xsd:byte",
@@ -55,39 +56,39 @@
           "comment": "We test some tags here"
         },
         {
-          "@id": "test-package/Actor3#arrayTest",
+          "@id": "ex:test-package/Actor3#arrayTest",
           "required": true,
           "unique": false,
           "range": "xsd:int"
         },
         {
-          "@id": "test-package/Actor3#arrayTagTest",
+          "@id": "ex:test-package/Actor3#arrayTagTest",
           "required": true,
           "unique": false,
           "range": "xsd:byte",
           "comment": "We test the range tag on an array"
         },
         {
-          "@id": "test-package/Actor3#componentTest",
+          "@id": "ex:test-package/Actor3#componentTest",
           "required": true,
           "unique": true,
           "range": "cc:Logger",
           "comment": "This is a component from another package"
         },
         {
-          "@id": "test-package/Actor3#nestedField",
+          "@id": "ex:test-package/Actor3#nestedField",
           "required": true,
           "unique": true,
           "range": "xsd:int"
         },
         {
-          "@id": "test-package/Actor3#nestedField1",
+          "@id": "ex:test-package/Actor3#nestedField1",
           "required": false,
           "unique": true,
           "range": "xsd:int"
         },
         {
-          "@id": "test-package/Actor3#nestedField2",
+          "@id": "ex:test-package/Actor3#nestedField2",
           "required": false,
           "unique": true,
           "range": "xsd:int"
@@ -95,47 +96,47 @@
       ],
       "constructorArguments": [
         {
-          "@id": "test-package/Actor3#args",
+          "@id": "ex:test-package/Actor3#args",
           "fields": [
             {
               "keyRaw": "booleanTest",
-              "value": "test-package/Actor3#booleanTest"
+              "value": "ex:test-package/Actor3#booleanTest"
             },
             {
               "keyRaw": "javascriptBooleanTest",
-              "value": "test-package/Actor3#javascriptBooleanTest"
+              "value": "ex:test-package/Actor3#javascriptBooleanTest"
             },
             {
               "keyRaw": "stringTest",
-              "value": "test-package/Actor3#stringTest"
+              "value": "ex:test-package/Actor3#stringTest"
             },
             {
               "keyRaw": "javascriptStringTest",
-              "value": "test-package/Actor3#javascriptStringTest"
+              "value": "ex:test-package/Actor3#javascriptStringTest"
             },
             {
               "keyRaw": "numberTest",
-              "value": "test-package/Actor3#numberTest"
+              "value": "ex:test-package/Actor3#numberTest"
             },
             {
               "keyRaw": "javascriptNumberTest",
-              "value": "test-package/Actor3#javascriptNumberTest"
+              "value": "ex:test-package/Actor3#javascriptNumberTest"
             },
             {
               "keyRaw": "tagTest",
-              "value": "test-package/Actor3#tagTest"
+              "value": "ex:test-package/Actor3#tagTest"
             },
             {
               "keyRaw": "arrayTest",
-              "value": "test-package/Actor3#arrayTest"
+              "value": "ex:test-package/Actor3#arrayTest"
             },
             {
               "keyRaw": "arrayTagTest",
-              "value": "test-package/Actor3#arrayTagTest"
+              "value": "ex:test-package/Actor3#arrayTagTest"
             },
             {
               "keyRaw": "componentTest",
-              "value": "test-package/Actor3#componentTest"
+              "value": "ex:test-package/Actor3#componentTest"
             },
             {
               "keyRaw": "nestTest",
@@ -143,7 +144,7 @@
                 "fields": [
                   {
                     "keyRaw": "nestedField",
-                    "value": "test-package/Actor3#nestedField"
+                    "value": "ex:test-package/Actor3#nestedField"
                   },
                   {
                     "keyRaw": "nestedDouble",
@@ -151,7 +152,7 @@
                       "fields": [
                         {
                           "keyRaw": "nestedField",
-                          "value": "test-package/Actor3#nestedField1"
+                          "value": "ex:test-package/Actor3#nestedField1"
                         }
                       ]
                     }
@@ -162,7 +163,7 @@
                       "elements": [
                         {
                           "keyRaw": "nestedField",
-                          "value": "test-package/Actor3#nestedField2"
+                          "value": "ex:test-package/Actor3#nestedField2"
                         }
                       ]
                     }

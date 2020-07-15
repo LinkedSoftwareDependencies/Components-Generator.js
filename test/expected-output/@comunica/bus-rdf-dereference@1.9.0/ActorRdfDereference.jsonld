@@ -6,7 +6,7 @@
   "@id": "npmd:@comunica/bus-rdf-dereference",
   "components": [
     {
-      "@id": "npmd:@comunica/bus-rdf-dereference/ActorRdfDereference",
+      "@id": "cbrd:ActorRdfDereference",
       "requireElement": "ActorRdfDereference",
       "@type": "AbstractClass",
       "comment": "A base actor for dereferencing URLs to quad streams.\n\nActor types:\n* Input:  IActionRdfDereference:      A URL.\n* Test:   <none>\n* Output: IActorRdfDereferenceOutput: A quad stream.",
@@ -14,7 +14,7 @@
       "parameters": [],
       "constructorArguments": [
         {
-          "@id": "npmd:@comunica/bus-rdf-dereference/ActorRdfDereference#constructorArgumentsObject",
+          "@id": "cbrd:ActorRdfDereference#constructorArgumentsObject",
           "extends": "cc:Actor/constructorArgumentsObject"
         }
       ]

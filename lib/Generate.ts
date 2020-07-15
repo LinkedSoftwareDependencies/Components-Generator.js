@@ -7,8 +7,13 @@ import {Utils} from "./Utils";
 import {logger} from "./Core";
 import {CommentUtils} from "./CommentUtils";
 import {ImportExportReader} from "./ImportExportReader";
+import {ContextParser, IJsonLdContext} from "jsonld-context-parser";
+import {createLogger} from "winston";
+import {JsonLdContextNormalized} from "jsonld-context-parser/lib/JsonLdContextNormalized";
 
 export class Generate {
+
+    private static readonly CONTEXT_PARSER = new ContextParser();
 
     /**
      * Generates a component file for a class
@@ -48,6 +53,11 @@ export class Generate {
         logger.debug(`Loaded ${nodeModules.length} node modules`);
         const packageContent = Utils.getJSON(packagePath);
         const packageName = packageContent["name"];
+        if (!('lsd:module' in packageContent)) {
+            logger.error(`Missing 'lsd:module' IRI in package.json`);
+            return;
+        }
+        let moduleIri = packageContent["lsd:module"];
         if (!("lsd:components" in packageContent)) {
             logger.error("package.json doesn't contain lsd:components");
             return;
@@ -57,7 +67,6 @@ export class Generate {
             logger.error("Not a valid components path: " + componentsPath);
             return;
         }
-        const componentsContent = Utils.getJSON(componentsPath);
         let classDeclaration = AstUtils.getDeclaration({
             className: className,
             exportedFrom: packageName
@@ -77,14 +86,18 @@ export class Generate {
             }
         }
         let newConfig: any = {};
+        let context: JsonLdContextNormalized;
         if ("lsd:contexts" in packageContent) {
             newConfig["@context"] = Object.keys(packageContent["lsd:contexts"]);
+            context = await Generate.CONTEXT_PARSER.parse(Object.values(packageContent["lsd:contexts"])
+                .map((path: string) => Utils.getJSON(Path.join(directory, path))));
         } else {
             newConfig["@context"] = [];
+            context = new JsonLdContextNormalized({});
         }
-        newConfig["@id"] = componentsContent["@id"];
+        newConfig["@id"] = context.compactIri(moduleIri);
 
-        let compactPath = `${componentsContent["@id"]}/${className}`;
+        let compactPath = context.compactIri(`${moduleIri}/${className}`);
         let newComponent: any = {};
         newComponent["@id"] = compactPath;
         newComponent["requireElement"] = className;

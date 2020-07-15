@@ -7,7 +7,7 @@
   "@id": "npmd:@comunica/actor-query-operation-filter-sparqlee",
   "components": [
     {
-      "@id": "npmd:@comunica/actor-query-operation-filter-sparqlee/ActorQueryOperationFilterSparqlee",
+      "@id": "caqofs:ActorQueryOperationFilterSparqlee",
       "requireElement": "ActorQueryOperationFilterSparqlee",
       "@type": "Class",
       "comment": "A comunica Filter Sparqlee Query Operation Actor.",
@@ -15,7 +15,7 @@
       "parameters": [],
       "constructorArguments": [
         {
-          "@id": "npmd:@comunica/actor-query-operation-filter-sparqlee/ActorQueryOperationFilterSparqlee#constructorArgumentsObject",
+          "@id": "caqofs:ActorQueryOperationFilterSparqlee#constructorArgumentsObject",
           "extends": "cbqo:Actor/QueryOperationTypedMediated/constructorArgumentsObject"
         }
       ]

@@ -138,7 +138,11 @@ export class Utils {
      * @returns the content of the file as an object
      */
     public static getJSON(filePath: string): any {
-        return JSON.parse(Utils.getContent(filePath));
+        try {
+            return JSON.parse(Utils.getContent(filePath));
+        } catch (e) {
+            throw new Error(`JSON syntax error in ${filePath}: ${e.message}`);
+        }
     }
 
     /**

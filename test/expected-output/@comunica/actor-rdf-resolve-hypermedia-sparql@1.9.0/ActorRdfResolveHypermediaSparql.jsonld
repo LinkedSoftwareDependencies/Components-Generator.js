@@ -7,14 +7,14 @@
   "@id": "npmd:@comunica/actor-rdf-resolve-hypermedia-sparql",
   "components": [
     {
-      "@id": "npmd:@comunica/actor-rdf-resolve-hypermedia-sparql/ActorRdfResolveHypermediaSparql",
+      "@id": "carrhs:ActorRdfResolveHypermediaSparql",
       "requireElement": "ActorRdfResolveHypermediaSparql",
       "@type": "Class",
       "comment": "A comunica SPARQL RDF Resolve Hypermedia Actor.",
       "extends": "cbrrh:Actor/RdfResolveHypermedia",
       "parameters": [
         {
-          "@id": "npmd:@comunica/actor-rdf-resolve-hypermedia-sparql/ActorRdfResolveHypermediaSparql#mediatorHttp",
+          "@id": "carrhs:ActorRdfResolveHypermediaSparql#mediatorHttp",
           "required": true,
           "unique": true,
           "range": "cc:Mediator"
@@ -22,12 +22,12 @@
       ],
       "constructorArguments": [
         {
-          "@id": "npmd:@comunica/actor-rdf-resolve-hypermedia-sparql/ActorRdfResolveHypermediaSparql#constructorArgumentsObject",
+          "@id": "carrhs:ActorRdfResolveHypermediaSparql#constructorArgumentsObject",
           "extends": "cbrrh:Actor/RdfResolveHypermedia/constructorArgumentsObject",
           "fields": [
             {
               "keyRaw": "mediatorHttp",
-              "value": "npmd:@comunica/actor-rdf-resolve-hypermedia-sparql/ActorRdfResolveHypermediaSparql#mediatorHttp"
+              "value": "carrhs:ActorRdfResolveHypermediaSparql#mediatorHttp"
             }
           ]
         }

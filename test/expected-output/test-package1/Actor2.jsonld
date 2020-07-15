@@ -1,32 +1,33 @@
 {
   "@context": [
     "http://example.com/actor3",
+    "https://linkedsoftwaredependencies.org/bundles/npm/test-package/^1.0.0/components/context.jsonld",
     "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/^1.0.0/components/context.jsonld"
   ],
-  "@id": "test-package",
+  "@id": "ex:test-package",
   "components": [
     {
-      "@id": "test-package/Actor2Alt",
+      "@id": "ex:test-package/Actor2Alt",
       "requireElement": "Actor2Alt",
       "@type": "Class",
       "comment": "This class is great and has some funky import names",
-      "extends": "test-package/Actor3",
+      "extends": "ex:test-package/Actor3",
       "parameters": [],
       "constructorArguments": [
         {
-          "@id": "test-package/Actor2Alt#constructorArgumentsObject",
-          "extends": "test-package/Actor3#args",
+          "@id": "ex:test-package/Actor2Alt#constructorArgumentsObject",
+          "extends": "ex:test-package/Actor3#args",
           "fields": [
             {
               "keyRaw": "referenceTest",
               "value": {
-                "extends": "test-package/Actor3#args"
+                "extends": "ex:test-package/Actor3#args"
               }
             },
             {
               "keyRaw": "crossReferenceTest",
               "value": {
-                "extends": "test-package/Actor3#args",
+                "extends": "ex:test-package/Actor3#args",
                 "fields": []
               }
             },

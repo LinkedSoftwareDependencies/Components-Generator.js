@@ -1,108 +1,108 @@
 {
   "@context": [
-    "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/^1.0.0/components/context.jsonld"
+    "https://linkedsoftwaredependencies.org/bundles/npm/test-package/^1.0.0/components/context.jsonld"
   ],
-  "@id": "test-package",
+  "@id": "ex:test-package",
   "components": [
     {
-      "@id": "test-package/Actor3",
+      "@id": "ex:test-package/Actor3",
       "requireElement": "Actor3",
       "@type": "AbstractClass",
       "comment": "A version of the Actor3 component with a missing parameter",
       "parameters": [
         {
-          "@id": "test-package/Actor3#javascriptBooleanTest",
+          "@id": "ex:test-package/Actor3#javascriptBooleanTest",
           "unique": true,
           "range": "xsd:boolean"
         },
         {
-          "@id": "test-package/Actor3#stringTest",
+          "@id": "ex:test-package/Actor3#stringTest",
           "unique": true
         },
         {
-          "@id": "test-package/Actor3#tagTest",
+          "@id": "ex:test-package/Actor3#tagTest",
           "required": true,
           "comment": "We test some tags here"
         },
         {
-          "@id": "test-package/Actor3#javascriptStringTest"
+          "@id": "ex:test-package/Actor3#javascriptStringTest"
         },
         {
-          "@id": "test-package/Actor3#numberTest",
+          "@id": "ex:test-package/Actor3#numberTest",
           "unique": true,
           "comment": "This should remain a float",
           "range": "xsd:float"
         },
         {
-          "@id": "test-package/Actor3#booleanTest",
+          "@id": "ex:test-package/Actor3#booleanTest",
           "required": true,
           "comment": "DONT OVERWRITE ME"
         },
         {
-          "@id": "test-package/Actor3#arrayTagTest",
+          "@id": "ex:test-package/Actor3#arrayTagTest",
           "comment": "We test the range tag on an array"
         },
         {
-          "@id": "test-package/Actor3#componentTest",
+          "@id": "ex:test-package/Actor3#componentTest",
           "required": true
         },
         {
-          "@id": "test-package/Actor3#nestedField",
+          "@id": "ex:test-package/Actor3#nestedField",
           "required": true
         },
         {
-          "@id": "test-package/Actor3#nestedField2",
+          "@id": "ex:test-package/Actor3#nestedField2",
           "unique": true
         },
         {
-          "@id": "test-package/Actor3#nestedField1",
+          "@id": "ex:test-package/Actor3#nestedField1",
           "unique": true,
           "range": "xsd:int"
         },
         {
-          "@id": "test-package/Actor3#arrayTest",
+          "@id": "ex:test-package/Actor3#arrayTest",
           "required": true,
           "unique": false
         }
       ],
       "constructorArguments": [
         {
-          "@id": "test-package/Actor3#args",
+          "@id": "ex:test-package/Actor3#args",
           "fields": [
             {
               "keyRaw": "booleanTest",
-              "value": "test-package/Actor3#booleanTest"
+              "value": "ex:test-package/Actor3#booleanTest"
             },
             {
-              "value": "test-package/Actor3#javascriptBooleanTest"
+              "value": "ex:test-package/Actor3#javascriptBooleanTest"
             },
             {
-              "value": "test-package/Actor3#stringTest"
+              "value": "ex:test-package/Actor3#stringTest"
             },
             {
               "keyRaw": "javascriptStringTest"
             },
             {
               "keyRaw": "numberTest",
-              "value": "test-package/Actor3#numberTest"
+              "value": "ex:test-package/Actor3#numberTest"
             },
             {
-              "value": "test-package/Actor3#javascriptNumberTest"
+              "value": "ex:test-package/Actor3#javascriptNumberTest"
             },
             {
               "keyRaw": "tagTest"
             },
             {
               "keyRaw": "arrayTest",
-              "value": "test-package/Actor3#arrayTest"
+              "value": "ex:test-package/Actor3#arrayTest"
             },
             {
               "keyRaw": "arrayTagTest",
-              "value": "test-package/Actor3#arrayTagTest"
+              "value": "ex:test-package/Actor3#arrayTagTest"
             },
             {
               "keyRaw": "componentTest",
-              "value": "test-package/Actor3#componentTest"
+              "value": "ex:test-package/Actor3#componentTest"
             },
             {
               "keyRaw": "nestTest",

@@ -23,13 +23,15 @@ export class FixLocalTester {
             rimraf.sync(tmp);
         });
         for (let [packageName, components] of Object.entries(packages)) {
-            test(packageName, async () => {
+            describe(packageName, () => {
                 let packageDir = Path.join(tmp, packageName);
                 fs.copySync(Path.join(testDirectory, testPackages, packageName), packageDir);
                 execSync("npm install", {cwd: packageDir, stdio: "pipe"});
                 for (let [originalComponent, expectedComponent] of Object.entries(components)) {
-                    let fixedComponent = await Fix.fixComponent(packageDir, originalComponent, ".", "info");
-                    ComponentTester.testComponents(fixedComponent, expectedComponent, packageName);
+                    it(originalComponent, async () => {
+                        let fixedComponent = await Fix.fixComponent(packageDir, originalComponent, ".", "info");
+                        ComponentTester.testComponents(fixedComponent, expectedComponent, packageName);
+                    });
                 }
             });
         }

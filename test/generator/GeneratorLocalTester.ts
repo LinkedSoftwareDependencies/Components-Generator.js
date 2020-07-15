@@ -24,13 +24,15 @@ export class GeneratorLocalTester {
             rimraf.sync(tmp);
         });
         for (let [packageName, components] of Object.entries(packages)) {
-            test(packageName, async () => {
+            describe(packageName, () => {
                 let packageDir = Path.join(tmp, packageName);
                 fs.copySync(Path.join(testDirectory, testPackages, packageName), packageDir);
                 execSync("npm install", {cwd: packageDir, stdio: "pipe"});
                 for (let [className, expectedOutputFile] of Object.entries(components)) {
-                    let generatedComponents = await Generate.generateComponent(packageDir, className, ".","info");
-                    ComponentTester.testComponents(generatedComponents, expectedOutputFile, packageName);
+                    it(className, async () => {
+                        let generatedComponents = await Generate.generateComponent(packageDir, className, ".","info");
+                        ComponentTester.testComponents(generatedComponents, expectedOutputFile, packageName);
+                    });
                 }
             });
         }
