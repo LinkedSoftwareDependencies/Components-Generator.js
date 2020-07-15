@@ -2,7 +2,7 @@
   "name": "componentjs-generator",
   "version": "1.0.0",
   "description": "A tool to generate and fix .jsonld component files for Components.js TypeScript classes",
-  "main": "bin/GenerateRunner.ts",
+  "main": "index.js",
   "scripts": {
     "build": "tsc",
     "test": "jest ${1}",
@@ -33,7 +33,6 @@
     "index.ts"
   ],
   "dependencies": {
-    "@comunica/core": "latest",
     "child_process": "^1.0.2",
     "comment-parser": "^0.6.1",
     "componentsjs": "^3.2.1",
@@ -45,6 +44,7 @@
     "@typescript-eslint/typescript-estree": "^1.13.0"
   },
   "devDependencies": {
+    "@comunica/core": "1.9.0",
     "@types/fs-extra": "^8.0.0",
     "@types/jest": "^24.0.18",
     "@types/jsonld": "^1.5.0",
