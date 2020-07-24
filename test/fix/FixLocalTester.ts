@@ -1,39 +1,39 @@
-import * as fs from "fs-extra";
-import * as Path from "path";
-import * as rimraf from "rimraf";
-import {ComponentTester, testDirectory} from "../ComponentTester";
-import {execSync} from "child_process";
-import {Fix} from "../../lib/Fix";
-import {testPackages} from "../LocalCore";
+/* eslint-disable import/namespace */
+import { execSync } from 'child_process';
+import * as Path from 'path';
+import * as fs from 'fs-extra';
+import * as rimraf from 'rimraf';
+import * as Fix from '../../lib/Fix';
+import * as ComponentTester from '../ComponentTester';
+import * as LocalCore from '../LocalCore';
 
-const tmpDirectory = "local-fix-tmp";
-const tmp = Path.join(testDirectory, tmpDirectory);
+const tmpDirectory = 'local-fix-tmp';
+const tmp = Path.join(ComponentTester.testDirectory, tmpDirectory);
 
-
-export class FixLocalTester {
-    /**
-     * Tests the validity of the fix tool by testing it on the given local packages
-     * @param packages the local packages
-     */
-    public static testPackages(packages: { [packageName: string]: { [componentFile: string]: string } }) {
-        beforeAll(() => {
-            if (!fs.existsSync(tmp)) fs.mkdirSync(tmp);
-        });
-        afterAll(() => {
-            rimraf.sync(tmp);
-        });
-        for (let [packageName, components] of Object.entries(packages)) {
-            describe(packageName, () => {
-                let packageDir = Path.join(tmp, packageName);
-                fs.copySync(Path.join(testDirectory, testPackages, packageName), packageDir);
-                execSync("npm install", {cwd: packageDir, stdio: "pipe"});
-                for (let [originalComponent, expectedComponent] of Object.entries(components)) {
-                    it(originalComponent, async () => {
-                        let fixedComponent = await Fix.fixComponent(packageDir, originalComponent, ".", "info");
-                        ComponentTester.testComponents(fixedComponent, expectedComponent, packageName);
-                    });
-                }
-            });
-        }
+/**
+ * Tests the validity of the fix tool by testing it on the given local packages
+ * @param packages the local packages
+ */
+export function testPackages(packages: { [packageName: string]: { [componentFile: string]: string } }) {
+  beforeAll(() => {
+    if (!fs.existsSync(tmp)) {
+      fs.mkdirSync(tmp);
     }
+  });
+  afterAll(() => {
+    rimraf.sync(tmp);
+  });
+  for (const [ packageName, components ] of Object.entries(packages)) {
+    describe(packageName, () => {
+      const packageDir = Path.join(tmp, packageName);
+      fs.copySync(Path.join(ComponentTester.testDirectory, LocalCore.testPackages, packageName), packageDir);
+      execSync('npm install', { cwd: packageDir, stdio: 'pipe' });
+      for (const [ originalComponent, expectedComponent ] of Object.entries(components)) {
+        it(originalComponent, async() => {
+          const fixedComponent = await Fix.fixComponent(packageDir, originalComponent, '.', 'info');
+          ComponentTester.testComponents(fixedComponent, expectedComponent, packageName);
+        });
+      }
+    });
+  }
 }

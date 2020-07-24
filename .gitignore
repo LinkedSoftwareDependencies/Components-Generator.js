@@ -5,6 +5,7 @@
 **/local_temp/
 test_files/
 output/
+.eslintcache
 
 **/lib/**/*.js
 **/lib/**/*.js.map

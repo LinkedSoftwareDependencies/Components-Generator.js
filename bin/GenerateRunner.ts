@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-import * as minimist from "minimist";
-import {Generate} from "../lib/Generate";
+import * as minimist from 'minimist';
+import * as Generate from '../lib/Generate';
 
 function showHelp() {
-    console.error(`Generates a component file for a specific component
+  process.stderr.write(`Generates a component file for a specific component
 Usage:
   componentsjs-generate -p ./packages/my-package -c MyActor -l info -o ./components/Actor/MyActor.jsonld
   Options:
@@ -13,16 +13,16 @@ Usage:
        -l <level>        # The level for the logger
        -m <moduleRoot>   # Directory where we should look for dependencies, relative to the package directory
        --print           # Print output to standard output
-       --help            # Show information about this command`);
-    process.exit(1);
+       --help            # Show information about this command
+`);
+  process.exit(1);
 }
 
-let args = minimist(process.argv.slice(2));
-if (args.help || args.p == null || args.c == null) {
-    showHelp();
+const args = minimist(process.argv.slice(2));
+if (args.help || !args.p || !args.c) {
+  showHelp();
 } else {
-    Generate.generateComponentFile(args.p, args.c, args.o, args.m, args.print, args.l);
+  Generate.generateComponentFile(args.p, args.c, args.o, args.m, args.print, args.l)
+    .catch(error => process.stderr.write(`${error.message}\n`));
 }
-
-
 
