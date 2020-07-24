@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import * as minimist from 'minimist';
-import * as Generate from '../lib/Generate';
+import { Generator } from '../lib/generate/Generator';
 
 function showHelp() {
   process.stderr.write(`Generates a component file for a specific component
@@ -22,7 +22,15 @@ const args = minimist(process.argv.slice(2));
 if (args.help || !args.p || !args.c) {
   showHelp();
 } else {
-  Generate.generateComponentFile(args.p, args.c, args.o, args.m, args.print, args.l)
-    .catch(error => process.stderr.write(`${error.message}\n`));
+  const generator = new Generator(args.p, args.c, args.m, args.l);
+  generator
+    .generateComponent()
+    .then((component: any) => {
+      if (args.o) {
+        return generator.writeComponentFile(component, args.o);
+      }
+      process.stdout.write(`${JSON.stringify(component, null, '  ')}\n`);
+    })
+    .catch((error: Error) => process.stderr.write(`${error.message}\n`));
 }
 

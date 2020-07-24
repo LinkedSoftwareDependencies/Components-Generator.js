@@ -2,7 +2,7 @@ import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as Path from 'path';
 import * as rimraf from 'rimraf';
-import * as Generate from '../../lib/Generate';
+import { Generator } from '../../lib/generate/Generator';
 import * as Utils from '../../lib/Utils';
 import * as ComponentTester from '../ComponentTester';
 
@@ -36,7 +36,7 @@ export function testPackages(packages: { [packageName: string]: { [className: st
       // Install all the dependencies of the clone NPM package
       execSync('yarn install', { cwd: packageDir, stdio: 'pipe' });
       for (const [ className, expectedOutputFile ] of Object.entries(components)) {
-        const generatedComponents = await Generate.generateComponent(packageDir, className, '.', 'info');
+        const generatedComponents = await new Generator(packageDir, className, '.', 'info').generateComponent();
         ComponentTester.testComponents(generatedComponents, expectedOutputFile, packageName);
       }
     });

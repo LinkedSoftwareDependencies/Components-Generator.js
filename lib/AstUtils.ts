@@ -201,23 +201,20 @@ export function getLocalDeclaration(internalClass: string,
  * @param classInfo how the class can be referenced externally
  * @returns the result of parsing the class or interface
  */
-export function getDeclaration(classInfo: ExportReference): ParsedClassDeclaration | undefined {
+export function getDeclaration(classInfo: ExportReference): ParsedClassDeclaration {
   const rootFolder = Utils.getPackageRootDirectory(classInfo.exportedFrom);
   if (!rootFolder) {
-    logger.error(`Could not find root directory of package ${classInfo.exportedFrom}`);
-    return;
+    throw new Error(`Could not find root directory of package ${classInfo.exportedFrom}`);
   }
   const indexContent = Utils.getTypeScriptFile(Path.join(rootFolder, 'index'));
   if (!indexContent) {
-    logger.error('Could not find index.ts or index.d.ts file');
-    return;
+    throw new Error('Could not find index.ts or index.d.ts file');
   }
   let prgramAst: Program;
   try {
     prgramAst = parser.parse(indexContent, { loc: true, comment: true });
   } catch (error) {
-    logger.error(`Could not parse the index file of ${classInfo.exportedFrom}, invalid syntax at line ${error.lineNumber}, column ${error.column}. Message: ${error.message}`);
-    return;
+    throw new Error(`Could not parse the index file of ${classInfo.exportedFrom}, invalid syntax at line ${error.lineNumber}, column ${error.column}.\nParsing error: ${error.message}`);
   }
   const exports = ImportExportReader.getExportDeclarations(prgramAst);
   // Go through all exported files and search for class name
@@ -244,8 +241,7 @@ export function getDeclaration(classInfo: ExportReference): ParsedClassDeclarati
     try {
       fileAst = parser.parse(fileContent, { loc: true, comment: true });
     } catch (error) {
-      logger.error(`Could not parse file ${file}, invalid syntax at line ${error.lineNumber}, column ${error.column}. Message: ${error.message}`);
-      return;
+      throw new Error(`Could not parse file ${file}, invalid syntax at line ${error.lineNumber}, column ${error.column}. Message: ${error.message}`);
     }
     for (const declarationBox of fileAst.body) {
       if (declarationBox.type === AST_NODE_TYPES.ExportNamedDeclaration) {
@@ -272,8 +268,8 @@ export function getDeclaration(classInfo: ExportReference): ParsedClassDeclarati
         }
       }
     }
-    logger.debug(`Did not find a matching exported class in ${file} for name ${classInfo.className}`);
   }
+  throw new Error(`Class not found: ${classInfo.className}. Has it been exported properly?`);
 }
 
 /**

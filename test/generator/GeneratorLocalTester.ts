@@ -3,7 +3,7 @@ import { execSync } from 'child_process';
 import * as Path from 'path';
 import * as fs from 'fs-extra';
 import * as rimraf from 'rimraf';
-import * as Generate from '../../lib/Generate';
+import { Generator } from '../../lib/generate/Generator';
 import * as ComponentTester from '../ComponentTester';
 import * as LocalCore from '../LocalCore';
 
@@ -30,7 +30,7 @@ export function testPackages(packages: { [packageName: string]: { [className: st
       execSync('npm install', { cwd: packageDir, stdio: 'pipe' });
       for (const [ className, expectedOutputFile ] of Object.entries(components)) {
         it(className, async() => {
-          const generatedComponents = await Generate.generateComponent(packageDir, className, '.', 'info');
+          const generatedComponents = await new Generator(packageDir, className, '.', 'info').generateComponent();
           ComponentTester.testComponents(generatedComponents, expectedOutputFile, packageName);
         });
       }

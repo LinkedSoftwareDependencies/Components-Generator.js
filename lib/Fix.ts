@@ -5,8 +5,9 @@ import ComponentsJsUtil = require('componentsjs/lib/Util');
 import * as AstUtils from './AstUtils';
 import { logger } from './Core';
 import * as FixUtils from './FixUtils';
-import * as Generate from './Generate';
+import * as Generate from './generate/Generator';
 import * as Utils from './Utils';
+import { Generator } from "./generate/Generator";
 
 // Generates a fixed component file for an existing component
 //
@@ -84,7 +85,8 @@ Promise<any> {
       logger.error(`Did not find a matching class for name ${className}, please check the name and make sure it has been exported`);
       continue;
     }
-    const generatedComponent = await Generate.generateComponent(directory, className, moduleRoot, level);
+    const generator = new Generator(directory, className, moduleRoot, level);
+    const generatedComponent = await generator.generateComponent();
     componentsEntry[i] = FixUtils.additiveComponentFix(componentObject, generatedComponent.components[0]);
   }
   return componentContent;
