@@ -42,59 +42,11 @@ Usage:
 * `<moduleRoot>`: directory where we should look for dependencies, relative to the package directory. Defaults to `.` .
 * `--print`: if this flag is used, the output will be printed to console.
 
-### Enhancing an existing `.jsonld` file using the CLI tool
-
-This tool can aid during the development of components by analyzing an existing `.jsonld` file, filling in additional attributes and giving feedback about parameters that should be renamed, added or deleted on a best-efforts basis.  
-When choosing the `@id`'s of your parameters, it is recommended to follow the naming convention and name them `<component>/<fieldName>` where `<component>` is the `@id` of your component and `<fieldName>` is the name of your field. If you have multiple fields with the same name, you should name them `field`, `field1`, `field2` and so forth. This is not necessary, but it will make sure the tool can properly match your existing parameters with the existing ones.
-```bash
-Enhances an existing .jsonld file and gives feedback about possible misconfigurations
-Usage:
-  componentsjs-fix -p ./packages/my-package -c components/MyActor.jsonld -l info
-  Options:
-       -p <package>      # The directory of the package to look in
-       -c <component>    # The path to the existing component file, relative to package root
-       -l <level>        # The level for the logger
-       -m <moduleRoot>   # Directory where we should look for dependencies, relative to the package directory
-       --print           # Print output to standard output
-       --help            # Show information about this command
-```
-
-#### Options
-
-* `<package>`: the package that the existing `.jsonld` file is located in.
-* `<component>`: the filepath to your existing `.jsonld` file. It is important this path is relative to the root of your package
-* `<level>`: the level of the logger. Options: `emerg, alert, crit, error, warning, notice, info, debug`. Defaults to `info`.
-* `<moduleRoot>`: directory where we should look for dependencies, relative to the package directory. Defaults to `.` .
-* `--print`: if this flag is used, the output will be printed to console. Otherwise, the existing file will be overwritten.
-
-### Enhancing all existing `.jsonld` files in a package using the CLI tool
-
-```bash
-Enhances all existing .jsonld files in a package and gives feedback about possible misconfigurations
-Usage:
-  componentsjs-fixpackage -p ./packages/my-package -l info
-  Options:
-       -p <package>      # The directory of the package to look in
-       -l <level>        # The level for the logger
-       -m <moduleRoot>   # Directory where we should look for dependencies, relative to the package directory
-       --print           # Print output to standard output
-       --help            # Show information about this command
-```
-
-#### Options
-
-* `<package>`: the package that the existing `.jsonld` files are located in.
-* `<level>`: the level of the logger. Options: `emerg, alert, crit, error, warning, notice, info, debug`. Defaults to `info`.
-* `<moduleRoot>`: directory where we should look for dependencies, relative to the package directory. Defaults to `.` .
-* `--print`: if this flag is used, the output will be printed to console. Otherwise, the existing files will be overwritten.
-
 ### Using the tool in your code
 
 ```typescript
 // Importing the tool
 const Generate = require("componentjs-generator").Generate;
-const Fix = require("componentjs-generator").Fix;
-const FixPackage = require("componentjs-generator").FixPackage;
 
 // Path to the root of the package
 let directory = "modules/test-module";
@@ -116,20 +68,6 @@ async function run() {
     // Creates a file with the generated component content
     // The other options are the same as in the CLI tool
     await Generate.generateComponentFile(directory, className, outputPath, moduleRoot, print, level);
-    
-    // Returns a Javascript object that represents of the fixed component file
-    // No actual file will be created. Additional feedback about misconfigurations will be logged
-    let fixedComponent = await Fix.fixComponent(directory, outputPath, moduleRoot, level);
-
-    // Creates a file with the content of the fixed component
-    // The other options are the same as in the CLI tool
-    // Additional feedback about misconfigurations will be logged
-    await Fix.fixComponentFile(directory, outputPath, moduleRoot, print, level);
-    
-    // Overwrites all files with their fixed component content     
-    // The other options are the same as in the CLI tool
-    // Additional feedback about misconfigurations will be logged
-    await FixPackage.fixPackage(directory, moduleRoot, print, level);
 }
 ```
 
