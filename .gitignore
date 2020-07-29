@@ -13,6 +13,7 @@ output/
 **/test/**/*.js
 **/test/**/*.js.map
 **/test/**/*.d.ts
+!/test/data/**/*.d.ts
 **/bin/**/*.js
 **/bin/**/*.js.map
 **/bin/**/*.d.ts

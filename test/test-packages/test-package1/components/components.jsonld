@@ -1,8 +1,0 @@
-{
-  "@context": "https://linkedsoftwaredependencies.org/bundles/npm/test-package/^1.0.0/components/context.jsonld",
-  "@id": "ex:test-package",
-  "@type": "Module",
-  "requireName": "test-package",
-  "import": [
-  ]
-}

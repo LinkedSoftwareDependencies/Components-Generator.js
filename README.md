@@ -1,7 +1,7 @@
-# Components.js Generator
+# Components.js OldGenerator
 
-[![Build Status](https://travis-ci.org/LinkedSoftwareDependencies/Components.js-Generator.svg?branch=master)](https://travis-ci.org/LinkedSoftwareDependencies/Components.js-Generator)
-[![Coverage Status](https://coveralls.io/repos/github/LinkedSoftwareDependencies/Components.js-Generator/badge.svg?branch=master)](https://coveralls.io/github/LinkedSoftwareDependencies/Components.js-Generator?branch=master)
+[![Build Status](https://travis-ci.org/LinkedSoftwareDependencies/Components.js-OldGenerator.svg?branch=master)](https://travis-ci.org/LinkedSoftwareDependencies/Components.js-OldGenerator)
+[![Coverage Status](https://coveralls.io/repos/github/LinkedSoftwareDependencies/Components.js-OldGenerator/badge.svg?branch=master)](https://coveralls.io/github/LinkedSoftwareDependencies/Components.js-OldGenerator?branch=master)
 [![npm version](https://badge.fury.io/js/componentjs-generator.svg)](https://www.npmjs.com/package/componentjs-generator)
 
 A tool to generate `.jsonld` component files for [Components.js](https://github.com/LinkedSoftwareDependencies/Components.js) TypeScript classes.  
@@ -46,7 +46,7 @@ Usage:
 
 ```typescript
 // Importing the tool
-const Generate = require("componentjs-generator").Generate;
+const Generate = require("componentjs-oldgenerator").Generate;
 
 // Path to the root of the package
 let directory = "modules/test-module";
@@ -241,17 +241,6 @@ The tool also noticed the `@ignored` tag on the `ignoredArg` field and did not p
 
 ### Running tests
 
-Requirements:
-- Linux
-
 ```bash
 npm run test
 ```
-
-
-This will run some local tests and fetch some of the [Comunica](https://github.com/comunica/comunica) packages via NPM and run some tests on them.
-You can find the Comunica test cases [here](test/generator/GeneratorComunicaTestCases.test.ts) and their expected output [here](test/expected-output);
-
-### Local examples
-
-For more examples on how the tool analyzes your TypeScript files, you can visit the [test package](test/test-packages/test-package1) and its [generated components](test/expected-output/test-package1).

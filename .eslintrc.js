@@ -97,7 +97,6 @@ module.exports = {
 
         // TODO: Try to re-enable the following rules in the future
         'tsdoc/syntax': 'off',
-        'no-sync': 'off',
     },
     overrides: [
         {

@@ -16,9 +16,18 @@
     }
   },
   "jest": {
-    "preset": "ts-jest",
-    "setupFilesAfterEnv": [
-      "jest-extended"
+    "globals": {
+      "ts-jest": {
+        "tsConfig": "tsconfig.json"
+      }
+    },
+    "transform": {
+      "^.+\\.ts$": "ts-jest"
+    },
+    "testRegex": "(/test/.*|(\\.|/)(test|spec))\\.test.ts$",
+    "moduleFileExtensions": [
+      "ts",
+      "js"
     ],
     "collectCoverage": true
   },
@@ -26,7 +35,7 @@
   "author": "",
   "license": "MIT",
   "bin": {
-    "componentsjs-generate": "bin/GenerateRunner.js",
+    "componentsjs-generate": "bin/GenerateRunnerOld.js",
     "componentsjs-fix": "bin/FixRunner.js",
     "componentsjs-fixpackage": "bin/FixPackageRunner.js"
   },
