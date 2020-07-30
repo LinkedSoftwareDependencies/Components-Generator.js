@@ -91,6 +91,70 @@ export * from './sub2/C'
     parser = new ClassFinder({ resolutionContext });
   });
 
+  describe('getAvailableClasses', () => {
+    it('for an empty file', () => {
+      expect(parser.getAvailableClasses('dir/file', resolutionContext.parseTypescriptContents(``)))
+        .toMatchObject({
+          declaredClasses: {},
+          importedClasses: {},
+        });
+    });
+
+    it('for a single declare', () => {
+      expect(parser.getAvailableClasses('dir/file', resolutionContext.parseTypescriptContents(`declare class A{}`)))
+        .toMatchObject({
+          declaredClasses: {
+            A: {
+              type: 'ClassDeclaration',
+            },
+          },
+          importedClasses: {},
+        });
+    });
+
+    it('for a single import', () => {
+      expect(parser.getAvailableClasses('dir/file', resolutionContext.parseTypescriptContents(`import {A as B} from './lib/A'`)))
+        .toMatchObject({
+          declaredClasses: {},
+          importedClasses: {
+            B: {
+              localName: 'A',
+              fileName: 'dir/lib/A',
+            },
+          },
+        });
+    });
+
+    it('for a mixed file', () => {
+      expect(parser.getAvailableClasses('dir/file', resolutionContext.parseTypescriptContents(`
+declare class A{}
+declare class B{}
+import {C} from './lib/C'
+import {D as X} from './lib/D'
+`)))
+        .toMatchObject({
+          declaredClasses: {
+            A: {
+              type: 'ClassDeclaration',
+            },
+            B: {
+              type: 'ClassDeclaration',
+            },
+          },
+          importedClasses: {
+            C: {
+              localName: 'C',
+              fileName: 'dir/lib/C',
+            },
+            X: {
+              localName: 'D',
+              fileName: 'dir/lib/D',
+            },
+          },
+        });
+    });
+  });
+
   describe('getFileExports', () => {
     it('for a single named export', async() => {
       expect(await parser.getFileExports('export-single-named'))

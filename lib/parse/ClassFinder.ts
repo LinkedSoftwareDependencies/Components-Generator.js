@@ -2,7 +2,7 @@ import * as Path from 'path';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import {
   ClassDeclaration,
-  ExportNamedDeclaration,
+  ExportNamedDeclaration, Program,
 } from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
 import { ResolutionContext } from '../resolution/ResolutionContext';
 
@@ -49,26 +49,9 @@ export class ClassFinder {
     };
 
     // Iterate over all statements in the file to find the exports
-    const declaredClasses: {[id: string]: ClassDeclaration} = {};
-    const importedClasses: {[id: string]: { localName: string; fileName: string }} = {};
     const exportTargetsUnknown: ExportNamedDeclaration[] = [];
     for (const statement of ast.body) {
-      if (statement.type === AST_NODE_TYPES.ClassDeclaration && statement.id) {
-        // If we have something like `declare class A {}`, store it for later use, as other statements may export it
-        declaredClasses[statement.id.name] = statement;
-      } else if (statement.type === AST_NODE_TYPES.ImportDeclaration &&
-        statement.source.type === AST_NODE_TYPES.Literal &&
-        typeof statement.source.value === 'string') {
-        // If we have something like `import {A} from`, store it for later use, as other statements may export it
-        for (const specifier of statement.specifiers) {
-          if (specifier.type === AST_NODE_TYPES.ImportSpecifier) {
-            importedClasses[specifier.local.name] = {
-              localName: specifier.imported.name,
-              fileName: Path.join(Path.dirname(filePath), statement.source.value),
-            };
-          }
-        }
-      } else if (statement.type === AST_NODE_TYPES.ExportNamedDeclaration) {
+      if (statement.type === AST_NODE_TYPES.ExportNamedDeclaration) {
         if (statement.declaration) {
           // A named class or property export, such as `export class A{}`
           if (statement.declaration.type === AST_NODE_TYPES.ClassDeclaration) {
@@ -106,26 +89,63 @@ export class ClassFinder {
     }
 
     // Iterate over all named export that had an unknown target,
-    // and attempt to link them to declared classes and imports
-    for (const exportTargetUnknown of exportTargetsUnknown) {
-      for (const specifier of exportTargetUnknown.specifiers) {
-        // First check declared classes
-        if (specifier.local.name in declaredClasses) {
-          exportDefinitions.named[specifier.exported.name] = {
-            localName: specifier.local.name,
-            fileName: filePath,
-          };
-          break;
-        }
+    // and attempt to link them to classes available in the file
+    if (exportTargetsUnknown.length > 0) {
+      const { declaredClasses, importedClasses } = this.getAvailableClasses(filePath, ast);
+      for (const exportTargetUnknown of exportTargetsUnknown) {
+        for (const specifier of exportTargetUnknown.specifiers) {
+          // First check declared classes
+          if (specifier.local.name in declaredClasses) {
+            exportDefinitions.named[specifier.exported.name] = {
+              localName: specifier.local.name,
+              fileName: filePath,
+            };
+            break;
+          }
 
-        // Next, check imports
-        if (specifier.local.name in importedClasses) {
-          exportDefinitions.named[specifier.exported.name] = importedClasses[specifier.local.name];
+          // Next, check imports
+          if (specifier.local.name in importedClasses) {
+            exportDefinitions.named[specifier.exported.name] = importedClasses[specifier.local.name];
+          }
         }
       }
     }
 
     return exportDefinitions;
+  }
+
+  /**
+   * Get all available classes in a file.
+   * @param filePath A file path.
+   * @param ast The parsed file.
+   */
+  public getAvailableClasses(filePath: string, ast: Program): AvailableClasses {
+    const declaredClasses: {[id: string]: ClassDeclaration} = {};
+    const importedClasses: {[id: string]: { localName: string; fileName: string }} = {};
+
+    for (const statement of ast.body) {
+      if (statement.type === AST_NODE_TYPES.ClassDeclaration && statement.id) {
+        // Something in the form of `declare class A {}`
+        declaredClasses[statement.id.name] = statement;
+      } else if (statement.type === AST_NODE_TYPES.ImportDeclaration &&
+        statement.source.type === AST_NODE_TYPES.Literal &&
+        typeof statement.source.value === 'string') {
+        // Something in the form of `import {A} from`
+        for (const specifier of statement.specifiers) {
+          if (specifier.type === AST_NODE_TYPES.ImportSpecifier) {
+            importedClasses[specifier.local.name] = {
+              localName: specifier.imported.name,
+              fileName: Path.join(Path.dirname(filePath), statement.source.value),
+            };
+          }
+        }
+      }
+    }
+
+    return {
+      declaredClasses,
+      importedClasses,
+    };
   }
 }
 
@@ -151,3 +171,13 @@ export interface NamedExports {
  * This array contains file names.
  */
 export type UnnamedExports = string[];
+
+/**
+ * Holder for all available classes in a file.
+ */
+export interface AvailableClasses {
+  // Classes that have been declared in a file via `declare`
+  declaredClasses: {[id: string]: ClassDeclaration};
+  // Classes that are imported from elsewhere via `import`
+  importedClasses: {[id: string]: { localName: string; fileName: string }};
+}
