@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
-import { logger } from '../OldCore';
+import { logger } from '../Core';
 import { ClassFinder } from '../parse/ClassFinder';
+import { ClassLoader } from '../parse/ClassLoader';
 import { ResolutionContext } from '../resolution/ResolutionContext';
 
 /**
@@ -21,8 +22,13 @@ export class Generator {
   }
 
   public async generateComponents(): Promise<any> {
-    const packageExports = await new ClassFinder({ resolutionContext: this.resolutionContext })
-      .getPackageExports(this.packageRootDirectory);
+    const classLoader = new ClassLoader({ resolutionContext: this.resolutionContext });
+    const classFinder = new ClassFinder({ classLoader });
+
+    const packageExports = await classFinder.getPackageExports(this.packageRootDirectory);
+    // Const classIndex = await classLoader.loadClasses(packageExports);
+    // Const constructors = await new ConstructorLoader({ resolutionContext: this.resolutionContext })
+    //  .getConstructors(packageExports);
     return packageExports;
   }
 }

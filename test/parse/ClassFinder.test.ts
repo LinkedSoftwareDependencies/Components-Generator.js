@@ -1,6 +1,5 @@
-import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import { Program } from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
 import { ClassFinder } from '../../lib/parse/ClassFinder';
+import { ClassLoader } from '../../lib/parse/ClassLoader';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
 describe('ClassFinder', () => {
@@ -29,31 +28,6 @@ export {A as B};
 declare class A {}
 `,
     'export-single-nodeclare.d.ts': `export {A as B};`,
-    'export-single-all-invalid-nosource.d.ts': <Program> {
-      body: [
-        {
-          type: AST_NODE_TYPES.ExportAllDeclaration,
-        },
-      ],
-    },
-    'export-single-all-invalid-notype.d.ts': <Program> {
-      body: [
-        {
-          type: AST_NODE_TYPES.ExportAllDeclaration,
-          source: {},
-        },
-      ],
-    },
-    'export-single-all-invalid-novalue.d.ts': <Program> {
-      body: [
-        {
-          type: AST_NODE_TYPES.ExportAllDeclaration,
-          source: {
-            type: AST_NODE_TYPES.Literal,
-          },
-        },
-      ],
-    },
     'export-single-import.d.ts': `
 import {X as A} from './lib/A';
 export {A};
@@ -100,71 +74,7 @@ class A extends class {} {}`,
   let parser: ClassFinder;
 
   beforeEach(() => {
-    parser = new ClassFinder({ resolutionContext });
-  });
-
-  describe('getAvailableClasses', () => {
-    it('for an empty file', () => {
-      expect(parser.getAvailableClasses('dir/file', resolutionContext.parseTypescriptContents(``)))
-        .toMatchObject({
-          declaredClasses: {},
-          importedClasses: {},
-        });
-    });
-
-    it('for a single declare', () => {
-      expect(parser.getAvailableClasses('dir/file', resolutionContext.parseTypescriptContents(`declare class A{}`)))
-        .toMatchObject({
-          declaredClasses: {
-            A: {
-              type: 'ClassDeclaration',
-            },
-          },
-          importedClasses: {},
-        });
-    });
-
-    it('for a single import', () => {
-      expect(parser.getAvailableClasses('dir/file', resolutionContext.parseTypescriptContents(`import {A as B} from './lib/A'`)))
-        .toMatchObject({
-          declaredClasses: {},
-          importedClasses: {
-            B: {
-              localName: 'A',
-              fileName: 'dir/lib/A',
-            },
-          },
-        });
-    });
-
-    it('for a mixed file', () => {
-      expect(parser.getAvailableClasses('dir/file', resolutionContext.parseTypescriptContents(`
-declare class A{}
-declare class B{}
-import {C} from './lib/C'
-import {D as X} from './lib/D'
-`)))
-        .toMatchObject({
-          declaredClasses: {
-            A: {
-              type: 'ClassDeclaration',
-            },
-            B: {
-              type: 'ClassDeclaration',
-            },
-          },
-          importedClasses: {
-            C: {
-              localName: 'C',
-              fileName: 'dir/lib/C',
-            },
-            X: {
-              localName: 'D',
-              fileName: 'dir/lib/D',
-            },
-          },
-        });
-    });
+    parser = new ClassFinder({ classLoader: new ClassLoader({ resolutionContext }) });
   });
 
   describe('getFileExports', () => {
@@ -186,7 +96,7 @@ import {D as X} from './lib/D'
         .toEqual({
           named: {},
           unnamed: [
-            './lib/B',
+            'lib/B',
           ],
         });
     });
@@ -222,7 +132,7 @@ import {D as X} from './lib/D'
             },
           },
           unnamed: [
-            './lib/D',
+            'lib/D',
           ],
         });
     });
@@ -276,30 +186,6 @@ import {D as X} from './lib/D'
 
     it('for a separate export without a declared class', async() => {
       expect(await parser.getFileExports('export-single-nodeclare'))
-        .toEqual({
-          named: {},
-          unnamed: [],
-        });
-    });
-
-    it('for an export of all classes with no source should be ignored', async() => {
-      expect(await parser.getFileExports('export-single-all-invalid-nosource'))
-        .toEqual({
-          named: {},
-          unnamed: [],
-        });
-    });
-
-    it('for an export of all classes with no type should be ignored', async() => {
-      expect(await parser.getFileExports('export-single-all-invalid-notype'))
-        .toEqual({
-          named: {},
-          unnamed: [],
-        });
-    });
-
-    it('for an export of all classes with no value should be ignored', async() => {
-      expect(await parser.getFileExports('export-single-all-invalid-novalue'))
         .toEqual({
           named: {},
           unnamed: [],
