@@ -5,6 +5,7 @@ import {
   ExportNamedDeclaration, Program,
 } from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
 import { ResolutionContext } from '../resolution/ResolutionContext';
+import { ClassReference } from './ConstructorLoader';
 
 /**
  * Load the names and locations of all available classes that are exported by a package.
@@ -35,6 +36,31 @@ export class ClassFinder {
     }
 
     return exports;
+  }
+
+  /**
+   * Find the super class of the given class.
+   * @param declaration A class declaration.
+   * @param currentFileName The file name of the current class, for error reporting.
+   */
+  public getSuperClass(declaration: ClassDeclaration, currentFileName: string): ClassReference | undefined {
+    if (!declaration.superClass) {
+      return;
+    }
+    if (declaration.superClass.type === AST_NODE_TYPES.Identifier) {
+      // Extensions in the form of `class A extends B`
+      return { className: declaration.superClass.name };
+    }
+    if (declaration.superClass.type === AST_NODE_TYPES.MemberExpression &&
+      declaration.superClass.property.type === AST_NODE_TYPES.Identifier &&
+      declaration.superClass.object.type === AST_NODE_TYPES.Identifier) {
+      // Extensions in the form of `class A extends x.B`
+      return {
+        className: declaration.superClass.property.name,
+        nameSpace: declaration.superClass.object.name,
+      };
+    }
+    throw new Error(`Could not interpret type of superclass in ${currentFileName} on line ${declaration.superClass.loc.start.line} column ${declaration.superClass.loc.start.column}`);
   }
 
   /**

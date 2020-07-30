@@ -84,6 +84,18 @@ export * from './sub2/C'
 `,
     'package-nested/lib/sub1/B.d.ts': 'export class B {}',
     'package-nested/lib/sub2/C.d.ts': 'export class C {}',
+
+    'class-single.d.ts': `class A{}`,
+    'class-extended.d.ts': `
+class A extends B{
+  constructor() {}
+}`,
+    'class-extended-namespace.d.ts': `
+class A extends x.B{
+  constructor() {}
+}`,
+    'class-extended-anonymous.d.ts': `
+class A extends class {} {}`,
   });
   let parser: ClassFinder;
 
@@ -321,6 +333,32 @@ import {D as X} from './lib/D'
           named: {},
           unnamed: [],
         });
+    });
+  });
+
+  describe('getSuperClass', () => {
+    it('should return undefined on a class that is not extended', async() => {
+      expect(parser.getSuperClass(<any>(await resolutionContext
+        .parseTypescriptFile('class-single')).body[0], 'file'))
+        .toBeUndefined();
+    });
+
+    it('should return on a class that is extended', async() => {
+      expect(parser.getSuperClass(<any>(await resolutionContext
+        .parseTypescriptFile('class-extended')).body[0], 'file'))
+        .toEqual({ className: 'B' });
+    });
+
+    it('should return on a class that is extended via a namespace', async() => {
+      expect(parser.getSuperClass(<any>(await resolutionContext
+        .parseTypescriptFile('class-extended-namespace')).body[0], 'file'))
+        .toEqual({ className: 'B', nameSpace: 'x' });
+    });
+
+    it('should error on a class that is extended anonymously', async() => {
+      await expect(async() => parser.getSuperClass(<any>(await resolutionContext
+        .parseTypescriptFile('class-extended-anonymous')).body[0], 'file'))
+        .rejects.toThrow(new Error('Could not interpret type of superclass in file on line 2 column 16'));
     });
   });
 
