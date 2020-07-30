@@ -54,15 +54,6 @@ declare class A {}
         },
       ],
     },
-    'export-single-import.d.ts': `
-import {X as A} from './lib/A';
-export {A};
-`,
-    'import-namespace.d.ts': `import polygons = Shapes.Polygons`,
-    'export-single-import-default.d.ts': `
-import A from './lib/A';
-export {A};
-`,
 
     'package-simple-named/index.d.ts': `export {A as B} from './lib/A';`,
     'package-simple-named/lib/A.d.ts': 'export class A {}',
@@ -224,35 +215,6 @@ export * from './sub2/C'
 
     it('for an export of all classes with no value should be ignored', async() => {
       expect(await parser.getFileExports('export-single-all-invalid-novalue'))
-        .toEqual({
-          named: {},
-          unnamed: [],
-        });
-    });
-
-    it('for an imported class with separate export', async() => {
-      expect(await parser.getFileExports('export-single-import'))
-        .toEqual({
-          named: {
-            A: {
-              fileName: 'lib/A',
-              localName: 'X',
-            },
-          },
-          unnamed: [],
-        });
-    });
-
-    it('the namespace import syntax should be ignored', async() => {
-      expect(await parser.getFileExports('import-namespace'))
-        .toEqual({
-          named: {},
-          unnamed: [],
-        });
-    });
-
-    it('the default import syntax should be ignored', async() => {
-      expect(await parser.getFileExports('export-single-import-default'))
         .toEqual({
           named: {},
           unnamed: [],
