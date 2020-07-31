@@ -2,15 +2,86 @@ import * as Path from 'path';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import { ClassDeclaration, Program } from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
 import { ResolutionContext } from '../resolution/ResolutionContext';
+import { ClassLoaded, ClassReference } from './ClassIndex';
 
 /**
- * Loads typescript classes from files.
+ * Loads typescript classes from class references.
  */
 export class ClassLoader {
   private readonly resolutionContext: ResolutionContext;
 
   public constructor(args: ClassLoaderArgs) {
     this.resolutionContext = args.resolutionContext;
+  }
+
+  /**
+   * Find the super class of the given class.
+   * Throws an error for super class definitions that could not be interpreted.
+   * @param declaration A class declaration.
+   * @param fileName The file name of the current class.
+   */
+  public getSuperClassName(declaration: ClassDeclaration, fileName: string): string | undefined {
+    if (!declaration.superClass) {
+      return;
+    }
+    if (declaration.superClass.type === AST_NODE_TYPES.Identifier) {
+      // Extensions in the form of `class A extends B`
+      return declaration.superClass.name;
+    }
+    if (declaration.superClass.type === AST_NODE_TYPES.MemberExpression &&
+      declaration.superClass.property.type === AST_NODE_TYPES.Identifier &&
+      declaration.superClass.object.type === AST_NODE_TYPES.Identifier) {
+      // Extensions in the form of `class A extends x.B`
+      throw new Error(`Namespaced superclasses are currently not supported: ${fileName} on line ${declaration.superClass.loc.start.line} column ${declaration.superClass.loc.start.column}`);
+    }
+    throw new Error(`Could not interpret type of superclass in ${fileName} on line ${declaration.superClass.loc.start.line} column ${declaration.superClass.loc.start.column}`);
+  }
+
+  /**
+   * Load the referenced class, and obtain its full class declaration.
+   * Classes can either be defined in this file (exported or not), or imported from another file.
+   * @param classReference The reference to a class.
+   */
+  public async loadClassDeclaration(classReference: ClassReference): Promise<ClassLoaded> {
+    const ast = await this.resolutionContext.parseTypescriptFile(classReference.fileName);
+    const {
+      exportedClasses,
+      declaredClasses,
+      importedClasses,
+      exportedImportedAll,
+      exportedImportedClasses,
+    } = this.getClassElements(classReference.fileName, ast);
+
+    // If the class has been exported in this file, return directly
+    if (classReference.localName in exportedClasses) {
+      return { ...classReference, declaration: exportedClasses[classReference.localName] };
+    }
+
+    // If the class has been declared in this file, return directly
+    if (classReference.localName in declaredClasses) {
+      return { ...classReference, declaration: declaredClasses[classReference.localName] };
+    }
+
+    // If the class is available via an import, follow that import link
+    if (classReference.localName in importedClasses) {
+      return this.loadClassDeclaration(importedClasses[classReference.localName]);
+    }
+
+    // If the class is available via an exported import, follow that import link
+    if (classReference.localName in exportedImportedClasses) {
+      return this.loadClassDeclaration(exportedImportedClasses[classReference.localName]);
+    }
+
+    // If we still haven't found the class, iterate over all export all's
+    for (const subFile of exportedImportedAll) {
+      try {
+        return await this.loadClassDeclaration({ localName: classReference.localName, fileName: subFile });
+      } catch (error) {
+        // Ignore class not found errors
+      }
+    }
+
+    throw new Error(`Could not load class ${classReference.localName} from ${classReference.fileName}`);
   }
 
   /**

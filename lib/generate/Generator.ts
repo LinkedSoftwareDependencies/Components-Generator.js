@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 import { logger } from '../Core';
 import { ClassFinder } from '../parse/ClassFinder';
+import { ClassIndexer } from '../parse/ClassIndexer';
 import { ClassLoader } from '../parse/ClassLoader';
 import { ResolutionContext } from '../resolution/ResolutionContext';
 
@@ -24,12 +25,13 @@ export class Generator {
   public async generateComponents(): Promise<any> {
     const classLoader = new ClassLoader({ resolutionContext: this.resolutionContext });
     const classFinder = new ClassFinder({ classLoader });
+    const classIndexer = new ClassIndexer({ classLoader, classFinder });
 
     const packageExports = await classFinder.getPackageExports(this.packageRootDirectory);
-    // Const classIndex = await classLoader.loadClasses(packageExports);
+    const classIndex = await classIndexer.createIndex(packageExports);
     // Const constructors = await new ConstructorLoader({ resolutionContext: this.resolutionContext })
     //  .getConstructors(packageExports);
-    return packageExports;
+    return classIndex;
   }
 }
 

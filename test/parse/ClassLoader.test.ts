@@ -4,17 +4,202 @@ import { ClassLoader } from '../../lib/parse/ClassLoader';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
 describe('ClassLoader', () => {
-  const resolutionContext = new ResolutionContextMocked({
-    'file.d.ts': `declare class A{}`,
-  });
+  const resolutionContext = new ResolutionContextMocked({});
   let loader: ClassLoader;
 
   beforeEach(() => {
     loader = new ClassLoader({ resolutionContext });
   });
 
+  describe('getSuperClass', () => {
+    it('should return undefined on a class that is not extended', async() => {
+      expect(loader.getSuperClassName(<any>(resolutionContext
+        .parseTypescriptContents('class A{}')).body[0], 'file'))
+        .toBeUndefined();
+    });
+
+    it('should return on a class that is extended', async() => {
+      expect(loader.getSuperClassName(<any>(resolutionContext
+        .parseTypescriptContents(`class A extends B{}`)).body[0], 'file'))
+        .toEqual('B');
+    });
+
+    it('should error on a class that is extended via a namespace', async() => {
+      expect(() => loader.getSuperClassName(<any>(resolutionContext
+        .parseTypescriptContents(`class A extends x.B {}`)).body[0], 'file'))
+        .toThrow(new Error('Namespaced superclasses are currently not supported: file on line 1 column 16'));
+    });
+
+    it('should error on a class that is extended anonymously', async() => {
+      await expect(async() => loader.getSuperClassName(<any>(resolutionContext
+        .parseTypescriptContents(`class A extends class {} {}`)).body[0], 'file'))
+        .rejects.toThrow(new Error('Could not interpret type of superclass in file on line 1 column 16'));
+    });
+  });
+
+  describe('loadClassDeclaration', () => {
+    it('for an empty file should throw', async() => {
+      loader = new ClassLoader({
+        resolutionContext: new ResolutionContextMocked({
+          'file.d.ts': ``,
+        }),
+      });
+      await expect(loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }))
+        .rejects.toThrow(new Error('Could not load class A from file'));
+    });
+
+    it('for a file without the file class should throw', async() => {
+      loader = new ClassLoader({
+        resolutionContext: new ResolutionContextMocked({
+          'file.d.ts': `
+const A = "a";
+declare class B{};
+export class C{};
+export { B as X };
+export * from './lib/D';
+`,
+        }),
+      });
+      await expect(loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }))
+        .rejects.toThrow(new Error('Could not load class A from file'));
+    });
+
+    it('for an exported class', async() => {
+      loader = new ClassLoader({
+        resolutionContext: new ResolutionContextMocked({
+          'file.d.ts': `export class A{}`,
+        }),
+      });
+      expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }))
+        .toMatchObject({
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'ClassDeclaration',
+          },
+        });
+    });
+
+    it('for a declared class', async() => {
+      loader = new ClassLoader({
+        resolutionContext: new ResolutionContextMocked({
+          'file.d.ts': `declare class A{}`,
+        }),
+      });
+      expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }))
+        .toMatchObject({
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'ClassDeclaration',
+          },
+        });
+    });
+
+    it('for an imported class', async() => {
+      loader = new ClassLoader({
+        resolutionContext: new ResolutionContextMocked({
+          'file.d.ts': `import { B as A } from './file2'`,
+          'file2.d.ts': `export class B{}`,
+        }),
+      });
+      expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }))
+        .toMatchObject({
+          localName: 'B',
+          fileName: 'file2',
+          declaration: {
+            id: { name: 'B' },
+            type: 'ClassDeclaration',
+          },
+        });
+    });
+
+    it('for a class linked via export import', async() => {
+      loader = new ClassLoader({
+        resolutionContext: new ResolutionContextMocked({
+          'file.d.ts': `export { B as A } from './file2'`,
+          'file2.d.ts': `export class B{}`,
+        }),
+      });
+      expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }))
+        .toMatchObject({
+          localName: 'B',
+          fileName: 'file2',
+          declaration: {
+            id: { name: 'B' },
+            type: 'ClassDeclaration',
+          },
+        });
+    });
+
+    it('for a class linked via export *', async() => {
+      loader = new ClassLoader({
+        resolutionContext: new ResolutionContextMocked({
+          'file.d.ts': `export * from './file2'`,
+          'file2.d.ts': `export class B{}`,
+        }),
+      });
+      expect(await loader.loadClassDeclaration({ localName: 'B', fileName: 'file' }))
+        .toMatchObject({
+          localName: 'B',
+          fileName: 'file2',
+          declaration: {
+            id: { name: 'B' },
+            type: 'ClassDeclaration',
+          },
+        });
+    });
+
+    it('for a class linked on of the multiple export *', async() => {
+      loader = new ClassLoader({
+        resolutionContext: new ResolutionContextMocked({
+          'file.d.ts': `
+export * from './file1'
+export * from './file2'
+export * from './file3'
+`,
+          'file2.d.ts': `export class B{}`,
+        }),
+      });
+      expect(await loader.loadClassDeclaration({ localName: 'B', fileName: 'file' }))
+        .toMatchObject({
+          localName: 'B',
+          fileName: 'file2',
+          declaration: {
+            id: { name: 'B' },
+            type: 'ClassDeclaration',
+          },
+        });
+    });
+
+    it('for a class linked via nested export *', async() => {
+      loader = new ClassLoader({
+        resolutionContext: new ResolutionContextMocked({
+          'file.d.ts': `export * from './file2'`,
+          'file2.d.ts': `export * from './file3'`,
+          'file3.d.ts': `export * from './file4'`,
+          'file4.d.ts': `export class B{}`,
+        }),
+      });
+      expect(await loader.loadClassDeclaration({ localName: 'B', fileName: 'file' }))
+        .toMatchObject({
+          localName: 'B',
+          fileName: 'file4',
+          declaration: {
+            id: { name: 'B' },
+            type: 'ClassDeclaration',
+          },
+        });
+    });
+  });
+
   describe('loadClassElements', () => {
     it('for file', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `declare class A{}`,
+      };
       expect(await loader.loadClassElements('file'))
         .toMatchObject({
           declaredClasses: {
@@ -63,6 +248,17 @@ describe('ClassLoader', () => {
         });
     });
 
+    it('for a single declare abstract', () => {
+      expect(loader.getClassElements('dir/file', resolutionContext.parseTypescriptContents(`declare abstract class A{}`)))
+        .toMatchObject({
+          declaredClasses: {
+            A: {
+              type: 'ClassDeclaration',
+            },
+          },
+        });
+    });
+
     it('for a single import', () => {
       expect(loader.getClassElements('dir/file', resolutionContext.parseTypescriptContents(`import {A as B} from './lib/A'`)))
         .toMatchObject({
@@ -77,6 +273,17 @@ describe('ClassLoader', () => {
 
     it('for a single named export', () => {
       expect(loader.getClassElements('dir/file', resolutionContext.parseTypescriptContents(`export class A{}`)))
+        .toMatchObject({
+          exportedClasses: {
+            A: {
+              type: 'ClassDeclaration',
+            },
+          },
+        });
+    });
+
+    it('for a single named export abstract', () => {
+      expect(loader.getClassElements('dir/file', resolutionContext.parseTypescriptContents(`export abstract class A{}`)))
         .toMatchObject({
           exportedClasses: {
             A: {

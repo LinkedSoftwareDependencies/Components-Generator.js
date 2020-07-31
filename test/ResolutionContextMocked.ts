@@ -3,7 +3,7 @@ import { Program } from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-
 import { ResolutionContext } from '../lib/resolution/ResolutionContext';
 
 export class ResolutionContextMocked extends ResolutionContext {
-  private readonly contentsOverrides: {[name: string]: string | Program};
+  public contentsOverrides: {[name: string]: string | Program};
 
   public constructor(contentsOverrides: {[name: string]: string | Program}) {
     super();
@@ -22,5 +22,14 @@ export class ResolutionContextMocked extends ResolutionContext {
       return contents;
     }
     return super.parseTypescriptContents(contents);
+  }
+
+  public async parseTypescriptFile(filePath: string): Promise<Program> {
+    const indexContent = await this.getTypeScriptFileContent(filePath);
+    try {
+      return this.parseTypescriptContents(indexContent);
+    } catch (error) {
+      throw new Error(`Could not parse file ${filePath}, invalid syntax at line ${error.lineNumber}, column ${error.column}. Message: ${error.message}`);
+    }
   }
 }

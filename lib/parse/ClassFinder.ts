@@ -1,12 +1,10 @@
 import * as Path from 'path';
-import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import { ClassDeclaration } from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
 import { ClassIndex, ClassReference } from './ClassIndex';
 import { ClassLoader } from './ClassLoader';
-import { ClassScope } from './ConstructorLoader';
 
 /**
  * Load the names and locations of all available classes that are exported by a package.
+ * This will not load classes, but it will merely provide references to classes.
  */
 export class ClassFinder {
   private readonly classLoader: ClassLoader;
@@ -34,31 +32,6 @@ export class ClassFinder {
     }
 
     return exports;
-  }
-
-  /**
-   * Find the super class of the given class.
-   * @param declaration A class declaration.
-   * @param currentFileName The file name of the current class, for error reporting.
-   */
-  public getSuperClass(declaration: ClassDeclaration, currentFileName: string): ClassScope | undefined {
-    if (!declaration.superClass) {
-      return;
-    }
-    if (declaration.superClass.type === AST_NODE_TYPES.Identifier) {
-      // Extensions in the form of `class A extends B`
-      return { className: declaration.superClass.name };
-    }
-    if (declaration.superClass.type === AST_NODE_TYPES.MemberExpression &&
-      declaration.superClass.property.type === AST_NODE_TYPES.Identifier &&
-      declaration.superClass.object.type === AST_NODE_TYPES.Identifier) {
-      // Extensions in the form of `class A extends x.B`
-      return {
-        className: declaration.superClass.property.name,
-        nameSpace: declaration.superClass.object.name,
-      };
-    }
-    throw new Error(`Could not interpret type of superclass in ${currentFileName} on line ${declaration.superClass.loc.start.line} column ${declaration.superClass.loc.start.column}`);
   }
 
   /**

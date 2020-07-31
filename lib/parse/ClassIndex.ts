@@ -16,18 +16,18 @@ export interface ClassReference {
   localName: string;
   // The name of the file the class is defined in.
   fileName: string;
-  // The optional super class.
-  superClass?: string;
 }
 
 /**
- * A class reference with a full class declaration.
+ * A loaded class with a full class declaration.
  */
-export interface ClassReferenceLoaded {
+export interface ClassLoaded extends ClassReference {
   // The name of the class within the file.
   localName: string;
   // The name of the file the class is defined in.
   fileName: string;
   // The loaded class declaration.
   declaration: ClassDeclaration;
+  // A super class reference if the class has one
+  superClass?: ClassLoaded;
 }
