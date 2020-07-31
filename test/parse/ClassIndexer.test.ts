@@ -284,5 +284,22 @@ export * from './Z'
           },
         });
     });
+
+    it('for an exported class extending Error should ignore the link', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+export class A extends Error{}
+`,
+      };
+      expect(await indexer.loadClassChain({ localName: 'A', fileName: 'file' }))
+        .toMatchObject({
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'ClassDeclaration',
+          },
+        });
+    });
   });
 });

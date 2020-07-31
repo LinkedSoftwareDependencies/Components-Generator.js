@@ -6,6 +6,13 @@ import { ClassIndex, ClassLoaded, ClassReference } from './ClassIndex';
 import { ClassLoader } from './ClassLoader';
 
 export class ClassIndexer {
+  /**
+   * Errors that do not require an import, and are assumed to be known globally.
+   */
+  private static readonly SUPERCLASS_BLACKLIST: {[name: string]: boolean} = {
+    Error: true,
+  };
+
   private readonly classLoader: ClassLoader;
   private readonly classFinder: ClassFinder;
 
@@ -40,7 +47,7 @@ export class ClassIndexer {
     // If the class has a super class, load it recursively
     const superClassName = this.classLoader.getSuperClassName(classReferenceLoaded.declaration,
       classReferenceLoaded.fileName);
-    if (superClassName) {
+    if (superClassName && !(superClassName in ClassIndexer.SUPERCLASS_BLACKLIST)) {
       classReferenceLoaded.superClass = await this.loadClassChain({
         localName: superClassName,
         fileName: classReferenceLoaded.fileName,
