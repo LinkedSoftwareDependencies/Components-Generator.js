@@ -58,5 +58,15 @@ describe('ResolutionContext', () => {
       await expect(resolutionContext.parseTypescriptFile(`${__dirname}/../data/file-invalid`)).rejects
         .toThrow();
     });
+
+    it('Should cache the same file', async() => {
+      const parsedFile1 = await resolutionContext.parseTypescriptFile(`${__dirname}/../data/file`);
+      const parsedFileB1 = await resolutionContext.parseTypescriptFile(`${__dirname}/../data/fileb`);
+      const parsedFile2 = await resolutionContext.parseTypescriptFile(`${__dirname}/../data/file`);
+      const parsedFileB2 = await resolutionContext.parseTypescriptFile(`${__dirname}/../data/fileb`);
+      expect(parsedFile1).toBe(parsedFile2);
+      expect(parsedFileB1).toBe(parsedFileB2);
+      expect(parsedFile1).not.toBe(parsedFileB1);
+    });
   });
 });

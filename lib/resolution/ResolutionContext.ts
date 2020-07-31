@@ -1,11 +1,18 @@
 import * as fs from 'fs';
 import * as parser from '@typescript-eslint/typescript-estree';
 import { Program } from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
+import * as LRUCache from 'lru-cache';
 
 /**
  * Context for loading files.
  */
 export class ResolutionContext {
+  private readonly parsedCache: LRUCache<string, Program>;
+
+  public constructor() {
+    this.parsedCache = new LRUCache(2048);
+  }
+
   /**
    * Reads the content of a file
    * @param filePath The file path
@@ -43,13 +50,22 @@ export class ResolutionContext {
 
   /**
    * Parse a given typescript file into an abstract syntax tree.
+   * This method has a built-in cache, so repeated calls for the same file are safe.
    * @param filePath A typescript file path, without extension.
    * @return An abstract syntax tree.
    */
   public async parseTypescriptFile(filePath: string): Promise<Program> {
+    // First check cache
+    const cached = this.parsedCache.get(filePath);
+    if (cached) {
+      return cached;
+    }
+
     const indexContent = await this.getTypeScriptFileContent(filePath);
     try {
-      return this.parseTypescriptContents(indexContent);
+      const parsed = this.parseTypescriptContents(indexContent);
+      this.parsedCache.set(filePath, parsed);
+      return parsed;
     } catch (error) {
       throw new Error(`Could not parse file ${filePath}, invalid syntax at line ${error.lineNumber}, column ${error.column}. Message: ${error.message}`);
     }
