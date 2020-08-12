@@ -5,7 +5,7 @@ import {
   TSTypeLiteral,
   TypeNode,
 } from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
-import { ClassLoaded, ClassReference } from './ClassIndex';
+import { ClassLoaded } from './ClassIndex';
 import { CommentData, CommentLoader } from './CommentLoader';
 import { ConstructorData } from './ConstructorLoader';
 
@@ -84,12 +84,12 @@ export class ParameterLoader {
     return !field.optional;
   }
 
-  public getRangeFromTypeNode(typeNode: TypeNode, field: Identifier, clazz: ClassReference, nestedArrays = 0):
+  public getRangeFromTypeNode(typeNode: TypeNode, field: Identifier, nestedArrays = 0):
   ParameterRange {
     // Don't allow arrays to be nested
     if (nestedArrays > 1) {
       throw new Error(`Detected illegal nested array type for field ${this.getFieldName(field)
-      } in ${clazz.localName} at ${clazz.fileName}`);
+      } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
     }
 
     // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
@@ -106,17 +106,17 @@ export class ParameterLoader {
               return { type: 'raw', value: 'string' };
             case 'Array':
               if (typeNode.typeParameters && typeNode.typeParameters.params.length === 1) {
-                return this.getRangeFromTypeNode(typeNode.typeParameters.params[0], field, clazz, nestedArrays + 1);
+                return this.getRangeFromTypeNode(typeNode.typeParameters.params[0], field, nestedArrays + 1);
               }
               throw new Error(`Found invalid Array field type at ${this.getFieldName(field)
-              } in ${clazz.localName} at ${clazz.fileName}`);
+              } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
             default:
               return { type: 'interface', value: typeNode.typeName.name };
           }
         }
         break;
       case AST_NODE_TYPES.TSArrayType:
-        return this.getRangeFromTypeNode(typeNode.elementType, field, clazz, nestedArrays + 1);
+        return this.getRangeFromTypeNode(typeNode.elementType, field, nestedArrays + 1);
       case AST_NODE_TYPES.TSBooleanKeyword:
         return { type: 'raw', value: 'boolean' };
       case AST_NODE_TYPES.TSNumberKeyword:
@@ -127,7 +127,7 @@ export class ParameterLoader {
         return { type: 'hash', value: typeNode };
     }
     throw new Error(`Could not understand parameter type of field ${this.getFieldName(field)
-    } in ${clazz.localName} at ${clazz.fileName}`);
+    } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
   }
 
   public getFieldRange(field: Identifier, commentData: CommentData): ParameterRange {
@@ -138,13 +138,11 @@ export class ParameterLoader {
 
     // Check the typescript raw field type
     if (field.typeAnnotation) {
-      return this.getRangeFromTypeNode(field.typeAnnotation.typeAnnotation, field, this.classLoaded);
+      return this.getRangeFromTypeNode(field.typeAnnotation.typeAnnotation, field);
     }
 
-    // Check the typescript class/interface field type
-    // TODO: handle class references
-
-    return <any> {};
+    throw new Error(`Missing field type on ${this.getFieldName(field)
+    } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
   }
 
   public getFieldDefault(commentData: CommentData): string | undefined {

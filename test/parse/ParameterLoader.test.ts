@@ -390,6 +390,16 @@ export class A{
           },
         });
     });
+
+    it('should error on a field with qualified name', async() => {
+      await expect(async() => await getFieldRange('fieldA: a.B', {}))
+        .rejects.toThrow(new Error('Could not understand parameter type of field fieldA in A at file'));
+    });
+
+    it('should error on a field without type', async() => {
+      await expect(async() => await getFieldRange('fieldA', {}))
+        .rejects.toThrow(new Error('Missing field type on fieldA in A at file'));
+    });
   });
 
   describe('getFieldDefault', () => {
