@@ -342,12 +342,12 @@ export class A{
 
     it('should error on an Array field type with no params', async() => {
       await expect(async() => await getFieldRange('fieldA: Array<>', {}))
-        .rejects.toThrow(new Error('Could not understand parameter type of field fieldA in A at file'));
+        .rejects.toThrow(new Error('Found invalid Array field type at fieldA in A at file'));
     });
 
     it('should error on an Array field type with too many params', async() => {
       await expect(async() => await getFieldRange('fieldA: Array<string, string>', {}))
-        .rejects.toThrow(new Error('Could not understand parameter type of field fieldA in A at file'));
+        .rejects.toThrow(new Error('Found invalid Array field type at fieldA in A at file'));
     });
 
     it('should error on a nested array', async() => {
@@ -358,6 +358,37 @@ export class A{
     it('should error on a nested Array', async() => {
       await expect(async() => await getFieldRange('fieldA: Array<Array<string>>', {}))
         .rejects.toThrow(new Error('Detected illegal nested array type for field fieldA in A at file'));
+    });
+
+    it('should get the range of a class', async() => {
+      expect(await getFieldRange('fieldA: MyClass', {}))
+        .toEqual({ type: 'interface', value: 'MyClass' });
+    });
+
+    it('should get the range of a hash', async() => {
+      expect(await getFieldRange('fieldA: { a: number }', {}))
+        .toMatchObject({
+          type: 'hash',
+          value: {
+            members: [
+              {
+                computed: false,
+                key: {
+                  name: 'a',
+                  type: 'Identifier',
+                },
+                type: 'TSPropertySignature',
+                typeAnnotation: {
+                  type: 'TSTypeAnnotation',
+                  typeAnnotation: {
+                    type: 'TSNumberKeyword',
+                  },
+                },
+              },
+            ],
+            type: 'TSTypeLiteral',
+          },
+        });
     });
   });
 

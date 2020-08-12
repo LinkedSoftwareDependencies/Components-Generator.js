@@ -29,7 +29,7 @@ if (args.help) {
   generator
     .generateComponents()
     // eslint-disable-next-line no-console
-    .then((components: any) => console.log(components))
+    .then((components: any) => console.log(JSON.stringify(components, null, '  ')))
     // .then(components => oldgenerator.writeComponents(components))
     .catch((error: Error) => process.stderr.write(`${error.message}\n`));
 }

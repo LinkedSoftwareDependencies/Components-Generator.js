@@ -1,5 +1,10 @@
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import { Identifier, MethodDefinition, TypeNode } from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
+import {
+  Identifier,
+  MethodDefinition,
+  TSTypeLiteral,
+  TypeNode,
+} from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
 import { ClassLoaded, ClassReference } from './ClassIndex';
 import { CommentData, CommentLoader } from './CommentLoader';
 import { ConstructorData } from './ConstructorLoader';
@@ -30,7 +35,6 @@ export class ParameterLoader {
       if (field.type === AST_NODE_TYPES.Identifier) {
         const commentData = constructorCommentData[field.name] || {};
         if (!commentData.ignored) {
-          // TODO: also handle cases where interfaces exist, and comments are defined on their fields
           parameters.push(this.loadField(field, commentData));
         }
       } else {
@@ -104,6 +108,10 @@ export class ParameterLoader {
               if (typeNode.typeParameters && typeNode.typeParameters.params.length === 1) {
                 return this.getRangeFromTypeNode(typeNode.typeParameters.params[0], field, clazz, nestedArrays + 1);
               }
+              throw new Error(`Found invalid Array field type at ${this.getFieldName(field)
+              } in ${clazz.localName} at ${clazz.fileName}`);
+            default:
+              return { type: 'interface', value: typeNode.typeName.name };
           }
         }
         break;
@@ -115,6 +123,8 @@ export class ParameterLoader {
         return { type: 'raw', value: 'number' };
       case AST_NODE_TYPES.TSStringKeyword:
         return { type: 'raw', value: 'string' };
+      case AST_NODE_TYPES.TSTypeLiteral:
+        return { type: 'hash', value: typeNode };
     }
     throw new Error(`Could not understand parameter type of field ${this.getFieldName(field)
     } in ${clazz.localName} at ${clazz.fileName}`);
@@ -185,6 +195,9 @@ export type ParameterRange = {
   type: 'override';
   value: string;
 } | {
-  type: 'class';
-  value: ClassReference;
+  type: 'interface';
+  value: string;
+} | {
+  type: 'hash';
+  value: TSTypeLiteral;
 };
