@@ -1,6 +1,5 @@
-import { BaseNode, MethodDefinition } from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
+import { BaseNode, Identifier, MethodDefinition } from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
 import * as commentParse from 'comment-parser';
-import { FieldDeclarationType } from '../OldTypes';
 import { ClassLoaded, ClassReference } from './ClassIndex';
 import { ParameterRange } from './ParameterLoader';
 
@@ -51,7 +50,7 @@ export class CommentLoader {
    * Extract comment data from the given field.
    * @param field A field.
    */
-  public getCommentDataFromField(field: FieldDeclarationType): CommentData {
+  public getCommentDataFromField(field: Identifier): CommentData {
     const comment = this.getCommentRaw(field);
     if (comment) {
       return CommentLoader.getCommentDataFromComment(comment, this.classLoaded);
