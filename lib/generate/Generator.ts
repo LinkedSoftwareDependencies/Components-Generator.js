@@ -3,6 +3,7 @@ import { logger } from '../Core';
 import { ClassFinder } from '../parse/ClassFinder';
 import { ClassIndexer } from '../parse/ClassIndexer';
 import { ClassLoader } from '../parse/ClassLoader';
+import { ConstructorLoader } from '../parse/ConstructorLoader';
 import { ResolutionContext } from '../resolution/ResolutionContext';
 
 /**
@@ -29,9 +30,8 @@ export class Generator {
 
     const packageExports = await classFinder.getPackageExports(this.packageRootDirectory);
     const classIndex = await classIndexer.createIndex(packageExports);
-    // Const constructors = await new ConstructorLoader({ resolutionContext: this.resolutionContext })
-    //  .getConstructors(packageExports);
-    return classIndex;
+    const constructors = new ConstructorLoader().getConstructors(classIndex);
+    return constructors;
   }
 }
 

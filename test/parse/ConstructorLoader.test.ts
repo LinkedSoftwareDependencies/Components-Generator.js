@@ -1,274 +1,322 @@
-import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import { Program } from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
 import { ClassFinder } from '../../lib/parse/ClassFinder';
+import { ClassIndexer } from '../../lib/parse/ClassIndexer';
+import { ClassLoader } from '../../lib/parse/ClassLoader';
+import { ConstructorLoader } from '../../lib/parse/ConstructorLoader';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
-describe('ClassFinder', () => {
-  const resolutionContext = new ResolutionContextMocked({
-    'export-single-named.d.ts': `export {B as Class} from './lib/B'`,
-    'export-single-all.d.ts': `export * from './lib/B'`,
-    'export-classes.d.ts': `
-export class A{}
-export type B = string;
-`,
-    'export-mixed.d.ts': `
-export {A as Class1} from './lib/A';
-export {B as Class2} from './lib/B';
-export {C as Class3} from './lib/C';
-export * from './lib/D';
-`,
-    'export-single-default.d.ts': `export default class {}`,
-    'export-single-invalid-noname.d.ts': `export class {}`,
-    'export-single-const.d.ts': `export const foo = "a";`,
-    'export-single-declare.d.ts': `
-declare class A {}
-export {A as B};
-`,
-    'export-single-declare-reverse.d.ts': `
-export {A as B};
-declare class A {}
-`,
-    'export-single-nodeclare.d.ts': `export {A as B};`,
-    'export-single-all-invalid-nosource.d.ts': <Program> {
-      body: [
-        {
-          type: AST_NODE_TYPES.ExportAllDeclaration,
-        },
-      ],
-    },
-    'export-single-all-invalid-notype.d.ts': <Program> {
-      body: [
-        {
-          type: AST_NODE_TYPES.ExportAllDeclaration,
-          source: {},
-        },
-      ],
-    },
-    'export-single-all-invalid-novalue.d.ts': <Program> {
-      body: [
-        {
-          type: AST_NODE_TYPES.ExportAllDeclaration,
-          source: {
-            type: AST_NODE_TYPES.Literal,
-          },
-        },
-      ],
-    },
-
-    'package-simple-named/index.d.ts': `export {A as B} from './lib/A';`,
-    'package-simple-named/lib/A.d.ts': 'export class A {}',
-
-    'package-simple-unnamed/index.d.ts': `export * from './lib/A';`,
-    'package-simple-unnamed/lib/A.d.ts': 'export class A {}',
-
-    'package-multiple/index.d.ts': `
-export {A as B} from './lib/A';
-export * from './lib/C';
-`,
-    'package-multiple/lib/A.d.ts': 'export class A {}',
-    'package-multiple/lib/C.d.ts': 'export class C {}',
-
-    'package-nested/index.d.ts': `export * from './lib/A';`,
-    'package-nested/lib/A.d.ts': `
-export * from './sub1/B'
-export * from './sub2/C'
-`,
-    'package-nested/lib/sub1/B.d.ts': 'export class B {}',
-    'package-nested/lib/sub2/C.d.ts': 'export class C {}',
-  });
-  let parser: ClassFinder;
+describe('ConstructorLoader', () => {
+  const resolutionContext = new ResolutionContextMocked({});
+  let parser: ConstructorLoader;
+  let classIndexer: ClassIndexer;
 
   beforeEach(() => {
-    parser = new ClassFinder({ resolutionContext });
-  });
-
-  describe('getFileExports', () => {
-    it('for a single named export', async() => {
-      expect(await parser.getFileExports('export-single-named'))
-        .toEqual({
-          named: {
-            Class: {
-              fileName: 'lib/B',
-              localName: 'B',
-            },
-          },
-          unnamed: [],
-        });
-    });
-
-    it('for a single export all', async() => {
-      expect(await parser.getFileExports('export-single-all'))
-        .toEqual({
-          named: {},
-          unnamed: [
-            './lib/B',
-          ],
-        });
-    });
-
-    it('for an export of classes', async() => {
-      expect(await parser.getFileExports('export-classes'))
-        .toEqual({
-          named: {
-            A: {
-              fileName: 'export-classes',
-              localName: 'A',
-            },
-          },
-          unnamed: [],
-        });
-    });
-
-    it('for multiple mixed exports', async() => {
-      expect(await parser.getFileExports('export-mixed'))
-        .toEqual({
-          named: {
-            Class1: {
-              fileName: 'lib/A',
-              localName: 'A',
-            },
-            Class2: {
-              fileName: 'lib/B',
-              localName: 'B',
-            },
-            Class3: {
-              fileName: 'lib/C',
-              localName: 'C',
-            },
-          },
-          unnamed: [
-            './lib/D',
-          ],
-        });
-    });
-
-    it('for a default export should be ignored', async() => {
-      expect(await parser.getFileExports('export-single-default'))
-        .toEqual({
-          named: {},
-          unnamed: [],
-        });
-    });
-
-    it('for an invalid class with no name', async() => {
-      await expect(parser.getFileExports('export-single-invalid-noname')).rejects
-        .toThrow(new Error(`Export parsing failure: missing exported class name in export-single-invalid-noname on line 1 column 7`));
-    });
-
-    it('for a single constant should be ignored', async() => {
-      expect(await parser.getFileExports('export-single-const'))
-        .toEqual({
-          named: {},
-          unnamed: [],
-        });
-    });
-
-    it('for a declared class with separate export', async() => {
-      expect(await parser.getFileExports('export-single-declare'))
-        .toEqual({
-          named: {
-            B: {
-              fileName: 'export-single-declare',
-              localName: 'A',
-            },
-          },
-          unnamed: [],
-        });
-    });
-
-    it('for a declared class with separate export in reverse order', async() => {
-      expect(await parser.getFileExports('export-single-declare-reverse'))
-        .toEqual({
-          named: {
-            B: {
-              fileName: 'export-single-declare-reverse',
-              localName: 'A',
-            },
-          },
-          unnamed: [],
-        });
-    });
-
-    it('for a separate export without a declared class', async() => {
-      expect(await parser.getFileExports('export-single-nodeclare'))
-        .toEqual({
-          named: {},
-          unnamed: [],
-        });
-    });
-
-    it('for an export of all classes with no source should be ignored', async() => {
-      expect(await parser.getFileExports('export-single-all-invalid-nosource'))
-        .toEqual({
-          named: {},
-          unnamed: [],
-        });
-    });
-
-    it('for an export of all classes with no type should be ignored', async() => {
-      expect(await parser.getFileExports('export-single-all-invalid-notype'))
-        .toEqual({
-          named: {},
-          unnamed: [],
-        });
-    });
-
-    it('for an export of all classes with no value should be ignored', async() => {
-      expect(await parser.getFileExports('export-single-all-invalid-novalue'))
-        .toEqual({
-          named: {},
-          unnamed: [],
-        });
+    parser = new ConstructorLoader();
+    const classLoader = new ClassLoader({ resolutionContext });
+    classIndexer = new ClassIndexer({
+      classLoader,
+      classFinder: new ClassFinder({ classLoader }),
     });
   });
 
-  describe('getPackageExports', () => {
-    it('for a single named export', async() => {
-      expect(await parser.getPackageExports('package-simple-named'))
-        .toEqual({
-          B: {
-            fileName: 'package-simple-named/lib/A',
-            localName: 'A',
+  describe('getConstructors', () => {
+    it('should return for a single class without constructor', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export class A{}`,
+      };
+      expect(parser.getConstructors({
+        A: await classIndexer.loadClassChain({ localName: 'A', fileName: 'file' }),
+      })).toEqual({
+        A: {
+          parameters: [],
+        },
+      });
+    });
+
+    it('should return for two classes with constructor', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `
+export class A{
+  /**
+   * @param fieldA - This is a great field! @range {float}
+   * @param fieldB This is B @range {float}
+   * @param fieldC This is C @ignored
+   */
+  constructor(fieldA: string, fieldB?: number[], fieldC?: string[]) {}
+}
+`,
+        'B.d.ts': `
+export class B{
+  /**
+   * @param fieldA - This is a great field!
+   */
+  constructor(fieldA: string) {}
+}
+`,
+      };
+      expect(parser.getConstructors({
+        A: await classIndexer.loadClassChain({ localName: 'A', fileName: 'A' }),
+        B: await classIndexer.loadClassChain({ localName: 'B', fileName: 'B' }),
+      })).toEqual({
+        A: {
+          parameters: [
+            {
+              comment: 'This is a great field!',
+              name: 'fieldA',
+              range: {
+                type: 'override',
+                value: 'float',
+              },
+              required: true,
+              unique: true,
+            },
+            {
+              comment: 'This is B',
+              name: 'fieldB',
+              range: {
+                type: 'override',
+                value: 'float',
+              },
+              required: false,
+              unique: false,
+            },
+          ],
+        },
+        B: {
+          parameters: [
+            {
+              comment: 'This is a great field!',
+              name: 'fieldA',
+              range: {
+                type: 'raw',
+                value: 'string',
+              },
+              required: true,
+              unique: true,
+            },
+          ],
+        },
+      });
+    });
+  });
+
+  describe('getConstructor', () => {
+    it('should return undefined on a class without a constructor or super', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export class A{}`,
+      };
+      expect(parser.getConstructor(
+        await classIndexer.loadClassChain({ localName: 'A', fileName: 'file' }),
+      )).toBeUndefined();
+    });
+
+    it('should return undefined on a class chain without constructors', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+import { B } from './B';
+export class A extends B{}
+`,
+        'B.d.ts': `
+import { C } from './C';
+export class B extends C{}
+`,
+        'C.d.ts': `export class C{}`,
+      };
+      expect(parser.getConstructor(
+        await classIndexer.loadClassChain({ localName: 'A', fileName: 'file' }),
+      )).toBeUndefined();
+    });
+
+    it('should return on a class with a direct constructor', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+class A{
+  constructor() {}
+}`,
+      };
+      expect(parser.getConstructor(
+        await classIndexer.loadClassChain({ localName: 'A', fileName: 'file' }),
+      )).toMatchObject({
+        computed: false,
+        key: {
+          name: 'constructor',
+          type: 'Identifier',
+        },
+        kind: 'constructor',
+        static: false,
+        type: 'MethodDefinition',
+        value: {
+          async: false,
+          body: {
+            body: [],
+            type: 'BlockStatement',
+          },
+          expression: false,
+          generator: false,
+          id: null,
+          params: [],
+          type: 'FunctionExpression',
+        },
+      });
+    });
+
+    it('should return on a class chain with a super super constructor', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+import { B } from './B';
+export class A extends B{}
+`,
+        'B.d.ts': `
+import { C } from './C';
+export class B extends C{}
+`,
+        'C.d.ts': `
+export class C{
+  constructor() {}
+}
+`,
+      };
+      expect(parser.getConstructor(
+        await classIndexer.loadClassChain({ localName: 'A', fileName: 'file' }),
+      )).toMatchObject({
+        computed: false,
+        key: {
+          name: 'constructor',
+          type: 'Identifier',
+        },
+        kind: 'constructor',
+        static: false,
+        type: 'MethodDefinition',
+        value: {
+          async: false,
+          body: {
+            body: [],
+            type: 'BlockStatement',
+          },
+          expression: false,
+          generator: false,
+          id: null,
+          params: [],
+          type: 'FunctionExpression',
+        },
+      });
+    });
+  });
+
+  describe('getConstructorInClass', () => {
+    it('should return undefined on a class without a constructor', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `class A{}`,
+      };
+      expect(parser.getConstructorInClass(<any> (await resolutionContext
+        .parseTypescriptFile('file')).body[0]))
+        .toBeUndefined();
+    });
+
+    it('should return undefined on a class without a constructor but other elements', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+class A{
+  abc(): string {}
+}`,
+      };
+      expect(parser.getConstructorInClass(<any> (await resolutionContext
+        .parseTypescriptFile('file')).body[0]))
+        .toBeUndefined();
+    });
+
+    it('should return on a class with a constructor', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+class A{
+  constructor() {}
+}`,
+      };
+      expect(parser.getConstructorInClass(<any> (await resolutionContext
+        .parseTypescriptFile('file')).body[0]))
+        .toMatchObject({
+          computed: false,
+          key: {
+            name: 'constructor',
+            type: 'Identifier',
+          },
+          kind: 'constructor',
+          static: false,
+          type: 'MethodDefinition',
+          value: {
+            async: false,
+            body: {
+              body: [],
+              type: 'BlockStatement',
+            },
+            expression: false,
+            generator: false,
+            id: null,
+            params: [],
+            type: 'FunctionExpression',
           },
         });
     });
+  });
 
-    it('for a single unnamed export', async() => {
-      expect(await parser.getPackageExports('package-simple-unnamed'))
-        .toEqual({
-          A: {
-            fileName: 'package-simple-unnamed/lib/A',
-            localName: 'A',
-          },
-        });
+  describe('getClass', () => {
+    it('should error on no contents', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': ``,
+      };
+      await expect(async() => parser.getClass('A',
+        await resolutionContext.parseTypescriptFile('file'),
+        'file')).rejects
+        .toThrow(new Error('Could not find class A in file'));
     });
 
-    it('for a multiple exports', async() => {
-      expect(await parser.getPackageExports('package-multiple'))
-        .toEqual({
-          B: {
-            fileName: 'package-multiple/lib/A',
-            localName: 'A',
-          },
-          C: {
-            fileName: 'package-multiple/lib/C',
-            localName: 'C',
-          },
-        });
+    it('should error on just a const export', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export const foo = "a";`,
+      };
+      await expect(async() => parser.getClass('A',
+        await resolutionContext.parseTypescriptFile('file'),
+        'file')).rejects
+        .toThrow(new Error('Could not find class A in file'));
     });
 
-    it('for nested exports', async() => {
-      expect(await parser.getPackageExports('package-nested'))
-        .toEqual({
-          B: {
-            fileName: 'package-nested/lib/sub1/B',
-            localName: 'B',
-          },
-          C: {
-            fileName: 'package-nested/lib/sub2/C',
-            localName: 'C',
-          },
-        });
+    it('should return a local class', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `class A{}`,
+      };
+      expect(parser.getClass('A',
+        await resolutionContext.parseTypescriptFile('file'),
+        'file')).toMatchObject({
+        body: {
+          body: [],
+          type: 'ClassBody',
+        },
+        id: {
+          name: 'A',
+          type: 'Identifier',
+        },
+        superClass: null,
+        type: 'ClassDeclaration',
+      });
+    });
+
+    it('should return an exported class', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export class A{}`,
+      };
+      expect(parser.getClass('A',
+        await resolutionContext.parseTypescriptFile('file'),
+        'file')).toMatchObject({
+        body: {
+          body: [],
+          type: 'ClassBody',
+        },
+        id: {
+          name: 'A',
+          type: 'Identifier',
+        },
+        superClass: null,
+        type: 'ClassDeclaration',
+      });
     });
   });
 });

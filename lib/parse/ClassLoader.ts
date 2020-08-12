@@ -54,12 +54,12 @@ export class ClassLoader {
 
     // If the class has been exported in this file, return directly
     if (classReference.localName in exportedClasses) {
-      return { ...classReference, declaration: exportedClasses[classReference.localName] };
+      return { ...classReference, declaration: exportedClasses[classReference.localName], ast };
     }
 
     // If the class has been declared in this file, return directly
     if (classReference.localName in declaredClasses) {
-      return { ...classReference, declaration: declaredClasses[classReference.localName] };
+      return { ...classReference, declaration: declaredClasses[classReference.localName], ast };
     }
 
     // If the class is available via an import, follow that import link
