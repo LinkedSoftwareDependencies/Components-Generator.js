@@ -43,11 +43,11 @@ export class ClassFinder {
     // Load the elements of the class
     const {
       exportedClasses,
-      exportedImportedClasses,
+      exportedImportedElements,
       exportedImportedAll,
       exportedUnknowns,
       declaredClasses,
-      importedClasses,
+      importedElements,
     } = await this.classLoader.loadClassElements(fileName);
     const exportDefinitions: { named: ClassIndex<ClassReference>; unnamed: string[] } = { named: {}, unnamed: []};
 
@@ -60,7 +60,7 @@ export class ClassFinder {
     }
 
     // Get all named exports from other files
-    for (const [ exportedName, { localName, fileName: importedFileName }] of Object.entries(exportedImportedClasses)) {
+    for (const [ exportedName, { localName, fileName: importedFileName }] of Object.entries(exportedImportedElements)) {
       exportDefinitions.named[exportedName] = {
         localName,
         fileName: importedFileName,
@@ -81,8 +81,8 @@ export class ClassFinder {
         }
 
         // Next, check imports
-        if (localName in importedClasses) {
-          exportDefinitions.named[exportedName] = importedClasses[localName];
+        if (localName in importedElements) {
+          exportDefinitions.named[exportedName] = importedElements[localName];
         }
       }
     }

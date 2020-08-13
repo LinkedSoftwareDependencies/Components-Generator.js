@@ -42,7 +42,7 @@ export class ClassIndexer {
    */
   public async loadClassChain(classReference: ClassReference): Promise<ClassLoaded> {
     // Load the class declaration
-    const classReferenceLoaded: ClassLoaded = await this.classLoader.loadClassDeclaration(classReference);
+    const classReferenceLoaded: ClassLoaded = await this.classLoader.loadClassDeclaration(classReference, false);
 
     // If the class has a super class, load it recursively
     const superClassName = this.classLoader.getSuperClassName(classReferenceLoaded.declaration,

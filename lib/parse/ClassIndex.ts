@@ -1,4 +1,8 @@
-import { ClassDeclaration, Program } from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
+import {
+  ClassDeclaration,
+  Program,
+  TSInterfaceDeclaration,
+} from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
 
 /**
  * A collection of classes, with exported name as key.
@@ -22,6 +26,7 @@ export interface ClassReference {
  * A loaded class with a full class declaration.
  */
 export interface ClassLoaded extends ClassReference {
+  type: 'class';
   // The name of the class within the file.
   localName: string;
   // The name of the file the class is defined in.
@@ -32,4 +37,21 @@ export interface ClassLoaded extends ClassReference {
   ast: Program;
   // A super class reference if the class has one
   superClass?: ClassLoaded;
+}
+
+/**
+ * A loaded interface with a full interface declaration.
+ */
+export interface InterfaceLoaded extends ClassReference {
+  type: 'interface';
+  // The name of the interface within the file.
+  localName: string;
+  // The name of the file the interface is defined in.
+  fileName: string;
+  // The loaded interface declaration.
+  declaration: TSInterfaceDeclaration;
+  // The full AST the interface was present in.
+  ast: Program;
+  // Super interface references if the interface has them
+  superInterfaces?: InterfaceLoaded[];
 }
