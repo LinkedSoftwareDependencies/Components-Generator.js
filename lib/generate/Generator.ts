@@ -4,6 +4,7 @@ import { ClassFinder } from '../parse/ClassFinder';
 import { ClassIndexer } from '../parse/ClassIndexer';
 import { ClassLoader } from '../parse/ClassLoader';
 import { ConstructorLoader } from '../parse/ConstructorLoader';
+import { ParameterResolver } from '../parse/ParameterResolver';
 import { ResolutionContext } from '../resolution/ResolutionContext';
 
 /**
@@ -30,7 +31,9 @@ export class Generator {
 
     const packageExports = await classFinder.getPackageExports(this.packageRootDirectory);
     const classIndex = await classIndexer.createIndex(packageExports);
-    const constructors = new ConstructorLoader().getConstructors(classIndex);
+    const constructorsUnresolved = new ConstructorLoader().getConstructors(classIndex);
+    const constructors = new ParameterResolver({ classLoader })
+      .resolveAllConstructorParameters(constructorsUnresolved, classIndex);
     return constructors;
   }
 }

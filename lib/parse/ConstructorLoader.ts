@@ -5,7 +5,7 @@ import {
   Program,
 } from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
 import { ClassIndex, ClassLoaded } from './ClassIndex';
-import { ParameterData, ParameterLoader } from './ParameterLoader';
+import { ParameterData, ParameterLoader, ParameterRangeUnresolved } from './ParameterLoader';
 
 /**
  * Loads the constructor data of classes.
@@ -15,8 +15,8 @@ export class ConstructorLoader {
    * Create a class index containing all constructor data from the classes in the given index.
    * @param classIndex An index of loaded classes.
    */
-  public getConstructors(classIndex: ClassIndex<ClassLoaded>): ClassIndex<ConstructorData> {
-    const constructorDataIndex: ClassIndex<ConstructorData> = {};
+  public getConstructors(classIndex: ClassIndex<ClassLoaded>): ClassIndex<ConstructorData<ParameterRangeUnresolved>> {
+    const constructorDataIndex: ClassIndex<ConstructorData<ParameterRangeUnresolved>> = {};
     for (const [ className, classLoaded ] of Object.entries(classIndex)) {
       const constructor = this.getConstructor(classLoaded);
       if (constructor) {
@@ -92,6 +92,6 @@ export class ConstructorLoader {
 /**
  * Constructor parameter information
  */
-export interface ConstructorData {
-  parameters: ParameterData[];
+export interface ConstructorData<R> {
+  parameters: ParameterData<R>[];
 }

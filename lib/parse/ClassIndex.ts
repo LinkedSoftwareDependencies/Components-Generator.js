@@ -23,6 +23,11 @@ export interface ClassReference {
 }
 
 /**
+ * A loaded reference.
+ */
+export type ClassReferenceLoaded = ClassLoaded | InterfaceLoaded;
+
+/**
  * A loaded class with a full class declaration.
  */
 export interface ClassLoaded extends ClassReference {

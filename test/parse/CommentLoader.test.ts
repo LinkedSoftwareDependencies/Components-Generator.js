@@ -9,6 +9,65 @@ describe('CommentLoader', () => {
   const clazz: ClassReference = { localName: 'A', fileName: 'file' };
   const resolutionContext = new ResolutionContextMocked({});
 
+  describe('getCommentDataFromField', () => {
+    async function createLoader() {
+      const classLoader = new ClassLoader({ resolutionContext });
+      const iface = await classLoader.loadClassDeclaration(clazz, true);
+      const field = <any> iface.declaration.body.body[0];
+      const loader = new CommentLoader({ classLoaded: iface });
+      return { loader, field };
+    }
+
+    it('should be empty for no comment', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export interface A{
+  fieldA: boolean;
+}`,
+      };
+      const { loader, field } = await createLoader();
+      expect(loader.getCommentDataFromField(field)).toEqual({});
+    });
+
+    it('should be defined for a simple comment', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export interface A{
+  /**
+   * This is a field!
+   */
+  fieldA: boolean;
+}`,
+      };
+      const { loader, field } = await createLoader();
+      expect(loader.getCommentDataFromField(field)).toEqual({
+        description: 'This is a field!',
+      });
+    });
+
+    it('should be defined for a complex comment', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export interface A{
+  /**
+   * This is a field!
+   * @range {boolean}
+   * @default {true}
+   * @ignored
+   */
+  fieldA: boolean;
+}`,
+      };
+      const { loader, field } = await createLoader();
+      expect(loader.getCommentDataFromField(field)).toEqual({
+        default: 'true',
+        description: 'This is a field!',
+        ignored: true,
+        range: {
+          type: 'override',
+          value: 'boolean',
+        },
+      });
+    });
+  });
+
   describe('getCommentDataFromConstructorComment', () => {
     it('should be empty for an empty comment', () => {
       expect(CommentLoader.getCommentDataFromConstructorComment(
@@ -150,7 +209,7 @@ describe('CommentLoader', () => {
   describe('getCommentRaw', () => {
     async function createLoader() {
       const classLoader = new ClassLoader({ resolutionContext });
-      const classLoaded = await classLoader.loadClassDeclaration(clazz);
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
       const constructorLoader = new ConstructorLoader();
       const field = <any> (<MethodDefinition> constructorLoader.getConstructor(classLoaded)).value.params[0];
 
@@ -167,6 +226,28 @@ describe('CommentLoader', () => {
       };
       const { loader, field } = await createLoader();
       expect(loader.getCommentRaw(field)).toBeUndefined();
+    });
+
+    it('should be undefined for an unrelated comment', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export class A{
+/**
+ * Unrelated
+ */
+
+  constructor(fieldA: boolean) {}
+}`,
+      };
+      const { loader, field } = await createLoader();
+      expect(loader.getCommentRaw(field)).toBeUndefined();
+    });
+
+    it('should be undefined for no comments in ast', async() => {
+      expect(new CommentLoader(<any> {
+        classLoaded: {
+          ast: {},
+        },
+      }).getCommentRaw(<any> { loc: { start: { line: 0 }}})).toBeUndefined();
     });
 
     it('should be defined for a constructor comment', async() => {

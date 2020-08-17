@@ -1,13 +1,17 @@
-import { BaseNode, Identifier, MethodDefinition } from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
+import {
+  BaseNode,
+  MethodDefinition,
+  TSPropertySignature,
+} from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
 import * as commentParse from 'comment-parser';
-import { ClassLoaded, ClassReference } from './ClassIndex';
-import { ParameterRange } from './ParameterLoader';
+import { ClassReference, ClassReferenceLoaded } from './ClassIndex';
+import { ParameterRangeUnresolved } from './ParameterLoader';
 
 /**
  * Loads comments from fields in a given class.
  */
 export class CommentLoader {
-  private readonly classLoaded: ClassLoaded;
+  private readonly classLoaded: ClassReferenceLoaded;
 
   public constructor(args: CommentLoaderArgs) {
     this.classLoaded = args.classLoaded;
@@ -50,7 +54,7 @@ export class CommentLoader {
    * Extract comment data from the given field.
    * @param field A field.
    */
-  public getCommentDataFromField(field: Identifier): CommentData {
+  public getCommentDataFromField(field: TSPropertySignature): CommentData {
     const comment = this.getCommentRaw(field);
     if (comment) {
       return CommentLoader.getCommentDataFromComment(comment, this.classLoaded);
@@ -117,7 +121,7 @@ export class CommentLoader {
   public getCommentRaw(node: BaseNode): string | undefined {
     const line = node.loc.start.line;
     for (const comment of this.classLoaded.ast.comments || []) {
-      if (comment && comment.loc.end.line === line - 1) {
+      if (comment.loc.end.line === line - 1) {
         return `/*${comment.value}*/`;
       }
     }
@@ -125,7 +129,7 @@ export class CommentLoader {
 }
 
 export interface CommentLoaderArgs {
-  classLoaded: ClassLoaded;
+  classLoaded: ClassReferenceLoaded;
 }
 
 export interface ConstructorCommentData {
@@ -136,7 +140,7 @@ export interface CommentData {
   /**
    * The range of the parameter values.
    */
-  range?: ParameterRange;
+  range?: ParameterRangeUnresolved;
   /**
    * The default value.
    */

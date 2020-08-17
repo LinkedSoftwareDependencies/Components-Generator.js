@@ -1,11 +1,11 @@
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import {
   Identifier,
-  MethodDefinition,
-  TSTypeLiteral,
+  MethodDefinition, TSPropertySignature,
+  TSTypeLiteral, TypeElement,
   TypeNode,
 } from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
-import { ClassLoaded } from './ClassIndex';
+import { ClassReference, ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
 import { CommentData, CommentLoader } from './CommentLoader';
 import { ConstructorData } from './ConstructorLoader';
 
@@ -13,7 +13,7 @@ import { ConstructorData } from './ConstructorLoader';
  * Interprets class parameters of a given class.
  */
 export class ParameterLoader {
-  private readonly classLoaded: ClassLoaded;
+  private readonly classLoaded: ClassReferenceLoaded;
   private readonly commentLoader: CommentLoader;
 
   public constructor(args: ParameterLoaderArgs) {
@@ -25,12 +25,12 @@ export class ParameterLoader {
    * Load all parameter data from all fields in the given constructor.
    * @param constructor A constructor
    */
-  public loadConstructorFields(constructor: MethodDefinition): ConstructorData {
+  public loadConstructorFields(constructor: MethodDefinition): ConstructorData<ParameterRangeUnresolved> {
     // Load the constructor comment
     const constructorCommentData = this.commentLoader.getCommentDataFromConstructor(constructor);
 
     // Load all constructor parameters
-    const parameters: ParameterData[] = [];
+    const parameters: ParameterData<ParameterRangeUnresolved>[] = [];
     for (const field of constructor.value.params) {
       if (field.type === AST_NODE_TYPES.Identifier) {
         const commentData = constructorCommentData[field.name] || {};
@@ -45,13 +45,53 @@ export class ParameterLoader {
   }
 
   /**
+   * Load all parameter data from all fields in the given interface.
+   * If methods are found in the interface, an error is thrown.
+   * @param iface An interface
+   */
+  public loadInterfaceFields(iface: InterfaceLoaded): ParameterData<ParameterRangeUnresolved>[] {
+    return <ParameterData<ParameterRangeUnresolved>[]> iface.declaration.body.body
+      .map(field => this.loadTypeElementField(field))
+      .filter(Boolean);
+  }
+
+  /**
+   * Load all parameter data from all fields in the given hash.
+   * @param hash An hash element.
+   */
+  public loadHashFields(hash: TSTypeLiteral): ParameterData<ParameterRangeUnresolved>[] {
+    return <ParameterData<ParameterRangeUnresolved>[]> hash.members
+      .map(field => this.loadTypeElementField(field))
+      .filter(Boolean);
+  }
+
+  /**
+   * Load the parameter data from the given type element.
+   * @param typeElement A type element, such as an interface or hash field.
+   */
+  public loadTypeElementField(typeElement: TypeElement): ParameterData<ParameterRangeUnresolved> | undefined {
+    let commentData;
+    switch (typeElement.type) {
+      case AST_NODE_TYPES.TSPropertySignature:
+        commentData = this.commentLoader.getCommentDataFromField(typeElement);
+        if (!commentData.ignored) {
+          return this.loadField(typeElement, commentData);
+        }
+        return undefined;
+      default:
+        throw new Error(`Unsupported field type ${typeElement.type} in ${this.classLoaded.localName} in ${this.classLoaded.fileName}`);
+    }
+  }
+
+  /**
    * Load the parameter data from the given field.
    * @param field A field.
    * @param commentData Comment data about the given field.
    */
-  public loadField(field: Identifier, commentData: CommentData): ParameterData {
+  public loadField(field: Identifier | TSPropertySignature, commentData: CommentData):
+  ParameterData<ParameterRangeUnresolved> {
     // Required data
-    const parameterData: ParameterData = {
+    const parameterData: ParameterData<ParameterRangeUnresolved> = {
       name: this.getFieldName(field),
       unique: this.isFieldUnique(field),
       required: this.isFieldRequired(field),
@@ -72,20 +112,28 @@ export class ParameterLoader {
     return parameterData;
   }
 
-  public getFieldName(field: Identifier): string {
-    return field.name;
+  public getFieldName(field: Identifier | TSPropertySignature): string {
+    if ('name' in field) {
+      // If Identifier
+      return field.name;
+    }
+    // Else TSPropertySignature
+    if (field.key.type === AST_NODE_TYPES.Identifier) {
+      return field.key.name;
+    }
+    throw new Error(`Unsupported field key type ${field.key.type} in interface ${this.classLoaded.localName} in ${this.classLoaded.fileName}`);
   }
 
-  public isFieldUnique(field: Identifier): boolean {
+  public isFieldUnique(field: Identifier | TSPropertySignature): boolean {
     return !(field.typeAnnotation && field.typeAnnotation.typeAnnotation.type === AST_NODE_TYPES.TSArrayType);
   }
 
-  public isFieldRequired(field: Identifier): boolean {
+  public isFieldRequired(field: Identifier | TSPropertySignature): boolean {
     return !field.optional;
   }
 
-  public getRangeFromTypeNode(typeNode: TypeNode, field: Identifier, nestedArrays = 0):
-  ParameterRange {
+  public getRangeFromTypeNode(typeNode: TypeNode, field: Identifier | TSPropertySignature, nestedArrays = 0):
+  ParameterRangeUnresolved {
     // Don't allow arrays to be nested
     if (nestedArrays > 1) {
       throw new Error(`Detected illegal nested array type for field ${this.getFieldName(field)
@@ -126,11 +174,11 @@ export class ParameterLoader {
       case AST_NODE_TYPES.TSTypeLiteral:
         return { type: 'hash', value: typeNode };
     }
-    throw new Error(`Could not understand parameter type of field ${this.getFieldName(field)
+    throw new Error(`Could not understand parameter type ${typeNode.type} of field ${this.getFieldName(field)
     } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
   }
 
-  public getFieldRange(field: Identifier, commentData: CommentData): ParameterRange {
+  public getFieldRange(field: Identifier | TSPropertySignature, commentData: CommentData): ParameterRangeUnresolved {
     // Check comment data
     if (commentData.range) {
       return commentData.range;
@@ -155,10 +203,10 @@ export class ParameterLoader {
 }
 
 export interface ParameterLoaderArgs {
-  classLoaded: ClassLoaded;
+  classLoaded: ClassReferenceLoaded;
 }
 
-export interface ParameterData {
+export interface ParameterData<R> {
   /**
    * The parameter name.
    */
@@ -175,7 +223,7 @@ export interface ParameterData {
   /**
    * The range of the parameter values.
    */
-  range: ParameterRange;
+  range: R;
   /**
    * The default value.
    */
@@ -186,7 +234,7 @@ export interface ParameterData {
   comment?: string;
 }
 
-export type ParameterRange = {
+export type ParameterRangeUnresolved = {
   type: 'raw';
   value: 'boolean' | 'number' | 'string';
 } | {
@@ -198,4 +246,18 @@ export type ParameterRange = {
 } | {
   type: 'hash';
   value: TSTypeLiteral;
+};
+
+export type ParameterRangeResolved = {
+  type: 'raw';
+  value: 'boolean' | 'number' | 'string';
+} | {
+  type: 'override';
+  value: string;
+} | {
+  type: 'class';
+  value: ClassReference;
+} | {
+  type: 'nested';
+  value: ParameterData<ParameterRangeResolved>[];
 };
