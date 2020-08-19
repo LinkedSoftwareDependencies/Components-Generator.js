@@ -1,6 +1,6 @@
 import {
-  BaseNode,
-  MethodDefinition,
+  BaseNode, ClassDeclaration,
+  MethodDefinition, TSInterfaceDeclaration,
   TSPropertySignature,
 } from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
 import * as commentParse from 'comment-parser';
@@ -56,6 +56,18 @@ export class CommentLoader {
    */
   public getCommentDataFromField(field: TSPropertySignature): CommentData {
     const comment = this.getCommentRaw(field);
+    if (comment) {
+      return CommentLoader.getCommentDataFromComment(comment, this.classLoaded);
+    }
+    return {};
+  }
+
+  /**
+   * Extract comment data from the given class.
+   * @param clazz A class or interface.
+   */
+  public getCommentDataFromClassOrInterface(clazz: ClassDeclaration | TSInterfaceDeclaration): CommentData {
+    const comment = this.getCommentRaw(clazz);
     if (comment) {
       return CommentLoader.getCommentDataFromComment(comment, this.classLoaded);
     }

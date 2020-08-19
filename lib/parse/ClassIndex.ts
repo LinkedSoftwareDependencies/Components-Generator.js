@@ -42,6 +42,10 @@ export interface ClassLoaded extends ClassReference {
   ast: Program;
   // A super class reference if the class has one
   superClass?: ClassLoaded;
+  // If this class is an abstract class that can not be instantiated directly
+  abstract?: boolean;
+  // The tsdoc comment of this class
+  comment?: string;
 }
 
 /**
@@ -59,4 +63,6 @@ export interface InterfaceLoaded extends ClassReference {
   ast: Program;
   // Super interface references if the interface has them
   superInterfaces?: InterfaceLoaded[];
+  // The tsdoc comment of this class
+  comment?: string;
 }

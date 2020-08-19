@@ -6,7 +6,8 @@ import {
   TSInterfaceDeclaration,
 } from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
 import { ResolutionContext } from '../resolution/ResolutionContext';
-import { ClassLoaded, ClassReference, InterfaceLoaded } from './ClassIndex';
+import { ClassLoaded, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
+import { CommentLoader } from './CommentLoader';
 
 /**
  * Loads typescript classes from class references.
@@ -80,44 +81,46 @@ export class ClassLoader {
 
     // If the class has been exported in this file, return directly
     if (classReference.localName in exportedClasses) {
-      return <any> <ClassLoaded> {
+      return <any> this.enhanceLoadedWithComment(<ClassLoaded> {
         type: 'class',
         ...classReference,
         declaration: exportedClasses[classReference.localName],
         ast,
-      };
+        abstract: exportedClasses[classReference.localName].abstract,
+      });
     }
 
     // If the class has been declared in this file, return directly
     if (classReference.localName in declaredClasses) {
-      return <any> <ClassLoaded> {
+      return <any> this.enhanceLoadedWithComment(<ClassLoaded> {
         type: 'class',
         ...classReference,
         declaration: declaredClasses[classReference.localName],
         ast,
-      };
+        abstract: declaredClasses[classReference.localName].abstract,
+      });
     }
 
     // Only consider interfaces if explicitly enabled
     if (considerInterfaces) {
       // If the interface has been exported in this file, return directly
       if (classReference.localName in exportedInterfaces) {
-        return <any> <InterfaceLoaded> {
+        return <any> this.enhanceLoadedWithComment(<InterfaceLoaded> {
           type: 'interface',
           ...classReference,
           declaration: exportedInterfaces[classReference.localName],
           ast,
-        };
+        });
       }
 
       // If the interface has been declared in this file, return directly
       if (classReference.localName in declaredInterfaces) {
-        return <any> <InterfaceLoaded> {
+        return <any> this.enhanceLoadedWithComment(<InterfaceLoaded> {
           type: 'interface',
           ...classReference,
           declaration: declaredInterfaces[classReference.localName],
           ast,
-        };
+        });
       }
     }
 
@@ -142,6 +145,19 @@ export class ClassLoader {
     }
 
     throw new Error(`Could not load ${considerInterfaces ? 'class or interface' : 'class'} ${classReference.localName} from ${classReference.fileName}`);
+  }
+
+  /**
+   * Annotate the given loaded class or interface with a comment if it is present on the declaration.
+   * @param classLoaded A loaded class or interface.
+   */
+  public enhanceLoadedWithComment(classLoaded: ClassReferenceLoaded): ClassReferenceLoaded {
+    const commentData = new CommentLoader({ classLoaded })
+      .getCommentDataFromClassOrInterface(classLoaded.declaration);
+    if (commentData.description) {
+      classLoaded.comment = commentData.description;
+    }
+    return classLoaded;
   }
 
   /**

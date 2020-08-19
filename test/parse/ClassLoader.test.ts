@@ -526,6 +526,134 @@ export * from './file3'
             },
           });
       });
+
+      it('for an exported class with comment', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `
+/**
+ * Hello world!
+ */
+export class A{}
+`,
+          }),
+        });
+        expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, false))
+          .toMatchObject({
+            localName: 'A',
+            fileName: 'file',
+            declaration: {
+              id: { name: 'A' },
+              type: 'ClassDeclaration',
+            },
+            comment: 'Hello world!',
+          });
+      });
+
+      it('for a declared class with comment', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `
+/**
+ * Hello world!
+ */
+declare class A{}
+`,
+          }),
+        });
+        expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, false))
+          .toMatchObject({
+            localName: 'A',
+            fileName: 'file',
+            declaration: {
+              id: { name: 'A' },
+              type: 'ClassDeclaration',
+            },
+            comment: 'Hello world!',
+          });
+      });
+
+      it('for an exported interface with comment', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `
+/**
+ * Hello world!
+ */
+export interface A{}
+`,
+          }),
+        });
+        expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+          .toMatchObject({
+            localName: 'A',
+            fileName: 'file',
+            declaration: {
+              id: { name: 'A' },
+              type: 'TSInterfaceDeclaration',
+            },
+            comment: 'Hello world!',
+          });
+      });
+
+      it('for a declared interface with comment', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `
+/**
+ * Hello world!
+ */
+declare interface A{}
+`,
+          }),
+        });
+        expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+          .toMatchObject({
+            localName: 'A',
+            fileName: 'file',
+            declaration: {
+              id: { name: 'A' },
+              type: 'TSInterfaceDeclaration',
+            },
+            comment: 'Hello world!',
+          });
+      });
+    });
+
+    it('for an exported abstract class', async() => {
+      loader = new ClassLoader({
+        resolutionContext: new ResolutionContextMocked({
+          'file.d.ts': `export abstract class A{}`,
+        }),
+      });
+      expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+        .toMatchObject({
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'ClassDeclaration',
+          },
+          abstract: true,
+        });
+    });
+
+    it('for a declared abstract class', async() => {
+      loader = new ClassLoader({
+        resolutionContext: new ResolutionContextMocked({
+          'file.d.ts': `declare abstract class A{}`,
+        }),
+      });
+      expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+        .toMatchObject({
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'ClassDeclaration',
+          },
+          abstract: true,
+        });
     });
   });
 
