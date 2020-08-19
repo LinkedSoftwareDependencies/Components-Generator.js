@@ -39,12 +39,21 @@ export class PackageMetadataLoader {
     if (!('lsd:contexts' in packageJson)) {
       throw new Error(`Invalid package: Missing 'lsd:contexts' in ${packageJsonPath}`);
     }
-    // Transform relative to absolute paths in lsd:context values
-    const contexts = Object.entries(<{[iri: string]: string}> packageJson['lsd:contexts'])
-      .reduce((acc, [ key, value ]) => {
-        acc[key] = Path.join(packageRootDirectory, value);
+    // Transform relative paths to loaded JSON objects in lsd:context values
+    const contexts = await Object.entries(<{[iri: string]: string}> packageJson['lsd:contexts'])
+      .reduce((accPromise, [ key, value ]) => accPromise.then(async acc => {
+        const contextPath = Path.join(packageRootDirectory, value);
+        const contextJsonRaw = await this.resolutionContext.getFileContent(contextPath);
+        let contextJson: any;
+        try {
+          contextJson = JSON.parse(contextJsonRaw);
+        } catch (error) {
+          throw new Error(`Invalid JSON-LD context: Syntax error in ${contextPath}: ${error.message}`);
+        }
+
+        acc[key] = contextJson;
         return acc;
-      }, <{[iri: string]: string}> {});
+      }), Promise.resolve(<{[iri: string]: string}> {}));
 
     // Construct metadata hash
     return {
