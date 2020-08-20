@@ -9,8 +9,7 @@ Usage:
   componentsjs-generate
   Options:
        -p <package>      # The directory of the package to look in, defaults to working directory
-       -l <level>        # The level for the logger, such as info
-       -m <moduleRoot>   # Directory where we should look for dependencies, relative to the package directory
+       -m <moduleRoot>   # Directory where we should look for dependencies, relative to the package directory, defaults to working directory
        --help            # Show information about this command
 `);
   process.exit(1);
@@ -30,7 +29,6 @@ if (args.help) {
     .generateComponents()
     // eslint-disable-next-line no-console
     .then((components: any) => console.log(JSON.stringify(components, null, '  ')))
-    // .then(components => oldgenerator.writeComponents(components))
     .catch((error: Error) => process.stderr.write(`${error.message}\n`));
 }
 
