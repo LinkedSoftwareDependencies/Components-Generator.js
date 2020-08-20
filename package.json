@@ -29,7 +29,10 @@
       "ts",
       "js"
     ],
-    "collectCoverage": true
+    "collectCoverage": true,
+    "coveragePathIgnorePatterns": [
+      "test"
+    ]
   },
   "keywords": [],
   "author": "",
