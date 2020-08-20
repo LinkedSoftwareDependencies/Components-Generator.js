@@ -53,7 +53,7 @@ export class PackageMetadataLoader {
 
         acc[key] = contextJson;
         return acc;
-      }), Promise.resolve(<{[iri: string]: string}> {}));
+      }), Promise.resolve(<{[iri: string]: any}> {}));
 
     // Construct metadata hash
     return {
@@ -73,5 +73,5 @@ export interface PackageMetadata {
   name: string;
   moduleIri: string;
   componentsPath: string;
-  contexts: {[iri: string]: string};
+  contexts: {[iri: string]: any};
 }
