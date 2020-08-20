@@ -1,7 +1,7 @@
-# Components.js OldGenerator
+# Components-Generator.js
 
-[![Build Status](https://travis-ci.org/LinkedSoftwareDependencies/Components.js-OldGenerator.svg?branch=master)](https://travis-ci.org/LinkedSoftwareDependencies/Components.js-OldGenerator)
-[![Coverage Status](https://coveralls.io/repos/github/LinkedSoftwareDependencies/Components.js-OldGenerator/badge.svg?branch=master)](https://coveralls.io/github/LinkedSoftwareDependencies/Components.js-OldGenerator?branch=master)
+[![Build Status](https://travis-ci.org/LinkedSoftwareDependencies/Components-Generator.js.svg?branch=master)](https://travis-ci.org/LinkedSoftwareDependencies/Components-Generator.js)
+[![Coverage Status](https://coveralls.io/repos/github/LinkedSoftwareDependencies/Components-Generator.js/badge.svg?branch=master)](https://coveralls.io/github/LinkedSoftwareDependencies/Components-Generator.js?branch=master)
 [![npm version](https://badge.fury.io/js/componentjs-generator.svg)](https://www.npmjs.com/package/componentjs-generator)
 
 A tool to generate `.jsonld` component files for [Components.js](https://github.com/LinkedSoftwareDependencies/Components.js) TypeScript classes.  
