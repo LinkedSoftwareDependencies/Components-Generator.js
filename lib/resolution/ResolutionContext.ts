@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as Path from 'path';
 import * as parser from '@typescript-eslint/typescript-estree';
 import { Program } from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
 import * as LRUCache from 'lru-cache';
@@ -25,6 +26,34 @@ export class ResolutionContext {
           reject(error);
         } else {
           resolve(data);
+        }
+      });
+    });
+  }
+
+  /**
+   * Write the content of a file.
+   * If any of the underlying directories do not exist, they will be created.
+   *
+   * @param filePath The file path.
+   * @param content The content of the file.
+   */
+  public async writeFileContent(filePath: string, content: string): Promise<void> {
+    await new Promise((resolve, reject) => {
+      fs.mkdir(Path.dirname(filePath), { recursive: true }, error => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      });
+    });
+    await new Promise((resolve, reject) => {
+      fs.writeFile(filePath, content, 'utf8', error => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
         }
       });
     });

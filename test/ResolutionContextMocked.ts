@@ -17,6 +17,10 @@ export class ResolutionContextMocked extends ResolutionContext {
     return <any> this.contentsOverrides[filePath];
   }
 
+  public async writeFileContent(filePath: string, content: string): Promise<void> {
+    this.contentsOverrides[filePath] = content;
+  }
+
   public parseTypescriptContents(contents: string): Program {
     if (typeof contents !== 'string') {
       return contents;

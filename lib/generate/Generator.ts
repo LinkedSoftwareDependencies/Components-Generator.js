@@ -9,6 +9,7 @@ import { PackageMetadataLoader } from '../parse/PackageMetadataLoader';
 import { ParameterResolver } from '../parse/ParameterResolver';
 import { ResolutionContext } from '../resolution/ResolutionContext';
 import { ComponentConstructor } from '../serialize/ComponentConstructor';
+import { ComponentSerializer } from '../serialize/ComponentSerializer';
 
 /**
  * Generates a components file by parsing a typescript file.
@@ -27,7 +28,7 @@ export class Generator {
     logger.level = this.level;
   }
 
-  public async generateComponents(): Promise<any> {
+  public async generateComponents(): Promise<string[]> {
     // Load package metadata
     const packageMetadata = await new PackageMetadataLoader({ resolutionContext: this.resolutionContext })
       .load(this.packageRootDirectory);
@@ -57,12 +58,17 @@ export class Generator {
       classConstructors: constructors,
       contextParser: new ContextParser(),
     });
-    const components = componentConstructor.constructComponents();
+    const components = await componentConstructor.constructComponents();
 
     // Serialize components
-    // TODO
+    const componentSerializer = new ComponentSerializer({
+      resolutionContext: this.resolutionContext,
+      fileExtension: 'jsonld',
+      indentation: '  ',
+    });
+    const createdFiles = await componentSerializer.serializeComponents(components);
 
-    return components;
+    return createdFiles;
   }
 }
 

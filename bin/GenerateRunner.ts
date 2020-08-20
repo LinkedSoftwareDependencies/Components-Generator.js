@@ -27,8 +27,6 @@ if (args.help) {
   });
   generator
     .generateComponents()
-    // eslint-disable-next-line no-console
-    .then((components: any) => console.log(JSON.stringify(components, null, '  ')))
     .catch((error: Error) => process.stderr.write(`${error.message}\n`));
 }
 

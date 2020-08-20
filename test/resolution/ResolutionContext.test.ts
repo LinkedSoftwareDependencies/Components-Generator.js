@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import { ResolutionContext } from '../../lib/resolution/ResolutionContext';
 
 describe('ResolutionContext', () => {
@@ -15,6 +16,43 @@ describe('ResolutionContext', () => {
 
     it('Should error on a non-existing file', async() => {
       await expect(resolutionContext.getFileContent(`${__dirname}/../data/file-not-exist.d.ts`)).rejects.toThrow();
+    });
+  });
+
+  describe('writeFileContent', () => {
+    it('Should write file contents in an existing directory', async() => {
+      const path = `${__dirname}/../data/file-new.json`;
+      await resolutionContext.writeFileContent(path, `{}`);
+      expect(await resolutionContext.getFileContent(path)).toEqual(`{}`);
+
+      // Remove created file again
+      fs.unlinkSync(path);
+    });
+
+    it('Should write file contents in a non-existing directory', async() => {
+      const path = `${__dirname}/../data/a/b/c/file-new.json`;
+      await resolutionContext.writeFileContent(path, `{}`);
+      expect(await resolutionContext.getFileContent(path)).toEqual(`{}`);
+
+      // Remove created file and folders again
+      fs.unlinkSync(path);
+      fs.rmdirSync(`${__dirname}/../data/a/b/c`);
+      fs.rmdirSync(`${__dirname}/../data/a/b`);
+      fs.rmdirSync(`${__dirname}/../data/a`);
+    });
+
+    it('Should error when directory making failed', async() => {
+      jest.spyOn(fs, 'mkdir')
+        .mockImplementationOnce(<any> ((p: any, options: any, cb: any) => cb(new Error('FAIL'))));
+      await expect(resolutionContext.writeFileContent(`${__dirname}/../data/a/file-new.json`, `{}`))
+        .rejects.toThrow(new Error('FAIL'));
+    });
+
+    it('Should error when file making failed', async() => {
+      jest.spyOn(fs, 'writeFile')
+        .mockImplementationOnce(<any> ((p: any, content: any, options: any, cb: any) => cb(new Error('FAIL'))));
+      await expect(resolutionContext.writeFileContent(`${__dirname}/../data/file-new.json`, `{}`))
+        .rejects.toThrow(new Error('FAIL'));
     });
   });
 
