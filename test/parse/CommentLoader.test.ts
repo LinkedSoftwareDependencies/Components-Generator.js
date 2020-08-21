@@ -43,6 +43,23 @@ describe('CommentLoader', () => {
       });
     });
 
+    it('should be defined for a simple comment with newlines', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export interface A{
+  /**
+   * This is a field!
+   * And this is a new line.
+   * And another one.
+   */
+  fieldA: boolean;
+}`,
+      };
+      const { loader, field } = await createLoader();
+      expect(loader.getCommentDataFromField(field)).toEqual({
+        description: 'This is a field! And this is a new line. And another one.',
+      });
+    });
+
     it('should be defined for a complex comment', async() => {
       resolutionContext.contentsOverrides = {
         'file.d.ts': `export interface A{

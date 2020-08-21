@@ -86,7 +86,7 @@ export class CommentLoader {
     if (commentParsed) {
       // Extract description
       if (commentParsed.description.length > 0) {
-        data.description = commentParsed.description;
+        data.description = commentParsed.description.replace(/\n/gu, ' ');
       }
 
       // Extract tags
