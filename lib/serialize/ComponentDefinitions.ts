@@ -4,6 +4,7 @@
 export interface ComponentDefinitions {
   [path: string]: {
     '@context': string[];
+    '@id': string;
     components: ComponentDefinition[];
   };
 }

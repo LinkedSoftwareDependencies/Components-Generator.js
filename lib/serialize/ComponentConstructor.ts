@@ -43,6 +43,7 @@ export class ComponentConstructor {
       if (!(path in definitions)) {
         definitions[path] = {
           '@context': Object.keys(this.packageMetadata.contexts),
+          '@id': this.moduleIriToId(context),
           components: [],
         };
       }
@@ -94,6 +95,14 @@ export class ComponentConstructor {
       parameters,
       constructorArguments,
     };
+  }
+
+  /**
+   * Construct a compacted module IRI.
+   * @param context A parsed JSON-LD context.
+   */
+  public moduleIriToId(context: JsonLdContextNormalized): string {
+    return context.compactIri(`${this.packageMetadata.moduleIri}`);
   }
 
   /**

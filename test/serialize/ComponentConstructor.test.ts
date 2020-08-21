@@ -77,6 +77,7 @@ describe('ComponentConstructor', () => {
           '@context': [
             'http://example.org/my-package/context.jsonld',
           ],
+          '@id': 'ex:my-package',
           components: [
             {
               '@id': 'ex:my-package/MyClass1',
@@ -148,6 +149,7 @@ describe('ComponentConstructor', () => {
           '@context': [
             'http://example.org/my-package/context.jsonld',
           ],
+          '@id': 'ex:my-package',
           components: [
             {
               '@id': 'ex:my-package/MyClass1',
@@ -162,6 +164,7 @@ describe('ComponentConstructor', () => {
           '@context': [
             'http://example.org/my-package/context.jsonld',
           ],
+          '@id': 'ex:my-package',
           components: [
             {
               '@id': 'ex:my-package/MyClass2',
@@ -303,6 +306,13 @@ describe('ComponentConstructor', () => {
         requireElement: 'MyClass',
         comment: 'Hi',
       });
+    });
+  });
+
+  describe('moduleIriToId', () => {
+    it('should return a compacted module IRI', () => {
+      expect(ctor.moduleIriToId(context))
+        .toEqual('ex:my-package');
     });
   });
 
