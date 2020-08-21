@@ -20,10 +20,15 @@ describe('PackageMetadataLoader', () => {
       resolutionContext.contentsOverrides = {
         '/package.json': `{
   "name": "@solid/community-server",
+  "version": "1.2.3",
   "lsd:module": "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server",
   "lsd:components": "components/components.jsonld",
   "lsd:contexts": {
     "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/components/context.jsonld": "components/context.jsonld"
+  },
+  "lsd:importPaths": {
+    "https://example.org/bundles/npm/@solid/community-server/^1.0.0/components/": "components/",
+    "https://example.org/bundles/npm/@solid/community-server/^1.0.0/config/": "config/"
   }
 }`,
         '/components/context.jsonld': `{
@@ -38,8 +43,13 @@ describe('PackageMetadataLoader', () => {
               a: 'b',
             },
         },
+        importPaths: {
+          'https://example.org/bundles/npm/@solid/community-server/^1.0.0/components/': 'components/',
+          'https://example.org/bundles/npm/@solid/community-server/^1.0.0/config/': 'config/',
+        },
         moduleIri: 'https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server',
         name: '@solid/community-server',
+        version: '1.2.3',
       });
     });
 
@@ -104,6 +114,24 @@ describe('PackageMetadataLoader', () => {
       };
       await expect(loader.load('/')).rejects
         .toThrow(new Error('Could not find mocked path for /components/context.jsonld'));
+    });
+
+    it('should error when lsd:importPaths is missing', async() => {
+      resolutionContext.contentsOverrides = {
+        '/package.json': `{
+  "name": "@solid/community-server",
+  "lsd:module": "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server",
+  "lsd:components": "components/components.jsonld",
+  "lsd:contexts": {
+    "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/components/context.jsonld": "components/context.jsonld"
+  }
+}`,
+        '/components/context.jsonld': `{
+  "a": "b"
+}`,
+      };
+      await expect(loader.load('/')).rejects
+        .toThrow(new Error('Invalid package: Missing \'lsd:importPaths\' in /package.json'));
     });
 
     it('should error when a lsd:contexts reference contains invalid JSON', async() => {

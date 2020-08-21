@@ -5,7 +5,7 @@ import { PackageMetadata } from '../parse/PackageMetadataLoader';
 import { ParameterData, ParameterRangeResolved } from '../parse/ParameterLoader';
 import {
   ComponentDefinition,
-  ComponentDefinitions,
+  ComponentDefinitions, ComponentDefinitionsIndex,
   ConstructorArgumentDefinition,
   ParameterDefinition,
 } from './ComponentDefinitions';
@@ -57,8 +57,32 @@ export class ComponentConstructor {
   }
 
   /**
+   * Construct a component definitions index.
+   * @param definitions The component definitions for which the index should be constructed.
+   * @param fileExtension The file extension to apply on files.
+   */
+  public async constructComponentsIndex(
+    definitions: ComponentDefinitions,
+    fileExtension: string,
+  ): Promise<ComponentDefinitionsIndex> {
+    const contexts = Object.values(this.packageMetadata.contexts);
+    const context: JsonLdContextNormalized = await this.contextParser.parse(contexts);
+
+    return {
+      '@context': Object.keys(this.packageMetadata.contexts),
+      '@id': this.moduleIriToId(context),
+      '@type': 'Module',
+      requireName: this.packageMetadata.name,
+      import: Object.keys(definitions)
+        .map(pathAbsolute => `${pathAbsolute.slice(this.pathDestination.packageRootDirectory.length)}.${fileExtension}`)
+        .map(pathRelative => this.getImportPathIri(pathRelative))
+        .map(iri => context.compactIri(iri)),
+    };
+  }
+
+  /**
    * Determine the path a component file should exist at based on a class source file path.
-   * @param sourcePath The path to a class file.
+   * @param sourcePath The relative path to a class file.
    */
   public getPathDestination(sourcePath: string): string {
     if (!sourcePath.startsWith(this.pathDestination.packageRootDirectory)) {
@@ -68,6 +92,22 @@ export class ComponentConstructor {
     return this.pathDestination.packageRootDirectory + sourcePath
       .slice(this.pathDestination.packageRootDirectory.length)
       .replace(this.pathDestination.originalPath, this.pathDestination.replacementPath);
+  }
+
+  /**
+   * Determine the IRI of the given source path.
+   * @param sourcePath The relative path to a components file.
+   */
+  public getImportPathIri(sourcePath: string): string {
+    if (sourcePath.startsWith('/')) {
+      sourcePath = sourcePath.slice(1);
+    }
+    for (const [ iri, path ] of Object.entries(this.packageMetadata.importPaths)) {
+      if (sourcePath.startsWith(path)) {
+        return iri + sourcePath.slice(path.length);
+      }
+    }
+    throw new Error(`Could not find a valid import path for ${sourcePath}. 'lsd:importPaths' in package.json may be invalid.`);
   }
 
   /**

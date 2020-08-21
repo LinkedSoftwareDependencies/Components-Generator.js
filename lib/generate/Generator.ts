@@ -28,7 +28,7 @@ export class Generator {
     logger.level = this.level;
   }
 
-  public async generateComponents(): Promise<string[]> {
+  public async generateComponents(): Promise<void> {
     // Load package metadata
     const packageMetadata = await new PackageMetadataLoader({ resolutionContext: this.resolutionContext })
       .load(this.packageRootDirectory);
@@ -47,28 +47,31 @@ export class Generator {
       .resolveAllConstructorParameters(constructorsUnresolved, classIndex);
 
     // Create components
+    const pathDestination = {
+      packageRootDirectory: this.packageRootDirectory,
+      originalPath: 'src',
+      replacementPath: 'components',
+    };
+    const fileExtension = 'jsonld';
     const componentConstructor = new ComponentConstructor({
       packageMetadata,
-      pathDestination: {
-        packageRootDirectory: this.packageRootDirectory,
-        originalPath: 'src',
-        replacementPath: 'components',
-      },
+      pathDestination,
       classReferences: classIndex,
       classConstructors: constructors,
       contextParser: new ContextParser(),
     });
     const components = await componentConstructor.constructComponents();
+    const componentsIndex = await componentConstructor.constructComponentsIndex(components, fileExtension);
 
     // Serialize components
     const componentSerializer = new ComponentSerializer({
       resolutionContext: this.resolutionContext,
-      fileExtension: 'jsonld',
+      pathDestination,
+      fileExtension,
       indentation: '  ',
     });
-    const createdFiles = await componentSerializer.serializeComponents(components);
-
-    return createdFiles;
+    await componentSerializer.serializeComponents(components);
+    await componentSerializer.serializeComponentsIndex(componentsIndex);
   }
 }
 

@@ -9,6 +9,14 @@ export interface ComponentDefinitions {
   };
 }
 
+export interface ComponentDefinitionsIndex {
+  '@context': string[];
+  '@id': string;
+  '@type': 'Module';
+  requireName: string;
+  import: string[];
+}
+
 export interface ComponentDefinition {
   '@id': string;
   '@type': string;

@@ -28,6 +28,7 @@ export class PackageMetadataLoader {
 
     // Extract required fields from package.json
     const name = packageJson.name;
+    const version = packageJson.version;
     if (!('lsd:module' in packageJson)) {
       throw new Error(`Invalid package: Missing 'lsd:module' IRI in ${packageJsonPath}`);
     }
@@ -54,13 +55,19 @@ export class PackageMetadataLoader {
         acc[key] = contextJson;
         return acc;
       }), Promise.resolve(<{[iri: string]: any}> {}));
+    if (!('lsd:importPaths' in packageJson)) {
+      throw new Error(`Invalid package: Missing 'lsd:importPaths' in ${packageJsonPath}`);
+    }
+    const importPaths = packageJson['lsd:importPaths'];
 
     // Construct metadata hash
     return {
       name,
+      version,
       moduleIri,
       componentsPath,
       contexts,
+      importPaths,
     };
   }
 }
@@ -71,7 +78,9 @@ export interface PackageMetadataLoaderArgs {
 
 export interface PackageMetadata {
   name: string;
+  version: string;
   moduleIri: string;
   componentsPath: string;
   contexts: {[iri: string]: any};
+  importPaths: {[iri: string]: string};
 }

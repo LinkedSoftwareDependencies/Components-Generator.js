@@ -20,14 +20,19 @@ describe('ComponentConstructor', () => {
     ctor = new ComponentConstructor({
       packageMetadata: {
         name: 'my-package',
+        version: '1.2.3',
         moduleIri: 'http://example.org/my-package',
         componentsPath: 'components',
         contexts: {
           'http://example.org/my-package/context.jsonld': contextRaw,
         },
+        importPaths: {
+          'http://example.org/my-package/^1.0.0/components/': 'components/',
+          'http://example.org/my-package/^1.0.0/config/': 'config/',
+        },
       },
       pathDestination: {
-        packageRootDirectory: '/',
+        packageRootDirectory: '/docs/package',
         originalPath: 'src',
         replacementPath: 'components',
       },
@@ -46,8 +51,8 @@ describe('ComponentConstructor', () => {
 
     it('should handle a non-empty index for classes in the same file', async() => {
       (<any> ctor).classReferences = {
-        MyClass1: { localName: 'MyClass1', fileName: '/file' },
-        MyClass2: { localName: 'MyClass2', fileName: '/file' },
+        MyClass1: { localName: 'MyClass1', fileName: '/docs/package/file' },
+        MyClass2: { localName: 'MyClass2', fileName: '/docs/package/file' },
       };
       (<any> ctor).classConstructors = <ClassIndex<ConstructorData<ParameterRangeResolved>>> {
         MyClass1: {
@@ -73,7 +78,7 @@ describe('ComponentConstructor', () => {
         },
       };
       expect(await ctor.constructComponents()).toEqual({
-        '/file': {
+        '/docs/package/file': {
           '@context': [
             'http://example.org/my-package/context.jsonld',
           ],
@@ -118,8 +123,8 @@ describe('ComponentConstructor', () => {
 
     it('should handle a non-empty index for classes in different files', async() => {
       (<any> ctor).classReferences = {
-        MyClass1: { localName: 'MyClass1', fileName: '/file1' },
-        MyClass2: { localName: 'MyClass2', fileName: '/file2' },
+        MyClass1: { localName: 'MyClass1', fileName: '/docs/package/file1' },
+        MyClass2: { localName: 'MyClass2', fileName: '/docs/package/file2' },
       };
       (<any> ctor).classConstructors = <ClassIndex<ConstructorData<ParameterRangeResolved>>> {
         MyClass1: {
@@ -145,7 +150,7 @@ describe('ComponentConstructor', () => {
         },
       };
       expect(await ctor.constructComponents()).toEqual({
-        '/file1': {
+        '/docs/package/file1': {
           '@context': [
             'http://example.org/my-package/context.jsonld',
           ],
@@ -160,7 +165,7 @@ describe('ComponentConstructor', () => {
             },
           ],
         },
-        '/file2': {
+        '/docs/package/file2': {
           '@context': [
             'http://example.org/my-package/context.jsonld',
           ],
@@ -197,6 +202,57 @@ describe('ComponentConstructor', () => {
     });
   });
 
+  describe('constructComponentsIndex', () => {
+    it('should handle an empty index', async() => {
+      expect(await ctor.constructComponentsIndex({}, 'jsonld')).toEqual({
+        '@context': [
+          'http://example.org/my-package/context.jsonld',
+        ],
+        '@id': 'ex:my-package',
+        '@type': 'Module',
+        requireName: 'my-package',
+        import: [],
+      });
+    });
+
+    it('should handle a non-empty index', async() => {
+      expect(await ctor.constructComponentsIndex(<any> {
+        '/docs/package/components/file1': true,
+        '/docs/package/components/file2': true,
+        '/docs/package/components/file/a/b/c': true,
+      }, 'jsonld')).toEqual({
+        '@context': [
+          'http://example.org/my-package/context.jsonld',
+        ],
+        '@id': 'ex:my-package',
+        '@type': 'Module',
+        requireName: 'my-package',
+        import: [
+          'ex:my-package/^1.0.0/components/file1.jsonld',
+          'ex:my-package/^1.0.0/components/file2.jsonld',
+          'ex:my-package/^1.0.0/components/file/a/b/c.jsonld',
+        ],
+      });
+    });
+  });
+
+  describe('getImportPathIri', () => {
+    it('should error for a non-applicable file', () => {
+      expect(() => ctor.getImportPathIri('/not-components/a/b'))
+        .toThrow(new Error(`Could not find a valid import path for not-components/a/b. 'lsd:importPaths' in package.json may be invalid.`));
+    });
+
+    it('should handle an applicable file, starting with a slash', () => {
+      expect(ctor.getImportPathIri('/components/a/b'))
+        .toEqual('http://example.org/my-package/^1.0.0/components/a/b');
+    });
+
+    it('should handle an applicable file, not starting with a slash', () => {
+      expect(ctor.getImportPathIri('components/a/b'))
+        .toEqual('http://example.org/my-package/^1.0.0/components/a/b');
+    });
+  });
+
   describe('getPathDestination', () => {
     it('should error when source is outside package', () => {
       expect(() => ctor.getPathDestination('not-in-package'))
@@ -204,8 +260,8 @@ describe('ComponentConstructor', () => {
     });
 
     it('should handle a valid path', () => {
-      expect(ctor.getPathDestination('/src/myFile'))
-        .toEqual('/components/myFile');
+      expect(ctor.getPathDestination('/docs/package/src/myFile'))
+        .toEqual('/docs/package/components/myFile');
     });
   });
 
