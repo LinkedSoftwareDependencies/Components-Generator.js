@@ -59,7 +59,7 @@
   ],
   "dependencies": {
     "@types/lru-cache": "^5.1.0",
-    "@typescript-eslint/typescript-estree": "^1.13.0",
+    "@typescript-eslint/typescript-estree": "^3.0.0",
     "comment-parser": "^0.7.0",
     "jsonld-context-parser": "^2.0.2",
     "lru-cache": "^6.0.0",
