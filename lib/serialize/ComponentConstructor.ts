@@ -9,12 +9,14 @@ import {
   ConstructorArgumentDefinition,
   ParameterDefinition,
 } from './ComponentDefinitions';
+import { ContextConstructor } from './ContextConstructor';
 
 /**
  * Creates declarative JSON components for the given classes.
  */
 export class ComponentConstructor {
   private readonly packageMetadata: PackageMetadata;
+  private readonly contextConstructor: ContextConstructor;
   private readonly pathDestination: PathDestinationDefinition;
   private readonly classReferences: ClassIndex<ClassLoaded>;
   private readonly classConstructors: ClassIndex<ConstructorData<ParameterRangeResolved>>;
@@ -22,6 +24,7 @@ export class ComponentConstructor {
 
   public constructor(args: ComponentConstructorArgs) {
     this.packageMetadata = args.packageMetadata;
+    this.contextConstructor = args.contextConstructor;
     this.pathDestination = args.pathDestination;
     this.classReferences = args.classReferences;
     this.classConstructors = args.classConstructors;
@@ -34,8 +37,8 @@ export class ComponentConstructor {
   public async constructComponents(): Promise<ComponentDefinitions> {
     const definitions: ComponentDefinitions = {};
 
-    const contexts = Object.values(this.packageMetadata.contexts);
-    const context: JsonLdContextNormalized = await this.contextParser.parse(contexts);
+    // Construct a minimal context
+    const context: JsonLdContextNormalized = await this.contextParser.parse(this.contextConstructor.constructContext());
 
     for (const [ className, classReference ] of Object.entries(this.classReferences)) {
       // Initialize or get context and component array
@@ -65,8 +68,8 @@ export class ComponentConstructor {
     definitions: ComponentDefinitions,
     fileExtension: string,
   ): Promise<ComponentDefinitionsIndex> {
-    const contexts = Object.values(this.packageMetadata.contexts);
-    const context: JsonLdContextNormalized = await this.contextParser.parse(contexts);
+    // Construct a minimal context
+    const context: JsonLdContextNormalized = await this.contextParser.parse(this.contextConstructor.constructContext());
 
     return {
       '@context': Object.keys(this.packageMetadata.contexts),
@@ -295,6 +298,7 @@ export class ComponentConstructor {
 
 export interface ComponentConstructorArgs {
   packageMetadata: PackageMetadata;
+  contextConstructor: ContextConstructor;
   pathDestination: PathDestinationDefinition;
   classReferences: ClassIndex<ClassLoaded>;
   classConstructors: ClassIndex<ConstructorData<ParameterRangeResolved>>;

@@ -40,21 +40,7 @@ export class PackageMetadataLoader {
     if (!('lsd:contexts' in packageJson)) {
       throw new Error(`Invalid package: Missing 'lsd:contexts' in ${packageJsonPath}`);
     }
-    // Transform relative paths to loaded JSON objects in lsd:context values
-    const contexts = await Object.entries(<{[iri: string]: string}> packageJson['lsd:contexts'])
-      .reduce((accPromise, [ key, value ]) => accPromise.then(async acc => {
-        const contextPath = Path.join(packageRootDirectory, value);
-        const contextJsonRaw = await this.resolutionContext.getFileContent(contextPath);
-        let contextJson: any;
-        try {
-          contextJson = JSON.parse(contextJsonRaw);
-        } catch (error) {
-          throw new Error(`Invalid JSON-LD context: Syntax error in ${contextPath}: ${error.message}`);
-        }
-
-        acc[key] = contextJson;
-        return acc;
-      }), Promise.resolve(<{[iri: string]: any}> {}));
+    const contexts = packageJson['lsd:contexts'];
     if (!('lsd:importPaths' in packageJson)) {
       throw new Error(`Invalid package: Missing 'lsd:importPaths' in ${packageJsonPath}`);
     }
@@ -81,6 +67,6 @@ export interface PackageMetadata {
   version: string;
   moduleIri: string;
   componentsPath: string;
-  contexts: {[iri: string]: any};
+  contexts: {[iri: string]: string};
   importPaths: {[iri: string]: string};
 }

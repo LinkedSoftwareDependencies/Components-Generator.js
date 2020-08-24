@@ -10,6 +10,7 @@ import { ParameterResolver } from '../parse/ParameterResolver';
 import { ResolutionContext } from '../resolution/ResolutionContext';
 import { ComponentConstructor } from '../serialize/ComponentConstructor';
 import { ComponentSerializer } from '../serialize/ComponentSerializer';
+import { ContextConstructor } from '../serialize/ContextConstructor';
 
 /**
  * Generates a components file by parsing a typescript file.
@@ -53,8 +54,10 @@ export class Generator {
       replacementPath: 'components',
     };
     const fileExtension = 'jsonld';
+    const contextConstructor = new ContextConstructor({ packageMetadata });
     const componentConstructor = new ComponentConstructor({
       packageMetadata,
+      contextConstructor,
       pathDestination,
       classReferences: classIndex,
       classConstructors: constructors,
@@ -72,6 +75,10 @@ export class Generator {
     });
     await componentSerializer.serializeComponents(components);
     await componentSerializer.serializeComponentsIndex(componentsIndex);
+
+    // Serialize context
+    const context = contextConstructor.constructContext(components);
+    await componentSerializer.serializeContext(context);
   }
 }
 

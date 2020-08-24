@@ -2,6 +2,7 @@ import * as Path from 'path';
 import { ResolutionContext } from '../resolution/ResolutionContext';
 import { PathDestinationDefinition } from './ComponentConstructor';
 import { ComponentDefinitions, ComponentDefinitionsIndex } from './ComponentDefinitions';
+import { ContextRaw } from './ContextConstructor';
 
 /**
  * Serializes components to files.
@@ -19,6 +20,15 @@ export class ComponentSerializer {
     this.indentation = args.indentation;
   }
 
+  protected async writeJsonToFile(fileNameBase: string, data: any): Promise<string> {
+    const filePath = `${fileNameBase}.${this.fileExtension}`;
+    await this.resolutionContext.writeFileContent(
+      filePath,
+      JSON.stringify(data, null, this.indentation),
+    );
+    return filePath;
+  }
+
   /**
    * Serialize the given components to files.
    * @param components Component definitions.
@@ -28,12 +38,7 @@ export class ComponentSerializer {
     const createdFiles: string[] = [];
 
     for (const [ fileNameBase, component ] of Object.entries(components)) {
-      const filePath = `${fileNameBase}.${this.fileExtension}`;
-      createdFiles.push(filePath);
-      await this.resolutionContext.writeFileContent(
-        filePath,
-        JSON.stringify(component, null, this.indentation),
-      );
+      createdFiles.push(await this.writeJsonToFile(fileNameBase, component));
     }
 
     return createdFiles;
@@ -45,16 +50,26 @@ export class ComponentSerializer {
    * @return The absolute file path that was created.
    */
   public async serializeComponentsIndex(componentsIndex: ComponentDefinitionsIndex): Promise<string> {
-    const filePath = Path.join(
+    const filePathBase = Path.join(
       this.pathDestination.packageRootDirectory,
       this.pathDestination.replacementPath,
-      `components.${this.fileExtension}`,
+      'components',
     );
-    await this.resolutionContext.writeFileContent(
-      filePath,
-      JSON.stringify(componentsIndex, null, this.indentation),
+    return await this.writeJsonToFile(filePathBase, componentsIndex);
+  }
+
+  /**
+   * Serialize the given context to a file.
+   * @param contextRaw JSON-LD context contents.
+   * @return The absolute file path that was created.
+   */
+  public async serializeContext(contextRaw: ContextRaw): Promise<string> {
+    const filePathBase = Path.join(
+      this.pathDestination.packageRootDirectory,
+      this.pathDestination.replacementPath,
+      'context',
     );
-    return filePath;
+    return await this.writeJsonToFile(filePathBase, contextRaw);
   }
 }
 

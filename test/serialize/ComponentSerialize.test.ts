@@ -57,7 +57,7 @@ describe('ComponentSerializer', () => {
   });
 
   describe('serializeComponentsIndex', () => {
-    it('should not create files for no components', async() => {
+    it('should handle a valid components index', async() => {
       expect(await serializer.serializeComponentsIndex({
         '@context': [
           'http://example.org/my-package/context.jsonld',
@@ -83,6 +83,27 @@ describe('ComponentSerializer', () => {
     "ex:my-package/file1.jsonld",
     "ex:my-package/file2.jsonld",
     "ex:my-package/file/a/b/c.jsonld"
+  ]
+}`,
+      });
+    });
+  });
+
+  describe('serializeContext', () => {
+    it('should handle a valid context', async() => {
+      expect(await serializer.serializeContext({
+        '@context': [
+          {
+            a: 'b',
+          },
+        ],
+      })).toEqual('/components/context.jsonld');
+      expect(resolutionContext.contentsOverrides).toEqual({
+        '/components/context.jsonld': `{
+  "@context": [
+    {
+      "a": "b"
+    }
   ]
 }`,
       });
