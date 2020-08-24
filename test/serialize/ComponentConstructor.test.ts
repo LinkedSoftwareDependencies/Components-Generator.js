@@ -4,7 +4,7 @@ import { ConstructorData } from '../../lib/parse/ConstructorLoader';
 import { ParameterRangeResolved } from '../../lib/parse/ParameterLoader';
 import { ComponentConstructor } from '../../lib/serialize/ComponentConstructor';
 import { ParameterDefinition } from '../../lib/serialize/ComponentDefinitions';
-import { ContextConstructor } from '../../lib/serialize/ContextConstructor';
+import { ContextConstructorMocked } from '../ContextConstructorMocked';
 
 describe('ComponentConstructor', () => {
   let ctor: ComponentConstructor;
@@ -28,7 +28,7 @@ describe('ComponentConstructor', () => {
         'https://linkedsoftwaredependencies.org/bundles/npm/my-package/^1.0.0/config/': 'config/',
       },
     };
-    const contextConstructor = new ContextConstructor({ packageMetadata });
+    const contextConstructor = new ContextConstructorMocked({ packageMetadata });
     ctor = new ComponentConstructor({
       packageMetadata,
       contextConstructor,
@@ -41,6 +41,7 @@ describe('ComponentConstructor', () => {
       classConstructors: {},
       contextParser,
     });
+
     context = await contextParser.parse(contextConstructor.constructContext());
   });
 
