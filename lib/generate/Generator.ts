@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 import { ContextParser } from 'jsonld-context-parser';
-import { logger } from '../Core';
 import { ClassFinder } from '../parse/ClassFinder';
 import { ClassIndexer } from '../parse/ClassIndexer';
 import { ClassLoader } from '../parse/ClassLoader';
@@ -8,7 +7,7 @@ import { ConstructorLoader } from '../parse/ConstructorLoader';
 import { PackageMetadataLoader } from '../parse/PackageMetadataLoader';
 import { ParameterResolver } from '../parse/ParameterResolver';
 import { ResolutionContext } from '../resolution/ResolutionContext';
-import { ComponentConstructor } from '../serialize/ComponentConstructor';
+import { ComponentConstructor, PathDestinationDefinition } from '../serialize/ComponentConstructor';
 import { ComponentSerializer } from '../serialize/ComponentSerializer';
 import { ContextConstructor } from '../serialize/ContextConstructor';
 
@@ -17,29 +16,26 @@ import { ContextConstructor } from '../serialize/ContextConstructor';
  */
 export class Generator {
   private readonly resolutionContext: ResolutionContext;
-  private readonly packageRootDirectory: string;
-  private readonly moduleRoot: string;
-  private readonly level: string;
+  private readonly pathDestination: PathDestinationDefinition;
+  private readonly fileExtension: string;
 
   public constructor(args: GeneratorArgs) {
     this.resolutionContext = args.resolutionContext;
-    this.packageRootDirectory = args.packageRootDirectory;
-    this.moduleRoot = args.moduleRoot;
-    this.level = args.level;
-    logger.level = this.level;
+    this.pathDestination = args.pathDestination;
+    this.fileExtension = args.fileExtension;
   }
 
   public async generateComponents(): Promise<void> {
     // Load package metadata
     const packageMetadata = await new PackageMetadataLoader({ resolutionContext: this.resolutionContext })
-      .load(this.packageRootDirectory);
+      .load(this.pathDestination.packageRootDirectory);
 
     const classLoader = new ClassLoader({ resolutionContext: this.resolutionContext });
     const classFinder = new ClassFinder({ classLoader });
     const classIndexer = new ClassIndexer({ classLoader, classFinder });
 
     // Find all relevant classes
-    const packageExports = await classFinder.getPackageExports(this.packageRootDirectory);
+    const packageExports = await classFinder.getPackageExports(this.pathDestination.packageRootDirectory);
     const classIndex = await classIndexer.createIndex(packageExports);
 
     // Load constructor data
@@ -48,29 +44,23 @@ export class Generator {
       .resolveAllConstructorParameters(constructorsUnresolved, classIndex);
 
     // Create components
-    const pathDestination = {
-      packageRootDirectory: this.packageRootDirectory,
-      originalPath: 'src',
-      replacementPath: 'components',
-    };
-    const fileExtension = 'jsonld';
     const contextConstructor = new ContextConstructor({ packageMetadata });
     const componentConstructor = new ComponentConstructor({
       packageMetadata,
       contextConstructor,
-      pathDestination,
+      pathDestination: this.pathDestination,
       classReferences: classIndex,
       classConstructors: constructors,
       contextParser: new ContextParser(),
     });
     const components = await componentConstructor.constructComponents();
-    const componentsIndex = await componentConstructor.constructComponentsIndex(components, fileExtension);
+    const componentsIndex = await componentConstructor.constructComponentsIndex(components, this.fileExtension);
 
     // Serialize components
     const componentSerializer = new ComponentSerializer({
       resolutionContext: this.resolutionContext,
-      pathDestination,
-      fileExtension,
+      pathDestination: this.pathDestination,
+      fileExtension: this.fileExtension,
       indentation: '  ',
     });
     await componentSerializer.serializeComponents(components);
@@ -84,7 +74,7 @@ export class Generator {
 
 export interface GeneratorArgs {
   resolutionContext: ResolutionContext;
-  packageRootDirectory: string;
-  moduleRoot: string;
+  pathDestination: PathDestinationDefinition;
+  fileExtension: string;
   level: string;
 }

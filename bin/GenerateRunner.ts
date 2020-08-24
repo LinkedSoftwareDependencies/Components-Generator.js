@@ -8,9 +8,11 @@ function showHelp() {
 Usage:
   componentsjs-generate
   Options:
-       -p <package>      # The directory of the package to look in, defaults to working directory
-       -m <moduleRoot>   # Directory where we should look for dependencies, relative to the package directory, defaults to working directory
-       --help            # Show information about this command
+       -p path/to/package   The directory of the package to look in, defaults to working directory
+       -s lib               Relative path to directory containing source files, defaults to 'lib'
+       -c components        Relative path to directory that will contain components files, defaults to 'components'
+       -e jsonld            Extension for components files (wthout .), defaults to 'jsonld'
+       --help               Show information about this command
 `);
   process.exit(1);
 }
@@ -21,8 +23,12 @@ if (args.help) {
 } else {
   const generator = new Generator({
     resolutionContext: new ResolutionContext(),
-    packageRootDirectory: args.p || process.cwd(),
-    moduleRoot: args.m || process.cwd(),
+    pathDestination: {
+      packageRootDirectory: args.p || process.cwd(),
+      originalPath: args.s || 'lib',
+      replacementPath: args.c || 'components',
+    },
+    fileExtension: args.e || 'jsonld',
     level: args.l || 'info',
   });
   generator
