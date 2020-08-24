@@ -46,9 +46,7 @@
   "author": "",
   "license": "MIT",
   "bin": {
-    "componentsjs-generate": "bin/GenerateRunnerOld.js",
-    "componentsjs-fix": "bin/FixRunner.js",
-    "componentsjs-fixpackage": "bin/FixPackageRunner.js"
+    "componentsjs-generator": "bin/GenerateRunner.js"
   },
   "files": [
     "bin/**/*.d.ts",
