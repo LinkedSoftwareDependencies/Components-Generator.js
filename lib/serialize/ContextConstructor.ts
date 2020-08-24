@@ -56,8 +56,10 @@ export class ContextConstructor {
     const shortcuts: {[key: string]: string} = {};
     for (const componentDefinition of Object.values(componentDefinitions)) {
       for (const component of componentDefinition.components) {
-        // Shortcut name for a class is everything after last '/'
-        shortcuts[component['@id'].slice(component['@id'].indexOf(':') + 1)] = component['@id'];
+        // Shortcut name for a class contains no special characters
+        // Regex will always match
+        const match = <RegExpExecArray> (/[a-z0-9]*$/iu.exec(component['@id']));
+        shortcuts[match[0]] = component['@id'];
       }
     }
     return shortcuts;

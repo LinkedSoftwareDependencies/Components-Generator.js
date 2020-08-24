@@ -84,17 +84,29 @@ export class ComponentConstructor {
   }
 
   /**
+   * Determine the relative path of a component file within a package.
+   * @param sourcePath The absolute path to a class file.
+   */
+  public getPathRelative(sourcePath: string): string {
+    if (!sourcePath.startsWith(this.pathDestination.packageRootDirectory)) {
+      throw new Error(`Tried to reference a file outside the current package: ${sourcePath}`);
+    }
+
+    return sourcePath
+      .slice(this.pathDestination.packageRootDirectory.length + 1)
+      .replace(`${this.pathDestination.originalPath}/`, '');
+  }
+
+  /**
    * Determine the path a component file should exist at based on a class source file path.
-   * @param sourcePath The relative path to a class file.
+   * @param sourcePath The absolute path to a class file.
    */
   public getPathDestination(sourcePath: string): string {
     if (!sourcePath.startsWith(this.pathDestination.packageRootDirectory)) {
       throw new Error(`Tried to reference a file outside the current package: ${sourcePath}`);
     }
 
-    return this.pathDestination.packageRootDirectory + sourcePath
-      .slice(this.pathDestination.packageRootDirectory.length)
-      .replace(this.pathDestination.originalPath, this.pathDestination.replacementPath);
+    return sourcePath.replace(this.pathDestination.originalPath, this.pathDestination.replacementPath);
   }
 
   /**
@@ -130,10 +142,10 @@ export class ComponentConstructor {
 
     // Fill in fields
     return {
-      '@id': this.classNameToId(context, classReference.localName),
+      '@id': this.classNameToId(context, classReference),
       '@type': classReference.abstract ? 'AbstractClass' : 'Class',
       requireElement: classReference.localName,
-      ...classReference.superClass ? { extends: this.classNameToId(context, classReference.superClass.localName) } : {},
+      ...classReference.superClass ? { extends: this.classNameToId(context, classReference.superClass) } : {},
       ...classReference.comment ? { comment: classReference.comment } : {},
       parameters,
       constructorArguments,
@@ -151,20 +163,20 @@ export class ComponentConstructor {
   /**
    * Construct a compacted class IRI.
    * @param context A parsed JSON-LD context.
-   * @param className The class name.
+   * @param classReference The class reference.
    */
-  public classNameToId(context: JsonLdContextNormalized, className: string): string {
-    return context.compactIri(`${this.packageMetadata.moduleIri}/${className}`);
+  public classNameToId(context: JsonLdContextNormalized, classReference: ClassReference): string {
+    return context.compactIri(`${this.packageMetadata.moduleIri}/${this.getPathRelative(classReference.fileName)}#${classReference.localName}`);
   }
 
   /**
    * Construct a compacted field IRI.
    * @param context A parsed JSON-LD context.
-   * @param className The class name owning the field.
+   * @param classReference The class reference.
    * @param fieldName The name of the field.
    */
-  public fieldNameToId(context: JsonLdContextNormalized, className: string, fieldName: string): string {
-    return context.compactIri(`${this.packageMetadata.moduleIri}/${className}#${fieldName}`);
+  public fieldNameToId(context: JsonLdContextNormalized, classReference: ClassReference, fieldName: string): string {
+    return context.compactIri(`${this.packageMetadata.moduleIri}/${this.getPathRelative(classReference.fileName)}#${classReference.localName}_${fieldName}`);
   }
 
   /**
@@ -240,7 +252,7 @@ export class ComponentConstructor {
   ): ParameterDefinition {
     // Fill in required fields
     const definition: ParameterDefinition = {
-      '@id': this.fieldNameToId(context, classReference.localName, parameterData.name),
+      '@id': this.fieldNameToId(context, classReference, parameterData.name),
       range: `xsd:${range}`,
     };
 
@@ -265,8 +277,8 @@ export class ComponentConstructor {
   ): ParameterDefinition {
     // Fill in required fields
     const definition: ParameterDefinition = {
-      '@id': this.fieldNameToId(context, classReference.localName, parameterData.name),
-      range: this.classNameToId(context, range.localName),
+      '@id': this.fieldNameToId(context, classReference, parameterData.name),
+      range: this.classNameToId(context, range),
     };
 
     // Fill in optional fields

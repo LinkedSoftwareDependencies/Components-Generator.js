@@ -12,7 +12,7 @@ describe('ComponentConstructor', () => {
   let context: JsonLdContextNormalized;
 
   beforeEach(async() => {
-    classReference = <any> { localName: 'MyClass', fileName: 'file' };
+    classReference = <any> { localName: 'MyClass', fileName: '/docs/package/src/a/b/file-param' };
 
     const contextParser = new ContextParser();
     const packageMetadata = {
@@ -51,8 +51,8 @@ describe('ComponentConstructor', () => {
 
     it('should handle a non-empty index for classes in the same file', async() => {
       (<any> ctor).classReferences = {
-        MyClass1: { localName: 'MyClass1', fileName: '/docs/package/file' },
-        MyClass2: { localName: 'MyClass2', fileName: '/docs/package/file' },
+        MyClass1: { localName: 'MyClass1', fileName: '/docs/package/src/b/file' },
+        MyClass2: { localName: 'MyClass2', fileName: '/docs/package/src/b/file' },
       };
       (<any> ctor).classConstructors = <ClassIndex<ConstructorData<ParameterRangeResolved>>> {
         MyClass1: {
@@ -78,37 +78,37 @@ describe('ComponentConstructor', () => {
         },
       };
       expect(await ctor.constructComponents()).toEqual({
-        '/docs/package/file': {
+        '/docs/package/components/b/file': {
           '@context': [
             'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
           ],
           '@id': 'npmd:my-package',
           components: [
             {
-              '@id': 'mp:MyClass1',
+              '@id': 'mp:b/file#MyClass1',
               '@type': 'Class',
               constructorArguments: [],
               parameters: [],
               requireElement: 'MyClass1',
             },
             {
-              '@id': 'mp:MyClass2',
+              '@id': 'mp:b/file#MyClass2',
               '@type': 'Class',
               requireElement: 'MyClass2',
               constructorArguments: [
-                'mp:MyClass2#fieldA',
-                'mp:MyClass2#fieldB',
+                'mp:b/file#MyClass2_fieldA',
+                'mp:b/file#MyClass2_fieldB',
               ],
               parameters: [
                 {
-                  '@id': 'mp:MyClass2#fieldA',
+                  '@id': 'mp:b/file#MyClass2_fieldA',
                   comment: 'Hi1',
                   range: 'xsd:boolean',
                   required: true,
                   unique: true,
                 },
                 {
-                  '@id': 'mp:MyClass2#fieldB',
+                  '@id': 'mp:b/file#MyClass2_fieldB',
                   comment: 'Hi2',
                   range: 'xsd:string',
                   required: true,
@@ -123,8 +123,8 @@ describe('ComponentConstructor', () => {
 
     it('should handle a non-empty index for classes in different files', async() => {
       (<any> ctor).classReferences = {
-        MyClass1: { localName: 'MyClass1', fileName: '/docs/package/file1' },
-        MyClass2: { localName: 'MyClass2', fileName: '/docs/package/file2' },
+        MyClass1: { localName: 'MyClass1', fileName: '/docs/package/src/file1' },
+        MyClass2: { localName: 'MyClass2', fileName: '/docs/package/src/b/file2' },
       };
       (<any> ctor).classConstructors = <ClassIndex<ConstructorData<ParameterRangeResolved>>> {
         MyClass1: {
@@ -150,14 +150,14 @@ describe('ComponentConstructor', () => {
         },
       };
       expect(await ctor.constructComponents()).toEqual({
-        '/docs/package/file1': {
+        '/docs/package/components/file1': {
           '@context': [
             'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
           ],
           '@id': 'npmd:my-package',
           components: [
             {
-              '@id': 'mp:MyClass1',
+              '@id': 'mp:file1#MyClass1',
               '@type': 'Class',
               constructorArguments: [],
               parameters: [],
@@ -165,30 +165,30 @@ describe('ComponentConstructor', () => {
             },
           ],
         },
-        '/docs/package/file2': {
+        '/docs/package/components/b/file2': {
           '@context': [
             'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
           ],
           '@id': 'npmd:my-package',
           components: [
             {
-              '@id': 'mp:MyClass2',
+              '@id': 'mp:b/file2#MyClass2',
               '@type': 'Class',
               requireElement: 'MyClass2',
               constructorArguments: [
-                'mp:MyClass2#fieldA',
-                'mp:MyClass2#fieldB',
+                'mp:b/file2#MyClass2_fieldA',
+                'mp:b/file2#MyClass2_fieldB',
               ],
               parameters: [
                 {
-                  '@id': 'mp:MyClass2#fieldA',
+                  '@id': 'mp:b/file2#MyClass2_fieldA',
                   comment: 'Hi1',
                   range: 'xsd:boolean',
                   required: true,
                   unique: true,
                 },
                 {
-                  '@id': 'mp:MyClass2#fieldB',
+                  '@id': 'mp:b/file2#MyClass2_fieldB',
                   comment: 'Hi2',
                   range: 'xsd:string',
                   required: true,
@@ -253,6 +253,18 @@ describe('ComponentConstructor', () => {
     });
   });
 
+  describe('getPathRelative', () => {
+    it('should error when source is outside package', () => {
+      expect(() => ctor.getPathRelative('not-in-package'))
+        .toThrow(new Error('Tried to reference a file outside the current package: not-in-package'));
+    });
+
+    it('should handle a valid path', () => {
+      expect(ctor.getPathRelative('/docs/package/src/a/b/myFile'))
+        .toEqual('a/b/myFile');
+    });
+  });
+
   describe('getPathDestination', () => {
     it('should error when source is outside package', () => {
       expect(() => ctor.getPathDestination('not-in-package'))
@@ -270,7 +282,7 @@ describe('ComponentConstructor', () => {
       expect(ctor.constructComponent(context, classReference, {
         parameters: [],
       })).toEqual({
-        '@id': 'mp:MyClass',
+        '@id': 'mp:a/b/file-param#MyClass',
         '@type': 'Class',
         constructorArguments: [],
         parameters: [],
@@ -297,22 +309,22 @@ describe('ComponentConstructor', () => {
           },
         ],
       })).toEqual({
-        '@id': 'mp:MyClass',
+        '@id': 'mp:a/b/file-param#MyClass',
         '@type': 'Class',
         constructorArguments: [
-          'mp:MyClass#fieldA',
-          'mp:MyClass#fieldB',
+          'mp:a/b/file-param#MyClass_fieldA',
+          'mp:a/b/file-param#MyClass_fieldB',
         ],
         parameters: [
           {
-            '@id': 'mp:MyClass#fieldA',
+            '@id': 'mp:a/b/file-param#MyClass_fieldA',
             comment: 'Hi1',
             range: 'xsd:boolean',
             required: true,
             unique: true,
           },
           {
-            '@id': 'mp:MyClass#fieldB',
+            '@id': 'mp:a/b/file-param#MyClass_fieldB',
             comment: 'Hi2',
             range: 'xsd:string',
             required: true,
@@ -328,7 +340,7 @@ describe('ComponentConstructor', () => {
       expect(ctor.constructComponent(context, classReference, {
         parameters: [],
       })).toEqual({
-        '@id': 'mp:MyClass',
+        '@id': 'mp:a/b/file-param#MyClass',
         '@type': 'AbstractClass',
         constructorArguments: [],
         parameters: [],
@@ -337,16 +349,16 @@ describe('ComponentConstructor', () => {
     });
 
     it('should handle a component with super class', () => {
-      classReference.superClass = <any> { localName: 'SuperClass' };
+      classReference.superClass = <any> { localName: 'SuperClass', fileName: '/docs/package/src/a/b/SuperFile' };
       expect(ctor.constructComponent(context, classReference, {
         parameters: [],
       })).toEqual({
-        '@id': 'mp:MyClass',
+        '@id': 'mp:a/b/file-param#MyClass',
         '@type': 'Class',
         constructorArguments: [],
         parameters: [],
         requireElement: 'MyClass',
-        extends: 'mp:SuperClass',
+        extends: 'mp:a/b/SuperFile#SuperClass',
       });
     });
 
@@ -355,7 +367,7 @@ describe('ComponentConstructor', () => {
       expect(ctor.constructComponent(context, classReference, {
         parameters: [],
       })).toEqual({
-        '@id': 'mp:MyClass',
+        '@id': 'mp:a/b/file-param#MyClass',
         '@type': 'Class',
         constructorArguments: [],
         parameters: [],
@@ -374,15 +386,19 @@ describe('ComponentConstructor', () => {
 
   describe('classNameToId', () => {
     it('should return a compacted class IRI', () => {
-      expect(ctor.classNameToId(context, 'MyClass'))
-        .toEqual('mp:MyClass');
+      expect(ctor.classNameToId(context, {
+        localName: 'MyClass',
+        fileName: '/docs/package/src/a/b/MyOwnClass',
+      })).toEqual('mp:a/b/MyOwnClass#MyClass');
     });
   });
 
   describe('fieldNameToId', () => {
     it('should return a compacted field IRI', () => {
-      expect(ctor.fieldNameToId(context, 'MyClass', 'field'))
-        .toEqual('mp:MyClass#field');
+      expect(ctor.fieldNameToId(context, {
+        localName: 'MyClass',
+        fileName: '/docs/package/src/a/b/MyOwnClass',
+      }, 'field')).toEqual('mp:a/b/MyOwnClass#MyClass_field');
     });
   });
 
@@ -415,19 +431,19 @@ describe('ComponentConstructor', () => {
           },
         ],
       }, parameters)).toEqual([
-        'mp:MyClass#fieldA',
-        'mp:MyClass#fieldB',
+        'mp:a/b/file-param#MyClass_fieldA',
+        'mp:a/b/file-param#MyClass_fieldB',
       ]);
       expect(parameters).toEqual([
         {
-          '@id': 'mp:MyClass#fieldA',
+          '@id': 'mp:a/b/file-param#MyClass_fieldA',
           comment: 'Hi1',
           range: 'xsd:boolean',
           required: true,
           unique: true,
         },
         {
-          '@id': 'mp:MyClass#fieldB',
+          '@id': 'mp:a/b/file-param#MyClass_fieldB',
           comment: 'Hi2',
           range: 'xsd:string',
           required: true,
@@ -469,21 +485,21 @@ describe('ComponentConstructor', () => {
       }, parameters)).toEqual([
         {
           fields: [
-            { keyRaw: 'fieldA', value: 'mp:MyClass#fieldA' },
-            { keyRaw: 'fieldB', value: 'mp:MyClass#fieldB' },
+            { keyRaw: 'fieldA', value: 'mp:a/b/file-param#MyClass_fieldA' },
+            { keyRaw: 'fieldB', value: 'mp:a/b/file-param#MyClass_fieldB' },
           ],
         },
       ]);
       expect(parameters).toEqual([
         {
-          '@id': 'mp:MyClass#fieldA',
+          '@id': 'mp:a/b/file-param#MyClass_fieldA',
           comment: 'Hi1',
           range: 'xsd:boolean',
           required: true,
           unique: true,
         },
         {
-          '@id': 'mp:MyClass#fieldB',
+          '@id': 'mp:a/b/file-param#MyClass_fieldB',
           comment: 'Hi2',
           range: 'xsd:string',
           required: true,
@@ -502,10 +518,10 @@ describe('ComponentConstructor', () => {
         required: true,
         unique: true,
         comment: 'Hi',
-      }, parameters)).toEqual('mp:MyClass#field');
+      }, parameters)).toEqual('mp:a/b/file-param#MyClass_field');
       expect(parameters).toEqual([
         {
-          '@id': 'mp:MyClass#field',
+          '@id': 'mp:a/b/file-param#MyClass_field',
           comment: 'Hi',
           range: 'xsd:boolean',
           required: true,
@@ -522,10 +538,10 @@ describe('ComponentConstructor', () => {
         required: true,
         unique: true,
         comment: 'Hi',
-      }, parameters)).toEqual('mp:MyClass#field');
+      }, parameters)).toEqual('mp:a/b/file-param#MyClass_field');
       expect(parameters).toEqual([
         {
-          '@id': 'mp:MyClass#field',
+          '@id': 'mp:a/b/file-param#MyClass_field',
           comment: 'Hi',
           range: 'xsd:boolean',
           required: true,
@@ -538,16 +554,16 @@ describe('ComponentConstructor', () => {
       const parameters: ParameterDefinition[] = [];
       expect(ctor.parameterDataToConstructorArgument(context, classReference, {
         name: 'field',
-        range: { type: 'class', value: { localName: 'ClassParam', fileName: 'file-param' }},
+        range: { type: 'class', value: { localName: 'ClassParam', fileName: '/docs/package/src/a/b/file-param' }},
         required: true,
         unique: true,
         comment: 'Hi',
-      }, parameters)).toEqual('mp:MyClass#field');
+      }, parameters)).toEqual('mp:a/b/file-param#MyClass_field');
       expect(parameters).toEqual([
         {
-          '@id': 'mp:MyClass#field',
+          '@id': 'mp:a/b/file-param#MyClass_field',
           comment: 'Hi',
-          range: 'mp:ClassParam',
+          range: 'mp:a/b/file-param#ClassParam',
           required: true,
           unique: true,
         },
@@ -589,12 +605,12 @@ describe('ComponentConstructor', () => {
         comment: 'Hi',
       }, parameters)).toEqual({
         fields: [
-          { keyRaw: 'field', value: 'mp:MyClass#field' },
+          { keyRaw: 'field', value: 'mp:a/b/file-param#MyClass_field' },
         ],
       });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:MyClass#field',
+          '@id': 'mp:a/b/file-param#MyClass_field',
           comment: 'Hi',
           range: 'xsd:boolean',
           required: true,
@@ -631,20 +647,20 @@ describe('ComponentConstructor', () => {
         comment: 'Hi',
       }, parameters)).toEqual({
         fields: [
-          { keyRaw: 'fieldA', value: 'mp:MyClass#fieldA' },
-          { keyRaw: 'fieldB', value: 'mp:MyClass#fieldB' },
+          { keyRaw: 'fieldA', value: 'mp:a/b/file-param#MyClass_fieldA' },
+          { keyRaw: 'fieldB', value: 'mp:a/b/file-param#MyClass_fieldB' },
         ],
       });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:MyClass#fieldA',
+          '@id': 'mp:a/b/file-param#MyClass_fieldA',
           comment: 'Hi1',
           range: 'xsd:boolean',
           required: true,
           unique: true,
         },
         {
-          '@id': 'mp:MyClass#fieldB',
+          '@id': 'mp:a/b/file-param#MyClass_fieldB',
           comment: 'Hi2',
           range: 'xsd:string',
           required: true,
@@ -692,12 +708,12 @@ describe('ComponentConstructor', () => {
         comment: 'Hi',
       }, parameters)).toEqual({
         fields: [
-          { keyRaw: 'fieldA', value: 'mp:MyClass#fieldA' },
+          { keyRaw: 'fieldA', value: 'mp:a/b/file-param#MyClass_fieldA' },
           {
             keyRaw: 'fieldSub',
             value: {
               fields: [
-                { keyRaw: 'fieldB', value: 'mp:MyClass#fieldB' },
+                { keyRaw: 'fieldB', value: 'mp:a/b/file-param#MyClass_fieldB' },
               ],
             },
           },
@@ -705,14 +721,14 @@ describe('ComponentConstructor', () => {
       });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:MyClass#fieldA',
+          '@id': 'mp:a/b/file-param#MyClass_fieldA',
           comment: 'Hi1',
           range: 'xsd:boolean',
           required: true,
           unique: true,
         },
         {
-          '@id': 'mp:MyClass#fieldB',
+          '@id': 'mp:a/b/file-param#MyClass_fieldB',
           comment: 'Hi2',
           range: 'xsd:string',
           required: true,
@@ -732,7 +748,7 @@ describe('ComponentConstructor', () => {
         unique: true,
         comment: 'Hi',
       }, rangeValue)).toEqual({
-        '@id': 'mp:MyClass#field',
+        '@id': 'mp:a/b/file-param#MyClass_field',
         comment: 'Hi',
         range: 'xsd:boolean',
         required: true,
@@ -743,7 +759,7 @@ describe('ComponentConstructor', () => {
 
   describe('constructParameterClass', () => {
     it('should construct a class parameter definition', () => {
-      const rangeValue: ClassReference = { localName: 'ClassParam', fileName: 'file-param' };
+      const rangeValue: ClassReference = { localName: 'ClassParam', fileName: '/docs/package/src/a/b/file-param' };
       expect(ctor.constructParameterClass(context, classReference, {
         name: 'field',
         range: { type: 'class', value: rangeValue },
@@ -751,9 +767,9 @@ describe('ComponentConstructor', () => {
         unique: true,
         comment: 'Hi',
       }, rangeValue)).toEqual({
-        '@id': 'mp:MyClass#field',
+        '@id': 'mp:a/b/file-param#MyClass_field',
         comment: 'Hi',
-        range: 'mp:ClassParam',
+        range: 'mp:a/b/file-param#ClassParam',
         required: true,
         unique: true,
       });

@@ -50,14 +50,14 @@ describe('ContextConstructor', () => {
 
     it('should handle defined component definitions', () => {
       expect(ctor.constructContext({
-        '/docs/package/file1': {
+        '/docs/package/components/file1': {
           '@context': [
             'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
           ],
           '@id': 'npmd:my-package',
           components: [
             {
-              '@id': 'mp:MyClass1',
+              '@id': 'mp:file1#MyClass1',
               '@type': 'Class',
               constructorArguments: [],
               parameters: [],
@@ -65,14 +65,14 @@ describe('ContextConstructor', () => {
             },
           ],
         },
-        '/docs/package/file2': {
+        '/docs/package/components/b/file2': {
           '@context': [
             'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
           ],
           '@id': 'npmd:my-package',
           components: [
             {
-              '@id': 'mp:MyClass2',
+              '@id': 'mp:b/file2#MyClass2',
               '@type': 'Class',
               requireElement: 'MyClass2',
               constructorArguments: [],
@@ -88,8 +88,8 @@ describe('ContextConstructor', () => {
             mp: 'npmd:my-package/',
             'files-mp': 'mp:^1.0.0/',
 
-            MyClass1: 'mp:MyClass1',
-            MyClass2: 'mp:MyClass2',
+            MyClass1: 'mp:file1#MyClass1',
+            MyClass2: 'mp:b/file2#MyClass2',
           },
         ],
       });
@@ -103,14 +103,14 @@ describe('ContextConstructor', () => {
 
     it('should handle non-empty component definitions', () => {
       expect(ctor.constructComponentShortcuts({
-        '/docs/package/file1': {
+        '/docs/package/components/file1': {
           '@context': [
             'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
           ],
           '@id': 'npmd:my-package',
           components: [
             {
-              '@id': 'mp:MyClass1',
+              '@id': 'mp:file1#MyClass1',
               '@type': 'Class',
               constructorArguments: [],
               parameters: [],
@@ -118,14 +118,14 @@ describe('ContextConstructor', () => {
             },
           ],
         },
-        '/docs/package/file2': {
+        '/docs/package/components/b/file2': {
           '@context': [
             'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
           ],
           '@id': 'npmd:my-package',
           components: [
             {
-              '@id': 'mp:MyClass2',
+              '@id': 'mp:b/file2#MyClass2',
               '@type': 'Class',
               requireElement: 'MyClass2',
               constructorArguments: [],
@@ -134,8 +134,8 @@ describe('ContextConstructor', () => {
           ],
         },
       })).toEqual({
-        MyClass1: 'mp:MyClass1',
-        MyClass2: 'mp:MyClass2',
+        MyClass1: 'mp:file1#MyClass1',
+        MyClass2: 'mp:b/file2#MyClass2',
       });
     });
   });
