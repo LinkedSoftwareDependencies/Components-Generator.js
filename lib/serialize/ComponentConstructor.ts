@@ -234,7 +234,7 @@ export class ComponentConstructor {
       parameter = this.constructParameterClass(context, classReference, parameterData, parameterData.range.value);
     }
     parameters.push(parameter);
-    return parameter['@id'];
+    return { '@id': parameter['@id'] };
   }
 
   /**

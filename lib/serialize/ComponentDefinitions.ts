@@ -36,7 +36,7 @@ export interface ParameterDefinition {
   lazy?: boolean;
 }
 
-export type ConstructorArgumentDefinition = string | {
+export type ConstructorArgumentDefinition = string | { '@id': string } | {
   '@id'?: string;
   extends?: string;
   fields?: ConstructorFieldDefinition[];

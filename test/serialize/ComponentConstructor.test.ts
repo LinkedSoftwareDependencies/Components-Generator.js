@@ -97,8 +97,8 @@ describe('ComponentConstructor', () => {
               '@type': 'Class',
               requireElement: 'MyClass2',
               constructorArguments: [
-                'mp:b/file#MyClass2_fieldA',
-                'mp:b/file#MyClass2_fieldB',
+                { '@id': 'mp:b/file#MyClass2_fieldA' },
+                { '@id': 'mp:b/file#MyClass2_fieldB' },
               ],
               parameters: [
                 {
@@ -177,8 +177,8 @@ describe('ComponentConstructor', () => {
               '@type': 'Class',
               requireElement: 'MyClass2',
               constructorArguments: [
-                'mp:b/file2#MyClass2_fieldA',
-                'mp:b/file2#MyClass2_fieldB',
+                { '@id': 'mp:b/file2#MyClass2_fieldA' },
+                { '@id': 'mp:b/file2#MyClass2_fieldB' },
               ],
               parameters: [
                 {
@@ -313,8 +313,8 @@ describe('ComponentConstructor', () => {
         '@id': 'mp:a/b/file-param#MyClass',
         '@type': 'Class',
         constructorArguments: [
-          'mp:a/b/file-param#MyClass_fieldA',
-          'mp:a/b/file-param#MyClass_fieldB',
+          { '@id': 'mp:a/b/file-param#MyClass_fieldA' },
+          { '@id': 'mp:a/b/file-param#MyClass_fieldB' },
         ],
         parameters: [
           {
@@ -432,8 +432,8 @@ describe('ComponentConstructor', () => {
           },
         ],
       }, parameters)).toEqual([
-        'mp:a/b/file-param#MyClass_fieldA',
-        'mp:a/b/file-param#MyClass_fieldB',
+        { '@id': 'mp:a/b/file-param#MyClass_fieldA' },
+        { '@id': 'mp:a/b/file-param#MyClass_fieldB' },
       ]);
       expect(parameters).toEqual([
         {
@@ -486,8 +486,8 @@ describe('ComponentConstructor', () => {
       }, parameters)).toEqual([
         {
           fields: [
-            { keyRaw: 'fieldA', value: 'mp:a/b/file-param#MyClass_fieldA' },
-            { keyRaw: 'fieldB', value: 'mp:a/b/file-param#MyClass_fieldB' },
+            { keyRaw: 'fieldA', value: { '@id': 'mp:a/b/file-param#MyClass_fieldA' }},
+            { keyRaw: 'fieldB', value: { '@id': 'mp:a/b/file-param#MyClass_fieldB' }},
           ],
         },
       ]);
@@ -519,7 +519,7 @@ describe('ComponentConstructor', () => {
         required: true,
         unique: true,
         comment: 'Hi',
-      }, parameters)).toEqual('mp:a/b/file-param#MyClass_field');
+      }, parameters)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
       expect(parameters).toEqual([
         {
           '@id': 'mp:a/b/file-param#MyClass_field',
@@ -539,7 +539,7 @@ describe('ComponentConstructor', () => {
         required: true,
         unique: true,
         comment: 'Hi',
-      }, parameters)).toEqual('mp:a/b/file-param#MyClass_field');
+      }, parameters)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
       expect(parameters).toEqual([
         {
           '@id': 'mp:a/b/file-param#MyClass_field',
@@ -559,7 +559,7 @@ describe('ComponentConstructor', () => {
         required: true,
         unique: true,
         comment: 'Hi',
-      }, parameters)).toEqual('mp:a/b/file-param#MyClass_field');
+      }, parameters)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
       expect(parameters).toEqual([
         {
           '@id': 'mp:a/b/file-param#MyClass_field',
@@ -606,7 +606,7 @@ describe('ComponentConstructor', () => {
         comment: 'Hi',
       }, parameters)).toEqual({
         fields: [
-          { keyRaw: 'field', value: 'mp:a/b/file-param#MyClass_field' },
+          { keyRaw: 'field', value: { '@id': 'mp:a/b/file-param#MyClass_field' }},
         ],
       });
       expect(parameters).toEqual([
@@ -648,8 +648,8 @@ describe('ComponentConstructor', () => {
         comment: 'Hi',
       }, parameters)).toEqual({
         fields: [
-          { keyRaw: 'fieldA', value: 'mp:a/b/file-param#MyClass_fieldA' },
-          { keyRaw: 'fieldB', value: 'mp:a/b/file-param#MyClass_fieldB' },
+          { keyRaw: 'fieldA', value: { '@id': 'mp:a/b/file-param#MyClass_fieldA' }},
+          { keyRaw: 'fieldB', value: { '@id': 'mp:a/b/file-param#MyClass_fieldB' }},
         ],
       });
       expect(parameters).toEqual([
@@ -709,12 +709,12 @@ describe('ComponentConstructor', () => {
         comment: 'Hi',
       }, parameters)).toEqual({
         fields: [
-          { keyRaw: 'fieldA', value: 'mp:a/b/file-param#MyClass_fieldA' },
+          { keyRaw: 'fieldA', value: { '@id': 'mp:a/b/file-param#MyClass_fieldA' }},
           {
             keyRaw: 'fieldSub',
             value: {
               fields: [
-                { keyRaw: 'fieldB', value: 'mp:a/b/file-param#MyClass_fieldB' },
+                { keyRaw: 'fieldB', value: { '@id': 'mp:a/b/file-param#MyClass_fieldB' }},
               ],
             },
           },
