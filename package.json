@@ -8,7 +8,8 @@
     "test": "jest ${1}",
     "coveralls": "jest --coverage && cat ./coverage/lcov.info | coveralls",
     "lint": "eslint . --ext .ts --cache",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "version": "manual-git-changelog onversion"
   },
   "husky": {
     "hooks": {
@@ -95,6 +96,7 @@
     "husky": "^4.2.5",
     "jest": "^26.0.0",
     "jest-extended": "^0.11.2",
+    "manual-git-changelog": "^1.0.1",
     "rimraf": "latest",
     "ts-jest": "^26.0.0",
     "typescript": "^3.5.3"
