@@ -49,7 +49,12 @@
     "dependency injection",
     "typescript"
   ],
-  "author": "Ruben Taelman <ruben.taelman@ugent.be>",
+  "author": "Ruben Taelman <rubensworks@gmail.com>",
+  "repository": "git@github.com:LinkedSoftwareDependencies/Components-Generator.js.git",
+  "bugs": {
+    "url": "https://github.com/LinkedSoftwareDependencies/Components-Generator.js/issues"
+  },
+  "homepage": "https://github.com/LinkedSoftwareDependencies/Components-Generator.js#readme",
   "license": "MIT",
   "bin": {
     "componentsjs-generator": "bin/GenerateRunner.js"
