@@ -1,5 +1,4 @@
-import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import { Program } from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
+import { AST, TSESTreeOptions, AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
@@ -785,7 +784,7 @@ declare interface A{}
     });
 
     it('for export all without source', () => {
-      expect(loader.getClassElements('dir/file', <Program> {
+      expect(loader.getClassElements('dir/file', <AST<TSESTreeOptions>> {
         body: [
           {
             type: AST_NODE_TYPES.ExportAllDeclaration,
@@ -797,7 +796,7 @@ declare interface A{}
     });
 
     it('for export all without type', () => {
-      expect(loader.getClassElements('dir/file', <Program> {
+      expect(loader.getClassElements('dir/file', <AST<TSESTreeOptions>> {
         body: [
           {
             type: AST_NODE_TYPES.ExportAllDeclaration,
@@ -809,7 +808,7 @@ declare interface A{}
     });
 
     it('for export all without value', () => {
-      expect(loader.getClassElements('dir/file', <Program> {
+      expect(loader.getClassElements('dir/file', <AST<TSESTreeOptions>> {
         body: [
           {
             type: AST_NODE_TYPES.ExportAllDeclaration,

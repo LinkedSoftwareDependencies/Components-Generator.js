@@ -1,8 +1,5 @@
-import {
-  BaseNode, ClassDeclaration,
-  MethodDefinition, TSInterfaceDeclaration,
-  TSPropertySignature,
-} from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
+import { ClassDeclaration, TSInterfaceDeclaration,
+  MethodDefinition, TSPropertySignature, BaseNode } from '@typescript-eslint/types/dist/ts-estree';
 import * as commentParse from 'comment-parser';
 import { ClassReference, ClassReferenceLoaded } from './ClassIndex';
 import { ParameterRangeUnresolved } from './ParameterLoader';

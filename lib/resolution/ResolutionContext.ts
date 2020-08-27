@@ -1,14 +1,13 @@
 import * as fs from 'fs';
 import * as Path from 'path';
-import * as parser from '@typescript-eslint/typescript-estree';
-import { Program } from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
+import { AST, TSESTreeOptions, parse } from '@typescript-eslint/typescript-estree';
 import * as LRUCache from 'lru-cache';
 
 /**
  * Context for loading files.
  */
 export class ResolutionContext {
-  private readonly parsedCache: LRUCache<string, Program>;
+  private readonly parsedCache: LRUCache<string, AST<TSESTreeOptions>>;
 
   public constructor() {
     this.parsedCache = new LRUCache(2048);
@@ -73,8 +72,8 @@ export class ResolutionContext {
    * @param contents Typescript file contents.
    * @return An abstract syntax tree.
    */
-  public parseTypescriptContents(contents: string): Program {
-    return parser.parse(contents, { loc: true, comment: true });
+  public parseTypescriptContents(contents: string): AST<TSESTreeOptions> {
+    return parse(contents, { loc: true, comment: true });
   }
 
   /**
@@ -83,7 +82,7 @@ export class ResolutionContext {
    * @param filePath A typescript file path, without extension.
    * @return An abstract syntax tree.
    */
-  public async parseTypescriptFile(filePath: string): Promise<Program> {
+  public async parseTypescriptFile(filePath: string): Promise<AST<TSESTreeOptions>> {
     // First check cache
     const cached = this.parsedCache.get(filePath);
     if (cached) {

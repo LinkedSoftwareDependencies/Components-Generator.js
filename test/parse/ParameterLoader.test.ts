@@ -1,9 +1,5 @@
-import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree/dist/ts-estree/ast-node-types';
-import {
-  Identifier,
-  MethodDefinition,
-  TSTypeLiteral,
-} from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
+import { MethodDefinition, TSTypeLiteral, Identifier } from '@typescript-eslint/types/dist/ts-estree';
+import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import { ClassReference, InterfaceLoaded } from '../../lib/parse/ClassIndex';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
 import { CommentData } from '../../lib/parse/CommentLoader';

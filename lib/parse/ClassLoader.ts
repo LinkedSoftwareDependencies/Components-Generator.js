@@ -1,10 +1,6 @@
 import * as Path from 'path';
-import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import {
-  ClassDeclaration,
-  Program,
-  TSInterfaceDeclaration,
-} from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
+import { ClassDeclaration, TSInterfaceDeclaration } from '@typescript-eslint/types/dist/ts-estree';
+import { AST, TSESTreeOptions, AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import { ResolutionContext } from '../resolution/ResolutionContext';
 import { ClassLoaded, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
 import { CommentLoader } from './CommentLoader';
@@ -174,7 +170,7 @@ export class ClassLoader {
    * @param fileName A file path.
    * @param ast The parsed file.
    */
-  public getClassElements(fileName: string, ast: Program): ClassElements {
+  public getClassElements(fileName: string, ast: AST<TSESTreeOptions>): ClassElements {
     const exportedClasses: { [exportedName: string]: ClassDeclaration } = {};
     const exportedInterfaces: { [exportedName: string]: TSInterfaceDeclaration } = {};
     const exportedImportedElements: { [exportedName: string]: { localName: string; fileName: string } } = {};

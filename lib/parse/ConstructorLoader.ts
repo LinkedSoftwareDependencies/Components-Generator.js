@@ -1,9 +1,5 @@
-import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import {
-  ClassDeclaration,
-  MethodDefinition,
-  Program,
-} from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
+import { ClassDeclaration, MethodDefinition } from '@typescript-eslint/types/dist/ts-estree';
+import { AST, TSESTreeOptions, AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import { ClassIndex, ClassLoaded } from './ClassIndex';
 import { ParameterData, ParameterLoader, ParameterRangeUnresolved } from './ParameterLoader';
 
@@ -68,7 +64,7 @@ export class ConstructorLoader {
    * @param ast A parsed typescript file
    * @param fileName The file name, for error reporting.
    */
-  public getClass(className: string, ast: Program, fileName: string): ClassDeclaration {
+  public getClass(className: string, ast: AST<TSESTreeOptions>, fileName: string): ClassDeclaration {
     for (const statement of ast.body) {
       // Classes in the form of `declare class A {}`
       if (statement.type === AST_NODE_TYPES.ClassDeclaration &&

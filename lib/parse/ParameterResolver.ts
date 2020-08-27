@@ -1,5 +1,5 @@
+import { TSTypeLiteral } from '@typescript-eslint/types/dist/ts-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import { TSTypeLiteral } from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
 import { ClassIndex, ClassLoaded, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
 import { ClassLoader } from './ClassLoader';
 import { ConstructorData } from './ConstructorLoader';

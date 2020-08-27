@@ -1,10 +1,6 @@
+import { MethodDefinition, TypeElement,
+  Identifier, TSTypeLiteral, TSPropertySignature, TypeNode } from '@typescript-eslint/types/dist/ts-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import {
-  Identifier,
-  MethodDefinition, TSPropertySignature,
-  TSTypeLiteral, TypeElement,
-  TypeNode,
-} from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
 import { ClassReference, ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
 import { CommentData, CommentLoader } from './CommentLoader';
 import { ConstructorData } from './ConstructorLoader';

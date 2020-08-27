@@ -1,11 +1,11 @@
 /* istanbul ignore file */
-import { Program } from '@typescript-eslint/typescript-estree/dist/ts-estree/ts-estree';
+import { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
 import { ResolutionContext } from '../lib/resolution/ResolutionContext';
 
 export class ResolutionContextMocked extends ResolutionContext {
-  public contentsOverrides: {[name: string]: string | Program};
+  public contentsOverrides: {[name: string]: string | AST<TSESTreeOptions>};
 
-  public constructor(contentsOverrides: {[name: string]: string | Program}) {
+  public constructor(contentsOverrides: {[name: string]: string | AST<TSESTreeOptions>}) {
     super();
     this.contentsOverrides = contentsOverrides;
   }
@@ -21,14 +21,14 @@ export class ResolutionContextMocked extends ResolutionContext {
     this.contentsOverrides[filePath] = content;
   }
 
-  public parseTypescriptContents(contents: string): Program {
+  public parseTypescriptContents(contents: string): AST<TSESTreeOptions> {
     if (typeof contents !== 'string') {
       return contents;
     }
     return super.parseTypescriptContents(contents);
   }
 
-  public async parseTypescriptFile(filePath: string): Promise<Program> {
+  public async parseTypescriptFile(filePath: string): Promise<AST<TSESTreeOptions>> {
     const indexContent = await this.getTypeScriptFileContent(filePath);
     try {
       return this.parseTypescriptContents(indexContent);
