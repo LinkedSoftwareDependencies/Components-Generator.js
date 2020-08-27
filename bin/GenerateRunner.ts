@@ -4,14 +4,14 @@ import { Generator } from '../lib/generate/Generator';
 import { ResolutionContext } from '../lib/resolution/ResolutionContext';
 
 function showHelp() {
-  process.stderr.write(`Generates component file for a package
+  process.stderr.write(`Generates components files for TypeScript files in a package
 Usage:
-  componentsjs-generate
+  componentsjs-generator
   Options:
        -p path/to/package   The directory of the package to look in, defaults to working directory
        -s lib               Relative path to directory containing source files, defaults to 'lib'
        -c components        Relative path to directory that will contain components files, defaults to 'components'
-       -e jsonld            Extension for components files (wthout .), defaults to 'jsonld'
+       -e jsonld            Extension for components files (without .), defaults to 'jsonld'
        --help               Show information about this command
 `);
   process.exit(1);

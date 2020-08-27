@@ -1,7 +1,7 @@
 {
   "name": "componentjs-generator",
   "version": "1.0.0",
-  "description": "A tool to generate and fix .jsonld component files for Components.js TypeScript classes",
+  "description": "Automatically generate component files from TypeScript classes for the Components.js dependency injection framework",
   "main": "index.js",
   "scripts": {
     "build": "tsc",
@@ -42,8 +42,14 @@
       }
     }
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "lsd",
+    "linked software dependencies",
+    "components",
+    "dependency injection",
+    "typescript"
+  ],
+  "author": "Ruben Taelman <ruben.taelman@ugent.be>",
   "license": "MIT",
   "bin": {
     "componentsjs-generator": "bin/GenerateRunner.js"
