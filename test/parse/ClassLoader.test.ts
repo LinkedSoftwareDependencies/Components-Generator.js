@@ -1,3 +1,4 @@
+import * as Path from 'path';
 import { AST, TSESTreeOptions, AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
@@ -674,32 +675,32 @@ declare interface A{}
 
   describe('getClassElements', () => {
     it('for an empty file', () => {
-      expect(loader.getClassElements('dir/file', resolutionContext.parseTypescriptContents(``)))
+      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(``)))
         .toMatchObject({});
     });
 
     it('for a file with a const', () => {
-      expect(loader.getClassElements('dir/file', resolutionContext.parseTypescriptContents(`const a = "a"`)))
+      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`const a = "a"`)))
         .toMatchObject({});
     });
 
     it('for a file with a const export', () => {
-      expect(loader.getClassElements('dir/file', resolutionContext.parseTypescriptContents(`export const foo = "a";`)))
+      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`export const foo = "a";`)))
         .toMatchObject({});
     });
 
     it('for a file with a namespace import', () => {
-      expect(loader.getClassElements('dir/file', resolutionContext.parseTypescriptContents(`import polygons = Shapes.Polygons`)))
+      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`import polygons = Shapes.Polygons`)))
         .toMatchObject({});
     });
 
     it('for a file with a default import', () => {
-      expect(loader.getClassElements('dir/file', resolutionContext.parseTypescriptContents(`import A from './lib/A'`)))
+      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`import A from './lib/A'`)))
         .toMatchObject({});
     });
 
     it('for a single declare', () => {
-      expect(loader.getClassElements('dir/file', resolutionContext.parseTypescriptContents(`declare class A{}`)))
+      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`declare class A{}`)))
         .toMatchObject({
           declaredClasses: {
             A: {
@@ -710,7 +711,7 @@ declare interface A{}
     });
 
     it('for a single declare abstract', () => {
-      expect(loader.getClassElements('dir/file', resolutionContext.parseTypescriptContents(`declare abstract class A{}`)))
+      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`declare abstract class A{}`)))
         .toMatchObject({
           declaredClasses: {
             A: {
@@ -721,7 +722,7 @@ declare interface A{}
     });
 
     it('for a single declare interface', () => {
-      expect(loader.getClassElements('dir/file', resolutionContext.parseTypescriptContents(`declare interface A{}`)))
+      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`declare interface A{}`)))
         .toMatchObject({
           declaredInterfaces: {
             A: {
@@ -732,19 +733,19 @@ declare interface A{}
     });
 
     it('for a single import', () => {
-      expect(loader.getClassElements('dir/file', resolutionContext.parseTypescriptContents(`import {A as B} from './lib/A'`)))
+      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`import {A as B} from './lib/A'`)))
         .toMatchObject({
           importedElements: {
             B: {
               localName: 'A',
-              fileName: 'dir/lib/A',
+              fileName: Path.normalize('dir/lib/A'),
             },
           },
         });
     });
 
     it('for a single named export', () => {
-      expect(loader.getClassElements('dir/file', resolutionContext.parseTypescriptContents(`export class A{}`)))
+      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`export class A{}`)))
         .toMatchObject({
           exportedClasses: {
             A: {
@@ -755,7 +756,7 @@ declare interface A{}
     });
 
     it('for a single named export abstract', () => {
-      expect(loader.getClassElements('dir/file', resolutionContext.parseTypescriptContents(`export abstract class A{}`)))
+      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`export abstract class A{}`)))
         .toMatchObject({
           exportedClasses: {
             A: {
@@ -766,7 +767,7 @@ declare interface A{}
     });
 
     it('for a single named interface export', () => {
-      expect(loader.getClassElements('dir/file', resolutionContext.parseTypescriptContents(`export interface A{}`)))
+      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`export interface A{}`)))
         .toMatchObject({
           exportedInterfaces: {
             A: {
@@ -777,14 +778,14 @@ declare interface A{}
     });
 
     it('for export all', () => {
-      expect(loader.getClassElements('dir/file', resolutionContext.parseTypescriptContents(`export * from './lib/A'`)))
+      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`export * from './lib/A'`)))
         .toMatchObject({
-          exportedImportedAll: [ 'dir/lib/A' ],
+          exportedImportedAll: [ Path.normalize('dir/lib/A') ],
         });
     });
 
     it('for export all without source', () => {
-      expect(loader.getClassElements('dir/file', <AST<TSESTreeOptions>> {
+      expect(loader.getClassElements(Path.normalize('dir/file'), <AST<TSESTreeOptions>> {
         body: [
           {
             type: AST_NODE_TYPES.ExportAllDeclaration,
@@ -796,7 +797,7 @@ declare interface A{}
     });
 
     it('for export all without type', () => {
-      expect(loader.getClassElements('dir/file', <AST<TSESTreeOptions>> {
+      expect(loader.getClassElements(Path.normalize('dir/file'), <AST<TSESTreeOptions>> {
         body: [
           {
             type: AST_NODE_TYPES.ExportAllDeclaration,
@@ -808,7 +809,7 @@ declare interface A{}
     });
 
     it('for export all without value', () => {
-      expect(loader.getClassElements('dir/file', <AST<TSESTreeOptions>> {
+      expect(loader.getClassElements(Path.normalize('dir/file'), <AST<TSESTreeOptions>> {
         body: [
           {
             type: AST_NODE_TYPES.ExportAllDeclaration,
@@ -822,12 +823,12 @@ declare interface A{}
     });
 
     it('for a single named export without name should error', () => {
-      expect(() => loader.getClassElements('dir/file', resolutionContext.parseTypescriptContents(`export class{}`)))
-        .toThrow(new Error('Export parsing failure: missing exported class name in dir/file on line 1 column 7'));
+      expect(() => loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`export class{}`)))
+        .toThrow(new Error(`Export parsing failure: missing exported class name in ${Path.normalize('dir/file')} on line 1 column 7`));
     });
 
     it('for a single export without target', () => {
-      expect(loader.getClassElements('dir/file', resolutionContext.parseTypescriptContents(`export { A as B }`)))
+      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`export { A as B }`)))
         .toMatchObject({
           exportedUnknowns: {
             B: 'A',
@@ -836,39 +837,39 @@ declare interface A{}
     });
 
     it('for a single export from file', () => {
-      expect(loader.getClassElements('dir/file', resolutionContext.parseTypescriptContents(`export { A as B } from './lib/A'`)))
+      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`export { A as B } from './lib/A'`)))
         .toMatchObject({
           exportedImportedElements: {
             B: {
               localName: 'A',
-              fileName: 'dir/lib/A',
+              fileName: Path.normalize('dir/lib/A'),
             },
           },
         });
     });
 
     it('for multiple exports from file', () => {
-      expect(loader.getClassElements('dir/file', resolutionContext.parseTypescriptContents(`export { A as B, C as D, X } from './lib/A'`)))
+      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`export { A as B, C as D, X } from './lib/A'`)))
         .toMatchObject({
           exportedImportedElements: {
             B: {
               localName: 'A',
-              fileName: 'dir/lib/A',
+              fileName: Path.normalize('dir/lib/A'),
             },
             D: {
               localName: 'C',
-              fileName: 'dir/lib/A',
+              fileName: Path.normalize('dir/lib/A'),
             },
             X: {
               localName: 'X',
-              fileName: 'dir/lib/A',
+              fileName: Path.normalize('dir/lib/A'),
             },
           },
         });
     });
 
     it('for a mixed file', () => {
-      expect(loader.getClassElements('dir/file', resolutionContext.parseTypescriptContents(`
+      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`
 declare class A{}
 declare class B{}
 import {C} from './lib/C'
@@ -886,11 +887,11 @@ import {D as X} from './lib/D'
           importedElements: {
             C: {
               localName: 'C',
-              fileName: 'dir/lib/C',
+              fileName: Path.normalize('dir/lib/C'),
             },
             X: {
               localName: 'D',
-              fileName: 'dir/lib/D',
+              fileName: Path.normalize('dir/lib/D'),
             },
           },
         });
