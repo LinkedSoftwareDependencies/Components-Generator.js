@@ -1,3 +1,4 @@
+import * as Path from 'path';
 import { ContextParser, JsonLdContextNormalized } from 'jsonld-context-parser';
 import { ClassIndex, ClassLoaded, ClassReference } from '../../lib/parse/ClassIndex';
 import { ConstructorData } from '../../lib/parse/ConstructorLoader';
@@ -12,7 +13,7 @@ describe('ComponentConstructor', () => {
   let context: JsonLdContextNormalized;
 
   beforeEach(async() => {
-    classReference = <any> { localName: 'MyClass', fileName: '/docs/package/src/a/b/file-param' };
+    classReference = <any> { localName: 'MyClass', fileName: Path.normalize('/docs/package/src/a/b/file-param') };
 
     const contextParser = new ContextParser();
     const packageMetadata = {
@@ -33,7 +34,7 @@ describe('ComponentConstructor', () => {
       packageMetadata,
       contextConstructor,
       pathDestination: {
-        packageRootDirectory: '/docs/package',
+        packageRootDirectory: Path.normalize('/docs/package'),
         originalPath: 'src',
         replacementPath: 'components',
       },
@@ -52,8 +53,8 @@ describe('ComponentConstructor', () => {
 
     it('should handle a non-empty index for classes in the same file', async() => {
       (<any> ctor).classReferences = {
-        MyClass1: { localName: 'MyClass1', fileName: '/docs/package/src/b/file' },
-        MyClass2: { localName: 'MyClass2', fileName: '/docs/package/src/b/file' },
+        MyClass1: { localName: 'MyClass1', fileName: Path.normalize('/docs/package/src/b/file') },
+        MyClass2: { localName: 'MyClass2', fileName: Path.normalize('/docs/package/src/b/file') },
       };
       (<any> ctor).classConstructors = <ClassIndex<ConstructorData<ParameterRangeResolved>>> {
         MyClass1: {
@@ -79,7 +80,7 @@ describe('ComponentConstructor', () => {
         },
       };
       expect(await ctor.constructComponents()).toEqual({
-        '/docs/package/components/b/file': {
+        [Path.normalize('/docs/package/components/b/file')]: {
           '@context': [
             'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
           ],
@@ -124,8 +125,8 @@ describe('ComponentConstructor', () => {
 
     it('should handle a non-empty index for classes in different files', async() => {
       (<any> ctor).classReferences = {
-        MyClass1: { localName: 'MyClass1', fileName: '/docs/package/src/file1' },
-        MyClass2: { localName: 'MyClass2', fileName: '/docs/package/src/b/file2' },
+        MyClass1: { localName: 'MyClass1', fileName: Path.normalize('/docs/package/src/file1') },
+        MyClass2: { localName: 'MyClass2', fileName: Path.normalize('/docs/package/src/b/file2') },
       };
       (<any> ctor).classConstructors = <ClassIndex<ConstructorData<ParameterRangeResolved>>> {
         MyClass1: {
@@ -151,7 +152,7 @@ describe('ComponentConstructor', () => {
         },
       };
       expect(await ctor.constructComponents()).toEqual({
-        '/docs/package/components/file1': {
+        [Path.normalize('/docs/package/components/file1')]: {
           '@context': [
             'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
           ],
@@ -166,7 +167,7 @@ describe('ComponentConstructor', () => {
             },
           ],
         },
-        '/docs/package/components/b/file2': {
+        [Path.normalize('/docs/package/components/b/file2')]: {
           '@context': [
             'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
           ],
@@ -218,9 +219,9 @@ describe('ComponentConstructor', () => {
 
     it('should handle a non-empty index', async() => {
       expect(await ctor.constructComponentsIndex(<any> {
-        '/docs/package/components/file1': true,
-        '/docs/package/components/file2': true,
-        '/docs/package/components/file/a/b/c': true,
+        [Path.normalize('/docs/package/components/file1')]: true,
+        [Path.normalize('/docs/package/components/file2')]: true,
+        [Path.normalize('/docs/package/components/file/a/b/c')]: true,
       }, 'jsonld')).toEqual({
         '@context': [
           'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
@@ -261,8 +262,26 @@ describe('ComponentConstructor', () => {
     });
 
     it('should handle a valid path', () => {
-      expect(ctor.getPathRelative('/docs/package/src/a/b/myFile'))
+      expect(ctor.getPathRelative(Path.normalize('/docs/package/src/a/b/myFile')))
         .toEqual('a/b/myFile');
+    });
+
+    it('should generate the correct path for POSIX path implementations.', () => {
+      const sep = Path.sep;
+      (<any> Path).sep = Path.posix.sep;
+      (<any> ctor).pathDestination.packageRootDirectory = Path.posix.normalize('/docs/package');
+      expect(ctor.getPathRelative(Path.posix.normalize('/docs/package/src/a/b/myFile')))
+        .toEqual('a/b/myFile');
+      (<any> Path).sep = sep;
+    });
+
+    it('should generate the correct path for win32 path implementations.', () => {
+      const sep = Path.sep;
+      (<any> Path).sep = Path.win32.sep;
+      (<any> ctor).pathDestination.packageRootDirectory = Path.win32.normalize('/docs/package');
+      expect(ctor.getPathRelative(Path.win32.normalize('/docs/package/src/a/b/myFile')))
+        .toEqual('a/b/myFile');
+      (<any> Path).sep = sep;
     });
   });
 
@@ -273,8 +292,8 @@ describe('ComponentConstructor', () => {
     });
 
     it('should handle a valid path', () => {
-      expect(ctor.getPathDestination('/docs/package/src/myFile'))
-        .toEqual('/docs/package/components/myFile');
+      expect(ctor.getPathDestination(Path.normalize('/docs/package/src/myFile')))
+        .toEqual(Path.normalize('/docs/package/components/myFile'));
     });
   });
 
@@ -350,7 +369,10 @@ describe('ComponentConstructor', () => {
     });
 
     it('should handle a component with super class', () => {
-      classReference.superClass = <any> { localName: 'SuperClass', fileName: '/docs/package/src/a/b/SuperFile' };
+      classReference.superClass = <any> {
+        localName: 'SuperClass',
+        fileName: Path.normalize('/docs/package/src/a/b/SuperFile'),
+      };
       expect(ctor.constructComponent(context, classReference, {
         parameters: [],
       })).toEqual({
@@ -389,7 +411,7 @@ describe('ComponentConstructor', () => {
     it('should return a compacted class IRI', () => {
       expect(ctor.classNameToId(context, {
         localName: 'MyClass',
-        fileName: '/docs/package/src/a/b/MyOwnClass',
+        fileName: Path.normalize('/docs/package/src/a/b/MyOwnClass'),
       })).toEqual('mp:a/b/MyOwnClass#MyClass');
     });
   });
@@ -398,7 +420,7 @@ describe('ComponentConstructor', () => {
     it('should return a compacted field IRI', () => {
       expect(ctor.fieldNameToId(context, {
         localName: 'MyClass',
-        fileName: '/docs/package/src/a/b/MyOwnClass',
+        fileName: Path.normalize('/docs/package/src/a/b/MyOwnClass'),
       }, 'field')).toEqual('mp:a/b/MyOwnClass#MyClass_field');
     });
   });
@@ -555,7 +577,8 @@ describe('ComponentConstructor', () => {
       const parameters: ParameterDefinition[] = [];
       expect(ctor.parameterDataToConstructorArgument(context, classReference, {
         name: 'field',
-        range: { type: 'class', value: { localName: 'ClassParam', fileName: '/docs/package/src/a/b/file-param' }},
+        range: { type: 'class',
+          value: { localName: 'ClassParam', fileName: Path.normalize('/docs/package/src/a/b/file-param') }},
         required: true,
         unique: true,
         comment: 'Hi',
@@ -760,7 +783,10 @@ describe('ComponentConstructor', () => {
 
   describe('constructParameterClass', () => {
     it('should construct a class parameter definition', () => {
-      const rangeValue: ClassReference = { localName: 'ClassParam', fileName: '/docs/package/src/a/b/file-param' };
+      const rangeValue: ClassReference = {
+        localName: 'ClassParam',
+        fileName: Path.normalize('/docs/package/src/a/b/file-param'),
+      };
       expect(ctor.constructParameterClass(context, classReference, {
         name: 'field',
         range: { type: 'class', value: rangeValue },

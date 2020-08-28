@@ -1,3 +1,4 @@
+import * as Path from 'path';
 import { ContextParser, JsonLdContextNormalized } from 'jsonld-context-parser';
 import { ClassIndex, ClassLoaded, ClassReference } from '../parse/ClassIndex';
 import { ConstructorData } from '../parse/ConstructorLoader';
@@ -77,7 +78,7 @@ export class ComponentConstructor {
       '@type': 'Module',
       requireName: this.packageMetadata.name,
       import: Object.keys(definitions)
-        .map(pathAbsolute => `${pathAbsolute.slice(this.pathDestination.packageRootDirectory.length)}.${fileExtension}`)
+        .map(pathAbsolute => this.getPathRelative(`${pathAbsolute}.${fileExtension}`))
         .map(pathRelative => this.getImportPathIri(pathRelative))
         .map(iri => context.compactIri(iri)),
     };
@@ -92,9 +93,12 @@ export class ComponentConstructor {
       throw new Error(`Tried to reference a file outside the current package: ${sourcePath}`);
     }
 
-    return sourcePath
-      .slice(this.pathDestination.packageRootDirectory.length + 1)
-      .replace(`${this.pathDestination.originalPath}/`, '');
+    let strippedPath = sourcePath.slice(this.pathDestination.packageRootDirectory.length + 1);
+    if (Path.sep !== '/') {
+      strippedPath = strippedPath.split(Path.sep).join('/');
+    }
+
+    return strippedPath.replace(`${this.pathDestination.originalPath}/`, '');
   }
 
   /**

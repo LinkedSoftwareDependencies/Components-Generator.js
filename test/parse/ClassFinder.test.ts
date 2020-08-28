@@ -1,3 +1,4 @@
+import * as Path from 'path';
 import { ClassFinder } from '../../lib/parse/ClassFinder';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
@@ -19,7 +20,7 @@ describe('ClassFinder', () => {
         .toEqual({
           named: {
             Class: {
-              fileName: 'lib/B',
+              fileName: Path.normalize('lib/B'),
               localName: 'B',
             },
           },
@@ -35,7 +36,7 @@ describe('ClassFinder', () => {
         .toEqual({
           named: {},
           unnamed: [
-            'lib/B',
+            Path.normalize('lib/B'),
           ],
         });
     });
@@ -72,20 +73,20 @@ export * from './lib/D';
         .toEqual({
           named: {
             Class1: {
-              fileName: 'lib/A',
+              fileName: Path.normalize('lib/A'),
               localName: 'A',
             },
             Class2: {
-              fileName: 'lib/B',
+              fileName: Path.normalize('lib/B'),
               localName: 'B',
             },
             Class3: {
-              fileName: 'lib/C',
+              fileName: Path.normalize('lib/C'),
               localName: 'C',
             },
           },
           unnamed: [
-            'lib/D',
+            Path.normalize('lib/D'),
           ],
         });
     });
@@ -180,7 +181,7 @@ export {A};
         .toEqual({
           named: {
             A: {
-              fileName: 'lib/A',
+              fileName: Path.normalize('lib/A'),
               localName: 'X',
             },
           },
@@ -217,13 +218,13 @@ export {A};
   describe('getPackageExports', () => {
     it('for a single named export', async() => {
       resolutionContext.contentsOverrides = {
-        'package-simple-named/index.d.ts': `export {A as B} from './lib/A';`,
-        'package-simple-named/lib/A.d.ts': 'export class A {}',
+        [Path.normalize('package-simple-named/index.d.ts')]: `export {A as B} from './lib/A';`,
+        [Path.normalize('package-simple-named/lib/A.d.ts')]: 'export class A {}',
       };
       expect(await parser.getPackageExports('package-simple-named'))
         .toEqual({
           B: {
-            fileName: 'package-simple-named/lib/A',
+            fileName: Path.normalize('package-simple-named/lib/A'),
             localName: 'A',
           },
         });
@@ -231,13 +232,13 @@ export {A};
 
     it('for a single unnamed export', async() => {
       resolutionContext.contentsOverrides = {
-        'package-simple-unnamed/index.d.ts': `export * from './lib/A';`,
-        'package-simple-unnamed/lib/A.d.ts': 'export class A {}',
+        [Path.normalize('package-simple-unnamed/index.d.ts')]: `export * from './lib/A';`,
+        [Path.normalize('package-simple-unnamed/lib/A.d.ts')]: 'export class A {}',
       };
       expect(await parser.getPackageExports('package-simple-unnamed'))
         .toEqual({
           A: {
-            fileName: 'package-simple-unnamed/lib/A',
+            fileName: Path.normalize('package-simple-unnamed/lib/A'),
             localName: 'A',
           },
         });
@@ -245,21 +246,21 @@ export {A};
 
     it('for a multiple exports', async() => {
       resolutionContext.contentsOverrides = {
-        'package-multiple/index.d.ts': `
+        [Path.normalize('package-multiple/index.d.ts')]: `
 export {A as B} from './lib/A';
 export * from './lib/C';
 `,
-        'package-multiple/lib/A.d.ts': 'export class A {}',
-        'package-multiple/lib/C.d.ts': 'export class C {}',
+        [Path.normalize('package-multiple/lib/A.d.ts')]: 'export class A {}',
+        [Path.normalize('package-multiple/lib/C.d.ts')]: 'export class C {}',
       };
       expect(await parser.getPackageExports('package-multiple'))
         .toEqual({
           B: {
-            fileName: 'package-multiple/lib/A',
+            fileName: Path.normalize('package-multiple/lib/A'),
             localName: 'A',
           },
           C: {
-            fileName: 'package-multiple/lib/C',
+            fileName: Path.normalize('package-multiple/lib/C'),
             localName: 'C',
           },
         });
@@ -267,22 +268,22 @@ export * from './lib/C';
 
     it('for nested exports', async() => {
       resolutionContext.contentsOverrides = {
-        'package-nested/index.d.ts': `export * from './lib/A';`,
-        'package-nested/lib/A.d.ts': `
+        [Path.normalize('package-nested/index.d.ts')]: `export * from './lib/A';`,
+        [Path.normalize('package-nested/lib/A.d.ts')]: `
 export * from './sub1/B'
 export * from './sub2/C'
 `,
-        'package-nested/lib/sub1/B.d.ts': 'export class B {}',
-        'package-nested/lib/sub2/C.d.ts': 'export class C {}',
+        [Path.normalize('package-nested/lib/sub1/B.d.ts')]: 'export class B {}',
+        [Path.normalize('package-nested/lib/sub2/C.d.ts')]: 'export class C {}',
       };
       expect(await parser.getPackageExports('package-nested'))
         .toEqual({
           B: {
-            fileName: 'package-nested/lib/sub1/B',
+            fileName: Path.normalize('package-nested/lib/sub1/B'),
             localName: 'B',
           },
           C: {
-            fileName: 'package-nested/lib/sub2/C',
+            fileName: Path.normalize('package-nested/lib/sub2/C'),
             localName: 'C',
           },
         });

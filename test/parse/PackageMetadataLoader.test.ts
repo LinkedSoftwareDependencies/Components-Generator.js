@@ -1,3 +1,4 @@
+import * as Path from 'path';
 import { PackageMetadataLoader } from '../../lib/parse/PackageMetadataLoader';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
@@ -13,12 +14,12 @@ describe('PackageMetadataLoader', () => {
     it('should error on a non-existing package.json', async() => {
       resolutionContext.contentsOverrides = {};
       await expect(loader.load('/')).rejects
-        .toThrow(new Error('Could not find mocked path for /package.json'));
+        .toThrow(new Error(`Could not find mocked path for ${Path.normalize('/package.json')}`));
     });
 
     it('should return with all required entries', async() => {
       resolutionContext.contentsOverrides = {
-        '/package.json': `{
+        [Path.normalize('/package.json')]: `{
   "name": "@solid/community-server",
   "version": "1.2.3",
   "lsd:module": "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server",
@@ -33,7 +34,7 @@ describe('PackageMetadataLoader', () => {
 }`,
       };
       expect(await loader.load('/')).toEqual({
-        componentsPath: '/components/components.jsonld',
+        componentsPath: Path.normalize('/components/components.jsonld'),
         contexts: {
           'https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/components/context.jsonld':
             'components/context.jsonld',
@@ -50,15 +51,15 @@ describe('PackageMetadataLoader', () => {
 
     it('should error on invalid JSON', async() => {
       resolutionContext.contentsOverrides = {
-        '/package.json': `{`,
+        [Path.normalize('/package.json')]: `{`,
       };
       await expect(loader.load('/')).rejects
-        .toThrow(new Error('Invalid package: Syntax error in /package.json: Unexpected end of JSON input'));
+        .toThrow(new Error(`Invalid package: Syntax error in ${Path.normalize('/package.json')}: Unexpected end of JSON input`));
     });
 
     it('should error when lsd:module is missing', async() => {
       resolutionContext.contentsOverrides = {
-        '/package.json': `{
+        [Path.normalize('/package.json')]: `{
   "name": "@solid/community-server",
   "lsd:components": "components/components.jsonld",
   "lsd:contexts": {
@@ -67,12 +68,12 @@ describe('PackageMetadataLoader', () => {
 }`,
       };
       await expect(loader.load('/')).rejects
-        .toThrow(new Error('Invalid package: Missing \'lsd:module\' IRI in /package.json'));
+        .toThrow(new Error(`Invalid package: Missing 'lsd:module' IRI in ${Path.normalize('/package.json')}`));
     });
 
     it('should error when lsd:components is missing', async() => {
       resolutionContext.contentsOverrides = {
-        '/package.json': `{
+        [Path.normalize('/package.json')]: `{
   "name": "@solid/community-server",
   "lsd:module": "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server",
   "lsd:contexts": {
@@ -81,24 +82,24 @@ describe('PackageMetadataLoader', () => {
 }`,
       };
       await expect(loader.load('/')).rejects
-        .toThrow(new Error('Invalid package: Missing \'lsd:components\' in /package.json'));
+        .toThrow(new Error(`Invalid package: Missing 'lsd:components' in ${Path.normalize('/package.json')}`));
     });
 
     it('should error when lsd:contexts is missing', async() => {
       resolutionContext.contentsOverrides = {
-        '/package.json': `{
+        [Path.normalize('/package.json')]: `{
   "name": "@solid/community-server",
   "lsd:module": "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server",
   "lsd:components": "components/components.jsonld"
 }`,
       };
       await expect(loader.load('/')).rejects
-        .toThrow(new Error('Invalid package: Missing \'lsd:contexts\' in /package.json'));
+        .toThrow(new Error(`Invalid package: Missing 'lsd:contexts' in ${Path.normalize('/package.json')}`));
     });
 
     it('should error when lsd:importPaths is missing', async() => {
       resolutionContext.contentsOverrides = {
-        '/package.json': `{
+        [Path.normalize('/package.json')]: `{
   "name": "@solid/community-server",
   "lsd:module": "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server",
   "lsd:components": "components/components.jsonld",
@@ -111,7 +112,7 @@ describe('PackageMetadataLoader', () => {
 }`,
       };
       await expect(loader.load('/')).rejects
-        .toThrow(new Error('Invalid package: Missing \'lsd:importPaths\' in /package.json'));
+        .toThrow(new Error(`Invalid package: Missing 'lsd:importPaths' in ${Path.normalize('/package.json')}`));
     });
   });
 });
