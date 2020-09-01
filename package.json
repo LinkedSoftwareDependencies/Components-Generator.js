@@ -71,7 +71,7 @@
   ],
   "dependencies": {
     "@types/lru-cache": "^5.1.0",
-    "@typescript-eslint/typescript-estree": "^3.10.1",
+    "@typescript-eslint/typescript-estree": "^4.0.0",
     "comment-parser": "^0.7.6",
     "jsonld-context-parser": "^2.0.2",
     "lru-cache": "^6.0.0",
