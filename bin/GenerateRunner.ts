@@ -33,6 +33,9 @@ if (args.help) {
   });
   generator
     .generateComponents()
-    .catch((error: Error) => process.stderr.write(`${error.message}\n`));
+    .catch((error: Error) => {
+      process.stderr.write(`${error.message}\n`);
+      process.exit(1);
+    });
 }
 
