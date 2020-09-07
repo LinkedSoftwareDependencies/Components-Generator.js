@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.1.0"></a>
+## [v1.1.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v1.0.1...v1.1.0) - 2020-09-07
+
+### Added
+* [Handle generically typed parameters](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/3344ea9ff1d023a9a14efaac330d79097ac444d9)
+
+### Fixed
+* [Fix exiting with code 0 on error](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/157a9f5f52f16eb4b1f8a943b4111ef4f7923353)
+
 <a name="v1.0.1"></a>
 ## [v1.0.1](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v1.0.0...v1.0.1) - 2020-08-28
 
