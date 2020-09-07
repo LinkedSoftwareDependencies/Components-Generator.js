@@ -609,6 +609,51 @@ export interface A{
       await expect(async() => await getFieldRange('fieldA', {}))
         .rejects.toThrow(new Error('Missing field type on fieldA in A at file'));
     });
+
+    it('should get the range of a generic type', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export class A<T extends MyClass>{
+  constructor(fieldA: T) {}
+}`,
+      };
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
+      const field: Identifier = <any> (<MethodDefinition> constructorLoader.getConstructor(classLoaded))
+        .value.params[0];
+      const parameterLoader = new ParameterLoader({ classLoaded });
+
+      expect(parameterLoader.getFieldRange(field, {}))
+        .toEqual({ type: 'interface', value: 'MyClass' });
+    });
+
+    it('should get the range of a generic raw type', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export class A<T extends string>{
+  constructor(fieldA: T) {}
+}`,
+      };
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
+      const field: Identifier = <any> (<MethodDefinition> constructorLoader.getConstructor(classLoaded))
+        .value.params[0];
+      const parameterLoader = new ParameterLoader({ classLoaded });
+
+      expect(parameterLoader.getFieldRange(field, {}))
+        .toEqual({ type: 'raw', value: 'string' });
+    });
+
+    it('should fail to get the range of an untyped generic type', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export class A<T>{
+  constructor(fieldA: T) {}
+}`,
+      };
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
+      const field: Identifier = <any> (<MethodDefinition> constructorLoader.getConstructor(classLoaded))
+        .value.params[0];
+      const parameterLoader = new ParameterLoader({ classLoaded });
+
+      expect(() => parameterLoader.getFieldRange(field, {}))
+        .toThrow(new Error('Found untyped generic field type at fieldA in A at file'));
+    });
   });
 
   describe('getFieldDefault', () => {

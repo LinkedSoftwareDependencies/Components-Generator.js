@@ -155,6 +155,17 @@ export class ParameterLoader {
               throw new Error(`Found invalid Array field type at ${this.getFieldName(field)
               } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
             default:
+              // First check if the type is be a generic type
+              if (typeNode.typeName.name in this.classLoaded.generics) {
+                const genericProperties = this.classLoaded.generics[typeNode.typeName.name];
+                if (!genericProperties.type) {
+                  throw new Error(`Found untyped generic field type at ${this.getFieldName(field)
+                  } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
+                }
+                return this.getRangeFromTypeNode(genericProperties.type, field);
+              }
+
+              // Otherwise, assume we have an interface/class parameter
               return { type: 'interface', value: typeNode.typeName.name };
           }
         }

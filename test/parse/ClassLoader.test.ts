@@ -655,6 +655,148 @@ declare interface A{}
           abstract: true,
         });
     });
+
+    it('for a declared class with one generic type', async() => {
+      loader = new ClassLoader({
+        resolutionContext: new ResolutionContextMocked({
+          'file.d.ts': `declare class A<T extends string>{}`,
+        }),
+      });
+      expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+        .toMatchObject({
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'ClassDeclaration',
+          },
+          generics: {
+            T: { type: { type: 'TSStringKeyword' }},
+          },
+        });
+    });
+
+    it('for a declared class with one untyped generic type', async() => {
+      loader = new ClassLoader({
+        resolutionContext: new ResolutionContextMocked({
+          'file.d.ts': `declare class A<T>{}`,
+        }),
+      });
+      expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+        .toMatchObject({
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'ClassDeclaration',
+          },
+          generics: {
+            T: {},
+          },
+        });
+    });
+
+    it('for a declared class with one generic type with default', async() => {
+      loader = new ClassLoader({
+        resolutionContext: new ResolutionContextMocked({
+          'file.d.ts': `declare class A<T extends string = number>{}`,
+        }),
+      });
+      expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+        .toMatchObject({
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'ClassDeclaration',
+          },
+          generics: {
+            T: { type: { type: 'TSStringKeyword' }},
+          },
+        });
+    });
+
+    it('for an exported class with one generic type', async() => {
+      loader = new ClassLoader({
+        resolutionContext: new ResolutionContextMocked({
+          'file.d.ts': `export class A<T extends string>{}`,
+        }),
+      });
+      expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+        .toMatchObject({
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'ClassDeclaration',
+          },
+          generics: {
+            T: { type: { type: 'TSStringKeyword' }},
+          },
+        });
+    });
+
+    it('for a declared interface with one generic type', async() => {
+      loader = new ClassLoader({
+        resolutionContext: new ResolutionContextMocked({
+          'file.d.ts': `declare interface A<T extends string>{}`,
+        }),
+      });
+      expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+        .toMatchObject({
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'TSInterfaceDeclaration',
+          },
+          generics: {
+            T: { type: { type: 'TSStringKeyword' }},
+          },
+        });
+    });
+
+    it('for an exported interface with one generic type', async() => {
+      loader = new ClassLoader({
+        resolutionContext: new ResolutionContextMocked({
+          'file.d.ts': `export interface A<T extends string>{}`,
+        }),
+      });
+      expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+        .toMatchObject({
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'TSInterfaceDeclaration',
+          },
+          generics: {
+            T: { type: { type: 'TSStringKeyword' }},
+          },
+        });
+    });
+
+    it('for a declared class with multiple generic types', async() => {
+      loader = new ClassLoader({
+        resolutionContext: new ResolutionContextMocked({
+          'file.d.ts': `declare class A<T extends string, U extends MyClass, V extends number>{}`,
+        }),
+      });
+      expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+        .toMatchObject({
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'ClassDeclaration',
+          },
+          generics: {
+            T: { type: { type: 'TSStringKeyword' }},
+            U: { type: { type: 'TSTypeReference', typeName: { name: 'MyClass' }}},
+            V: { type: { type: 'TSNumberKeyword' }},
+          },
+        });
+    });
   });
 
   describe('loadClassElements', () => {
@@ -674,33 +816,35 @@ declare interface A{}
   });
 
   describe('getClassElements', () => {
+    const fileName = Path.normalize('dir/file');
+
     it('for an empty file', () => {
-      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(``)))
+      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(``)))
         .toMatchObject({});
     });
 
     it('for a file with a const', () => {
-      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`const a = "a"`)))
+      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`const a = "a"`)))
         .toMatchObject({});
     });
 
     it('for a file with a const export', () => {
-      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`export const foo = "a";`)))
+      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`export const foo = "a";`)))
         .toMatchObject({});
     });
 
     it('for a file with a namespace import', () => {
-      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`import polygons = Shapes.Polygons`)))
+      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`import polygons = Shapes.Polygons`)))
         .toMatchObject({});
     });
 
     it('for a file with a default import', () => {
-      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`import A from './lib/A'`)))
+      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`import A from './lib/A'`)))
         .toMatchObject({});
     });
 
     it('for a single declare', () => {
-      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`declare class A{}`)))
+      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`declare class A{}`)))
         .toMatchObject({
           declaredClasses: {
             A: {
@@ -711,7 +855,7 @@ declare interface A{}
     });
 
     it('for a single declare abstract', () => {
-      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`declare abstract class A{}`)))
+      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`declare abstract class A{}`)))
         .toMatchObject({
           declaredClasses: {
             A: {
@@ -722,7 +866,7 @@ declare interface A{}
     });
 
     it('for a single declare interface', () => {
-      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`declare interface A{}`)))
+      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`declare interface A{}`)))
         .toMatchObject({
           declaredInterfaces: {
             A: {
@@ -733,7 +877,7 @@ declare interface A{}
     });
 
     it('for a single import', () => {
-      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`import {A as B} from './lib/A'`)))
+      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`import {A as B} from './lib/A'`)))
         .toMatchObject({
           importedElements: {
             B: {
@@ -745,7 +889,7 @@ declare interface A{}
     });
 
     it('for a single named export', () => {
-      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`export class A{}`)))
+      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`export class A{}`)))
         .toMatchObject({
           exportedClasses: {
             A: {
@@ -756,7 +900,29 @@ declare interface A{}
     });
 
     it('for a single named export abstract', () => {
-      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`export abstract class A{}`)))
+      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`export abstract class A{}`)))
+        .toMatchObject({
+          exportedClasses: {
+            A: {
+              type: 'ClassDeclaration',
+            },
+          },
+        });
+    });
+
+    it('for a single named generic export', () => {
+      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`export class A<T extends string>{}`)))
+        .toMatchObject({
+          exportedClasses: {
+            A: {
+              type: 'ClassDeclaration',
+            },
+          },
+        });
+    });
+
+    it('for a single named generic export with default', () => {
+      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`export class A<T extends string = string>{}`)))
         .toMatchObject({
           exportedClasses: {
             A: {
@@ -767,7 +933,7 @@ declare interface A{}
     });
 
     it('for a single named interface export', () => {
-      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`export interface A{}`)))
+      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`export interface A{}`)))
         .toMatchObject({
           exportedInterfaces: {
             A: {
@@ -778,14 +944,14 @@ declare interface A{}
     });
 
     it('for export all', () => {
-      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`export * from './lib/A'`)))
+      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`export * from './lib/A'`)))
         .toMatchObject({
           exportedImportedAll: [ Path.normalize('dir/lib/A') ],
         });
     });
 
     it('for export all without source', () => {
-      expect(loader.getClassElements(Path.normalize('dir/file'), <AST<TSESTreeOptions>> {
+      expect(loader.getClassElements(fileName, <AST<TSESTreeOptions>> {
         body: [
           {
             type: AST_NODE_TYPES.ExportAllDeclaration,
@@ -797,7 +963,7 @@ declare interface A{}
     });
 
     it('for export all without type', () => {
-      expect(loader.getClassElements(Path.normalize('dir/file'), <AST<TSESTreeOptions>> {
+      expect(loader.getClassElements(fileName, <AST<TSESTreeOptions>> {
         body: [
           {
             type: AST_NODE_TYPES.ExportAllDeclaration,
@@ -809,7 +975,7 @@ declare interface A{}
     });
 
     it('for export all without value', () => {
-      expect(loader.getClassElements(Path.normalize('dir/file'), <AST<TSESTreeOptions>> {
+      expect(loader.getClassElements(fileName, <AST<TSESTreeOptions>> {
         body: [
           {
             type: AST_NODE_TYPES.ExportAllDeclaration,
@@ -823,12 +989,12 @@ declare interface A{}
     });
 
     it('for a single named export without name should error', () => {
-      expect(() => loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`export class{}`)))
-        .toThrow(new Error(`Export parsing failure: missing exported class name in ${Path.normalize('dir/file')} on line 1 column 7`));
+      expect(() => loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`export class{}`)))
+        .toThrow(new Error(`Export parsing failure: missing exported class name in ${fileName} on line 1 column 7`));
     });
 
     it('for a single export without target', () => {
-      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`export { A as B }`)))
+      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`export { A as B }`)))
         .toMatchObject({
           exportedUnknowns: {
             B: 'A',
@@ -837,7 +1003,7 @@ declare interface A{}
     });
 
     it('for a single export from file', () => {
-      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`export { A as B } from './lib/A'`)))
+      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`export { A as B } from './lib/A'`)))
         .toMatchObject({
           exportedImportedElements: {
             B: {
@@ -849,7 +1015,7 @@ declare interface A{}
     });
 
     it('for multiple exports from file', () => {
-      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`export { A as B, C as D, X } from './lib/A'`)))
+      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`export { A as B, C as D, X } from './lib/A'`)))
         .toMatchObject({
           exportedImportedElements: {
             B: {
@@ -869,7 +1035,7 @@ declare interface A{}
     });
 
     it('for a mixed file', () => {
-      expect(loader.getClassElements(Path.normalize('dir/file'), resolutionContext.parseTypescriptContents(`
+      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`
 declare class A{}
 declare class B{}
 import {C} from './lib/C'

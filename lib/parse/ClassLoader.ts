@@ -1,8 +1,8 @@
 import * as Path from 'path';
 import { ClassDeclaration, TSInterfaceDeclaration } from '@typescript-eslint/types/dist/ts-estree';
-import { AST, TSESTreeOptions, AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
+import { AST, AST_NODE_TYPES, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
 import { ResolutionContext } from '../resolution/ResolutionContext';
-import { ClassLoaded, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
+import { ClassLoaded, ClassReference, ClassReferenceLoaded, GenericTypes, InterfaceLoaded } from './ClassIndex';
 import { CommentLoader } from './CommentLoader';
 
 /**
@@ -77,23 +77,27 @@ export class ClassLoader {
 
     // If the class has been exported in this file, return directly
     if (classReference.localName in exportedClasses) {
+      const declaration = exportedClasses[classReference.localName];
       return <any> this.enhanceLoadedWithComment(<ClassLoaded> {
         type: 'class',
         ...classReference,
-        declaration: exportedClasses[classReference.localName],
+        declaration,
         ast,
-        abstract: exportedClasses[classReference.localName].abstract,
+        abstract: declaration.abstract,
+        generics: this.collectGenericTypes(declaration),
       });
     }
 
     // If the class has been declared in this file, return directly
     if (classReference.localName in declaredClasses) {
+      const declaration = declaredClasses[classReference.localName];
       return <any> this.enhanceLoadedWithComment(<ClassLoaded> {
         type: 'class',
         ...classReference,
-        declaration: declaredClasses[classReference.localName],
+        declaration,
         ast,
-        abstract: declaredClasses[classReference.localName].abstract,
+        abstract: declaration.abstract,
+        generics: this.collectGenericTypes(declaration),
       });
     }
 
@@ -101,21 +105,25 @@ export class ClassLoader {
     if (considerInterfaces) {
       // If the interface has been exported in this file, return directly
       if (classReference.localName in exportedInterfaces) {
+        const declaration = exportedInterfaces[classReference.localName];
         return <any> this.enhanceLoadedWithComment(<InterfaceLoaded> {
           type: 'interface',
           ...classReference,
-          declaration: exportedInterfaces[classReference.localName],
+          declaration,
           ast,
+          generics: this.collectGenericTypes(declaration),
         });
       }
 
       // If the interface has been declared in this file, return directly
       if (classReference.localName in declaredInterfaces) {
+        const declaration = declaredInterfaces[classReference.localName];
         return <any> this.enhanceLoadedWithComment(<InterfaceLoaded> {
           type: 'interface',
           ...classReference,
-          declaration: declaredInterfaces[classReference.localName],
+          declaration,
           ast,
+          generics: this.collectGenericTypes(declaration),
         });
       }
     }
@@ -141,6 +149,20 @@ export class ClassLoader {
     }
 
     throw new Error(`Could not load ${considerInterfaces ? 'class or interface' : 'class'} ${classReference.localName} from ${classReference.fileName}`);
+  }
+
+  /**
+   * Create a hash of generic types in the given class declaration.
+   * @param classDeclaration A class or interface declaration.
+   */
+  public collectGenericTypes(classDeclaration: ClassDeclaration | TSInterfaceDeclaration): GenericTypes {
+    const genericTypes: GenericTypes = {};
+    if (classDeclaration.typeParameters) {
+      for (const param of classDeclaration.typeParameters.params) {
+        genericTypes[param.name.name] = { type: param.constraint };
+      }
+    }
+    return genericTypes;
   }
 
   /**
