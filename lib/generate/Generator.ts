@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import { ContextParser } from 'jsonld-context-parser';
 import { ClassFinder } from '../parse/ClassFinder';
 import { ClassIndexer } from '../parse/ClassIndexer';
