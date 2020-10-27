@@ -1,4 +1,4 @@
-import { MethodDefinition, TSTypeLiteral, Identifier } from '@typescript-eslint/types/dist/ts-estree';
+import { MethodDefinition, TSTypeLiteral, Identifier, TSIndexSignature } from '@typescript-eslint/types/dist/ts-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import { ClassReference, InterfaceLoaded } from '../../lib/parse/ClassIndex';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
@@ -52,6 +52,7 @@ export class A{
       expect(parameterLoader.loadConstructorFields(constructor)).toEqual({
         parameters: [
           {
+            type: 'field',
             name: 'fieldA',
             range: {
               type: 'raw',
@@ -75,6 +76,7 @@ export class A{
       expect(parameterLoader.loadConstructorFields(constructor)).toEqual({
         parameters: [
           {
+            type: 'field',
             comment: 'This is a great field!',
             name: 'fieldA',
             range: {
@@ -114,6 +116,7 @@ export class A{
       expect(parameterLoader.loadConstructorFields(constructor)).toEqual({
         parameters: [
           {
+            type: 'field',
             comment: 'This is a great field!',
             name: 'fieldA',
             range: {
@@ -124,6 +127,7 @@ export class A{
             unique: true,
           },
           {
+            type: 'field',
             comment: 'This is B',
             name: 'fieldB',
             range: {
@@ -144,6 +148,60 @@ export class A{
 }`);
       expect(() => parameterLoader.loadConstructorFields(constructor))
         .toThrow(new Error('Could not understand constructor parameter type AssignmentPattern in A at file'));
+    });
+
+    it('should handle a hash field', async() => {
+      const { constructor, parameterLoader } = await getConstructor(`
+export class A{
+  constructor(fieldA: { a: string }) {}
+}`);
+      expect(parameterLoader.loadConstructorFields(constructor)).toMatchObject({
+        parameters: [
+          {
+            name: 'fieldA',
+            range: {
+              type: 'hash',
+              value: {
+                members: [
+                  {
+                    key: {
+                      name: 'a',
+                      type: 'Identifier',
+                    },
+                  },
+                ],
+                type: 'TSTypeLiteral',
+              },
+            },
+            required: true,
+            type: 'field',
+            unique: true,
+          },
+        ],
+      });
+    });
+
+    it('should handle a hash field with indexed element', async() => {
+      const { constructor, parameterLoader } = await getConstructor(`
+export class A{
+  constructor(fieldA: { [key: string]: string }) {}
+}`);
+      expect(parameterLoader.loadConstructorFields(constructor)).toMatchObject({
+        parameters: [
+          {
+            name: 'fieldA',
+            range: {
+              type: 'hash',
+              value: {
+                type: 'TSTypeLiteral',
+              },
+            },
+            required: false,
+            type: 'field',
+            unique: false,
+          },
+        ],
+      });
     });
   });
 
@@ -185,6 +243,7 @@ export interface A{
 }`);
       expect(parameterLoader.loadInterfaceFields(iface)).toEqual([
         {
+          type: 'field',
           name: 'fieldA',
           range: { type: 'raw', value: 'boolean' },
           required: true,
@@ -216,6 +275,7 @@ export interface A{
 }`);
       expect(parameterLoader.loadInterfaceFields(iface)).toEqual([
         {
+          type: 'field',
           name: 'fieldA',
           comment: 'Hi',
           range: { type: 'override', value: 'number' },
@@ -232,6 +292,7 @@ export interface A{
 }`);
       expect(parameterLoader.loadInterfaceFields(iface)).toEqual([
         {
+          type: 'field',
           name: 'fieldA',
           range: { type: 'interface', value: 'MyClass' },
           required: true,
@@ -281,6 +342,7 @@ export interface A{
 }`);
       expect(parameterLoader.loadHashFields(hash)).toEqual([
         {
+          type: 'field',
           name: 'fieldA',
           range: { type: 'raw', value: 'boolean' },
           required: true,
@@ -300,6 +362,17 @@ export interface A{
       expect(parameterLoader.loadHashFields(hash)).toEqual([]);
     });
 
+    it('should handle an index signature that should be ignored', async() => {
+      const { hash, parameterLoader } = await getHash(`
+{
+  /**
+   * @ignored
+   */
+  [key: string]: boolean;
+}`);
+      expect(parameterLoader.loadHashFields(hash)).toEqual([]);
+    });
+
     it('should handle a simple field with comment', async() => {
       const { hash, parameterLoader } = await getHash(`
 {
@@ -312,6 +385,7 @@ export interface A{
 }`);
       expect(parameterLoader.loadHashFields(hash)).toEqual([
         {
+          type: 'field',
           name: 'fieldA',
           comment: 'Hi',
           range: { type: 'override', value: 'number' },
@@ -328,12 +402,95 @@ export interface A{
 }`);
       expect(parameterLoader.loadHashFields(hash)).toEqual([
         {
+          type: 'field',
           name: 'fieldA',
           range: { type: 'interface', value: 'MyClass' },
           required: true,
           unique: true,
         },
       ]);
+    });
+
+    it('should handle a string index signature with raw value', async() => {
+      const { hash, parameterLoader } = await getHash(`
+{
+  [key: string]: string;
+}`);
+      expect(parameterLoader.loadHashFields(hash)).toEqual([
+        {
+          type: 'index',
+          domain: 'string',
+          range: { type: 'raw', value: 'string' },
+        },
+      ]);
+    });
+
+    it('should handle a number index signature with raw value', async() => {
+      const { hash, parameterLoader } = await getHash(`
+{
+  [key: number]: string;
+}`);
+      expect(parameterLoader.loadHashFields(hash)).toEqual([
+        {
+          type: 'index',
+          domain: 'number',
+          range: { type: 'raw', value: 'string' },
+        },
+      ]);
+    });
+
+    it('should handle a number index signature with interface value', async() => {
+      const { hash, parameterLoader } = await getHash(`
+{
+  [key: number]: MyClass;
+}`);
+      expect(parameterLoader.loadHashFields(hash)).toEqual([
+        {
+          type: 'index',
+          domain: 'number',
+          range: { type: 'interface', value: 'MyClass' },
+        },
+      ]);
+    });
+
+    it('should handle a string index signature, and raw field', async() => {
+      const { hash, parameterLoader } = await getHash(`
+{
+  [key: string]: string;
+  something: string;
+}`);
+      expect(parameterLoader.loadHashFields(hash)).toEqual([
+        {
+          type: 'index',
+          domain: 'string',
+          range: { type: 'raw', value: 'string' },
+        },
+        {
+          type: 'field',
+          name: 'something',
+          range: { type: 'raw', value: 'string' },
+          required: true,
+          unique: true,
+        },
+      ]);
+    });
+
+    it('should error on no index signature', async() => {
+      const { hash, parameterLoader } = await getHash(`
+{
+  []: string;
+}`);
+      expect(() => parameterLoader.loadHashFields(hash))
+        .toThrow(new Error('Expected exactly one key in index signature in A at file'));
+    });
+
+    it('should error on multiple index signatures', async() => {
+      const { hash, parameterLoader } = await getHash(`
+{
+  [key1: string, key2: string]: string;
+}`);
+      expect(() => parameterLoader.loadHashFields(hash))
+        .toThrow(new Error('Expected exactly one key in index signature in A at file'));
     });
   });
 
@@ -355,6 +512,7 @@ export interface A{
         },
         optional: true,
       }, {})).toEqual({
+        type: 'field',
         name: 'fieldA',
         unique: false,
         required: false,
@@ -389,12 +547,106 @@ export interface A{
         default: '1.0',
         description: 'Hi',
       })).toEqual({
+        type: 'field',
         name: 'fieldA',
         unique: false,
         required: false,
         range: {
           type: 'override',
           value: 'float',
+        },
+        default: '1.0',
+        comment: 'Hi',
+      });
+    });
+  });
+
+  describe('loadIndex', () => {
+    it('should get required data', () => {
+      expect(loader.loadIndex(<any> {
+        type: AST_NODE_TYPES.TSIndexSignature,
+        parameters: [{
+          type: AST_NODE_TYPES.Identifier,
+          name: 'key',
+          typeAnnotation: {
+            typeAnnotation: {
+              type: AST_NODE_TYPES.TSArrayType,
+              elementType: {
+                type: AST_NODE_TYPES.TSTypeReference,
+                typeName: {
+                  type: AST_NODE_TYPES.Identifier,
+                  name: 'String',
+                },
+              },
+            },
+          },
+        }],
+        typeAnnotation: {
+          typeAnnotation: {
+            type: AST_NODE_TYPES.TSArrayType,
+            elementType: {
+              type: AST_NODE_TYPES.TSTypeReference,
+              typeName: {
+                type: AST_NODE_TYPES.Identifier,
+                name: 'Boolean',
+              },
+            },
+          },
+        },
+      }, {})).toEqual({
+        type: 'index',
+        domain: 'string',
+        range: {
+          type: 'raw',
+          value: 'boolean',
+        },
+      });
+    });
+
+    it('should also get optional data', () => {
+      expect(loader.loadIndex(<any> {
+        type: AST_NODE_TYPES.TSIndexSignature,
+        parameters: [{
+          type: AST_NODE_TYPES.Identifier,
+          name: 'key',
+          typeAnnotation: {
+            typeAnnotation: {
+              type: AST_NODE_TYPES.TSArrayType,
+              elementType: {
+                type: AST_NODE_TYPES.TSTypeReference,
+                typeName: {
+                  type: AST_NODE_TYPES.Identifier,
+                  name: 'String',
+                },
+              },
+            },
+          },
+        }],
+        typeAnnotation: {
+          typeAnnotation: {
+            type: AST_NODE_TYPES.TSArrayType,
+            elementType: {
+              type: AST_NODE_TYPES.TSTypeReference,
+              typeName: {
+                type: AST_NODE_TYPES.Identifier,
+                name: 'Boolean',
+              },
+            },
+          },
+        },
+      }, {
+        range: {
+          type: 'override',
+          value: 'string',
+        },
+        default: '1.0',
+        description: 'Hi',
+      })).toEqual({
+        type: 'index',
+        domain: 'string',
+        range: {
+          type: 'override',
+          value: 'string',
         },
         default: '1.0',
         comment: 'Hi',
@@ -453,6 +705,34 @@ export interface A{
         },
       })).toEqual(false);
     });
+
+    it('should return false when the type annotation is an indexed hash', () => {
+      expect(loader.isFieldUnique(<any> {
+        name: 'fieldA',
+        typeAnnotation: {
+          typeAnnotation: {
+            type: AST_NODE_TYPES.TSTypeLiteral,
+            members: [
+              { type: AST_NODE_TYPES.TSIndexSignature },
+            ],
+          },
+        },
+      })).toEqual(false);
+    });
+
+    it('should return true when the type annotation is a hash without index', () => {
+      expect(loader.isFieldUnique(<any> {
+        name: 'fieldA',
+        typeAnnotation: {
+          typeAnnotation: {
+            type: AST_NODE_TYPES.TSTypeLiteral,
+            members: [
+              { type: 'bla' },
+            ],
+          },
+        },
+      })).toEqual(true);
+    });
   });
 
   describe('isFieldRequired', () => {
@@ -470,6 +750,34 @@ export interface A{
       expect(loader.isFieldRequired(<any> {
         optional: true,
       })).toEqual(false);
+    });
+
+    it('should return false when the type annotation is an indexed hash', () => {
+      expect(loader.isFieldRequired(<any> {
+        name: 'fieldA',
+        typeAnnotation: {
+          typeAnnotation: {
+            type: AST_NODE_TYPES.TSTypeLiteral,
+            members: [
+              { type: AST_NODE_TYPES.TSIndexSignature },
+            ],
+          },
+        },
+      })).toEqual(false);
+    });
+
+    it('should return true when the type annotation is a hash without index', () => {
+      expect(loader.isFieldRequired(<any> {
+        name: 'fieldA',
+        typeAnnotation: {
+          typeAnnotation: {
+            type: AST_NODE_TYPES.TSTypeLiteral,
+            members: [
+              { type: 'bla' },
+            ],
+          },
+        },
+      })).toEqual(true);
     });
   });
 
@@ -551,12 +859,12 @@ export interface A{
 
     it('should error on an Array field type with no params', async() => {
       await expect(async() => await getFieldRange('fieldA: Array<>', {}))
-        .rejects.toThrow(new Error('Found invalid Array field type at fieldA in A at file'));
+        .rejects.toThrow(new Error('Found invalid Array field type at field fieldA in A at file'));
     });
 
     it('should error on an Array field type with too many params', async() => {
       await expect(async() => await getFieldRange('fieldA: Array<string, string>', {}))
-        .rejects.toThrow(new Error('Found invalid Array field type at fieldA in A at file'));
+        .rejects.toThrow(new Error('Found invalid Array field type at field fieldA in A at file'));
     });
 
     it('should error on a nested array', async() => {
@@ -652,7 +960,7 @@ export interface A{
       const parameterLoader = new ParameterLoader({ classLoaded });
 
       expect(() => parameterLoader.getFieldRange(field, {}))
-        .toThrow(new Error('Found untyped generic field type at fieldA in A at file'));
+        .toThrow(new Error('Found untyped generic field type at field fieldA in A at file'));
     });
   });
 
@@ -673,6 +981,100 @@ export interface A{
 
     it('should be defined with description', () => {
       expect(loader.getFieldComment({ description: 'abc' })).toEqual('abc');
+    });
+  });
+
+  describe('getIndexDomain', () => {
+    const clazz: ClassReference = { localName: 'A', fileName: 'file' };
+    let parameterLoader: ParameterLoader;
+
+    async function getIndexDomain(fieldDeclaration: string):
+    Promise<'string' | 'number' | 'boolean'> {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export class A{
+  constructor(field: ${fieldDeclaration}) {}
+}`,
+      };
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
+      const field: any = <any>(<MethodDefinition>constructorLoader.getConstructor(classLoaded))
+        .value.params[0];
+      const indexSignature: TSIndexSignature = field.typeAnnotation.typeAnnotation.members[0];
+      parameterLoader = new ParameterLoader({ classLoaded });
+      return parameterLoader.getIndexDomain(indexSignature);
+    }
+
+    it('should get the domain of a raw Boolean', async() => {
+      expect(await getIndexDomain('{[k: Boolean]: string}'))
+        .toEqual('boolean');
+    });
+
+    it('should error on missing parameters', async() => {
+      await expect(async() => await getIndexDomain('{[]: string}'))
+        .rejects.toThrow(new Error('Expected exactly one key in index signature in A at file'));
+    });
+
+    it('should error on multiple parameters', async() => {
+      await expect(async() => await getIndexDomain('{[a: string, b: string]: string}'))
+        .rejects.toThrow(new Error('Expected exactly one key in index signature in A at file'));
+    });
+
+    it('should error on non-identifier keys', async() => {
+      await expect(async() => await getIndexDomain('{[...x]: string}'))
+        .rejects.toThrow(new Error('Only identifier-based index signatures are allowed in A at file'));
+    });
+
+    it('should error on missing key type', async() => {
+      await expect(async() => parameterLoader.getIndexDomain(<any> {
+        type: AST_NODE_TYPES.TSIndexSignature,
+        parameters: [{
+          type: AST_NODE_TYPES.Identifier,
+          name: 'key',
+        }],
+      }))
+        .rejects.toThrow(new Error('Missing key type annotation in index signature in A at file'));
+    });
+
+    it('should error on non-raw key types', async() => {
+      await expect(async() => await getIndexDomain('{[key: MyClass]: string}'))
+        .rejects.toThrow(new Error('Only raw types are allowed in index signature keys in A at file'));
+    });
+  });
+
+  describe('getIndexRange', () => {
+    const clazz: ClassReference = { localName: 'A', fileName: 'file' };
+
+    async function getIndexRange(fieldDeclaration: string, commentData: CommentData):
+    Promise<ParameterRangeUnresolved> {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export class A{
+  constructor(field: ${fieldDeclaration}) {}
+}`,
+      };
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
+      const field: any = <any>(<MethodDefinition>constructorLoader.getConstructor(classLoaded))
+        .value.params[0];
+      const indexSignature: TSIndexSignature = field.typeAnnotation.typeAnnotation.members[0];
+      const parameterLoader = new ParameterLoader({ classLoaded });
+      return parameterLoader.getIndexRange(indexSignature, commentData);
+    }
+
+    it('should get the range of a raw Boolean field type and ignore empty comment data', async() => {
+      expect(await getIndexRange('{[k: string]: Boolean}', {}))
+        .toEqual({ type: 'raw', value: 'boolean' });
+    });
+
+    it('should get the range of the comment data', async() => {
+      expect(await getIndexRange('{[k: string]: Boolean}', {
+        range: {
+          type: 'override',
+          value: 'number',
+        },
+      })).toEqual({ type: 'override', value: 'number' });
+    });
+
+    it('should error on a missing range', async() => {
+      await expect(async() => await getIndexRange('{[k: string]}', {}))
+        .rejects.toThrow(new Error('Missing field type on an index signature in A at file'));
     });
   });
 });

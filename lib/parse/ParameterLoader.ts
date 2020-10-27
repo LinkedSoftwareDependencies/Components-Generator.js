@@ -1,5 +1,12 @@
-import { MethodDefinition, TypeElement,
-  Identifier, TSTypeLiteral, TSPropertySignature, TypeNode } from '@typescript-eslint/types/dist/ts-estree';
+import {
+  Identifier,
+  MethodDefinition,
+  TSPropertySignature,
+  TSTypeLiteral,
+  TypeElement,
+  TypeNode,
+  TSIndexSignature,
+} from '@typescript-eslint/types/dist/ts-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import { ClassReference, ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
 import { CommentData, CommentLoader } from './CommentLoader';
@@ -26,7 +33,7 @@ export class ParameterLoader {
     const constructorCommentData = this.commentLoader.getCommentDataFromConstructor(constructor);
 
     // Load all constructor parameters
-    const parameters: ParameterData<ParameterRangeUnresolved>[] = [];
+    const parameters: ParameterDataField<ParameterRangeUnresolved>[] = [];
     for (const field of constructor.value.params) {
       if (field.type === AST_NODE_TYPES.Identifier) {
         const commentData = constructorCommentData[field.name] || {};
@@ -74,6 +81,12 @@ export class ParameterLoader {
           return this.loadField(typeElement, commentData);
         }
         return undefined;
+      case AST_NODE_TYPES.TSIndexSignature:
+        commentData = this.commentLoader.getCommentDataFromField(typeElement);
+        if (!commentData.ignored) {
+          return this.loadIndex(typeElement, commentData);
+        }
+        return undefined;
       default:
         throw new Error(`Unsupported field type ${typeElement.type} in ${this.classLoaded.localName} in ${this.classLoaded.fileName}`);
     }
@@ -85,9 +98,10 @@ export class ParameterLoader {
    * @param commentData Comment data about the given field.
    */
   public loadField(field: Identifier | TSPropertySignature, commentData: CommentData):
-  ParameterData<ParameterRangeUnresolved> {
+  ParameterDataField<ParameterRangeUnresolved> {
     // Required data
-    const parameterData: ParameterData<ParameterRangeUnresolved> = {
+    const parameterData: ParameterDataField<ParameterRangeUnresolved> = {
+      type: 'field',
       name: this.getFieldName(field),
       unique: this.isFieldUnique(field),
       required: this.isFieldRequired(field),
@@ -120,19 +134,37 @@ export class ParameterLoader {
     throw new Error(`Unsupported field key type ${field.key.type} in interface ${this.classLoaded.localName} in ${this.classLoaded.fileName}`);
   }
 
+  public isFieldIndexedHash(field: Identifier | TSPropertySignature): boolean {
+    return Boolean(field.typeAnnotation &&
+      field.typeAnnotation.typeAnnotation.type === AST_NODE_TYPES.TSTypeLiteral &&
+      field.typeAnnotation.typeAnnotation.members.some(member => member.type === AST_NODE_TYPES.TSIndexSignature));
+  }
+
   public isFieldUnique(field: Identifier | TSPropertySignature): boolean {
-    return !(field.typeAnnotation && field.typeAnnotation.typeAnnotation.type === AST_NODE_TYPES.TSArrayType);
+    return !(field.typeAnnotation && field.typeAnnotation.typeAnnotation.type === AST_NODE_TYPES.TSArrayType) &&
+      !this.isFieldIndexedHash(field);
   }
 
   public isFieldRequired(field: Identifier | TSPropertySignature): boolean {
-    return !field.optional;
+    return !field.optional && !this.isFieldIndexedHash(field);
   }
 
-  public getRangeFromTypeNode(typeNode: TypeNode, field: Identifier | TSPropertySignature, nestedArrays = 0):
-  ParameterRangeUnresolved {
+  public getErrorIdentifierField(field: Identifier | TSPropertySignature): string {
+    return `field ${this.getFieldName(field)}`;
+  }
+
+  public getErrorIdentifierIndex(): string {
+    return `an index signature`;
+  }
+
+  public getRangeFromTypeNode(
+    typeNode: TypeNode,
+    errorIdentifier: string,
+    nestedArrays = 0,
+  ): ParameterRangeUnresolved {
     // Don't allow arrays to be nested
     if (nestedArrays > 1) {
-      throw new Error(`Detected illegal nested array type for field ${this.getFieldName(field)
+      throw new Error(`Detected illegal nested array type for ${errorIdentifier
       } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
     }
 
@@ -150,19 +182,19 @@ export class ParameterLoader {
               return { type: 'raw', value: 'string' };
             case 'Array':
               if (typeNode.typeParameters && typeNode.typeParameters.params.length === 1) {
-                return this.getRangeFromTypeNode(typeNode.typeParameters.params[0], field, nestedArrays + 1);
+                return this.getRangeFromTypeNode(typeNode.typeParameters.params[0], errorIdentifier, nestedArrays + 1);
               }
-              throw new Error(`Found invalid Array field type at ${this.getFieldName(field)
+              throw new Error(`Found invalid Array field type at ${errorIdentifier
               } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
             default:
               // First check if the type is be a generic type
               if (typeNode.typeName.name in this.classLoaded.generics) {
                 const genericProperties = this.classLoaded.generics[typeNode.typeName.name];
                 if (!genericProperties.type) {
-                  throw new Error(`Found untyped generic field type at ${this.getFieldName(field)
+                  throw new Error(`Found untyped generic field type at ${errorIdentifier
                   } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
                 }
-                return this.getRangeFromTypeNode(genericProperties.type, field);
+                return this.getRangeFromTypeNode(genericProperties.type, errorIdentifier);
               }
 
               // Otherwise, assume we have an interface/class parameter
@@ -171,7 +203,7 @@ export class ParameterLoader {
         }
         break;
       case AST_NODE_TYPES.TSArrayType:
-        return this.getRangeFromTypeNode(typeNode.elementType, field, nestedArrays + 1);
+        return this.getRangeFromTypeNode(typeNode.elementType, errorIdentifier, nestedArrays + 1);
       case AST_NODE_TYPES.TSBooleanKeyword:
         return { type: 'raw', value: 'boolean' };
       case AST_NODE_TYPES.TSNumberKeyword:
@@ -181,7 +213,7 @@ export class ParameterLoader {
       case AST_NODE_TYPES.TSTypeLiteral:
         return { type: 'hash', value: typeNode };
     }
-    throw new Error(`Could not understand parameter type ${typeNode.type} of field ${this.getFieldName(field)
+    throw new Error(`Could not understand parameter type ${typeNode.type} of ${errorIdentifier
     } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
   }
 
@@ -193,7 +225,7 @@ export class ParameterLoader {
 
     // Check the typescript raw field type
     if (field.typeAnnotation) {
-      return this.getRangeFromTypeNode(field.typeAnnotation.typeAnnotation, field);
+      return this.getRangeFromTypeNode(field.typeAnnotation.typeAnnotation, this.getErrorIdentifierField(field));
     }
 
     throw new Error(`Missing field type on ${this.getFieldName(field)
@@ -207,13 +239,84 @@ export class ParameterLoader {
   public getFieldComment(commentData: CommentData): string | undefined {
     return commentData.description;
   }
+
+  /**
+   * Load the parameter data from the given index signature.
+   * @param indexSignature An index signature.
+   * @param commentData Comment data about the given field.
+   */
+  public loadIndex(indexSignature: TSIndexSignature, commentData: CommentData):
+  ParameterDataIndex<ParameterRangeUnresolved> {
+    // Required data
+    const parameterData: ParameterDataIndex<ParameterRangeUnresolved> = {
+      type: 'index',
+      domain: this.getIndexDomain(indexSignature),
+      range: this.getIndexRange(indexSignature, commentData),
+    };
+
+    // Optional data
+    const defaultValue = this.getFieldDefault(commentData);
+    if (defaultValue) {
+      parameterData.default = defaultValue;
+    }
+
+    const comment = this.getFieldComment(commentData);
+    if (comment) {
+      parameterData.comment = comment;
+    }
+
+    return parameterData;
+  }
+
+  public getIndexDomain(indexSignature: TSIndexSignature): 'string' | 'number' | 'boolean' {
+    if (indexSignature.parameters.length !== 1) {
+      throw new Error(`Expected exactly one key in index signature in ${
+        this.classLoaded.localName} at ${this.classLoaded.fileName}`);
+    }
+    if (indexSignature.parameters[0].type !== 'Identifier') {
+      throw new Error(`Only identifier-based index signatures are allowed in ${
+        this.classLoaded.localName} at ${this.classLoaded.fileName}`);
+    }
+    if (!indexSignature.parameters[0].typeAnnotation) {
+      throw new Error(`Missing key type annotation in index signature in ${
+        this.classLoaded.localName} at ${this.classLoaded.fileName}`);
+    }
+    const type = this.getRangeFromTypeNode(indexSignature.parameters[0].typeAnnotation.typeAnnotation,
+      this.getErrorIdentifierIndex());
+    if (type.type !== 'raw') {
+      throw new Error(`Only raw types are allowed in index signature keys in ${
+        this.classLoaded.localName} at ${this.classLoaded.fileName}`);
+    }
+    return type.value;
+  }
+
+  public getIndexRange(indexSignature: TSIndexSignature, commentData: CommentData): ParameterRangeUnresolved {
+    // Check comment data
+    if (commentData.range) {
+      return commentData.range;
+    }
+
+    // Check the typescript raw field type
+    if (indexSignature.typeAnnotation) {
+      return this.getRangeFromTypeNode(indexSignature.typeAnnotation.typeAnnotation, this.getErrorIdentifierIndex());
+    }
+
+    throw new Error(`Missing field type on ${this.getErrorIdentifierIndex()
+    } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
+  }
 }
 
 export interface ParameterLoaderArgs {
   classLoaded: ClassReferenceLoaded;
 }
 
-export interface ParameterData<R> {
+export type ParameterData<R> = ParameterDataField<R> | ParameterDataIndex<R>;
+
+export interface ParameterDataField<R> {
+  /**
+   * The data type.
+   */
+  type: 'field';
   /**
    * The parameter name.
    */
@@ -227,6 +330,29 @@ export interface ParameterData<R> {
    * If the parameter MUST have a value.
    */
   required: boolean;
+  /**
+   * The range of the parameter values.
+   */
+  range: R;
+  /**
+   * The default value.
+   */
+  default?: string;
+  /**
+   * The human-readable description of this parameter.
+   */
+  comment?: string;
+}
+
+export interface ParameterDataIndex<R> {
+  /**
+   * The data type.
+   */
+  type: 'index';
+  /**
+   * The domain of the parameter keys.
+   */
+  domain: 'string' | 'number' | 'boolean';
   /**
    * The range of the parameter values.
    */

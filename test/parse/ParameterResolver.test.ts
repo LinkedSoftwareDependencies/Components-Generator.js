@@ -26,6 +26,7 @@ describe('ParameterResolver', () => {
         A: {
           parameters: [
             {
+              type: 'field',
               name: 'fieldA',
               unique: true,
               required: true,
@@ -42,6 +43,7 @@ describe('ParameterResolver', () => {
         A: {
           parameters: [
             {
+              type: 'field',
               name: 'fieldA',
               unique: true,
               required: true,
@@ -67,6 +69,7 @@ describe('ParameterResolver', () => {
     it('should handle a raw parameter', async() => {
       expect(await loader.resolveConstructorParameters({ parameters: [
         {
+          type: 'field',
           name: 'fieldA',
           unique: true,
           required: true,
@@ -78,6 +81,7 @@ describe('ParameterResolver', () => {
       ]}, classReference))
         .toEqual({ parameters: [
           {
+            type: 'field',
             name: 'fieldA',
             unique: true,
             required: true,
@@ -97,9 +101,10 @@ describe('ParameterResolver', () => {
       expect(await loader.resolveParameterData([], classReference)).toEqual([]);
     });
 
-    it('should handle raw parameters', async() => {
+    it('should handle raw field parameters', async() => {
       expect(await loader.resolveParameterData([
         {
+          type: 'field',
           name: 'fieldA',
           unique: true,
           required: true,
@@ -109,6 +114,7 @@ describe('ParameterResolver', () => {
           },
         },
         {
+          type: 'field',
           name: 'fieldB',
           unique: true,
           required: true,
@@ -119,6 +125,7 @@ describe('ParameterResolver', () => {
         },
       ], classReference)).toEqual([
         {
+          type: 'field',
           name: 'fieldA',
           unique: true,
           required: true,
@@ -128,6 +135,7 @@ describe('ParameterResolver', () => {
           },
         },
         {
+          type: 'field',
           name: 'fieldB',
           unique: true,
           required: true,
@@ -139,13 +147,36 @@ describe('ParameterResolver', () => {
       ]);
     });
 
-    it('should handle a complex parameter', async() => {
+    it('should handle a raw index parameters', async() => {
+      expect(await loader.resolveParameterData([
+        {
+          type: 'index',
+          domain: 'string',
+          range: {
+            type: 'raw',
+            value: 'boolean',
+          },
+        },
+      ], classReference)).toEqual([
+        {
+          type: 'index',
+          domain: 'string',
+          range: {
+            type: 'raw',
+            value: 'boolean',
+          },
+        },
+      ]);
+    });
+
+    it('should handle a complex field parameter', async() => {
       resolutionContext.contentsOverrides = {
         'A.d.ts': `export * from 'MyClass'`,
         'MyClass.d.ts': `export class MyClass{}`,
       };
       expect(await loader.resolveParameterData([
         {
+          type: 'field',
           name: 'fieldA',
           unique: true,
           required: true,
@@ -156,9 +187,36 @@ describe('ParameterResolver', () => {
         },
       ], classReference)).toMatchObject([
         {
+          type: 'field',
           name: 'fieldA',
           unique: true,
           required: true,
+          range: {
+            type: 'class',
+            value: { localName: 'MyClass', fileName: 'MyClass' },
+          },
+        },
+      ]);
+    });
+
+    it('should handle a complex index parameter', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `export * from 'MyClass'`,
+        'MyClass.d.ts': `export class MyClass{}`,
+      };
+      expect(await loader.resolveParameterData([
+        {
+          type: 'index',
+          domain: 'string',
+          range: {
+            type: 'interface',
+            value: 'MyClass',
+          },
+        },
+      ], classReference)).toMatchObject([
+        {
+          type: 'index',
+          domain: 'string',
           range: {
             type: 'class',
             value: { localName: 'MyClass', fileName: 'MyClass' },
@@ -313,6 +371,7 @@ interface IFaceA {
           type: 'nested',
           value: [
             {
+              type: 'field',
               name: 'fieldA',
               range: {
                 type: 'raw',
@@ -322,6 +381,7 @@ interface IFaceA {
               unique: true,
             },
             {
+              type: 'field',
               name: 'fieldB',
               range: {
                 type: 'raw',
@@ -350,11 +410,13 @@ interface IFaceB {
           type: 'nested',
           value: [
             {
+              type: 'field',
               name: 'fieldA',
               range: {
                 type: 'nested',
                 value: [
                   {
+                    type: 'field',
                     name: 'fieldB',
                     range: {
                       type: 'raw',
@@ -602,6 +664,7 @@ export interface A{
       expect(await loader.getNestedFieldsFromInterface(iface))
         .toEqual([
           {
+            type: 'field',
             name: 'fieldA',
             range: {
               type: 'raw',
@@ -628,6 +691,7 @@ export interface A{
       expect(await loader.getNestedFieldsFromInterface(iface))
         .toEqual([
           {
+            type: 'field',
             name: 'fieldA',
             range: {
               type: 'override',
@@ -653,6 +717,7 @@ export interface A{
       expect(await loader.getNestedFieldsFromInterface(iface))
         .toMatchObject([
           {
+            type: 'field',
             name: 'fieldA',
             range: {
               type: 'class',
@@ -706,6 +771,7 @@ export interface A{
       expect(await loader.getNestedFieldsFromInterface(iface))
         .toMatchObject([
           {
+            type: 'field',
             name: 'fieldA',
             range: {
               type: 'nested',
@@ -735,6 +801,7 @@ export interface B{
       expect(await loader.getNestedFieldsFromInterface(iface))
         .toMatchObject([
           {
+            type: 'field',
             name: 'fieldA',
             range: {
               type: 'nested',
@@ -771,6 +838,7 @@ export interface B{
       expect(await loader.getNestedFieldsFromInterface(iface))
         .toMatchObject([
           {
+            type: 'field',
             name: 'fieldA',
             range: {
               type: 'nested',
@@ -817,16 +885,19 @@ export interface C{
       expect(await loader.getNestedFieldsFromInterface(iface))
         .toMatchObject([
           {
+            type: 'field',
             name: 'fieldA',
             range: {
               type: 'nested',
               value: [
                 {
+                  type: 'field',
                   name: 'fieldB',
                   range: {
                     type: 'nested',
                     value: [
                       {
+                        type: 'field',
                         name: 'fieldC1',
                         range: {
                           type: 'raw',
@@ -836,6 +907,7 @@ export interface C{
                         unique: true,
                       },
                       {
+                        type: 'field',
                         name: 'fieldC2',
                         range: {
                           type: 'raw',
@@ -888,6 +960,7 @@ export class A{
       expect(await loader.getNestedFieldsFromHash(hash, owningClass))
         .toEqual([
           {
+            type: 'field',
             name: 'fieldA',
             range: {
               type: 'raw',
@@ -909,6 +982,7 @@ export class A{
       expect(await loader.getNestedFieldsFromHash(hash, owningClass))
         .toEqual([
           {
+            type: 'field',
             name: 'fieldA',
             range: {
               type: 'override',
@@ -930,6 +1004,7 @@ export class A{
       expect(await loader.getNestedFieldsFromHash(hash, owningClass))
         .toMatchObject([
           {
+            type: 'field',
             name: 'fieldA',
             range: {
               type: 'class',
@@ -970,6 +1045,7 @@ export class A{
       expect(await loader.getNestedFieldsFromHash(hash, owningClass))
         .toMatchObject([
           {
+            type: 'field',
             name: 'fieldA',
             range: {
               type: 'nested',
@@ -995,6 +1071,7 @@ export interface B{
       expect(await loader.getNestedFieldsFromHash(hash, owningClass))
         .toMatchObject([
           {
+            type: 'field',
             name: 'fieldA',
             range: {
               type: 'nested',
@@ -1025,6 +1102,7 @@ export interface B{
       expect(await loader.getNestedFieldsFromHash(hash, owningClass))
         .toMatchObject([
           {
+            type: 'field',
             name: 'fieldA',
             range: {
               type: 'nested',
@@ -1067,16 +1145,19 @@ export interface C{
       expect(await loader.getNestedFieldsFromHash(hash, owningClass))
         .toMatchObject([
           {
+            type: 'field',
             name: 'fieldA',
             range: {
               type: 'nested',
               value: [
                 {
+                  type: 'field',
                   name: 'fieldB',
                   range: {
                     type: 'nested',
                     value: [
                       {
+                        type: 'field',
                         name: 'fieldC1',
                         range: {
                           type: 'raw',
@@ -1086,6 +1167,7 @@ export interface C{
                         unique: true,
                       },
                       {
+                        type: 'field',
                         name: 'fieldC2',
                         range: {
                           type: 'raw',
@@ -1119,16 +1201,19 @@ export interface C{
       expect(await loader.getNestedFieldsFromHash(hash, owningClass))
         .toMatchObject([
           {
+            type: 'field',
             name: 'fieldA',
             range: {
               type: 'nested',
               value: [
                 {
+                  type: 'field',
                   name: 'fieldB',
                   range: {
                     type: 'nested',
                     value: [
                       {
+                        type: 'field',
                         name: 'fieldC1',
                         range: {
                           type: 'raw',
@@ -1138,6 +1223,7 @@ export interface C{
                         unique: true,
                       },
                       {
+                        type: 'field',
                         name: 'fieldC2',
                         range: {
                           type: 'raw',

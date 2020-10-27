@@ -1,5 +1,5 @@
 import { ClassDeclaration, TSInterfaceDeclaration,
-  MethodDefinition, TSPropertySignature, BaseNode } from '@typescript-eslint/types/dist/ts-estree';
+  MethodDefinition, TSPropertySignature, TSIndexSignature, BaseNode } from '@typescript-eslint/types/dist/ts-estree';
 import * as commentParse from 'comment-parser';
 import { ClassReference, ClassReferenceLoaded } from './ClassIndex';
 import { ParameterRangeUnresolved } from './ParameterLoader';
@@ -51,7 +51,7 @@ export class CommentLoader {
    * Extract comment data from the given field.
    * @param field A field.
    */
-  public getCommentDataFromField(field: TSPropertySignature): CommentData {
+  public getCommentDataFromField(field: TSPropertySignature | TSIndexSignature): CommentData {
     const comment = this.getCommentRaw(field);
     if (comment) {
       return CommentLoader.getCommentDataFromComment(comment, this.classLoaded);

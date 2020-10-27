@@ -32,7 +32,7 @@ export interface ParameterDefinition {
   comment?: string;
   unique?: boolean;
   required?: boolean;
-  range?: string;
+  range?: string | { '@type': string; parameters: ParameterDefinition[] };
   lazy?: boolean;
 }
 
@@ -44,6 +44,7 @@ export type ConstructorArgumentDefinition = string | { '@id': string } | {
 };
 
 export interface ConstructorFieldDefinition {
+  collectEntries?: string;
   key?: string;
   keyRaw?: string;
   value: ConstructorArgumentDefinition;

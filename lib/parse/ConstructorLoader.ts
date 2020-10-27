@@ -1,7 +1,7 @@
 import { ClassDeclaration, MethodDefinition } from '@typescript-eslint/types/dist/ts-estree';
 import { AST, TSESTreeOptions, AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import { ClassIndex, ClassLoaded } from './ClassIndex';
-import { ParameterData, ParameterLoader, ParameterRangeUnresolved } from './ParameterLoader';
+import { ParameterDataField, ParameterLoader, ParameterRangeUnresolved } from './ParameterLoader';
 
 /**
  * Loads the constructor data of classes.
@@ -89,5 +89,5 @@ export class ConstructorLoader {
  * Constructor parameter information
  */
 export interface ConstructorData<R> {
-  parameters: ParameterData<R>[];
+  parameters: ParameterDataField<R>[];
 }

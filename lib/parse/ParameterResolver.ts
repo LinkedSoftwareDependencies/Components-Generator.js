@@ -3,7 +3,13 @@ import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import { ClassIndex, ClassLoaded, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
 import { ClassLoader } from './ClassLoader';
 import { ConstructorData } from './ConstructorLoader';
-import { ParameterData, ParameterLoader, ParameterRangeResolved, ParameterRangeUnresolved } from './ParameterLoader';
+import {
+  ParameterData,
+  ParameterDataField,
+  ParameterLoader,
+  ParameterRangeResolved,
+  ParameterRangeUnresolved,
+} from './ParameterLoader';
 
 export class ParameterResolver {
   private readonly classLoader: ClassLoader;
@@ -54,7 +60,7 @@ export class ParameterResolver {
   public async resolveParameterData(
     parameters: ParameterData<ParameterRangeUnresolved>[],
     owningClass: ClassReferenceLoaded,
-  ): Promise<ParameterData<ParameterRangeResolved>[]> {
+  ): Promise<ParameterDataField<ParameterRangeResolved>[]> {
     return await Promise.all(parameters
       .map(async parameter => ({ ...parameter, range: await this.resolveRange(parameter.range, owningClass) })));
   }

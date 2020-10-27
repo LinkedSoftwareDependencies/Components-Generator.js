@@ -7,7 +7,7 @@ import { ParameterData, ParameterRangeResolved } from '../parse/ParameterLoader'
 import {
   ComponentDefinition,
   ComponentDefinitions, ComponentDefinitionsIndex,
-  ConstructorArgumentDefinition,
+  ConstructorArgumentDefinition, ConstructorFieldDefinition,
   ParameterDefinition,
 } from './ComponentDefinitions';
 import { ContextConstructor } from './ContextConstructor';
@@ -198,8 +198,13 @@ export class ComponentConstructor {
     constructorData: ConstructorData<ParameterRangeResolved>,
     parameters: ParameterDefinition[],
   ): ConstructorArgumentDefinition[] {
-    return constructorData.parameters
-      .map(parameter => this.parameterDataToConstructorArgument(context, classReference, parameter, parameters));
+    return constructorData.parameters.map(parameter => this.parameterDataToConstructorArgument(
+      context,
+      classReference,
+      parameter,
+      parameters,
+      this.fieldNameToId(context, classReference, parameter.name),
+    ));
   }
 
   /**
@@ -212,33 +217,114 @@ export class ComponentConstructor {
    * @param classReference Class reference of the class component owning this parameter.
    * @param parameterData Parameter data.
    * @param parameters The array of parameters of the owning class, which will be appended to.
+   * @param fieldId The @id of the field.
    */
   public parameterDataToConstructorArgument(
     context: JsonLdContextNormalized,
     classReference: ClassLoaded,
     parameterData: ParameterData<ParameterRangeResolved>,
     parameters: ParameterDefinition[],
+    fieldId: string,
   ): ConstructorArgumentDefinition {
     if (parameterData.range.type === 'nested') {
       // Create a hash object with `fields` entries.
-      // Each entry's value is recursively handled by this method again.
-      const fields = parameterData.range.value
-        .map(subParamData => ({
-          keyRaw: subParamData.name,
-          value: this.parameterDataToConstructorArgument(context, classReference, subParamData, parameters),
-        }));
+      // Each entry's value is (indirectly) recursively handled by this method again.
+      const fields = parameterData.range.value.map(subParamData => this.constructFieldDefinitionNested(
+        context,
+        classReference,
+        <ParameterData<ParameterRangeResolved> & { range: { type: 'nested' } }> parameterData,
+        parameters,
+        subParamData,
+      ));
       return { fields };
     }
 
     // For all other range types, create a parameter and return its parameter id.
-    let parameter: ParameterDefinition;
+    let param: ParameterDefinition;
     if (parameterData.range.type === 'raw' || parameterData.range.type === 'override') {
-      parameter = this.constructParameterRaw(context, classReference, parameterData, parameterData.range.value);
+      param = this.constructParameterRaw(context, classReference, parameterData, parameterData.range.value, fieldId);
     } else {
-      parameter = this.constructParameterClass(context, classReference, parameterData, parameterData.range.value);
+      param = this.constructParameterClass(context, classReference, parameterData, parameterData.range.value, fieldId);
     }
+    parameters.push(param);
+    return { '@id': fieldId };
+  }
+
+  /**
+   * For the given parameter with nested range, construct field definitions for all sub-parameters.
+   * @param context A parsed JSON-LD context.
+   * @param classReference Class reference of the class component owning this parameter.
+   * @param parameterData Parameter data with nested range.
+   * @param parameters The array of parameters of the owning class, which will be appended to.
+   * @param subParamData The sub-parameter of the parameter with nested range.
+   */
+  public constructFieldDefinitionNested(
+    context: JsonLdContextNormalized,
+    classReference: ClassLoaded,
+    parameterData: ParameterData<ParameterRangeResolved> & { range: { type: 'nested' } },
+    parameters: ParameterDefinition[],
+    subParamData: ParameterData<ParameterRangeResolved>,
+  ): ConstructorFieldDefinition {
+    if (subParamData.type === 'field') {
+      return {
+        keyRaw: subParamData.name,
+        value: this.parameterDataToConstructorArgument(
+          context,
+          classReference,
+          subParamData,
+          parameters,
+          this.fieldNameToId(context, classReference, subParamData.name),
+        ),
+      };
+    }
+
+    // Handle index type
+
+    // Indexed elements can only occur in a field
+    if (parameterData.type === 'index') {
+      throw new Error(`Detected illegal indexed element inside a non-field in ${
+        classReference.localName} at ${classReference.fileName}`);
+    }
+
+    // Determine parameter id's
+    const idCollectEntries = this.fieldNameToId(context, classReference, parameterData.name);
+    const idKey = this.fieldNameToId(context, classReference, `${parameterData.name}_key`);
+    const idValue = this.fieldNameToId(context, classReference, `${parameterData.name}_value`);
+
+    // Create sub parameters for key and value
+    const subParameters: ParameterDefinition[] = [];
+    subParameters.push({
+      '@id': idKey,
+      required: true,
+      unique: true,
+    });
+    const value = this.parameterDataToConstructorArgument(
+      context,
+      classReference,
+      subParamData,
+      subParameters,
+      idValue,
+    );
+    subParameters[subParameters.length - 1].required = true;
+    subParameters[subParameters.length - 1].unique = true;
+
+    // Construct parameter, which has key and value as sub-parameters
+    const parameter: ParameterDefinition = {
+      '@id': idCollectEntries,
+      range: {
+        '@type': this.fieldNameToId(context, classReference, `${parameterData.name}_range`),
+        parameters: subParameters,
+      },
+    };
+    this.populateOptionalParameterFields(parameter, parameterData);
     parameters.push(parameter);
-    return { '@id': parameter['@id'] };
+
+    // Create definition that collect entries from key and value parameters
+    return {
+      collectEntries: idCollectEntries,
+      key: idKey,
+      value,
+    };
   }
 
   /**
@@ -247,16 +333,18 @@ export class ComponentConstructor {
    * @param classReference Class reference of the class component owning this parameter.
    * @param parameterData Parameter data.
    * @param range Range of this parameter data.
+   * @param fieldId The @id of the field.
    */
   public constructParameterRaw(
     context: JsonLdContextNormalized,
     classReference: ClassLoaded,
     parameterData: ParameterData<ParameterRangeResolved>,
     range: string,
+    fieldId: string,
   ): ParameterDefinition {
     // Fill in required fields
     const definition: ParameterDefinition = {
-      '@id': this.fieldNameToId(context, classReference, parameterData.name),
+      '@id': fieldId,
       range: `xsd:${range}`,
     };
 
@@ -272,16 +360,18 @@ export class ComponentConstructor {
    * @param classReference Class reference of the class component owning this parameter.
    * @param parameterData Parameter data.
    * @param range Range of this parameter data.
+   * @param fieldId The @id of the field.
    */
   public constructParameterClass(
     context: JsonLdContextNormalized,
     classReference: ClassReference,
     parameterData: ParameterData<ParameterRangeResolved>,
     range: ClassReference,
+    fieldId: string,
   ): ParameterDefinition {
     // Fill in required fields
     const definition: ParameterDefinition = {
-      '@id': this.fieldNameToId(context, classReference, parameterData.name),
+      '@id': fieldId,
       range: this.classNameToId(context, range),
     };
 
@@ -303,10 +393,10 @@ export class ComponentConstructor {
     if (parameterData.comment) {
       parameterDefinition.comment = parameterData.comment;
     }
-    if (parameterData.unique) {
+    if ('unique' in parameterData && parameterData.unique) {
       parameterDefinition.unique = parameterData.unique;
     }
-    if (parameterData.required) {
+    if ('required' in parameterData && parameterData.required) {
       parameterDefinition.required = parameterData.required;
     }
   }

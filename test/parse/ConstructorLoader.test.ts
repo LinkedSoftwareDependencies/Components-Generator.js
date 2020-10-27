@@ -60,6 +60,7 @@ export class B{
         A: {
           parameters: [
             {
+              type: 'field',
               comment: 'This is a great field!',
               name: 'fieldA',
               range: {
@@ -70,6 +71,7 @@ export class B{
               unique: true,
             },
             {
+              type: 'field',
               comment: 'This is B',
               name: 'fieldB',
               range: {
@@ -84,6 +86,7 @@ export class B{
         B: {
           parameters: [
             {
+              type: 'field',
               comment: 'This is a great field!',
               name: 'fieldA',
               range: {

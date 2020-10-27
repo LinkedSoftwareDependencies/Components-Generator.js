@@ -2,7 +2,7 @@ import * as Path from 'path';
 import { ContextParser, JsonLdContextNormalized } from 'jsonld-context-parser';
 import { ClassIndex, ClassLoaded, ClassReference } from '../../lib/parse/ClassIndex';
 import { ConstructorData } from '../../lib/parse/ConstructorLoader';
-import { ParameterRangeResolved } from '../../lib/parse/ParameterLoader';
+import { ParameterData, ParameterRangeResolved } from '../../lib/parse/ParameterLoader';
 import { ComponentConstructor } from '../../lib/serialize/ComponentConstructor';
 import { ParameterDefinition } from '../../lib/serialize/ComponentDefinitions';
 import { ContextConstructorMocked } from '../ContextConstructorMocked';
@@ -63,6 +63,7 @@ describe('ComponentConstructor', () => {
         MyClass2: {
           parameters: [
             {
+              type: 'field',
               name: 'fieldA',
               range: { type: 'raw', value: 'boolean' },
               required: true,
@@ -70,6 +71,7 @@ describe('ComponentConstructor', () => {
               comment: 'Hi1',
             },
             {
+              type: 'field',
               name: 'fieldB',
               range: { type: 'raw', value: 'string' },
               required: true,
@@ -135,6 +137,7 @@ describe('ComponentConstructor', () => {
         MyClass2: {
           parameters: [
             {
+              type: 'field',
               name: 'fieldA',
               range: { type: 'raw', value: 'boolean' },
               required: true,
@@ -142,6 +145,7 @@ describe('ComponentConstructor', () => {
               comment: 'Hi1',
             },
             {
+              type: 'field',
               name: 'fieldB',
               range: { type: 'raw', value: 'string' },
               required: true,
@@ -314,6 +318,7 @@ describe('ComponentConstructor', () => {
       expect(ctor.constructComponent(context, classReference, {
         parameters: [
           {
+            type: 'field',
             name: 'fieldA',
             range: { type: 'raw', value: 'boolean' },
             required: true,
@@ -321,6 +326,7 @@ describe('ComponentConstructor', () => {
             comment: 'Hi1',
           },
           {
+            type: 'field',
             name: 'fieldB',
             range: { type: 'raw', value: 'string' },
             required: true,
@@ -439,6 +445,7 @@ describe('ComponentConstructor', () => {
       expect(ctor.constructParameters(context, classReference, {
         parameters: [
           {
+            type: 'field',
             name: 'fieldA',
             range: { type: 'raw', value: 'boolean' },
             required: true,
@@ -446,6 +453,7 @@ describe('ComponentConstructor', () => {
             comment: 'Hi1',
           },
           {
+            type: 'field',
             name: 'fieldB',
             range: { type: 'raw', value: 'string' },
             required: true,
@@ -480,11 +488,13 @@ describe('ComponentConstructor', () => {
       expect(ctor.constructParameters(context, classReference, {
         parameters: [
           {
+            type: 'field',
             name: 'field',
             range: {
               type: 'nested',
               value: [
                 {
+                  type: 'field',
                   name: 'fieldA',
                   range: { type: 'raw', value: 'boolean' },
                   required: true,
@@ -492,6 +502,7 @@ describe('ComponentConstructor', () => {
                   comment: 'Hi1',
                 },
                 {
+                  type: 'field',
                   name: 'fieldB',
                   range: { type: 'raw', value: 'string' },
                   required: true,
@@ -536,12 +547,13 @@ describe('ComponentConstructor', () => {
     it('should handle a raw parameter definition', () => {
       const parameters: ParameterDefinition[] = [];
       expect(ctor.parameterDataToConstructorArgument(context, classReference, {
+        type: 'field',
         name: 'field',
         range: { type: 'raw', value: 'boolean' },
         required: true,
         unique: true,
         comment: 'Hi',
-      }, parameters)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
+      }, parameters, 'mp:a/b/file-param#MyClass_field')).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
       expect(parameters).toEqual([
         {
           '@id': 'mp:a/b/file-param#MyClass_field',
@@ -556,12 +568,13 @@ describe('ComponentConstructor', () => {
     it('should handle an override parameter definition', () => {
       const parameters: ParameterDefinition[] = [];
       expect(ctor.parameterDataToConstructorArgument(context, classReference, {
+        type: 'field',
         name: 'field',
         range: { type: 'override', value: 'boolean' },
         required: true,
         unique: true,
         comment: 'Hi',
-      }, parameters)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
+      }, parameters, 'mp:a/b/file-param#MyClass_field')).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
       expect(parameters).toEqual([
         {
           '@id': 'mp:a/b/file-param#MyClass_field',
@@ -576,13 +589,14 @@ describe('ComponentConstructor', () => {
     it('should handle a class parameter definition', () => {
       const parameters: ParameterDefinition[] = [];
       expect(ctor.parameterDataToConstructorArgument(context, classReference, {
+        type: 'field',
         name: 'field',
         range: { type: 'class',
           value: { localName: 'ClassParam', fileName: Path.normalize('/docs/package/src/a/b/file-param') }},
         required: true,
         unique: true,
         comment: 'Hi',
-      }, parameters)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
+      }, parameters, 'mp:a/b/file-param#MyClass_field')).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
       expect(parameters).toEqual([
         {
           '@id': 'mp:a/b/file-param#MyClass_field',
@@ -597,12 +611,13 @@ describe('ComponentConstructor', () => {
     it('should handle an empty nested parameter definition', () => {
       const parameters: ParameterDefinition[] = [];
       expect(ctor.parameterDataToConstructorArgument(context, classReference, {
+        type: 'field',
         name: 'field',
         range: { type: 'nested', value: []},
         required: true,
         unique: true,
         comment: 'Hi',
-      }, parameters)).toEqual({
+      }, parameters, 'mp:a/b/file-param#MyClass_field')).toEqual({
         fields: [],
       });
       expect(parameters).toEqual([]);
@@ -611,11 +626,13 @@ describe('ComponentConstructor', () => {
     it('should handle a nested parameter definition with raw field', () => {
       const parameters: ParameterDefinition[] = [];
       expect(ctor.parameterDataToConstructorArgument(context, classReference, {
+        type: 'field',
         name: 'field',
         range: {
           type: 'nested',
           value: [
             {
+              type: 'field',
               name: 'field',
               range: { type: 'raw', value: 'boolean' },
               required: true,
@@ -627,7 +644,7 @@ describe('ComponentConstructor', () => {
         required: true,
         unique: true,
         comment: 'Hi',
-      }, parameters)).toEqual({
+      }, parameters, 'mp:a/b/file-param#MyClass_field')).toEqual({
         fields: [
           { keyRaw: 'field', value: { '@id': 'mp:a/b/file-param#MyClass_field' }},
         ],
@@ -646,11 +663,13 @@ describe('ComponentConstructor', () => {
     it('should handle a nested parameter definition with multiple raw fields', () => {
       const parameters: ParameterDefinition[] = [];
       expect(ctor.parameterDataToConstructorArgument(context, classReference, {
+        type: 'field',
         name: 'field',
         range: {
           type: 'nested',
           value: [
             {
+              type: 'field',
               name: 'fieldA',
               range: { type: 'raw', value: 'boolean' },
               required: true,
@@ -658,6 +677,7 @@ describe('ComponentConstructor', () => {
               comment: 'Hi1',
             },
             {
+              type: 'field',
               name: 'fieldB',
               range: { type: 'raw', value: 'string' },
               required: true,
@@ -669,7 +689,7 @@ describe('ComponentConstructor', () => {
         required: true,
         unique: true,
         comment: 'Hi',
-      }, parameters)).toEqual({
+      }, parameters, 'mp:a/b/file-param#MyClass_field')).toEqual({
         fields: [
           { keyRaw: 'fieldA', value: { '@id': 'mp:a/b/file-param#MyClass_fieldA' }},
           { keyRaw: 'fieldB', value: { '@id': 'mp:a/b/file-param#MyClass_fieldB' }},
@@ -696,11 +716,13 @@ describe('ComponentConstructor', () => {
     it('should handle a recursive nested parameter definition', () => {
       const parameters: ParameterDefinition[] = [];
       expect(ctor.parameterDataToConstructorArgument(context, classReference, {
+        type: 'field',
         name: 'field',
         range: {
           type: 'nested',
           value: [
             {
+              type: 'field',
               name: 'fieldA',
               range: { type: 'raw', value: 'boolean' },
               required: true,
@@ -708,11 +730,13 @@ describe('ComponentConstructor', () => {
               comment: 'Hi1',
             },
             {
+              type: 'field',
               name: 'fieldSub',
               range: {
                 type: 'nested',
                 value: [
                   {
+                    type: 'field',
                     name: 'fieldB',
                     range: { type: 'raw', value: 'string' },
                     required: true,
@@ -730,7 +754,7 @@ describe('ComponentConstructor', () => {
         required: true,
         unique: true,
         comment: 'Hi',
-      }, parameters)).toEqual({
+      }, parameters, 'mp:a/b/file-param#MyClass_field')).toEqual({
         fields: [
           { keyRaw: 'fieldA', value: { '@id': 'mp:a/b/file-param#MyClass_fieldA' }},
           {
@@ -760,18 +784,265 @@ describe('ComponentConstructor', () => {
         },
       ]);
     });
+
+    it('should handle a nested field with indexed parameter definition', () => {
+      const parameters: ParameterDefinition[] = [];
+      expect(ctor.parameterDataToConstructorArgument(context, classReference, {
+        type: 'field',
+        name: 'fieldA',
+        range: {
+          type: 'nested',
+          value: [
+            {
+              type: 'index',
+              domain: 'string',
+              range: { type: 'raw', value: 'boolean' },
+              comment: 'Hi1',
+            },
+          ],
+        },
+        required: true,
+        unique: true,
+        comment: 'Hi',
+      }, parameters, 'mp:a/b/file-param#MyClass_field')).toEqual({
+        fields: [
+          {
+            collectEntries: 'mp:a/b/file-param#MyClass_fieldA',
+            key: 'mp:a/b/file-param#MyClass_fieldA_key',
+            value: { '@id': 'mp:a/b/file-param#MyClass_fieldA_value' },
+          },
+        ],
+      });
+      expect(parameters).toEqual([
+        {
+          '@id': 'mp:a/b/file-param#MyClass_fieldA',
+          comment: 'Hi',
+          required: true,
+          unique: true,
+          range: {
+            '@type': 'mp:a/b/file-param#MyClass_fieldA_range',
+            parameters: [
+              {
+                '@id': 'mp:a/b/file-param#MyClass_fieldA_key',
+                required: true,
+                unique: true,
+              },
+              {
+                '@id': 'mp:a/b/file-param#MyClass_fieldA_value',
+                comment: 'Hi1',
+                range: 'xsd:boolean',
+                required: true,
+                unique: true,
+              },
+            ],
+          },
+        },
+      ]);
+    });
+
+    it('should handle a nested field with indexed parameter and field definition', () => {
+      const parameters: ParameterDefinition[] = [];
+      expect(ctor.parameterDataToConstructorArgument(context, classReference, {
+        type: 'field',
+        name: 'fieldA',
+        range: {
+          type: 'nested',
+          value: [
+            {
+              type: 'index',
+              domain: 'string',
+              range: { type: 'raw', value: 'boolean' },
+              comment: 'Hi1',
+            },
+            {
+              type: 'field',
+              name: 'fieldB',
+              range: { type: 'raw', value: 'boolean' },
+              required: true,
+              unique: true,
+              comment: 'Hi1',
+            },
+          ],
+        },
+        required: true,
+        unique: true,
+        comment: 'Hi',
+      }, parameters, 'mp:a/b/file-param#MyClass_field')).toEqual({
+        fields: [
+          {
+            collectEntries: 'mp:a/b/file-param#MyClass_fieldA',
+            key: 'mp:a/b/file-param#MyClass_fieldA_key',
+            value: { '@id': 'mp:a/b/file-param#MyClass_fieldA_value' },
+          },
+          {
+            keyRaw: 'fieldB',
+            value: { '@id': 'mp:a/b/file-param#MyClass_fieldB' },
+          },
+        ],
+      });
+      expect(parameters).toEqual([
+        {
+          '@id': 'mp:a/b/file-param#MyClass_fieldA',
+          comment: 'Hi',
+          required: true,
+          unique: true,
+          range: {
+            '@type': 'mp:a/b/file-param#MyClass_fieldA_range',
+            parameters: [
+              {
+                '@id': 'mp:a/b/file-param#MyClass_fieldA_key',
+                required: true,
+                unique: true,
+              },
+              {
+                '@id': 'mp:a/b/file-param#MyClass_fieldA_value',
+                comment: 'Hi1',
+                range: 'xsd:boolean',
+                required: true,
+                unique: true,
+              },
+            ],
+          },
+        },
+        {
+          '@id': 'mp:a/b/file-param#MyClass_fieldB',
+          comment: 'Hi1',
+          range: 'xsd:boolean',
+          required: true,
+          unique: true,
+        },
+      ]);
+    });
+  });
+
+  describe('constructFieldDefinitionNested', () => {
+    let parameters: ParameterDefinition[];
+    beforeEach(() => {
+      parameters = [];
+    });
+
+    it('should construct a field', () => {
+      const parameterData: ParameterData<ParameterRangeResolved> & { range: { type: 'nested' } } = {
+        type: 'field',
+        name: 'field',
+        range: {
+          type: 'nested',
+          value: [
+            {
+              type: 'field',
+              name: 'fieldA',
+              range: { type: 'raw', value: 'boolean' },
+              required: true,
+              unique: true,
+              comment: 'Hi',
+            },
+          ],
+        },
+        required: true,
+        unique: true,
+        comment: 'Hi',
+      };
+      const subParamData: ParameterData<ParameterRangeResolved> = (<any> parameterData).range.value[0];
+      expect(ctor.constructFieldDefinitionNested(context, classReference, parameterData, parameters, subParamData))
+        .toEqual({ keyRaw: 'fieldA', value: { '@id': 'mp:a/b/file-param#MyClass_fieldA' }});
+      expect(parameters).toEqual([
+        {
+          '@id': 'mp:a/b/file-param#MyClass_fieldA',
+          comment: 'Hi',
+          range: 'xsd:boolean',
+          required: true,
+          unique: true,
+        },
+      ]);
+    });
+
+    it('should construct an indexed element with raw values', () => {
+      const parameterData: ParameterData<ParameterRangeResolved> & { range: { type: 'nested' } } = {
+        type: 'field',
+        name: 'fieldA',
+        range: {
+          type: 'nested',
+          value: [
+            {
+              type: 'index',
+              domain: 'string',
+              range: { type: 'raw', value: 'boolean' },
+              comment: 'Hi',
+            },
+          ],
+        },
+        required: true,
+        unique: false,
+        comment: 'Hi',
+      };
+      const subParamData: ParameterData<ParameterRangeResolved> = (<any> parameterData).range.value[0];
+      expect(ctor.constructFieldDefinitionNested(context, classReference, parameterData, parameters, subParamData))
+        .toEqual({
+          collectEntries: 'mp:a/b/file-param#MyClass_fieldA',
+          key: 'mp:a/b/file-param#MyClass_fieldA_key',
+          value: { '@id': 'mp:a/b/file-param#MyClass_fieldA_value' },
+        });
+      expect(parameters).toEqual([
+        {
+          '@id': 'mp:a/b/file-param#MyClass_fieldA',
+          comment: 'Hi',
+          required: true,
+          range: {
+            '@type': 'mp:a/b/file-param#MyClass_fieldA_range',
+            parameters: [
+              {
+                '@id': 'mp:a/b/file-param#MyClass_fieldA_key',
+                required: true,
+                unique: true,
+              },
+              {
+                '@id': 'mp:a/b/file-param#MyClass_fieldA_value',
+                comment: 'Hi',
+                range: 'xsd:boolean',
+                required: true,
+                unique: true,
+              },
+            ],
+          },
+        },
+      ]);
+    });
+
+    it('should error on an indexed element inside another index', () => {
+      const parameterData: ParameterData<ParameterRangeResolved> & { range: { type: 'nested' } } = {
+        type: 'index',
+        domain: 'string',
+        range: {
+          type: 'nested',
+          value: [
+            {
+              type: 'index',
+              domain: 'string',
+              range: { type: 'raw', value: 'boolean' },
+              comment: 'Hi',
+            },
+          ],
+        },
+        comment: 'Hi',
+      };
+      const subParamData: ParameterData<ParameterRangeResolved> = (<any> parameterData).range.value[0];
+      expect(() => ctor
+        .constructFieldDefinitionNested(context, classReference, parameterData, parameters, subParamData))
+        .toThrow(new Error(`Detected illegal indexed element inside a non-field in MyClass at /docs/package/src/a/b/file-param`));
+    });
   });
 
   describe('constructParameterRaw', () => {
     it('should construct a raw parameter definition', () => {
       const rangeValue = 'boolean';
       expect(ctor.constructParameterRaw(context, classReference, {
+        type: 'field',
         name: 'field',
         range: { type: 'raw', value: rangeValue },
         required: true,
         unique: true,
         comment: 'Hi',
-      }, rangeValue)).toEqual({
+      }, rangeValue, 'mp:a/b/file-param#MyClass_field')).toEqual({
         '@id': 'mp:a/b/file-param#MyClass_field',
         comment: 'Hi',
         range: 'xsd:boolean',
@@ -788,12 +1059,13 @@ describe('ComponentConstructor', () => {
         fileName: Path.normalize('/docs/package/src/a/b/file-param'),
       };
       expect(ctor.constructParameterClass(context, classReference, {
+        type: 'field',
         name: 'field',
         range: { type: 'class', value: rangeValue },
         required: true,
         unique: true,
         comment: 'Hi',
-      }, rangeValue)).toEqual({
+      }, rangeValue, 'mp:a/b/file-param#MyClass_field')).toEqual({
         '@id': 'mp:a/b/file-param#MyClass_field',
         comment: 'Hi',
         range: 'mp:a/b/file-param#ClassParam',
@@ -807,6 +1079,7 @@ describe('ComponentConstructor', () => {
     it('should fill in nothing when not needed', () => {
       const field = { '@id': 'ex:field' };
       ctor.populateOptionalParameterFields(field, {
+        type: 'field',
         name: 'field',
         range: { type: 'raw', value: 'boolean' },
         required: false,
@@ -821,6 +1094,7 @@ describe('ComponentConstructor', () => {
     it('should fill in comment data', () => {
       const field = { '@id': 'ex:field' };
       ctor.populateOptionalParameterFields(field, {
+        type: 'field',
         name: 'field',
         range: { type: 'raw', value: 'boolean' },
         required: false,
@@ -836,6 +1110,7 @@ describe('ComponentConstructor', () => {
     it('should fill in the unique flag', () => {
       const field = { '@id': 'ex:field' };
       ctor.populateOptionalParameterFields(field, {
+        type: 'field',
         name: 'field',
         range: { type: 'raw', value: 'boolean' },
         required: false,
@@ -851,6 +1126,7 @@ describe('ComponentConstructor', () => {
     it('should fill in the required flag', () => {
       const field = { '@id': 'ex:field' };
       ctor.populateOptionalParameterFields(field, {
+        type: 'field',
         name: 'field',
         range: { type: 'raw', value: 'boolean' },
         required: true,
