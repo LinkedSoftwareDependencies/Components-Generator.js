@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.2.0"></a>
+## [v1.2.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v1.1.0...v1.2.0) - 2020-10-27
+
+### Added
+* [Handle indexed hashes as collectEntries parameters, Closes #43](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/9848655ead5b52dbf0b18cf732509363c1468de9)
+
 <a name="v1.1.0"></a>
 ## [v1.1.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v1.0.1...v1.1.0) - 2020-09-07
 
