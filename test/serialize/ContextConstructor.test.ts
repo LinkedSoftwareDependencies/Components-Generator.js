@@ -12,6 +12,7 @@ describe('ContextConstructor', () => {
         componentsPath: 'components',
         contexts: {},
         importPaths: {},
+        typesPath: '',
       },
     });
   });

@@ -29,6 +29,7 @@ describe('ComponentConstructor', () => {
         'https://linkedsoftwaredependencies.org/bundles/npm/my-package/^1.0.0/components/': 'components/',
         'https://linkedsoftwaredependencies.org/bundles/npm/my-package/^1.0.0/config/': 'config/',
       },
+      typesPath: '',
     };
     const contextConstructor = new ContextConstructorMocked({ packageMetadata });
     ctor = new ComponentConstructor({
