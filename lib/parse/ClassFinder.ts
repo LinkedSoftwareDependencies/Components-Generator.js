@@ -1,4 +1,3 @@
-import * as Path from 'path';
 import { ClassIndex, ClassReference } from './ClassIndex';
 import { ClassLoader } from './ClassLoader';
 
@@ -14,15 +13,14 @@ export class ClassFinder {
   }
 
   /**
-   * From a given package directory, find all named exports.
-   * It is assumed that the given package contains an index.d.ts file.
-   * @param packageRootDirectory The path of a package.
+   * From a given types index, find all named exports.
+   * @param typesPath The path to the index typings file.
    */
-  public async getPackageExports(packageRootDirectory: string): Promise<ClassIndex<ClassReference>> {
+  public async getPackageExports(typesPath: string): Promise<ClassIndex<ClassReference>> {
     let exports: ClassIndex<ClassReference> = {};
 
     // Start from the package index, and collect all named exports.
-    const paths = [ Path.join(packageRootDirectory, 'index') ];
+    const paths = [ typesPath ];
     for (const path of paths) {
       const { named, unnamed } = await this.getFileExports(path);
       exports = { ...exports, ...named };

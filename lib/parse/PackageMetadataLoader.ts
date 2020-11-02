@@ -45,6 +45,15 @@ export class PackageMetadataLoader {
       throw new Error(`Invalid package: Missing 'lsd:importPaths' in ${packageJsonPath}`);
     }
     const importPaths = packageJson['lsd:importPaths'];
+    if (!('types' in packageJson)) {
+      throw new Error(`Invalid package: Missing 'types' in ${packageJsonPath}`);
+    }
+    let typesPath = Path.join(packageRootDirectory, packageJson.types);
+    if (!typesPath.endsWith('.d.ts')) {
+      throw new Error(`Invalid package: 'types' entry does not have '.d.ts' suffix in ${packageJsonPath}`);
+    } else {
+      typesPath = typesPath.slice(0, -5);
+    }
 
     // Construct metadata hash
     return {
@@ -54,6 +63,7 @@ export class PackageMetadataLoader {
       componentsPath,
       contexts,
       importPaths,
+      typesPath,
     };
   }
 }
@@ -69,4 +79,5 @@ export interface PackageMetadata {
   componentsPath: string;
   contexts: {[iri: string]: string};
   importPaths: {[iri: string]: string};
+  typesPath: string;
 }

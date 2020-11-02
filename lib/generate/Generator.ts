@@ -34,7 +34,7 @@ export class Generator {
     const classIndexer = new ClassIndexer({ classLoader, classFinder });
 
     // Find all relevant classes
-    const packageExports = await classFinder.getPackageExports(this.pathDestination.packageRootDirectory);
+    const packageExports = await classFinder.getPackageExports(packageMetadata.typesPath);
     const classIndex = await classIndexer.createIndex(packageExports);
 
     // Load constructor data
