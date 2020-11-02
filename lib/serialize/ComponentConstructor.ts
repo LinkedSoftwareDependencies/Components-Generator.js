@@ -178,9 +178,24 @@ export class ComponentConstructor {
    * @param context A parsed JSON-LD context.
    * @param classReference The class reference.
    * @param fieldName The name of the field.
+   * @param scope The current field scope.
    */
-  public fieldNameToId(context: JsonLdContextNormalized, classReference: ClassReference, fieldName: string): string {
-    return context.compactIri(`${this.packageMetadata.moduleIri}/${this.getPathRelative(classReference.fileName)}#${classReference.localName}_${fieldName}`);
+  public fieldNameToId(
+    context: JsonLdContextNormalized,
+    classReference: ClassReference,
+    fieldName: string,
+    scope: FieldScope,
+  ): string {
+    if (scope.parentFieldNames.length > 0) {
+      fieldName = `${scope.parentFieldNames.join('_')}_${fieldName}`;
+    }
+    let id = context.compactIri(`${this.packageMetadata.moduleIri}/${this.getPathRelative(classReference.fileName)}#${classReference.localName}_${fieldName}`);
+    if (id in scope.fieldIdsHash) {
+      id += `_${scope.fieldIdsHash[id]++}`;
+    } else {
+      scope.fieldIdsHash[id] = 1;
+    }
+    return id;
   }
 
   /**
@@ -198,12 +213,17 @@ export class ComponentConstructor {
     constructorData: ConstructorData<ParameterRangeResolved>,
     parameters: ParameterDefinition[],
   ): ConstructorArgumentDefinition[] {
+    const scope: FieldScope = {
+      parentFieldNames: [],
+      fieldIdsHash: {},
+    };
     return constructorData.parameters.map(parameter => this.parameterDataToConstructorArgument(
       context,
       classReference,
       parameter,
       parameters,
-      this.fieldNameToId(context, classReference, parameter.name),
+      this.fieldNameToId(context, classReference, parameter.name, scope),
+      scope,
     ));
   }
 
@@ -218,6 +238,7 @@ export class ComponentConstructor {
    * @param parameterData Parameter data.
    * @param parameters The array of parameters of the owning class, which will be appended to.
    * @param fieldId The @id of the field.
+   * @param scope The current field scope.
    */
   public parameterDataToConstructorArgument(
     context: JsonLdContextNormalized,
@@ -225,6 +246,7 @@ export class ComponentConstructor {
     parameterData: ParameterData<ParameterRangeResolved>,
     parameters: ParameterDefinition[],
     fieldId: string,
+    scope: FieldScope,
   ): ConstructorArgumentDefinition {
     if (parameterData.range.type === 'nested') {
       // Create a hash object with `fields` entries.
@@ -235,6 +257,7 @@ export class ComponentConstructor {
         <ParameterData<ParameterRangeResolved> & { range: { type: 'nested' } }> parameterData,
         parameters,
         subParamData,
+        scope,
       ));
       return { fields };
     }
@@ -257,6 +280,7 @@ export class ComponentConstructor {
    * @param parameterData Parameter data with nested range.
    * @param parameters The array of parameters of the owning class, which will be appended to.
    * @param subParamData The sub-parameter of the parameter with nested range.
+   * @param scope The current field scope.
    */
   public constructFieldDefinitionNested(
     context: JsonLdContextNormalized,
@@ -264,8 +288,13 @@ export class ComponentConstructor {
     parameterData: ParameterData<ParameterRangeResolved> & { range: { type: 'nested' } },
     parameters: ParameterDefinition[],
     subParamData: ParameterData<ParameterRangeResolved>,
+    scope: FieldScope,
   ): ConstructorFieldDefinition {
     if (subParamData.type === 'field') {
+      const subScope: FieldScope = {
+        parentFieldNames: [ ...scope.parentFieldNames, subParamData.name ],
+        fieldIdsHash: scope.fieldIdsHash,
+      };
       return {
         keyRaw: subParamData.name,
         value: this.parameterDataToConstructorArgument(
@@ -273,7 +302,8 @@ export class ComponentConstructor {
           classReference,
           subParamData,
           parameters,
-          this.fieldNameToId(context, classReference, subParamData.name),
+          this.fieldNameToId(context, classReference, subParamData.name, scope),
+          subScope,
         ),
       };
     }
@@ -287,9 +317,9 @@ export class ComponentConstructor {
     }
 
     // Determine parameter id's
-    const idCollectEntries = this.fieldNameToId(context, classReference, parameterData.name);
-    const idKey = this.fieldNameToId(context, classReference, `${parameterData.name}_key`);
-    const idValue = this.fieldNameToId(context, classReference, `${parameterData.name}_value`);
+    const idCollectEntries = this.fieldNameToId(context, classReference, parameterData.name, scope);
+    const idKey = this.fieldNameToId(context, classReference, `${parameterData.name}_key`, scope);
+    const idValue = this.fieldNameToId(context, classReference, `${parameterData.name}_value`, scope);
 
     // Create sub parameters for key and value
     const subParameters: ParameterDefinition[] = [];
@@ -304,6 +334,7 @@ export class ComponentConstructor {
       subParamData,
       subParameters,
       idValue,
+      scope,
     );
     subParameters[subParameters.length - 1].required = true;
     subParameters[subParameters.length - 1].unique = true;
@@ -312,7 +343,7 @@ export class ComponentConstructor {
     const parameter: ParameterDefinition = {
       '@id': idCollectEntries,
       range: {
-        '@type': this.fieldNameToId(context, classReference, `${parameterData.name}_range`),
+        '@type': this.fieldNameToId(context, classReference, `${parameterData.name}_range`, scope),
         parameters: subParameters,
       },
     };
@@ -415,4 +446,15 @@ export interface PathDestinationDefinition {
   packageRootDirectory: string;
   originalPath: string;
   replacementPath: string;
+}
+
+export interface FieldScope {
+  /**
+   * All parent field names for the current scope.
+   */
+  parentFieldNames: string[];
+  /**
+   * A hash containing all previously created field names, to ensure uniqueness.
+   */
+  fieldIdsHash: {[fieldName: string]: number};
 }
