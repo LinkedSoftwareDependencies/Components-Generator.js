@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/LinkedSoftwareDependencies/Components-Generator.js.svg?branch=master)](https://travis-ci.org/LinkedSoftwareDependencies/Components-Generator.js)
 [![Coverage Status](https://coveralls.io/repos/github/LinkedSoftwareDependencies/Components-Generator.js/badge.svg?branch=master)](https://coveralls.io/github/LinkedSoftwareDependencies/Components-Generator.js?branch=master)
-[![npm version](https://badge.fury.io/js/componentjs-generator.svg)](https://www.npmjs.com/package/componentjs-generator)
+[![npm version](https://badge.fury.io/js/componentsjs-generator.svg)](https://www.npmjs.com/package/componentsjs-generator)
 
 This is a tool to automatically generate `.jsonld` component files from TypeScript classes
 for the [Components.js](https://github.com/LinkedSoftwareDependencies/Components.js) dependency injection framework.
@@ -14,13 +14,13 @@ Before you use this tool, it is recommended to first read the [Components.js doc
 **1. Install as a dev dependency**
 
 ```bash
-npm install -D componentjs-generator
+npm install -D componentsjs-generator
 ```
 
 or
 
 ```bash
-yarn add -D componentjs-generator
+yarn add -D componentsjs-generator
 ```
 
 **2. Declare components in `package.json`**
