@@ -51,6 +51,74 @@ describe('PackageMetadataLoader', () => {
       });
     });
 
+    it('should return with all required entries, but using typings', async() => {
+      resolutionContext.contentsOverrides = {
+        [Path.normalize('/package.json')]: `{
+  "name": "@solid/community-server",
+  "version": "1.2.3",
+  "lsd:module": "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server",
+  "lsd:components": "components/components.jsonld",
+  "lsd:contexts": {
+    "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/components/context.jsonld": "components/context.jsonld"
+  },
+  "lsd:importPaths": {
+    "https://example.org/bundles/npm/@solid/community-server/^1.0.0/components/": "components/",
+    "https://example.org/bundles/npm/@solid/community-server/^1.0.0/config/": "config/"
+  },
+  "typings": "./index.d.ts"
+}`,
+      };
+      expect(await loader.load('/')).toEqual({
+        componentsPath: Path.normalize('/components/components.jsonld'),
+        contexts: {
+          'https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/components/context.jsonld':
+            'components/context.jsonld',
+        },
+        importPaths: {
+          'https://example.org/bundles/npm/@solid/community-server/^1.0.0/components/': 'components/',
+          'https://example.org/bundles/npm/@solid/community-server/^1.0.0/config/': 'config/',
+        },
+        moduleIri: 'https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server',
+        name: '@solid/community-server',
+        version: '1.2.3',
+        typesPath: Path.normalize('/index'),
+      });
+    });
+
+    it('should return with all required entries, but using typings without extension', async() => {
+      resolutionContext.contentsOverrides = {
+        [Path.normalize('/package.json')]: `{
+  "name": "@solid/community-server",
+  "version": "1.2.3",
+  "lsd:module": "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server",
+  "lsd:components": "components/components.jsonld",
+  "lsd:contexts": {
+    "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/components/context.jsonld": "components/context.jsonld"
+  },
+  "lsd:importPaths": {
+    "https://example.org/bundles/npm/@solid/community-server/^1.0.0/components/": "components/",
+    "https://example.org/bundles/npm/@solid/community-server/^1.0.0/config/": "config/"
+  },
+  "typings": "./index"
+}`,
+      };
+      expect(await loader.load('/')).toEqual({
+        componentsPath: Path.normalize('/components/components.jsonld'),
+        contexts: {
+          'https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/components/context.jsonld':
+            'components/context.jsonld',
+        },
+        importPaths: {
+          'https://example.org/bundles/npm/@solid/community-server/^1.0.0/components/': 'components/',
+          'https://example.org/bundles/npm/@solid/community-server/^1.0.0/config/': 'config/',
+        },
+        moduleIri: 'https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server',
+        name: '@solid/community-server',
+        version: '1.2.3',
+        typesPath: Path.normalize('/index'),
+      });
+    });
+
     it('should error on invalid JSON', async() => {
       resolutionContext.contentsOverrides = {
         [Path.normalize('/package.json')]: `{`,
@@ -117,7 +185,7 @@ describe('PackageMetadataLoader', () => {
         .toThrow(new Error(`Invalid package: Missing 'lsd:importPaths' in ${Path.normalize('/package.json')}`));
     });
 
-    it('should error when types is missing', async() => {
+    it('should error when types and typings is missing', async() => {
       resolutionContext.contentsOverrides = {
         [Path.normalize('/package.json')]: `{
   "name": "@solid/community-server",
@@ -133,27 +201,7 @@ describe('PackageMetadataLoader', () => {
 }`,
       };
       await expect(loader.load('/')).rejects
-        .toThrow(new Error(`Invalid package: Missing 'types' in ${Path.normalize('/package.json')}`));
-    });
-
-    it('should error when types does not end with .d.ts', async() => {
-      resolutionContext.contentsOverrides = {
-        [Path.normalize('/package.json')]: `{
-  "name": "@solid/community-server",
-  "lsd:module": "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server",
-  "lsd:components": "components/components.jsonld",
-  "lsd:contexts": {
-    "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/components/context.jsonld": "components/context.jsonld"
-  },
-  "lsd:importPaths": {
-    "https://example.org/bundles/npm/@solid/community-server/^1.0.0/components/": "components/",
-    "https://example.org/bundles/npm/@solid/community-server/^1.0.0/config/": "config/"
-  },
-  "types": "index.ts"
-}`,
-      };
-      await expect(loader.load('/')).rejects
-        .toThrow(new Error(`Invalid package: 'types' entry does not have '.d.ts' suffix in ${Path.normalize('/package.json')}`));
+        .toThrow(new Error(`Invalid package: Missing 'types' or 'typings' in ${Path.normalize('/package.json')}`));
     });
   });
 });

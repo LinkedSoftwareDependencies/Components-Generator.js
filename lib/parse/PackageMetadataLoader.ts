@@ -45,13 +45,11 @@ export class PackageMetadataLoader {
       throw new Error(`Invalid package: Missing 'lsd:importPaths' in ${packageJsonPath}`);
     }
     const importPaths = packageJson['lsd:importPaths'];
-    if (!('types' in packageJson)) {
-      throw new Error(`Invalid package: Missing 'types' in ${packageJsonPath}`);
+    if (!('types' in packageJson) && !('typings' in packageJson)) {
+      throw new Error(`Invalid package: Missing 'types' or 'typings' in ${packageJsonPath}`);
     }
-    let typesPath = Path.join(packageRootDirectory, packageJson.types);
-    if (!typesPath.endsWith('.d.ts')) {
-      throw new Error(`Invalid package: 'types' entry does not have '.d.ts' suffix in ${packageJsonPath}`);
-    } else {
+    let typesPath = Path.join(packageRootDirectory, packageJson.types || packageJson.typings);
+    if (typesPath.endsWith('.d.ts')) {
       typesPath = typesPath.slice(0, -5);
     }
 
