@@ -85,12 +85,17 @@ describe('ContextConstructor', () => {
         '@context': [
           'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld',
           {
-            npmd: 'https://linkedsoftwaredependencies.org/bundles/npm/',
-            mp: 'npmd:my-package/',
+            MyClass1: {
+              '@id': 'mp:file1#MyClass1',
+              '@prefix': true,
+            },
+            MyClass2: {
+              '@id': 'mp:b/file2#MyClass2',
+              '@prefix': true,
+            },
             'files-mp': 'mp:^1.0.0/',
-
-            MyClass1: 'mp:file1#MyClass1',
-            MyClass2: 'mp:b/file2#MyClass2',
+            mp: 'npmd:my-package/',
+            npmd: 'https://linkedsoftwaredependencies.org/bundles/npm/',
           },
         ],
       });
@@ -135,8 +140,14 @@ describe('ContextConstructor', () => {
           ],
         },
       })).toEqual({
-        MyClass1: 'mp:file1#MyClass1',
-        MyClass2: 'mp:b/file2#MyClass2',
+        MyClass1: {
+          '@id': 'mp:file1#MyClass1',
+          '@prefix': true,
+        },
+        MyClass2: {
+          '@id': 'mp:b/file2#MyClass2',
+          '@prefix': true,
+        },
       });
     });
   });

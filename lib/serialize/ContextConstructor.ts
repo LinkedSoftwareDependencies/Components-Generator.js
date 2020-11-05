@@ -59,7 +59,10 @@ export class ContextConstructor {
         // Shortcut name for a class contains no special characters
         // Regex will always match
         const match = <RegExpExecArray> (/[a-z0-9]*$/iu.exec(component['@id']));
-        shortcuts[match[0]] = component['@id'];
+        shortcuts[match[0]] = <any> {
+          '@id': component['@id'],
+          '@prefix': true,
+        };
       }
     }
     return shortcuts;
