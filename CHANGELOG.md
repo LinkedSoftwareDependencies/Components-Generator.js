@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.4.0"></a>
+## [v1.4.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v1.3.0...v1.4.0) - 2020-11-06
+
+### Added
+* [Translate Record type aliases into hashes, Closes #47](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/0543b660c53cdfe5bbe7727f1a6d62db77e56c6d)
+
+### Changed
+* [Be less strict in how typings are defined in package.json](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/76f9929d0b19faeb317ebf457a4d7eb9e3510d48)
+
 <a name="v1.3.0"></a>
 ## [v1.3.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v1.2.0...v1.3.0) - 2020-11-02
 
