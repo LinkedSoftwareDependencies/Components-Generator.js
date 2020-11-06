@@ -611,23 +611,105 @@ describe('ComponentConstructor', () => {
       }, parameters)).toEqual([
         {
           fields: [
-            { keyRaw: 'fieldA', value: { '@id': 'mp:a/b/file-param#MyClass_fieldA' }},
-            { keyRaw: 'fieldB', value: { '@id': 'mp:a/b/file-param#MyClass_fieldB' }},
+            { keyRaw: 'fieldA', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldA' }},
+            { keyRaw: 'fieldB', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldB' }},
           ],
         },
       ]);
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_fieldA',
+          '@id': 'mp:a/b/file-param#MyClass_field_fieldA',
           comment: 'Hi1',
           range: 'xsd:boolean',
           required: true,
           unique: true,
         },
         {
-          '@id': 'mp:a/b/file-param#MyClass_fieldB',
+          '@id': 'mp:a/b/file-param#MyClass_field_fieldB',
           comment: 'Hi2',
           range: 'xsd:string',
+          required: true,
+          unique: true,
+        },
+      ]);
+    });
+
+    it('should handle a constructor with a nested param with a hash', () => {
+      const parameters: ParameterDefinition[] = [];
+      expect(ctor.constructParameters(context, classReference, {
+        parameters: [
+          {
+            type: 'field',
+            name: 'field',
+            range: {
+              type: 'nested',
+              value: [
+                {
+                  type: 'field',
+                  name: 'fieldA',
+                  range: {
+                    type: 'nested',
+                    value: [
+                      {
+                        type: 'index',
+                        domain: 'string',
+                        range: { type: 'raw', value: 'boolean' },
+                        comment: 'Hi1',
+                      },
+                    ],
+                  },
+                  required: true,
+                  unique: true,
+                  comment: 'Hi1',
+                },
+              ],
+            },
+            required: true,
+            unique: true,
+            comment: 'Hi',
+          },
+        ],
+      }, parameters)).toEqual([
+        {
+          fields: [
+            {
+              keyRaw: 'fieldA',
+              value: {
+                fields: [
+                  {
+                    collectEntries: 'mp:a/b/file-param#MyClass_field_fieldA',
+                    key: 'mp:a/b/file-param#MyClass_field_fieldA_key',
+                    value: {
+                      '@id': 'mp:a/b/file-param#MyClass_field_fieldA_value',
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ]);
+      expect(parameters).toEqual([
+        {
+          '@id': 'mp:a/b/file-param#MyClass_field_fieldA',
+          comment: 'Hi1',
+          range: {
+            '@type': 'mp:a/b/file-param#MyClass_field_fieldA_range',
+            parameters: [
+              {
+                '@id': 'mp:a/b/file-param#MyClass_field_fieldA_key',
+                required: true,
+                unique: true,
+              },
+              {
+                '@id': 'mp:a/b/file-param#MyClass_field_fieldA_value',
+                comment: 'Hi1',
+                range: 'xsd:boolean',
+                required: true,
+                unique: true,
+              },
+            ],
+          },
           required: true,
           unique: true,
         },
@@ -738,12 +820,12 @@ describe('ComponentConstructor', () => {
         comment: 'Hi',
       }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({
         fields: [
-          { keyRaw: 'field', value: { '@id': 'mp:a/b/file-param#MyClass_field' }},
+          { keyRaw: 'field', value: { '@id': 'mp:a/b/file-param#MyClass_field_field' }},
         ],
       });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_field',
+          '@id': 'mp:a/b/file-param#MyClass_field_field',
           comment: 'Hi',
           range: 'xsd:boolean',
           required: true,
@@ -783,20 +865,20 @@ describe('ComponentConstructor', () => {
         comment: 'Hi',
       }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({
         fields: [
-          { keyRaw: 'fieldA', value: { '@id': 'mp:a/b/file-param#MyClass_fieldA' }},
-          { keyRaw: 'fieldB', value: { '@id': 'mp:a/b/file-param#MyClass_fieldB' }},
+          { keyRaw: 'fieldA', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldA' }},
+          { keyRaw: 'fieldB', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldB' }},
         ],
       });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_fieldA',
+          '@id': 'mp:a/b/file-param#MyClass_field_fieldA',
           comment: 'Hi1',
           range: 'xsd:boolean',
           required: true,
           unique: true,
         },
         {
-          '@id': 'mp:a/b/file-param#MyClass_fieldB',
+          '@id': 'mp:a/b/file-param#MyClass_field_fieldB',
           comment: 'Hi2',
           range: 'xsd:string',
           required: true,
@@ -848,12 +930,12 @@ describe('ComponentConstructor', () => {
         comment: 'Hi',
       }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({
         fields: [
-          { keyRaw: 'fieldA', value: { '@id': 'mp:a/b/file-param#MyClass_fieldA' }},
+          { keyRaw: 'fieldA', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldA' }},
           {
             keyRaw: 'fieldSub',
             value: {
               fields: [
-                { keyRaw: 'fieldB', value: { '@id': 'mp:a/b/file-param#MyClass_fieldSub_fieldB' }},
+                { keyRaw: 'fieldB', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldSub_fieldB' }},
               ],
             },
           },
@@ -861,14 +943,14 @@ describe('ComponentConstructor', () => {
       });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_fieldA',
+          '@id': 'mp:a/b/file-param#MyClass_field_fieldA',
           comment: 'Hi1',
           range: 'xsd:boolean',
           required: true,
           unique: true,
         },
         {
-          '@id': 'mp:a/b/file-param#MyClass_fieldSub_fieldB',
+          '@id': 'mp:a/b/file-param#MyClass_field_fieldSub_fieldB',
           comment: 'Hi2',
           range: 'xsd:string',
           required: true,
@@ -920,12 +1002,12 @@ describe('ComponentConstructor', () => {
         comment: 'Hi',
       }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({
         fields: [
-          { keyRaw: 'field', value: { '@id': 'mp:a/b/file-param#MyClass_field' }},
+          { keyRaw: 'field', value: { '@id': 'mp:a/b/file-param#MyClass_field_field' }},
           {
             keyRaw: 'value',
             value: {
               fields: [
-                { keyRaw: 'field', value: { '@id': 'mp:a/b/file-param#MyClass_value_field' }},
+                { keyRaw: 'field', value: { '@id': 'mp:a/b/file-param#MyClass_field_value_field' }},
               ],
             },
           },
@@ -933,14 +1015,14 @@ describe('ComponentConstructor', () => {
       });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_field',
+          '@id': 'mp:a/b/file-param#MyClass_field_field',
           comment: 'Hi1',
           range: 'xsd:boolean',
           required: true,
           unique: true,
         },
         {
-          '@id': 'mp:a/b/file-param#MyClass_value_field',
+          '@id': 'mp:a/b/file-param#MyClass_field_value_field',
           comment: 'Hi2',
           range: 'xsd:string',
           required: true,
@@ -968,7 +1050,7 @@ describe('ComponentConstructor', () => {
         required: true,
         unique: true,
         comment: 'Hi',
-      }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({
+      }, parameters, 'mp:a/b/file-param#MyClass_fieldA', scope)).toEqual({
         fields: [
           {
             collectEntries: 'mp:a/b/file-param#MyClass_fieldA',
@@ -1031,7 +1113,7 @@ describe('ComponentConstructor', () => {
         required: true,
         unique: true,
         comment: 'Hi',
-      }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({
+      }, parameters, 'mp:a/b/file-param#MyClass_fieldA', scope)).toEqual({
         fields: [
           {
             collectEntries: 'mp:a/b/file-param#MyClass_fieldA',
@@ -1040,7 +1122,7 @@ describe('ComponentConstructor', () => {
           },
           {
             keyRaw: 'fieldB',
-            value: { '@id': 'mp:a/b/file-param#MyClass_fieldB' },
+            value: { '@id': 'mp:a/b/file-param#MyClass_fieldA_fieldB' },
           },
         ],
       });
@@ -1069,7 +1151,7 @@ describe('ComponentConstructor', () => {
           },
         },
         {
-          '@id': 'mp:a/b/file-param#MyClass_fieldB',
+          '@id': 'mp:a/b/file-param#MyClass_fieldA_fieldB',
           comment: 'Hi1',
           range: 'xsd:boolean',
           required: true,
@@ -1113,6 +1195,7 @@ describe('ComponentConstructor', () => {
         parameterData,
         parameters,
         subParamData,
+        '',
         scope,
       ))
         .toEqual({ keyRaw: 'fieldA', value: { '@id': 'mp:a/b/file-param#MyClass_fieldA' }});
@@ -1167,6 +1250,7 @@ describe('ComponentConstructor', () => {
         parameterData,
         parameters,
         subParamData,
+        '',
         scope,
       ))
         .toEqual({
@@ -1219,6 +1303,7 @@ describe('ComponentConstructor', () => {
         parameterData,
         parameters,
         subParamData,
+        'mp:a/b/file-param#MyClass_fieldA',
         scope,
       ))
         .toEqual({
@@ -1271,7 +1356,7 @@ describe('ComponentConstructor', () => {
       };
       const subParamData: ParameterData<ParameterRangeResolved> = (<any> parameterData).range.value[0];
       expect(() => ctor
-        .constructFieldDefinitionNested(context, classReference, parameterData, parameters, subParamData, scope))
+        .constructFieldDefinitionNested(context, classReference, parameterData, parameters, subParamData, '', scope))
         .toThrow(new Error(`Detected illegal indexed element inside a non-field in MyClass at /docs/package/src/a/b/file-param`));
     });
   });

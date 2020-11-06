@@ -248,15 +248,24 @@ export class ComponentConstructor {
     fieldId: string,
     scope: FieldScope,
   ): ConstructorArgumentDefinition {
+    // Append the current field name to the scope
+    if (parameterData.type === 'field') {
+      scope = {
+        ...scope,
+        parentFieldNames: [ ...scope.parentFieldNames, parameterData.name ],
+      };
+    }
+
     if (parameterData.range.type === 'nested') {
       // Create a hash object with `fields` entries.
       // Each entry's value is (indirectly) recursively handled by this method again.
       const fields = parameterData.range.value.map(subParamData => this.constructFieldDefinitionNested(
         context,
         classReference,
-        <ParameterData<ParameterRangeResolved> & { range: { type: 'nested' } }> parameterData,
+        <ParameterData<ParameterRangeResolved> & { range: { type: 'nested' } }>parameterData,
         parameters,
         subParamData,
+        fieldId,
         scope,
       ));
       return { fields };
@@ -277,6 +286,7 @@ export class ComponentConstructor {
    * @param parameterData Parameter data with nested range.
    * @param parameters The array of parameters of the owning class, which will be appended to.
    * @param subParamData The sub-parameter of the parameter with nested range.
+   * @param fieldId The @id of the field.
    * @param scope The current field scope.
    */
   public constructFieldDefinitionNested(
@@ -285,13 +295,10 @@ export class ComponentConstructor {
     parameterData: ParameterData<ParameterRangeResolved> & { range: { type: 'nested' } },
     parameters: ParameterDefinition[],
     subParamData: ParameterData<ParameterRangeResolved>,
+    fieldId: string,
     scope: FieldScope,
   ): ConstructorFieldDefinition {
     if (subParamData.type === 'field') {
-      const subScope: FieldScope = {
-        parentFieldNames: [ ...scope.parentFieldNames, subParamData.name ],
-        fieldIdsHash: scope.fieldIdsHash,
-      };
       return {
         keyRaw: subParamData.name,
         value: this.parameterDataToConstructorArgument(
@@ -300,7 +307,7 @@ export class ComponentConstructor {
           subParamData,
           parameters,
           this.fieldNameToId(context, classReference, subParamData.name, scope),
-          subScope,
+          scope,
         ),
       };
     }
@@ -313,8 +320,15 @@ export class ComponentConstructor {
         classReference.localName} at ${classReference.fileName}`);
     }
 
+    // Remove the last element of the parent field names when we're in an indexed field,
+    // to avoid the field name to be in the IRI twice.
+    scope = {
+      ...scope,
+      parentFieldNames: scope.parentFieldNames.slice(0, -1),
+    };
+
     // Determine parameter id's
-    const idCollectEntries = this.fieldNameToId(context, classReference, parameterData.name, scope);
+    const idCollectEntries = fieldId;
     const idKey = this.fieldNameToId(context, classReference, `${parameterData.name}_key`, scope);
     const idValue = this.fieldNameToId(context, classReference, `${parameterData.name}_value`, scope);
 
