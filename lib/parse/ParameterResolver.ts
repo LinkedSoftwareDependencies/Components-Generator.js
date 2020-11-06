@@ -1,14 +1,14 @@
-import { TSTypeLiteral } from '@typescript-eslint/types/dist/ts-estree';
+import type { TSTypeLiteral } from '@typescript-eslint/types/dist/ts-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import { ClassIndex, ClassLoaded, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
-import { ClassLoader } from './ClassLoader';
-import { ConstructorData } from './ConstructorLoader';
-import {
-  ParameterData,
+import type { ClassIndex, ClassLoaded, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
+import type { ClassLoader } from './ClassLoader';
+import type { ConstructorData } from './ConstructorLoader';
+import type { ParameterData,
   ParameterDataField,
-  ParameterLoader,
   ParameterRangeResolved,
-  ParameterRangeUnresolved,
+  ParameterRangeUnresolved } from './ParameterLoader';
+import {
+  ParameterLoader,
 } from './ParameterLoader';
 
 export class ParameterResolver {

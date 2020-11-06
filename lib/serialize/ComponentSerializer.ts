@@ -1,8 +1,8 @@
 import * as Path from 'path';
-import { ResolutionContext } from '../resolution/ResolutionContext';
-import { PathDestinationDefinition } from './ComponentConstructor';
-import { ComponentDefinitions, ComponentDefinitionsIndex } from './ComponentDefinitions';
-import { ContextRaw } from './ContextConstructor';
+import type { ResolutionContext } from '../resolution/ResolutionContext';
+import type { PathDestinationDefinition } from './ComponentConstructor';
+import type { ComponentDefinitions, ComponentDefinitionsIndex } from './ComponentDefinitions';
+import type { ContextRaw } from './ContextConstructor';
 
 /**
  * Serializes components to files.

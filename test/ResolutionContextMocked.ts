@@ -1,11 +1,11 @@
 /* istanbul ignore file */
-import { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
+import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
 import { ResolutionContext } from '../lib/resolution/ResolutionContext';
 
 export class ResolutionContextMocked extends ResolutionContext {
-  public contentsOverrides: {[name: string]: string | AST<TSESTreeOptions>};
+  public contentsOverrides: Record<string, string | AST<TSESTreeOptions>>;
 
-  public constructor(contentsOverrides: {[name: string]: string | AST<TSESTreeOptions>}) {
+  public constructor(contentsOverrides: Record<string, string | AST<TSESTreeOptions>>) {
     super();
     this.contentsOverrides = contentsOverrides;
   }
@@ -32,8 +32,8 @@ export class ResolutionContextMocked extends ResolutionContext {
     const indexContent = await this.getTypeScriptFileContent(filePath);
     try {
       return this.parseTypescriptContents(indexContent);
-    } catch (error) {
-      throw new Error(`Could not parse file ${filePath}, invalid syntax at line ${error.lineNumber}, column ${error.column}. Message: ${error.message}`);
+    } catch (error: unknown) {
+      throw new Error(`Could not parse file ${filePath}, invalid syntax at line ${(<any> error).lineNumber}, column ${(<any> error).column}. Message: ${(<Error> error).message}`);
     }
   }
 }

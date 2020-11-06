@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as Path from 'path';
-import { AST, TSESTreeOptions, parse } from '@typescript-eslint/typescript-estree';
+import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
+import { parse } from '@typescript-eslint/typescript-estree';
 import * as LRUCache from 'lru-cache';
 
 /**
@@ -10,7 +11,7 @@ export class ResolutionContext {
   private readonly parsedCache: LRUCache<string, AST<TSESTreeOptions>>;
 
   public constructor() {
-    this.parsedCache = new LRUCache(2048);
+    this.parsedCache = new LRUCache(2_048);
   }
 
   /**
@@ -94,8 +95,8 @@ export class ResolutionContext {
       const parsed = this.parseTypescriptContents(indexContent);
       this.parsedCache.set(filePath, parsed);
       return parsed;
-    } catch (error) {
-      throw new Error(`Could not parse file ${filePath}, invalid syntax at line ${error.lineNumber}, column ${error.column}. Message: ${error.message}`);
+    } catch (error: unknown) {
+      throw new Error(`Could not parse file ${filePath}, invalid syntax at line ${(<any> error).lineNumber}, column ${(<any> error).column}. Message: ${(<Error> error).message}`);
     }
   }
 }

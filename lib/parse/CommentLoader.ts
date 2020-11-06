@@ -1,8 +1,8 @@
-import { ClassDeclaration, TSInterfaceDeclaration,
+import type { ClassDeclaration, TSInterfaceDeclaration,
   MethodDefinition, TSPropertySignature, TSIndexSignature, BaseNode } from '@typescript-eslint/types/dist/ts-estree';
 import * as commentParse from 'comment-parser';
-import { ClassReference, ClassReferenceLoaded } from './ClassIndex';
-import { ParameterRangeUnresolved } from './ParameterLoader';
+import type { ClassReference, ClassReferenceLoaded } from './ClassIndex';
+import type { ParameterRangeUnresolved } from './ParameterLoader';
 
 /**
  * Loads comments from fields in a given class.
@@ -141,9 +141,7 @@ export interface CommentLoaderArgs {
   classLoaded: ClassReferenceLoaded;
 }
 
-export interface ConstructorCommentData {
-  [fieldName: string]: CommentData;
-}
+export type ConstructorCommentData = Record<string, CommentData>;
 
 export interface CommentData {
   /**
@@ -165,5 +163,5 @@ export interface CommentData {
   /**
    * Parameters that were defined in this comment.
    */
-  params?: {[paramName: string]: string};
+  params?: Record<string, string>;
 }

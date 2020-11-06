@@ -1,13 +1,10 @@
-import { ClassDeclaration, TSInterfaceDeclaration, TypeNode } from '@typescript-eslint/types/dist/ts-estree';
-import { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
+import type { ClassDeclaration, TSInterfaceDeclaration, TypeNode } from '@typescript-eslint/types/dist/ts-estree';
+import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
 
 /**
  * A collection of classes, with exported name as key.
  */
-export interface ClassIndex<T> {
-  // The exported name of the class, as visible by externals importing it.
-  [className: string]: T;
-}
+export type ClassIndex<T> = Record<string, T>;
 
 /**
  * The name and location of a class.
@@ -50,9 +47,7 @@ export interface ClassLoaded extends ClassReference {
 /**
  * A hash of generic type name to its properties.
  */
-export interface GenericTypes {
-  [name: string]: { type?: TypeNode };
-}
+export type GenericTypes = Record<string, { type?: TypeNode }>;
 
 /**
  * A loaded interface with a full interface declaration.

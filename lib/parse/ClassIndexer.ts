@@ -1,15 +1,15 @@
 /**
  * Creates an index of classes in a certain package.
  */
-import { ClassFinder } from './ClassFinder';
-import { ClassIndex, ClassLoaded, ClassReference } from './ClassIndex';
-import { ClassLoader } from './ClassLoader';
+import type { ClassFinder } from './ClassFinder';
+import type { ClassIndex, ClassLoaded, ClassReference } from './ClassIndex';
+import type { ClassLoader } from './ClassLoader';
 
 export class ClassIndexer {
   /**
    * Errors that do not require an import, and are assumed to be known globally.
    */
-  private static readonly SUPERCLASS_BLACKLIST: {[name: string]: boolean} = {
+  private static readonly SUPERCLASS_BLACKLIST: Record<string, boolean> = {
     Error: true,
   };
 

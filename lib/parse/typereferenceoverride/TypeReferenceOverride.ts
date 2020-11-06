@@ -1,5 +1,5 @@
-import { TSTypeReference } from '@typescript-eslint/types/dist/ts-estree';
-import { ParameterRangeUnresolved } from '../ParameterLoader';
+import type { TSTypeReference } from '@typescript-eslint/types/dist/ts-estree';
+import type { ParameterRangeUnresolved } from '../ParameterLoader';
 
 /**
  * Overrides how types should be converted to parameter ranges.
@@ -10,5 +10,5 @@ export interface TypeReferenceOverride {
    * Returns undefined if this handler is not applicable.
    * @param typeNode A type node.
    */
-  handle(typeNode: TSTypeReference): ParameterRangeUnresolved | undefined;
+  handle: (typeNode: TSTypeReference) => ParameterRangeUnresolved | undefined;
 }

@@ -1,6 +1,7 @@
 /* istanbul ignore file */
-import { ComponentDefinitions } from '../lib/serialize/ComponentDefinitions';
-import { ContextConstructor, ContextRaw } from '../lib/serialize/ContextConstructor';
+import type { ComponentDefinitions } from '../lib/serialize/ComponentDefinitions';
+import type { ContextRaw } from '../lib/serialize/ContextConstructor';
+import { ContextConstructor } from '../lib/serialize/ContextConstructor';
 
 export class ContextConstructorMocked extends ContextConstructor {
   public constructContext(components?: ComponentDefinitions): ContextRaw {

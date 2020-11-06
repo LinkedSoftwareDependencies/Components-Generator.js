@@ -1,16 +1,16 @@
 import * as Path from 'path';
-import { ContextParser, JsonLdContextNormalized } from 'jsonld-context-parser';
-import { ClassIndex, ClassLoaded, ClassReference } from '../parse/ClassIndex';
-import { ConstructorData } from '../parse/ConstructorLoader';
-import { PackageMetadata } from '../parse/PackageMetadataLoader';
-import { ParameterData, ParameterRangeResolved } from '../parse/ParameterLoader';
-import {
+import type { ContextParser, JsonLdContextNormalized } from 'jsonld-context-parser';
+import type { ClassIndex, ClassLoaded, ClassReference } from '../parse/ClassIndex';
+import type { ConstructorData } from '../parse/ConstructorLoader';
+import type { PackageMetadata } from '../parse/PackageMetadataLoader';
+import type { ParameterData, ParameterRangeResolved } from '../parse/ParameterLoader';
+import type {
   ComponentDefinition,
   ComponentDefinitions, ComponentDefinitionsIndex,
   ConstructorArgumentDefinition, ConstructorFieldDefinition,
   ParameterDefinition,
 } from './ComponentDefinitions';
-import { ContextConstructor } from './ContextConstructor';
+import type { ContextConstructor } from './ContextConstructor';
 
 /**
  * Creates declarative JSON components for the given classes.
@@ -263,12 +263,9 @@ export class ComponentConstructor {
     }
 
     // For all other range types, create a parameter and return its parameter id.
-    let param: ParameterDefinition;
-    if (parameterData.range.type === 'raw' || parameterData.range.type === 'override') {
-      param = this.constructParameterRaw(context, classReference, parameterData, parameterData.range.value, fieldId);
-    } else {
-      param = this.constructParameterClass(context, classReference, parameterData, parameterData.range.value, fieldId);
-    }
+    const param: ParameterDefinition = parameterData.range.type === 'raw' || parameterData.range.type === 'override' ?
+      this.constructParameterRaw(context, classReference, parameterData, parameterData.range.value, fieldId) :
+      this.constructParameterClass(context, classReference, parameterData, parameterData.range.value, fieldId);
     parameters.push(param);
     return { '@id': fieldId };
   }
@@ -420,7 +417,7 @@ export class ComponentConstructor {
   public populateOptionalParameterFields(
     parameterDefinition: ParameterDefinition,
     parameterData: ParameterData<ParameterRangeResolved>,
-  ) {
+  ): void {
     if (parameterData.comment) {
       parameterDefinition.comment = parameterData.comment;
     }
@@ -456,5 +453,5 @@ export interface FieldScope {
   /**
    * A hash containing all previously created field names, to ensure uniqueness.
    */
-  fieldIdsHash: {[fieldName: string]: number};
+  fieldIdsHash: Record<string, number>;
 }

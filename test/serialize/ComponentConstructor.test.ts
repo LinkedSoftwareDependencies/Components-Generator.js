@@ -1,10 +1,12 @@
 import * as Path from 'path';
-import { ContextParser, JsonLdContextNormalized } from 'jsonld-context-parser';
-import { ClassIndex, ClassLoaded, ClassReference } from '../../lib/parse/ClassIndex';
-import { ConstructorData } from '../../lib/parse/ConstructorLoader';
-import { ParameterData, ParameterRangeResolved } from '../../lib/parse/ParameterLoader';
-import { ComponentConstructor, FieldScope } from '../../lib/serialize/ComponentConstructor';
-import { ParameterDefinition } from '../../lib/serialize/ComponentDefinitions';
+import type { JsonLdContextNormalized } from 'jsonld-context-parser';
+import { ContextParser } from 'jsonld-context-parser';
+import type { ClassIndex, ClassLoaded, ClassReference } from '../../lib/parse/ClassIndex';
+import type { ConstructorData } from '../../lib/parse/ConstructorLoader';
+import type { ParameterData, ParameterRangeResolved } from '../../lib/parse/ParameterLoader';
+import type { FieldScope } from '../../lib/serialize/ComponentConstructor';
+import { ComponentConstructor } from '../../lib/serialize/ComponentConstructor';
+import type { ParameterDefinition } from '../../lib/serialize/ComponentDefinitions';
 import { ContextConstructorMocked } from '../ContextConstructorMocked';
 
 describe('ComponentConstructor', () => {

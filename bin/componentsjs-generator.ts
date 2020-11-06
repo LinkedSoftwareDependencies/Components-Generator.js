@@ -3,7 +3,7 @@ import * as minimist from 'minimist';
 import { Generator } from '../lib/generate/Generator';
 import { ResolutionContext } from '../lib/resolution/ResolutionContext';
 
-function showHelp() {
+function showHelp(): void {
   process.stderr.write(`Generates components files for TypeScript files in a package
 Usage:
   componentsjs-generator

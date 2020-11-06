@@ -1,5 +1,5 @@
 import * as Path from 'path';
-import { ResolutionContext } from '../resolution/ResolutionContext';
+import type { ResolutionContext } from '../resolution/ResolutionContext';
 
 /**
  * Load metadata from packages.
@@ -22,8 +22,8 @@ export class PackageMetadataLoader {
     let packageJson: any;
     try {
       packageJson = JSON.parse(packageJsonRaw);
-    } catch (error) {
-      throw new Error(`Invalid package: Syntax error in ${packageJsonPath}: ${error.message}`);
+    } catch (error: unknown) {
+      throw new Error(`Invalid package: Syntax error in ${packageJsonPath}: ${(<Error> error).message}`);
     }
 
     // Extract required fields from package.json
@@ -75,7 +75,7 @@ export interface PackageMetadata {
   version: string;
   moduleIri: string;
   componentsPath: string;
-  contexts: {[iri: string]: string};
-  importPaths: {[iri: string]: string};
+  contexts: Record<string, string>;
+  importPaths: Record<string, string>;
   typesPath: string;
 }

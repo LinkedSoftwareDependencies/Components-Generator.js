@@ -1,11 +1,12 @@
-import { MethodDefinition, TSTypeLiteral, Identifier, TSIndexSignature,
+import type { MethodDefinition, TSTypeLiteral, Identifier, TSIndexSignature,
   TSTypeAnnotation, TypeNode, TSTypeReference } from '@typescript-eslint/types/dist/ts-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import { ClassReference, InterfaceLoaded } from '../../lib/parse/ClassIndex';
+import type { ClassReference, InterfaceLoaded } from '../../lib/parse/ClassIndex';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
-import { CommentData } from '../../lib/parse/CommentLoader';
+import type { CommentData } from '../../lib/parse/CommentLoader';
 import { ConstructorLoader } from '../../lib/parse/ConstructorLoader';
-import { ParameterLoader, ParameterRangeUnresolved } from '../../lib/parse/ParameterLoader';
+import type { ParameterRangeUnresolved } from '../../lib/parse/ParameterLoader';
+import { ParameterLoader } from '../../lib/parse/ParameterLoader';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
 describe('ParameterLoader', () => {

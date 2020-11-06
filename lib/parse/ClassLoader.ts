@@ -1,8 +1,9 @@
 import * as Path from 'path';
-import { ClassDeclaration, TSInterfaceDeclaration } from '@typescript-eslint/types/dist/ts-estree';
-import { AST, AST_NODE_TYPES, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
-import { ResolutionContext } from '../resolution/ResolutionContext';
-import { ClassLoaded, ClassReference, ClassReferenceLoaded, GenericTypes, InterfaceLoaded } from './ClassIndex';
+import type { ClassDeclaration, TSInterfaceDeclaration } from '@typescript-eslint/types/dist/ts-estree';
+import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
+import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
+import type { ResolutionContext } from '../resolution/ResolutionContext';
+import type { ClassLoaded, ClassReference, ClassReferenceLoaded, GenericTypes, InterfaceLoaded } from './ClassIndex';
 import { CommentLoader } from './CommentLoader';
 
 /**
@@ -143,7 +144,7 @@ export class ClassLoader {
       try {
         return await this.loadClassDeclaration({ localName: classReference.localName, fileName: subFile },
           considerInterfaces);
-      } catch (error) {
+      } catch {
         // Ignore class not found errors
       }
     }
@@ -193,14 +194,14 @@ export class ClassLoader {
    * @param ast The parsed file.
    */
   public getClassElements(fileName: string, ast: AST<TSESTreeOptions>): ClassElements {
-    const exportedClasses: { [exportedName: string]: ClassDeclaration } = {};
-    const exportedInterfaces: { [exportedName: string]: TSInterfaceDeclaration } = {};
-    const exportedImportedElements: { [exportedName: string]: { localName: string; fileName: string } } = {};
+    const exportedClasses: Record<string, ClassDeclaration> = {};
+    const exportedInterfaces: Record<string, TSInterfaceDeclaration> = {};
+    const exportedImportedElements: Record<string, { localName: string; fileName: string }> = {};
     const exportedImportedAll: string[] = [];
-    const exportedUnknowns: { [exportedName: string]: string } = {};
-    const declaredClasses: { [localName: string]: ClassDeclaration } = {};
-    const declaredInterfaces: { [localName: string]: TSInterfaceDeclaration } = {};
-    const importedElements: { [exportedName: string]: { localName: string; fileName: string } } = {};
+    const exportedUnknowns: Record<string, string> = {};
+    const declaredClasses: Record<string, ClassDeclaration> = {};
+    const declaredInterfaces: Record<string, TSInterfaceDeclaration> = {};
+    const importedElements: Record<string, { localName: string; fileName: string }> = {};
 
     for (const statement of ast.body) {
       if (statement.type === AST_NODE_TYPES.ExportNamedDeclaration) {
@@ -281,19 +282,19 @@ export interface ClassLoaderArgs {
  */
 export interface ClassElements {
   // Classes that have been declared in a file via `export class A`
-  exportedClasses: {[exportedName: string]: ClassDeclaration};
+  exportedClasses: Record<string, ClassDeclaration>;
   // Interfaces that have been declared in a file via `export interface A`
-  exportedInterfaces: {[exportedName: string]: TSInterfaceDeclaration};
+  exportedInterfaces: Record<string, TSInterfaceDeclaration>;
   // Elements that have been exported via `export { A as B } from "b"`
-  exportedImportedElements: { [exportedName: string]: { localName: string; fileName: string } };
+  exportedImportedElements: Record<string, { localName: string; fileName: string }>;
   // Exports via `export * from "b"`
   exportedImportedAll: string[];
   // Things that have been exported via `export {A as B}`, where the target is not known
-  exportedUnknowns: { [exportedName: string]: string };
+  exportedUnknowns: Record<string, string>;
   // Classes that have been declared in a file via `declare class A`
-  declaredClasses: {[localName: string]: ClassDeclaration};
+  declaredClasses: Record<string, ClassDeclaration>;
   // Interfaces that have been declared in a file via `declare interface A`
-  declaredInterfaces: {[localName: string]: TSInterfaceDeclaration};
+  declaredInterfaces: Record<string, TSInterfaceDeclaration>;
   // Elements that are imported from elsewhere via `import {A} from ''`
-  importedElements: {[exportedName: string]: { localName: string; fileName: string }};
+  importedElements: Record<string, { localName: string; fileName: string }>;
 }

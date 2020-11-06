@@ -1,7 +1,7 @@
-import { Range, SourceLocation, TSTypeLiteral, TSTypeReference } from '@typescript-eslint/types/dist/ts-estree';
+import type { Range, SourceLocation, TSTypeLiteral, TSTypeReference } from '@typescript-eslint/types/dist/ts-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import { ParameterRangeUnresolved } from '../ParameterLoader';
-import { TypeReferenceOverride } from './TypeReferenceOverride';
+import type { ParameterRangeUnresolved } from '../ParameterLoader';
+import type { TypeReferenceOverride } from './TypeReferenceOverride';
 
 /**
  * Converts type aliases of the form `Record<K, V>` into `{[k: K]: V}`.

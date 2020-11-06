@@ -1,5 +1,6 @@
 import * as Path from 'path';
-import { AST, TSESTreeOptions, AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
+import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
+import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
 

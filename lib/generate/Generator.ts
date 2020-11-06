@@ -5,8 +5,9 @@ import { ClassLoader } from '../parse/ClassLoader';
 import { ConstructorLoader } from '../parse/ConstructorLoader';
 import { PackageMetadataLoader } from '../parse/PackageMetadataLoader';
 import { ParameterResolver } from '../parse/ParameterResolver';
-import { ResolutionContext } from '../resolution/ResolutionContext';
-import { ComponentConstructor, PathDestinationDefinition } from '../serialize/ComponentConstructor';
+import type { ResolutionContext } from '../resolution/ResolutionContext';
+import type { PathDestinationDefinition } from '../serialize/ComponentConstructor';
+import { ComponentConstructor } from '../serialize/ComponentConstructor';
 import { ComponentSerializer } from '../serialize/ComponentSerializer';
 import { ContextConstructor } from '../serialize/ContextConstructor';
 

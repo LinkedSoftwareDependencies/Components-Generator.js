@@ -1,5 +1,5 @@
-import { PackageMetadata } from '../parse/PackageMetadataLoader';
-import { ComponentDefinitions } from './ComponentDefinitions';
+import type { PackageMetadata } from '../parse/PackageMetadataLoader';
+import type { ComponentDefinitions } from './ComponentDefinitions';
 
 /**
  * Constructs a JSON-LD context for a given package..
@@ -52,8 +52,8 @@ export class ContextConstructor {
    * Construct a hash of component shortcuts.
    * @param componentDefinitions Component definitions.
    */
-  public constructComponentShortcuts(componentDefinitions: ComponentDefinitions): {[key: string]: string} {
-    const shortcuts: {[key: string]: string} = {};
+  public constructComponentShortcuts(componentDefinitions: ComponentDefinitions): Record<string, string> {
+    const shortcuts: Record<string, string> = {};
     for (const componentDefinition of Object.values(componentDefinitions)) {
       for (const component of componentDefinition.components) {
         // Shortcut name for a class contains no special characters
@@ -71,5 +71,5 @@ export interface ContextSerializerArgs {
 }
 
 export interface ContextRaw {
-  '@context': (string | {[key: string]: string})[];
+  '@context': (string | Record<string, string>)[];
 }

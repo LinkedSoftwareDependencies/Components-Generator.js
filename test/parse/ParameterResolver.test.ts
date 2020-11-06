@@ -1,5 +1,5 @@
-import { TSTypeLiteral, MethodDefinition } from '@typescript-eslint/types/dist/ts-estree';
-import { ClassLoaded, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from '../../lib/parse/ClassIndex';
+import type { TSTypeLiteral, MethodDefinition } from '@typescript-eslint/types/dist/ts-estree';
+import type { ClassLoaded, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from '../../lib/parse/ClassIndex';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
 import { ConstructorLoader } from '../../lib/parse/ConstructorLoader';
 import { ParameterResolver } from '../../lib/parse/ParameterResolver';

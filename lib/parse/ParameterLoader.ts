@@ -1,4 +1,4 @@
-import {
+import type {
   Identifier,
   MethodDefinition,
   TSPropertySignature,
@@ -9,10 +9,11 @@ import {
   TSTypeReference,
 } from '@typescript-eslint/types/dist/ts-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import { ClassReference, ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
-import { CommentData, CommentLoader } from './CommentLoader';
-import { ConstructorData } from './ConstructorLoader';
-import { TypeReferenceOverride } from './typereferenceoverride/TypeReferenceOverride';
+import type { ClassReference, ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
+import type { CommentData } from './CommentLoader';
+import { CommentLoader } from './CommentLoader';
+import type { ConstructorData } from './ConstructorLoader';
+import type { TypeReferenceOverride } from './typereferenceoverride/TypeReferenceOverride';
 import { TypeReferenceOverrideAliasRecord } from './typereferenceoverride/TypeReferenceOverrideAliasRecord';
 
 /**
@@ -87,13 +88,13 @@ export class ParameterLoader {
         if (!commentData.ignored) {
           return this.loadField(typeElement, commentData);
         }
-        return undefined;
+        return;
       case AST_NODE_TYPES.TSIndexSignature:
         commentData = this.commentLoader.getCommentDataFromField(typeElement);
         if (!commentData.ignored) {
           return this.loadIndex(typeElement, commentData);
         }
-        return undefined;
+        return;
       default:
         throw new Error(`Unsupported field type ${typeElement.type} in ${this.classLoaded.localName} in ${this.classLoaded.fileName}`);
     }

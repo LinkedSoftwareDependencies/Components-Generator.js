@@ -1,13 +1,11 @@
 /* The following types are defined according to the Components.js documentation */
 /* https://componentsjs.readthedocs.io/en/latest/ */
 
-export interface ComponentDefinitions {
-  [path: string]: {
-    '@context': string[];
-    '@id': string;
-    components: ComponentDefinition[];
-  };
-}
+export type ComponentDefinitions = Record<string, {
+  '@context': string[];
+  '@id': string;
+  components: ComponentDefinition[];
+}>;
 
 export interface ComponentDefinitionsIndex {
   '@context': string[];

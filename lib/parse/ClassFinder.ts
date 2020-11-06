@@ -1,5 +1,5 @@
-import { ClassIndex, ClassReference } from './ClassIndex';
-import { ClassLoader } from './ClassLoader';
+import type { ClassIndex, ClassReference } from './ClassIndex';
+import type { ClassLoader } from './ClassLoader';
 
 /**
  * Load the names and locations of all available classes that are exported by a package.
