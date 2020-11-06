@@ -1,4 +1,5 @@
-import { MethodDefinition, TSTypeLiteral, Identifier, TSIndexSignature } from '@typescript-eslint/types/dist/ts-estree';
+import { MethodDefinition, TSTypeLiteral, Identifier, TSIndexSignature,
+  TSTypeAnnotation, TypeNode, TSTypeReference } from '@typescript-eslint/types/dist/ts-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import { ClassReference, InterfaceLoaded } from '../../lib/parse/ClassIndex';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
@@ -962,6 +963,39 @@ export interface A{
       expect(() => parameterLoader.getFieldRange(field, {}))
         .toThrow(new Error('Found untyped generic field type at field fieldA in A at file'));
     });
+
+    it('should get the range of a Record', async() => {
+      expect(await getFieldRange('fieldA: Record<string, number>', {}))
+        .toMatchObject({
+          type: 'hash',
+          value: {
+            members: [
+              {
+                parameters: [
+                  {
+                    name: 'key',
+                    type: 'Identifier',
+                    typeAnnotation: {
+                      type: 'TSTypeAnnotation',
+                      typeAnnotation: {
+                        type: 'TSStringKeyword',
+                      },
+                    },
+                  },
+                ],
+                type: 'TSIndexSignature',
+                typeAnnotation: {
+                  type: 'TSTypeAnnotation',
+                  typeAnnotation: {
+                    type: 'TSNumberKeyword',
+                  },
+                },
+              },
+            ],
+            type: 'TSTypeLiteral',
+          },
+        });
+    });
   });
 
   describe('getFieldDefault', () => {
@@ -1075,6 +1109,60 @@ export interface A{
     it('should error on a missing range', async() => {
       await expect(async() => await getIndexRange('{[k: string]}', {}))
         .rejects.toThrow(new Error('Missing field type on an index signature in A at file'));
+    });
+  });
+
+  describe('handleTypeOverride', () => {
+    const clazz: ClassReference = { localName: 'A', fileName: 'file' };
+
+    async function handleTypeOverride(type: string): Promise<ParameterRangeUnresolved | undefined> {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export class A{
+  constructor(a: ${type}) {}
+}`,
+      };
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
+      const field: Identifier = <any> (<MethodDefinition> constructorLoader.getConstructor(classLoaded))
+        .value.params[0];
+      const parameterLoader = new ParameterLoader({ classLoaded });
+      const typeNode: TypeNode = (<TSTypeAnnotation> field.typeAnnotation).typeAnnotation;
+      return parameterLoader.handleTypeOverride(<TSTypeReference> typeNode);
+    }
+
+    it('should do nothing on an unsupported type', async() => {
+      expect(await handleTypeOverride('String')).toBeUndefined();
+    });
+
+    it('handle a Record type alias', async() => {
+      expect(await handleTypeOverride('Record<string, number>')).toMatchObject({
+        type: 'hash',
+        value: {
+          members: [
+            {
+              parameters: [
+                {
+                  name: 'key',
+                  type: 'Identifier',
+                  typeAnnotation: {
+                    type: 'TSTypeAnnotation',
+                    typeAnnotation: {
+                      type: 'TSStringKeyword',
+                    },
+                  },
+                },
+              ],
+              type: 'TSIndexSignature',
+              typeAnnotation: {
+                type: 'TSTypeAnnotation',
+                typeAnnotation: {
+                  type: 'TSNumberKeyword',
+                },
+              },
+            },
+          ],
+          type: 'TSTypeLiteral',
+        },
+      });
     });
   });
 });

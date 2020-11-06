@@ -6,16 +6,23 @@ import {
   TypeElement,
   TypeNode,
   TSIndexSignature,
+  TSTypeReference,
 } from '@typescript-eslint/types/dist/ts-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import { ClassReference, ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
 import { CommentData, CommentLoader } from './CommentLoader';
 import { ConstructorData } from './ConstructorLoader';
+import { TypeReferenceOverride } from './typereferenceoverride/TypeReferenceOverride';
+import { TypeReferenceOverrideAliasRecord } from './typereferenceoverride/TypeReferenceOverrideAliasRecord';
 
 /**
  * Interprets class parameters of a given class.
  */
 export class ParameterLoader {
+  private static readonly typeReferenceOverrides: TypeReferenceOverride[] = [
+    new TypeReferenceOverrideAliasRecord(),
+  ];
+
   private readonly classLoaded: ClassReferenceLoaded;
   private readonly commentLoader: CommentLoader;
 
@@ -168,6 +175,7 @@ export class ParameterLoader {
       } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
     }
 
+    let typeAliasOverride: ParameterRangeUnresolved | undefined;
     // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
     switch (typeNode.type) {
       case AST_NODE_TYPES.TSTypeReference:
@@ -195,6 +203,12 @@ export class ParameterLoader {
                   } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
                 }
                 return this.getRangeFromTypeNode(genericProperties.type, errorIdentifier);
+              }
+
+              // Check if this node is a predefined type alias
+              typeAliasOverride = this.handleTypeOverride(typeNode);
+              if (typeAliasOverride) {
+                return typeAliasOverride;
               }
 
               // Otherwise, assume we have an interface/class parameter
@@ -303,6 +317,19 @@ export class ParameterLoader {
 
     throw new Error(`Missing field type on ${this.getErrorIdentifierIndex()
     } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
+  }
+
+  /**
+   * Iterate over all type reference override handler to see if one of them overrides the given type.
+   * @param typeNode A type reference node.
+   */
+  public handleTypeOverride(typeNode: TSTypeReference): ParameterRangeUnresolved | undefined {
+    for (const typeReferenceOverride of ParameterLoader.typeReferenceOverrides) {
+      const handled = typeReferenceOverride.handle(typeNode);
+      if (handled) {
+        return handled;
+      }
+    }
   }
 }
 
