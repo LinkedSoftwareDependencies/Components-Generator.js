@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.4.1"></a>
+## [v1.4.1](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v1.4.0...v1.4.1) - 2020-11-09
+
+### Fixed
+* [Fix collectEntries params being required and unique](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/93c3b42e2ad4600f8180a3efc63df2a1e9a4f9f9)
+* [Fix indexed field names appearing twice in IRIs](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/5abbcf2fbb9404a138fff7b319b864af705213e9)
+
 <a name="v1.4.0"></a>
 ## [v1.4.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v1.3.0...v1.4.0) - 2020-11-06
 
