@@ -358,6 +358,9 @@ export class ComponentConstructor {
         parameters: subParameters,
       },
     };
+    // Params for collected entries are never required, and can have more than one entry.
+    parameterData.unique = false;
+    parameterData.required = false;
     this.populateOptionalParameterFields(parameter, parameterData);
     parameters.push(parameter);
 
