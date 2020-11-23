@@ -65,7 +65,14 @@ export class ClassLoader {
    */
   public async loadClassDeclaration<CI extends boolean>(classReference: ClassReference, considerInterfaces: CI):
   Promise<CI extends true ? (ClassLoaded | InterfaceLoaded) : ClassLoaded> {
-    const ast = await this.resolutionContext.parseTypescriptFile(classReference.fileName);
+    // Load the class as an AST
+    let ast;
+    try {
+      ast = await this.resolutionContext.parseTypescriptFile(classReference.fileName);
+    } catch (error: unknown) {
+      throw new Error(`Could not load ${considerInterfaces ? 'class or interface' : 'class'} ${classReference.localName} from ${classReference.fileName}:\n${(<Error> error).message}`);
+    }
+
     const {
       exportedClasses,
       exportedInterfaces,
@@ -189,6 +196,16 @@ export class ClassLoader {
   }
 
   /**
+   * Convert the given import path to an absolute file path.
+   * @param currentFilePath Absolute path to a file in which the import path occurs.
+   * @param importPath Possibly relative path that is being imported.
+   */
+  public importTargetToAbsolutePath(currentFilePath: string, importPath: string): string {
+    // TODO: Add support for imports from other packages (#39)
+    return Path.join(Path.dirname(currentFilePath), importPath);
+  }
+
+  /**
    * Get all class elements in a file.
    * @param fileName A file path.
    * @param ast The parsed file.
@@ -223,7 +240,7 @@ export class ClassLoader {
           for (const specifier of statement.specifiers) {
             exportedImportedElements[specifier.exported.name] = {
               localName: specifier.local.name,
-              fileName: Path.join(Path.dirname(fileName), statement.source.value),
+              fileName: this.importTargetToAbsolutePath(fileName, statement.source.value),
             };
           }
         } else {
@@ -237,7 +254,7 @@ export class ClassLoader {
         if (statement.source &&
           statement.source.type === AST_NODE_TYPES.Literal &&
           typeof statement.source.value === 'string') {
-          exportedImportedAll.push(Path.join(Path.dirname(fileName), statement.source.value));
+          exportedImportedAll.push(this.importTargetToAbsolutePath(fileName, statement.source.value));
         }
       } else if (statement.type === AST_NODE_TYPES.ClassDeclaration && statement.id) {
         // Form: `declare class A {}`
@@ -253,7 +270,7 @@ export class ClassLoader {
           if (specifier.type === AST_NODE_TYPES.ImportSpecifier) {
             importedElements[specifier.local.name] = {
               localName: specifier.imported.name,
-              fileName: Path.join(Path.dirname(fileName), statement.source.value),
+              fileName: this.importTargetToAbsolutePath(fileName, statement.source.value),
             };
           }
         }

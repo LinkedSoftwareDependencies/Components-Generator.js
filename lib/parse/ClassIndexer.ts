@@ -6,19 +6,14 @@ import type { ClassIndex, ClassLoaded, ClassReference } from './ClassIndex';
 import type { ClassLoader } from './ClassLoader';
 
 export class ClassIndexer {
-  /**
-   * Errors that do not require an import, and are assumed to be known globally.
-   */
-  private static readonly SUPERCLASS_BLACKLIST: Record<string, boolean> = {
-    Error: true,
-  };
-
   private readonly classLoader: ClassLoader;
   private readonly classFinder: ClassFinder;
+  private readonly ignoreClasses: Record<string, boolean>;
 
   public constructor(args: ClassIndexerArgs) {
     this.classLoader = args.classLoader;
     this.classFinder = args.classFinder;
+    this.ignoreClasses = args.ignoreClasses;
   }
 
   /**
@@ -29,7 +24,9 @@ export class ClassIndexer {
     const classIndex: ClassIndex<ClassLoaded> = {};
 
     for (const [ className, classReference ] of Object.entries(classReferences)) {
-      classIndex[className] = await this.loadClassChain(classReference);
+      if (!(className in this.ignoreClasses)) {
+        classIndex[className] = await this.loadClassChain(classReference);
+      }
     }
 
     return classIndex;
@@ -47,11 +44,15 @@ export class ClassIndexer {
     // If the class has a super class, load it recursively
     const superClassName = this.classLoader.getSuperClassName(classReferenceLoaded.declaration,
       classReferenceLoaded.fileName);
-    if (superClassName && !(superClassName in ClassIndexer.SUPERCLASS_BLACKLIST)) {
-      classReferenceLoaded.superClass = await this.loadClassChain({
-        localName: superClassName,
-        fileName: classReferenceLoaded.fileName,
-      });
+    if (superClassName && !(superClassName in this.ignoreClasses)) {
+      try {
+        classReferenceLoaded.superClass = await this.loadClassChain({
+          localName: superClassName,
+          fileName: classReferenceLoaded.fileName,
+        });
+      } catch (error: unknown) {
+        throw new Error(`Failed to load super class ${superClassName} of ${classReference.localName} in ${classReference.fileName}:\n${(<Error> error).message}`);
+      }
     }
 
     return classReferenceLoaded;
@@ -61,4 +62,5 @@ export class ClassIndexer {
 export interface ClassIndexerArgs {
   classLoader: ClassLoader;
   classFinder: ClassFinder;
+  ignoreClasses: Record<string, boolean>;
 }

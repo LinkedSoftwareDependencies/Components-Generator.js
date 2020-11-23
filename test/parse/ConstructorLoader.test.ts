@@ -15,6 +15,7 @@ describe('ConstructorLoader', () => {
     classIndexer = new ClassIndexer({
       classLoader,
       classFinder: new ClassFinder({ classLoader }),
+      ignoreClasses: {},
     });
   });
 

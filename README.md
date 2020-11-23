@@ -103,15 +103,30 @@ Generates component file for a package
 Usage:
   componentsjs-generator
   Options:
-       -p path/to/package   The directory of the package to look in, defaults to working directory
-       -s lib               Relative path to directory containing source files, defaults to 'lib'
-       -c components        Relative path to directory that will contain components files, defaults to 'components'
-       -e jsonld            Extension for components files (without .), defaults to 'jsonld'
-       --help               Show information about this command
+       -p path/to/package      The directory of the package to look in, defaults to working directory
+       -s lib                  Relative path to directory containing source files, defaults to 'lib'
+       -c components           Relative path to directory that will contain components files, defaults to 'components'
+       -e jsonld               Extension for components files (without .), defaults to 'jsonld'
+       -i ignore-classes.json  Relative path to an optional file with class names to ignore
+       --help                  Show information about this command
 ```
 
 **Note:** This generator will read `.d.ts` files,
 so it is important that you invoke the TypeScript compiler (`tsc`) _before_ using this tool.
+
+### Ignoring classes
+
+If you don't want components to be generated for certain classes,
+then you can pass a JSON file to the `-i` option containing an array of class names to skip.
+
+For example, invoking `componentsjs-generator -i ignore-classes.json` will skip `BadClass` if the contents of `ignore-classes.json` are:
+```json
+[
+  "BadClass"
+]
+```
+
+If you are looking for a way to ignore parameters, see the `@ignored` argument tag below.
 
 ## How it works
 

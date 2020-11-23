@@ -18,11 +18,13 @@ export class Generator {
   private readonly resolutionContext: ResolutionContext;
   private readonly pathDestination: PathDestinationDefinition;
   private readonly fileExtension: string;
+  private readonly ignoreClasses: Record<string, boolean>;
 
   public constructor(args: GeneratorArgs) {
     this.resolutionContext = args.resolutionContext;
     this.pathDestination = args.pathDestination;
     this.fileExtension = args.fileExtension;
+    this.ignoreClasses = args.ignoreClasses;
   }
 
   public async generateComponents(): Promise<void> {
@@ -32,7 +34,7 @@ export class Generator {
 
     const classLoader = new ClassLoader({ resolutionContext: this.resolutionContext });
     const classFinder = new ClassFinder({ classLoader });
-    const classIndexer = new ClassIndexer({ classLoader, classFinder });
+    const classIndexer = new ClassIndexer({ classLoader, classFinder, ignoreClasses: this.ignoreClasses });
 
     // Find all relevant classes
     const packageExports = await classFinder.getPackageExports(packageMetadata.typesPath);
@@ -77,4 +79,5 @@ export interface GeneratorArgs {
   pathDestination: PathDestinationDefinition;
   fileExtension: string;
   level: string;
+  ignoreClasses: Record<string, boolean>;
 }

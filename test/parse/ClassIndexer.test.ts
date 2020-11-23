@@ -5,14 +5,16 @@ import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
 describe('ClassIndexer', () => {
   const resolutionContext = new ResolutionContextMocked({});
+  let ignoreClasses: Record<string, boolean>;
   let classLoader: ClassLoader;
   let classFinder: ClassFinder;
   let indexer: ClassIndexer;
 
   beforeEach(() => {
+    ignoreClasses = {};
     classLoader = new ClassLoader({ resolutionContext });
     classFinder = new ClassFinder({ classLoader });
-    indexer = new ClassIndexer({ classLoader, classFinder });
+    indexer = new ClassIndexer({ classLoader, classFinder, ignoreClasses });
   });
 
   describe('createIndex', () => {
@@ -40,6 +42,26 @@ describe('ClassIndexer', () => {
           },
         },
       });
+    });
+
+    it('should throw on a direct class reference to an unknown file', async() => {
+      await expect(indexer.createIndex({
+        Unknown: {
+          localName: 'Unknown',
+          fileName: 'unknown',
+        },
+      })).rejects.toThrow(new Error(`Could not load class Unknown from unknown:
+Could not find mocked path for unknown.d.ts`));
+    });
+
+    it('should not throw on a direct class reference to an unknown file when it is ignored', async() => {
+      ignoreClasses.Unknown = true;
+      expect(await indexer.createIndex({
+        Unknown: {
+          localName: 'Unknown',
+          fileName: 'unknown',
+        },
+      })).toMatchObject({});
     });
 
     it('should load an indirect class reference', async() => {
@@ -285,10 +307,22 @@ export * from './Z'
         });
     });
 
-    it('for an exported class extending Error should ignore the link', async() => {
+    it('for an exported class extending an unknown class should error', async() => {
       resolutionContext.contentsOverrides = {
         'file.d.ts': `
-export class A extends Error{}
+export class A extends Unknown{}
+`,
+      };
+      await expect(indexer.loadClassChain({ localName: 'A', fileName: 'file' }))
+        .rejects.toThrow(new Error(`Failed to load super class Unknown of A in file:
+Could not load class Unknown from file`));
+    });
+
+    it('for an exported class extending an unknown class should not error if it is ignored', async() => {
+      ignoreClasses.Unknown = true;
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+export class A extends Unknown{}
 `,
       };
       expect(await indexer.loadClassChain({ localName: 'A', fileName: 'file' }))
