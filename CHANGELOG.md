@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.5.0"></a>
+## [v1.5.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v1.4.1...v1.5.0) - 2020-11-23
+
+### Added
+* [Allow classes to be ignored via JSON file, Closes #40](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/ea1028b474e7a697dbf222e5b27ae9ba49f8a7f5)
+
+### Changed
+* [Set tsconfig target to es2017](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/43ad90ff0169f05ea77cadf17fd946bcf3c0bfb2)
+
 <a name="v1.4.1"></a>
 ## [v1.4.1](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v1.4.0...v1.4.1) - 2020-11-09
 
