@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.6.0"></a>
+## [v1.6.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v1.5.0...v1.6.0) - 2020-11-24
+
+### Added
+* [Allow param range to be undefined when its class range is ignored](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/ec8fca3e0738bf5a1df7d7bcf75de96cdb90816c)
+
 <a name="v1.5.0"></a>
 ## [v1.5.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v1.4.1...v1.5.0) - 2020-11-23
 
