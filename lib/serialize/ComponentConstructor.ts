@@ -272,9 +272,25 @@ export class ComponentConstructor {
     }
 
     // For all other range types, create a parameter and return its parameter id.
-    const param: ParameterDefinition = parameterData.range.type === 'raw' || parameterData.range.type === 'override' ?
-      this.constructParameterRaw(context, classReference, parameterData, parameterData.range.value, fieldId) :
-      this.constructParameterClass(context, classReference, parameterData, parameterData.range.value, fieldId);
+    let param: ParameterDefinition;
+    switch (parameterData.range.type) {
+      case 'raw':
+      case 'override':
+        param = this.constructParameterRaw(context, classReference, parameterData, parameterData.range.value, fieldId);
+        break;
+      case 'undefined':
+        param = this.constructParameterRangeUndefined(context, classReference, parameterData, fieldId);
+        break;
+      case 'class':
+        param = this.constructParameterClass(
+          context,
+          classReference,
+          parameterData,
+          parameterData.range.value,
+          fieldId,
+        );
+        break;
+    }
     parameters.push(param);
     return { '@id': fieldId };
   }
@@ -391,6 +407,30 @@ export class ComponentConstructor {
     const definition: ParameterDefinition = {
       '@id': fieldId,
       range: `xsd:${range}`,
+    };
+
+    // Fill in optional fields
+    this.populateOptionalParameterFields(definition, parameterData);
+
+    return definition;
+  }
+
+  /**
+   * Construct a parameter definition from the given parameter data with an undefined range.
+   * @param context A parsed JSON-LD context.
+   * @param classReference Class reference of the class component owning this parameter.
+   * @param parameterData Parameter data.
+   * @param fieldId The @id of the field.
+   */
+  public constructParameterRangeUndefined(
+    context: JsonLdContextNormalized,
+    classReference: ClassLoaded,
+    parameterData: ParameterData<ParameterRangeResolved>,
+    fieldId: string,
+  ): ParameterDefinition {
+    // Fill in required fields
+    const definition: ParameterDefinition = {
+      '@id': fieldId,
     };
 
     // Fill in optional fields

@@ -421,4 +421,6 @@ export type ParameterRangeResolved = {
 } | {
   type: 'nested';
   value: ParameterData<ParameterRangeResolved>[];
+} | {
+  type: 'undefined';
 };

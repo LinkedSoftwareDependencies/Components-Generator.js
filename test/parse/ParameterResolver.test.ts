@@ -8,11 +8,13 @@ import { ResolutionContextMocked } from '../ResolutionContextMocked';
 describe('ParameterResolver', () => {
   const resolutionContext = new ResolutionContextMocked({});
   let classLoader: ClassLoader;
+  let ignoreClasses: Record<string, boolean>;
   let loader: ParameterResolver;
 
   beforeEach(() => {
     classLoader = new ClassLoader({ resolutionContext });
-    loader = new ParameterResolver({ classLoader });
+    ignoreClasses = {};
+    loader = new ParameterResolver({ classLoader, ignoreClasses });
   });
 
   describe('resolveAllConstructorParameters', () => {
@@ -263,6 +265,20 @@ describe('ParameterResolver', () => {
       });
     });
 
+    it('should handle an ignored interface range pointing to a class', async() => {
+      ignoreClasses.MyClass = true;
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `export * from 'MyClass'`,
+        'MyClass.d.ts': `export class MyClass{}`,
+      };
+      expect(await loader.resolveRange({
+        type: 'interface',
+        value: 'MyClass',
+      }, classReference)).toMatchObject({
+        type: 'undefined',
+      });
+    });
+
     it('should handle an interface range pointing to an implicit class', async() => {
       resolutionContext.contentsOverrides = {
         'A.d.ts': `export * from 'MyClass'`,
@@ -300,8 +316,23 @@ describe('ParameterResolver', () => {
           },
         ],
       });
+    });
 
-      // TODO: hash
+    it('should handle an interface range pointing to a extended interface that is ignored', async() => {
+      ignoreClasses.IgnoredInterface = true;
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `export * from 'MyInterface'`,
+        'MyInterface.d.ts': `
+export interface MyInterface extends IgnoredInterface{};
+`,
+      };
+      expect(await loader.resolveRange({
+        type: 'interface',
+        value: 'MyInterface',
+      }, classReference)).toMatchObject({
+        type: 'nested',
+        value: [],
+      });
     });
   });
 
@@ -556,6 +587,30 @@ declare interface C{}
             {
               fileName: 'A',
               localName: 'C',
+              type: 'interface',
+            },
+          ],
+        });
+    });
+
+    it('should load an interface with supers and consider ignored classes', async() => {
+      ignoreClasses.C = true;
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `
+export interface A extends B, C{}
+export interface B{}
+declare interface C{}
+`,
+      };
+      expect(await loader.loadClassOrInterfacesChain(classReference))
+        .toMatchObject({
+          fileName: 'A',
+          localName: 'A',
+          type: 'interface',
+          superInterfaces: [
+            {
+              fileName: 'A',
+              localName: 'B',
               type: 'interface',
             },
           ],

@@ -13,9 +13,11 @@ import {
 
 export class ParameterResolver {
   private readonly classLoader: ClassLoader;
+  private readonly ignoreClasses: Record<string, boolean>;
 
   public constructor(args: ParameterResolverArgs) {
     this.classLoader = args.classLoader;
+    this.ignoreClasses = args.ignoreClasses;
   }
 
   /**
@@ -77,6 +79,11 @@ export class ParameterResolver {
       case 'override':
         return range;
       case 'interface':
+        if (range.value in this.ignoreClasses) {
+          return {
+            type: 'undefined',
+          };
+        }
         return await this.resolveRangeInterface(range.value, owningClass);
       case 'hash':
         return {
@@ -150,6 +157,7 @@ export class ParameterResolver {
     if (classOrInterface.type === 'interface') {
       classOrInterface.superInterfaces = await Promise.all(this.classLoader
         .getSuperInterfaceNames(classOrInterface.declaration, classOrInterface.fileName)
+        .filter(interfaceName => !(interfaceName in this.ignoreClasses))
         .map(async interfaceName => {
           const superInterface = await this.loadClassOrInterfacesChain({
             localName: interfaceName,
@@ -189,4 +197,5 @@ export class ParameterResolver {
 
 export interface ParameterResolverArgs {
   classLoader: ClassLoader;
+  ignoreClasses: Record<string, boolean>;
 }

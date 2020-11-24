@@ -780,6 +780,26 @@ describe('ComponentConstructor', () => {
       ]);
     });
 
+    it('should handle an undefined parameter definition', () => {
+      const parameters: ParameterDefinition[] = [];
+      expect(ctor.parameterDataToConstructorArgument(context, classReference, {
+        type: 'field',
+        name: 'field',
+        range: { type: 'undefined' },
+        required: true,
+        unique: true,
+        comment: 'Hi',
+      }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
+      expect(parameters).toEqual([
+        {
+          '@id': 'mp:a/b/file-param#MyClass_field',
+          comment: 'Hi',
+          required: true,
+          unique: true,
+        },
+      ]);
+    });
+
     it('should handle an empty nested parameter definition', () => {
       const parameters: ParameterDefinition[] = [];
       expect(ctor.parameterDataToConstructorArgument(context, classReference, {

@@ -42,7 +42,7 @@ export class Generator {
 
     // Load constructor data
     const constructorsUnresolved = new ConstructorLoader().getConstructors(classIndex);
-    const constructors = await new ParameterResolver({ classLoader })
+    const constructors = await new ParameterResolver({ classLoader, ignoreClasses: this.ignoreClasses })
       .resolveAllConstructorParameters(constructorsUnresolved, classIndex);
 
     // Create components
