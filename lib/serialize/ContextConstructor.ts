@@ -1,3 +1,4 @@
+import { PrefetchedDocumentLoader } from 'componentsjs';
 import type { PackageMetadata } from '../parse/PackageMetadataLoader';
 import type { ComponentDefinitions } from './ComponentDefinitions';
 
@@ -37,7 +38,7 @@ export class ContextConstructor {
 
     return {
       '@context': [
-        'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld',
+        PrefetchedDocumentLoader.CONTEXT_URL,
         {
           npmd: 'https://linkedsoftwaredependencies.org/bundles/npm/',
           [prefix]: `npmd:${this.packageMetadata.name}/`,
