@@ -27,20 +27,12 @@ yarn add -D componentsjs-generator
 
 _If you are already using Components.js, you already have this._
 
-Add the following entries to `package.json`:
+Add the following entry to `package.json`:
 
 ```text
 {
   ...
-  "lsd:module": "https://linkedsoftwaredependencies.org/bundles/npm/my-package",
-  "lsd:components": "components/components.jsonld",
-  "lsd:contexts": {
-    "https://linkedsoftwaredependencies.org/bundles/npm/my-package/^1.0.0/components/context.jsonld": "components/context.jsonld"
-  },
-  "lsd:importPaths": {
-    "https://linkedsoftwaredependencies.org/bundles/npm/my-package/^1.0.0/components/": "components/",
-    "https://linkedsoftwaredependencies.org/bundles/npm/my-package/^1.0.0/config/": "config/"
-  },
+  "lsd:module": true,
   ...
 }
 ```

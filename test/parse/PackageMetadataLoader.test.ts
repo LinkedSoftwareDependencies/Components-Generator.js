@@ -119,6 +119,61 @@ describe('PackageMetadataLoader', () => {
       });
     });
 
+    it('should return with all required entries with lsd:module true', async() => {
+      resolutionContext.contentsOverrides = {
+        [Path.normalize('/package.json')]: `{
+  "name": "@solid/community-server",
+  "version": "1.2.3",
+  "lsd:module": true,
+  "types": "./index.d.ts"
+}`,
+      };
+      expect(await loader.load('/')).toEqual({
+        componentsPath: Path.normalize('/components/components.jsonld'),
+        contexts: {
+          'https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/components/context.jsonld':
+            'components/context.jsonld',
+        },
+        importPaths: {
+          'https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/components/':
+            'components/',
+          'https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/config/': 'config/',
+        },
+        moduleIri: 'https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server',
+        name: '@solid/community-server',
+        version: '1.2.3',
+        typesPath: Path.normalize('/index'),
+      });
+    });
+
+    it('should return with all required entries with lsd:module true and lsd:basePath', async() => {
+      resolutionContext.contentsOverrides = {
+        [Path.normalize('/package.json')]: `{
+  "name": "@solid/community-server",
+  "version": "1.2.3",
+  "lsd:module": true,
+  "lsd:basePath": "dist/",
+  "types": "./index.d.ts"
+}`,
+      };
+      expect(await loader.load('/')).toEqual({
+        componentsPath: Path.normalize('/dist/components/components.jsonld'),
+        contexts: {
+          'https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/components/context.jsonld':
+            'dist/components/context.jsonld',
+        },
+        importPaths: {
+          'https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/components/':
+            'dist/components/',
+          'https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/config/': 'dist/config/',
+        },
+        moduleIri: 'https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server',
+        name: '@solid/community-server',
+        version: '1.2.3',
+        typesPath: Path.normalize('/index'),
+      });
+    });
+
     it('should error on invalid JSON', async() => {
       resolutionContext.contentsOverrides = {
         [Path.normalize('/package.json')]: `{`,
