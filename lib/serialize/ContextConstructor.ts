@@ -1,4 +1,5 @@
 import { PrefetchedDocumentLoader } from 'componentsjs';
+import semverMajor = require('semver/functions/major');
 import type { PackageMetadata } from '../parse/PackageMetadataLoader';
 import type { ComponentDefinitions } from './ComponentDefinitions';
 
@@ -42,7 +43,7 @@ export class ContextConstructor {
         {
           npmd: 'https://linkedsoftwaredependencies.org/bundles/npm/',
           [prefix]: `npmd:${this.packageMetadata.name}/`,
-          [`files-${prefix}`]: `${prefix}:^1.0.0/`,
+          [`files-${prefix}`]: `${prefix}:^${semverMajor(this.packageMetadata.version)}.0.0/`,
           ...componentShortcuts,
         },
       ],

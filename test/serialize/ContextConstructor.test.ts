@@ -7,7 +7,7 @@ describe('ContextConstructor', () => {
     ctor = new ContextConstructor({
       packageMetadata: {
         name: 'my-package',
-        version: '1.2.3',
+        version: '2.3.4',
         moduleIri: 'https://linkedsoftwaredependencies.org/bundles/npm/my-package/',
         componentsPath: 'components',
         contexts: {},
@@ -43,7 +43,7 @@ describe('ContextConstructor', () => {
           {
             npmd: 'https://linkedsoftwaredependencies.org/bundles/npm/',
             mp: 'npmd:my-package/',
-            'files-mp': 'mp:^1.0.0/',
+            'files-mp': 'mp:^2.0.0/',
           },
         ],
       });
@@ -93,7 +93,7 @@ describe('ContextConstructor', () => {
               '@id': 'mp:b/file2#MyClass2',
               '@prefix': true,
             },
-            'files-mp': 'mp:^1.0.0/',
+            'files-mp': 'mp:^2.0.0/',
             mp: 'npmd:my-package/',
             npmd: 'https://linkedsoftwaredependencies.org/bundles/npm/',
           },
