@@ -1,6 +1,20 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.0.0"></a>
+## [v2.0.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v1.6.0...v2.0.0) - 2021-01-14
+
+### Added
+* [Use prefetched document loader for offline context access, Closes #51](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/be759e9ce878d0794cc40985f8d1268be06ec44b)
+* [Add support for lsd:module true in package.json](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/9e674d2175528eb9b1ad98a41e2b63292b0759ea)
+
+### Changed
+* [Update context shortcuts to support JSON-LD 1.1](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/0eb3fc7f37e011c1ac8c4397e012c368f6260499)
+* [Update to Components.js context version 4](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/d6416ece7150022af3f1b633c9229313d59484a5)
+
+### Fixed
+* [Fix file prefixing always using 1.0.0, Closes #52](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/fde91046d482a29331a08df6dc79df7fe436441d)
+
 <a name="v1.6.0"></a>
 ## [v1.6.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v1.5.0...v1.6.0) - 2020-11-24
 
