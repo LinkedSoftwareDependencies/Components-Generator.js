@@ -221,7 +221,7 @@ export {A};
         [Path.normalize('package-simple-named/index.d.ts')]: `export {A as B} from './lib/A';`,
         [Path.normalize('package-simple-named/lib/A.d.ts')]: 'export class A {}',
       };
-      expect(await parser.getPackageExports('package-simple-named/index'))
+      expect(await parser.getPackageExports(Path.normalize('package-simple-named/index')))
         .toEqual({
           B: {
             fileName: Path.normalize('package-simple-named/lib/A'),
@@ -235,7 +235,7 @@ export {A};
         [Path.normalize('package-simple-unnamed/index.d.ts')]: `export * from './lib/A';`,
         [Path.normalize('package-simple-unnamed/lib/A.d.ts')]: 'export class A {}',
       };
-      expect(await parser.getPackageExports('package-simple-unnamed/index'))
+      expect(await parser.getPackageExports(Path.normalize('package-simple-unnamed/index')))
         .toEqual({
           A: {
             fileName: Path.normalize('package-simple-unnamed/lib/A'),
@@ -253,7 +253,7 @@ export * from './lib/C';
         [Path.normalize('package-multiple/lib/A.d.ts')]: 'export class A {}',
         [Path.normalize('package-multiple/lib/C.d.ts')]: 'export class C {}',
       };
-      expect(await parser.getPackageExports('package-multiple/index'))
+      expect(await parser.getPackageExports(Path.normalize('package-multiple/index')))
         .toEqual({
           B: {
             fileName: Path.normalize('package-multiple/lib/A'),
@@ -276,7 +276,7 @@ export * from './sub2/C'
         [Path.normalize('package-nested/lib/sub1/B.d.ts')]: 'export class B {}',
         [Path.normalize('package-nested/lib/sub2/C.d.ts')]: 'export class C {}',
       };
-      expect(await parser.getPackageExports('package-nested/index'))
+      expect(await parser.getPackageExports(Path.normalize('package-nested/index')))
         .toEqual({
           B: {
             fileName: Path.normalize('package-nested/lib/sub1/B'),

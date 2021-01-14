@@ -1370,7 +1370,7 @@ describe('ComponentConstructor', () => {
       const subParamData: ParameterData<ParameterRangeResolved> = (<any> parameterData).range.value[0];
       expect(() => ctor
         .constructFieldDefinitionNested(context, classReference, parameterData, parameters, subParamData, '', scope))
-        .toThrow(new Error(`Detected illegal indexed element inside a non-field in MyClass at /docs/package/src/a/b/file-param`));
+        .toThrow(new Error(`Detected illegal indexed element inside a non-field in MyClass at ${Path.normalize('/docs/package/src/a/b/file-param')}`));
     });
   });
 
