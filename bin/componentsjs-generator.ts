@@ -14,6 +14,7 @@ Usage:
        -c components           Relative path to directory that will contain components files, defaults to 'components'
        -e jsonld               Extension for components files (without .), defaults to 'jsonld'
        -i ignore-classes.json  Relative path to an optional file with class names to ignore
+       -l info                 The logger level
        --help                  Show information about this command
 `);
   process.exit(1);
@@ -31,7 +32,7 @@ if (args.help) {
       replacementPath: args.c || 'components',
     },
     fileExtension: args.e || 'jsonld',
-    level: args.l || 'info',
+    logLevel: args.l || 'info',
     ignoreClasses: args.i ?
       // eslint-disable-next-line no-sync
       JSON.parse(fs.readFileSync(args.i, 'utf8')).reduce((acc: Record<string, boolean>, entry: string) => {

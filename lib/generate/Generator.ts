@@ -1,3 +1,6 @@
+import { ComponentsManagerBuilder } from 'componentsjs/lib/loading/ComponentsManagerBuilder';
+import { PrefetchedDocumentLoader } from 'componentsjs/lib/rdf/PrefetchedDocumentLoader';
+import type { LogLevel } from 'componentsjs/lib/util/LogLevel';
 import { ContextParser } from 'jsonld-context-parser';
 import { ClassFinder } from '../parse/ClassFinder';
 import { ClassIndexer } from '../parse/ClassIndexer';
@@ -19,12 +22,14 @@ export class Generator {
   private readonly pathDestination: PathDestinationDefinition;
   private readonly fileExtension: string;
   private readonly ignoreClasses: Record<string, boolean>;
+  private readonly logLevel: LogLevel;
 
   public constructor(args: GeneratorArgs) {
     this.resolutionContext = args.resolutionContext;
     this.pathDestination = args.pathDestination;
     this.fileExtension = args.fileExtension;
     this.ignoreClasses = args.ignoreClasses;
+    this.logLevel = args.logLevel;
   }
 
   public async generateComponents(): Promise<void> {
@@ -53,7 +58,12 @@ export class Generator {
       pathDestination: this.pathDestination,
       classReferences: classIndex,
       classConstructors: constructors,
-      contextParser: new ContextParser(),
+      contextParser: new ContextParser({
+        documentLoader: new PrefetchedDocumentLoader({
+          contexts: {},
+          logger: ComponentsManagerBuilder.createLogger(this.logLevel),
+        }),
+      }),
     });
     const components = await componentConstructor.constructComponents();
     const componentsIndex = await componentConstructor.constructComponentsIndex(components, this.fileExtension);
@@ -78,6 +88,6 @@ export interface GeneratorArgs {
   resolutionContext: ResolutionContext;
   pathDestination: PathDestinationDefinition;
   fileExtension: string;
-  level: string;
   ignoreClasses: Record<string, boolean>;
+  logLevel: LogLevel;
 }
