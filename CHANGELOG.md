@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.1.0"></a>
+## [v2.1.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v2.0.0...v2.1.0) - 2021-01-18
+
+### Added
+* [Add experimental typeScopedContexts flag](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/9e181fcf7edb01909be9f23920fae4ee01a3cba2)
+
+### Fixed
+* [Fix build error when source or target path occurs 1+ times in path](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/379d9aa2c6219d5a43e91e48182e9cb2aa395c14)
+
 <a name="v2.0.0"></a>
 ## [v2.0.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v1.6.0...v2.0.0) - 2021-01-14
 
