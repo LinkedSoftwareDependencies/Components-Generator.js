@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import * as fs from 'fs';
+import * as Path from 'path';
 import * as minimist from 'minimist';
 import { Generator } from '../lib/generate/Generator';
 import { ResolutionContext } from '../lib/resolution/ResolutionContext';
@@ -24,12 +25,13 @@ const args = minimist(process.argv.slice(2));
 if (args.help) {
   showHelp();
 } else {
+  const packageRootDirectory = Path.posix.join(process.cwd(), args.p || '');
   const generator = new Generator({
     resolutionContext: new ResolutionContext(),
     pathDestination: {
-      packageRootDirectory: args.p || process.cwd(),
-      originalPath: args.s || 'lib',
-      replacementPath: args.c || 'components',
+      packageRootDirectory,
+      originalPath: Path.posix.join(packageRootDirectory, args.s || 'lib'),
+      replacementPath: Path.posix.join(packageRootDirectory, args.c || 'components'),
     },
     fileExtension: args.e || 'jsonld',
     logLevel: args.l || 'info',

@@ -12,8 +12,8 @@ describe('ComponentSerializer', () => {
       resolutionContext,
       pathDestination: {
         packageRootDirectory: '/',
-        originalPath: 'src',
-        replacementPath: 'components',
+        originalPath: '/src',
+        replacementPath: '/components',
       },
       fileExtension: 'jsonld',
       indentation: '  ',

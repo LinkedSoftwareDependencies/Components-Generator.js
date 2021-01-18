@@ -51,7 +51,6 @@ export class ComponentSerializer {
    */
   public async serializeComponentsIndex(componentsIndex: ComponentDefinitionsIndex): Promise<string> {
     const filePathBase = Path.join(
-      this.pathDestination.packageRootDirectory,
       this.pathDestination.replacementPath,
       'components',
     );
@@ -65,7 +64,6 @@ export class ComponentSerializer {
    */
   public async serializeContext(contextRaw: ContextRaw): Promise<string> {
     const filePathBase = Path.join(
-      this.pathDestination.packageRootDirectory,
       this.pathDestination.replacementPath,
       'context',
     );

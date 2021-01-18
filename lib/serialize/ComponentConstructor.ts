@@ -497,8 +497,17 @@ export interface ComponentConstructorArgs {
 }
 
 export interface PathDestinationDefinition {
+  /**
+   * Absolute path to the package root.
+   */
   packageRootDirectory: string;
+  /**
+   * Absolute path to the package source directory.
+   */
   originalPath: string;
+  /**
+   * Absolute path to the package components target directory.
+   */
   replacementPath: string;
 }
 
