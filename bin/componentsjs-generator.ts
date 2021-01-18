@@ -17,6 +17,9 @@ Usage:
        -i ignore-classes.json  Relative path to an optional file with class names to ignore
        -l info                 The logger level
        --help                  Show information about this command
+
+  Experimental options:
+       --typeScopedContexts    If a type-scoped context for each component is to be generated with parameter name aliases
 `);
   process.exit(1);
 }
@@ -34,6 +37,7 @@ if (args.help) {
       replacementPath: Path.posix.join(packageRootDirectory, args.c || 'components'),
     },
     fileExtension: args.e || 'jsonld',
+    typeScopedContexts: args.typeScopedContexts,
     logLevel: args.l || 'info',
     ignoreClasses: args.i ?
       // eslint-disable-next-line no-sync

@@ -33,7 +33,7 @@ describe('ComponentConstructor', () => {
       },
       typesPath: '',
     };
-    const contextConstructor = new ContextConstructorMocked({ packageMetadata });
+    const contextConstructor = new ContextConstructorMocked({ packageMetadata, typeScopedContexts: false });
     ctor = new ComponentConstructor({
       packageMetadata,
       contextConstructor,

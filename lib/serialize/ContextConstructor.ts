@@ -8,9 +8,11 @@ import type { ComponentDefinitions } from './ComponentDefinitions';
  */
 export class ContextConstructor {
   private readonly packageMetadata: PackageMetadata;
+  private readonly typeScopedContexts: boolean;
 
-  public constructor(args: ContextSerializerArgs) {
+  public constructor(args: ContextConstructorArgs) {
     this.packageMetadata = args.packageMetadata;
+    this.typeScopedContexts = args.typeScopedContexts;
   }
 
   /**
@@ -65,14 +67,24 @@ export class ContextConstructor {
           '@id': component['@id'],
           '@prefix': true,
         };
+
+        // Generate type-scoped context when enabled
+        if (this.typeScopedContexts) {
+          const typeScopedContext: Record<string, string> = {};
+          for (const parameter of component.parameters) {
+            typeScopedContext[parameter['@id'].slice(Math.max(0, component['@id'].length + 1))] = parameter['@id'];
+          }
+          (<any> shortcuts[match[0]])['@context'] = typeScopedContext;
+        }
       }
     }
     return shortcuts;
   }
 }
 
-export interface ContextSerializerArgs {
+export interface ContextConstructorArgs {
   packageMetadata: PackageMetadata;
+  typeScopedContexts: boolean;
 }
 
 export interface ContextRaw {

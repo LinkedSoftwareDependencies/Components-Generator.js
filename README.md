@@ -101,6 +101,9 @@ Usage:
        -e jsonld               Extension for components files (without .), defaults to 'jsonld'
        -i ignore-classes.json  Relative path to an optional file with class names to ignore
        --help                  Show information about this command
+
+  Experimental options:
+       --typeScopedContexts    If a type-scoped context for each component is to be generated with parameter name aliases
 ```
 
 **Note:** This generator will read `.d.ts` files,

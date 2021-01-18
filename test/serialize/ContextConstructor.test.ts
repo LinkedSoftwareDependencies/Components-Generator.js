@@ -1,19 +1,23 @@
+import type { PackageMetadata } from '../../lib/parse/PackageMetadataLoader';
 import { ContextConstructor } from '../../lib/serialize/ContextConstructor';
 
 describe('ContextConstructor', () => {
   let ctor: ContextConstructor;
+  let packageMetadata: PackageMetadata;
 
   beforeEach(async() => {
+    packageMetadata = {
+      name: 'my-package',
+      version: '2.3.4',
+      moduleIri: 'https://linkedsoftwaredependencies.org/bundles/npm/my-package/',
+      componentsPath: 'components',
+      contexts: {},
+      importPaths: {},
+      typesPath: '',
+    };
     ctor = new ContextConstructor({
-      packageMetadata: {
-        name: 'my-package',
-        version: '2.3.4',
-        moduleIri: 'https://linkedsoftwaredependencies.org/bundles/npm/my-package/',
-        componentsPath: 'components',
-        contexts: {},
-        importPaths: {},
-        typesPath: '',
-      },
+      packageMetadata,
+      typeScopedContexts: false,
     });
   });
 
@@ -147,6 +151,66 @@ describe('ContextConstructor', () => {
         MyClass2: {
           '@id': 'mp:b/file2#MyClass2',
           '@prefix': true,
+        },
+      });
+    });
+
+    it('should handle non-empty component definitions when typeScopedContexts is true', () => {
+      ctor = new ContextConstructor({
+        packageMetadata,
+        typeScopedContexts: true,
+      });
+      expect(ctor.constructComponentShortcuts({
+        '/docs/package/components/file1': {
+          '@context': [
+            'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
+          ],
+          '@id': 'npmd:my-package',
+          components: [
+            {
+              '@id': 'mp:file1#MyClass1',
+              '@type': 'Class',
+              constructorArguments: [],
+              parameters: [
+                {
+                  '@id': 'mp:file1#MyClass1_param1',
+                },
+                {
+                  '@id': 'mp:file1#MyClass1_param2',
+                },
+              ],
+              requireElement: 'MyClass1',
+            },
+          ],
+        },
+        '/docs/package/components/b/file2': {
+          '@context': [
+            'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
+          ],
+          '@id': 'npmd:my-package',
+          components: [
+            {
+              '@id': 'mp:b/file2#MyClass2',
+              '@type': 'Class',
+              requireElement: 'MyClass2',
+              constructorArguments: [],
+              parameters: [],
+            },
+          ],
+        },
+      })).toEqual({
+        MyClass1: {
+          '@id': 'mp:file1#MyClass1',
+          '@prefix': true,
+          '@context': {
+            param1: 'mp:file1#MyClass1_param1',
+            param2: 'mp:file1#MyClass1_param2',
+          },
+        },
+        MyClass2: {
+          '@id': 'mp:b/file2#MyClass2',
+          '@prefix': true,
+          '@context': {},
         },
       });
     });

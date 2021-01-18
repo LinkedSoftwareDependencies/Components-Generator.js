@@ -22,6 +22,7 @@ export class Generator {
   private readonly pathDestination: PathDestinationDefinition;
   private readonly fileExtension: string;
   private readonly ignoreClasses: Record<string, boolean>;
+  private readonly typeScopedContexts: boolean;
   private readonly logLevel: LogLevel;
 
   public constructor(args: GeneratorArgs) {
@@ -29,6 +30,7 @@ export class Generator {
     this.pathDestination = args.pathDestination;
     this.fileExtension = args.fileExtension;
     this.ignoreClasses = args.ignoreClasses;
+    this.typeScopedContexts = args.typeScopedContexts;
     this.logLevel = args.logLevel;
   }
 
@@ -51,7 +53,10 @@ export class Generator {
       .resolveAllConstructorParameters(constructorsUnresolved, classIndex);
 
     // Create components
-    const contextConstructor = new ContextConstructor({ packageMetadata });
+    const contextConstructor = new ContextConstructor({
+      packageMetadata,
+      typeScopedContexts: this.typeScopedContexts,
+    });
     const componentConstructor = new ComponentConstructor({
       packageMetadata,
       contextConstructor,
@@ -89,5 +94,6 @@ export interface GeneratorArgs {
   pathDestination: PathDestinationDefinition;
   fileExtension: string;
   ignoreClasses: Record<string, boolean>;
+  typeScopedContexts: boolean;
   logLevel: LogLevel;
 }
