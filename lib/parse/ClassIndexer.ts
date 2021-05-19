@@ -47,6 +47,7 @@ export class ClassIndexer {
     if (superClassName && !(superClassName in this.ignoreClasses)) {
       try {
         classReferenceLoaded.superClass = await this.loadClassChain({
+          packageName: classReferenceLoaded.packageName,
           localName: superClassName,
           fileName: classReferenceLoaded.fileName,
         });

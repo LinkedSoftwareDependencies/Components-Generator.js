@@ -25,7 +25,7 @@ describe('ConstructorLoader', () => {
         'file.d.ts': `export class A{}`,
       };
       expect(parser.getConstructors({
-        A: await classIndexer.loadClassChain({ localName: 'A', fileName: 'file' }),
+        A: await classIndexer.loadClassChain({ packageName: 'p', localName: 'A', fileName: 'file' }),
       })).toEqual({
         A: {
           parameters: [],
@@ -55,8 +55,8 @@ export class B{
 `,
       };
       expect(parser.getConstructors({
-        A: await classIndexer.loadClassChain({ localName: 'A', fileName: 'A' }),
-        B: await classIndexer.loadClassChain({ localName: 'B', fileName: 'B' }),
+        A: await classIndexer.loadClassChain({ packageName: 'p', localName: 'A', fileName: 'A' }),
+        B: await classIndexer.loadClassChain({ packageName: 'p', localName: 'B', fileName: 'B' }),
       })).toEqual({
         A: {
           parameters: [
@@ -109,7 +109,7 @@ export class B{
         'file.d.ts': `export class A{}`,
       };
       expect(parser.getConstructor(
-        await classIndexer.loadClassChain({ localName: 'A', fileName: 'file' }),
+        await classIndexer.loadClassChain({ packageName: 'p', localName: 'A', fileName: 'file' }),
       )).toBeUndefined();
     });
 
@@ -126,7 +126,7 @@ export class B extends C{}
         'C.d.ts': `export class C{}`,
       };
       expect(parser.getConstructor(
-        await classIndexer.loadClassChain({ localName: 'A', fileName: 'file' }),
+        await classIndexer.loadClassChain({ packageName: 'p', localName: 'A', fileName: 'file' }),
       )).toBeUndefined();
     });
 
@@ -138,7 +138,7 @@ class A{
 }`,
       };
       expect(parser.getConstructor(
-        await classIndexer.loadClassChain({ localName: 'A', fileName: 'file' }),
+        await classIndexer.loadClassChain({ packageName: 'p', localName: 'A', fileName: 'file' }),
       )).toMatchObject({
         computed: false,
         key: {
@@ -180,7 +180,7 @@ export class C{
 `,
       };
       expect(parser.getConstructor(
-        await classIndexer.loadClassChain({ localName: 'A', fileName: 'file' }),
+        await classIndexer.loadClassChain({ packageName: 'p', localName: 'A', fileName: 'file' }),
       )).toMatchObject({
         computed: false,
         key: {

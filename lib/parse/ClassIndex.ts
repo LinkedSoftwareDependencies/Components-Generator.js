@@ -10,6 +10,8 @@ export type ClassIndex<T> = Record<string, T>;
  * The name and location of a class.
  */
 export interface ClassReference {
+  // Name of the package this class is part of.
+  packageName: string;
   // The name of the class within the file.
   localName: string;
   // The name of the file the class is defined in.

@@ -81,7 +81,7 @@ export class ClassLoader {
       importedElements,
       exportedImportedAll,
       exportedImportedElements,
-    } = this.getClassElements(classReference.fileName, ast);
+    } = this.getClassElements(classReference.packageName, classReference.fileName, ast);
 
     // If the class has been exported in this file, return directly
     if (classReference.localName in exportedClasses) {
@@ -149,7 +149,7 @@ export class ClassLoader {
     // If we still haven't found the class, iterate over all export all's
     for (const subFile of exportedImportedAll) {
       try {
-        return await this.loadClassDeclaration({ localName: classReference.localName, fileName: subFile },
+        return await this.loadClassDeclaration({ localName: classReference.localName, ...subFile },
           considerInterfaces);
       } catch {
         // Ignore class not found errors
@@ -188,37 +188,88 @@ export class ClassLoader {
 
   /**
    * Load a class, and get all class elements from it.
+   * @param packageName Package name we are importing from.
    * @param fileName A file path.
    */
-  public async loadClassElements(fileName: string): Promise<ClassElements> {
+  public async loadClassElements(packageName: string, fileName: string): Promise<ClassElements> {
     const ast = await this.resolutionContext.parseTypescriptFile(fileName);
-    return this.getClassElements(fileName, ast);
+    return this.getClassElements(packageName, fileName, ast);
   }
 
   /**
-   * Convert the given import path to an absolute file path.
+   * Convert the given import path to an absolute file path, coupled with the module it is part of.
+   * @param currentPackageName Package name we are importing from.
    * @param currentFilePath Absolute path to a file in which the import path occurs.
    * @param importPath Possibly relative path that is being imported.
    */
-  public importTargetToAbsolutePath(currentFilePath: string, importPath: string): string {
-    // TODO: Add support for imports from other packages (#39)
-    return Path.join(Path.dirname(currentFilePath), importPath);
+  public importTargetToAbsolutePath(
+    currentPackageName: string,
+    currentFilePath: string,
+    importPath: string,
+  ): { packageName: string; fileName: string } {
+    // Handle import paths within the current package
+    if (importPath.startsWith('.')) {
+      return {
+        packageName: currentPackageName,
+        fileName: Path.join(Path.dirname(currentFilePath), importPath),
+      };
+    }
+
+    // Handle import paths to other packages
+    let packageName: string;
+    let packagePath: string | undefined;
+    if (importPath.startsWith('@')) {
+      const slashIndexFirst = importPath.indexOf('/');
+      if (slashIndexFirst < 0) {
+        throw new Error(`Invalid scoped package name for import path '${importPath}' in '${currentFilePath}'`);
+      }
+      const slashIndexSecond = importPath.indexOf('/', slashIndexFirst + 1);
+      if (slashIndexSecond < 0) {
+        // Import form: "@scope/package"
+        packageName = importPath;
+      } else {
+        // Import form: "@scope/package/path"
+        packageName = importPath.slice(0, Math.max(0, slashIndexSecond));
+        packagePath = importPath.slice(slashIndexSecond + 1);
+      }
+    } else {
+      const slashIndex = importPath.indexOf('/');
+      if (slashIndex < 0) {
+        // Import form: "package"
+        packageName = importPath;
+      } else {
+        // Import form: "package/path"
+        packageName = importPath.slice(0, Math.max(0, slashIndex));
+        packagePath = importPath.slice(slashIndex + 1);
+      }
+    }
+
+    // Resolve paths
+    const packageRoot = this.resolutionContext.resolvePackageIndex(packageName, currentFilePath);
+    const remoteFilePath = packagePath ?
+      Path.resolve(Path.dirname(packageRoot), packagePath) :
+      packageRoot.slice(0, packageRoot.lastIndexOf('.'));
+    return {
+      packageName,
+      fileName: remoteFilePath,
+    };
   }
 
   /**
    * Get all class elements in a file.
+   * @param packageName Package name we are importing from.
    * @param fileName A file path.
    * @param ast The parsed file.
    */
-  public getClassElements(fileName: string, ast: AST<TSESTreeOptions>): ClassElements {
+  public getClassElements(packageName: string, fileName: string, ast: AST<TSESTreeOptions>): ClassElements {
     const exportedClasses: Record<string, ClassDeclaration> = {};
     const exportedInterfaces: Record<string, TSInterfaceDeclaration> = {};
-    const exportedImportedElements: Record<string, { localName: string; fileName: string }> = {};
-    const exportedImportedAll: string[] = [];
+    const exportedImportedElements: Record<string, ClassReference> = {};
+    const exportedImportedAll: { packageName: string; fileName: string }[] = [];
     const exportedUnknowns: Record<string, string> = {};
     const declaredClasses: Record<string, ClassDeclaration> = {};
     const declaredInterfaces: Record<string, TSInterfaceDeclaration> = {};
-    const importedElements: Record<string, { localName: string; fileName: string }> = {};
+    const importedElements: Record<string, ClassReference> = {};
 
     for (const statement of ast.body) {
       if (statement.type === AST_NODE_TYPES.ExportNamedDeclaration) {
@@ -240,7 +291,7 @@ export class ClassLoader {
           for (const specifier of statement.specifiers) {
             exportedImportedElements[specifier.exported.name] = {
               localName: specifier.local.name,
-              fileName: this.importTargetToAbsolutePath(fileName, statement.source.value),
+              ...this.importTargetToAbsolutePath(packageName, fileName, statement.source.value),
             };
           }
         } else {
@@ -254,7 +305,7 @@ export class ClassLoader {
         if (statement.source &&
           statement.source.type === AST_NODE_TYPES.Literal &&
           typeof statement.source.value === 'string') {
-          exportedImportedAll.push(this.importTargetToAbsolutePath(fileName, statement.source.value));
+          exportedImportedAll.push(this.importTargetToAbsolutePath(packageName, fileName, statement.source.value));
         }
       } else if (statement.type === AST_NODE_TYPES.ClassDeclaration && statement.id) {
         // Form: `declare class A {}`
@@ -270,7 +321,7 @@ export class ClassLoader {
           if (specifier.type === AST_NODE_TYPES.ImportSpecifier) {
             importedElements[specifier.local.name] = {
               localName: specifier.imported.name,
-              fileName: this.importTargetToAbsolutePath(fileName, statement.source.value),
+              ...this.importTargetToAbsolutePath(packageName, fileName, statement.source.value),
             };
           }
         }
@@ -303,9 +354,9 @@ export interface ClassElements {
   // Interfaces that have been declared in a file via `export interface A`
   exportedInterfaces: Record<string, TSInterfaceDeclaration>;
   // Elements that have been exported via `export { A as B } from "b"`
-  exportedImportedElements: Record<string, { localName: string; fileName: string }>;
+  exportedImportedElements: Record<string, ClassReference>;
   // Exports via `export * from "b"`
-  exportedImportedAll: string[];
+  exportedImportedAll: { packageName: string; fileName: string }[];
   // Things that have been exported via `export {A as B}`, where the target is not known
   exportedUnknowns: Record<string, string>;
   // Classes that have been declared in a file via `declare class A`
@@ -313,5 +364,5 @@ export interface ClassElements {
   // Interfaces that have been declared in a file via `declare interface A`
   declaredInterfaces: Record<string, TSInterfaceDeclaration>;
   // Elements that are imported from elsewhere via `import {A} from ''`
-  importedElements: Record<string, { localName: string; fileName: string }>;
+  importedElements: Record<string, ClassReference>;
 }

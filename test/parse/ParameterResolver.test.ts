@@ -173,7 +173,7 @@ describe('ParameterResolver', () => {
 
     it('should handle a complex field parameter', async() => {
       resolutionContext.contentsOverrides = {
-        'A.d.ts': `export * from 'MyClass'`,
+        'A.d.ts': `export * from './MyClass'`,
         'MyClass.d.ts': `export class MyClass{}`,
       };
       expect(await loader.resolveParameterData([
@@ -203,7 +203,7 @@ describe('ParameterResolver', () => {
 
     it('should handle a complex index parameter', async() => {
       resolutionContext.contentsOverrides = {
-        'A.d.ts': `export * from 'MyClass'`,
+        'A.d.ts': `export * from './MyClass'`,
         'MyClass.d.ts': `export class MyClass{}`,
       };
       expect(await loader.resolveParameterData([
@@ -253,7 +253,7 @@ describe('ParameterResolver', () => {
 
     it('should handle an interface range pointing to a class', async() => {
       resolutionContext.contentsOverrides = {
-        'A.d.ts': `export * from 'MyClass'`,
+        'A.d.ts': `export * from './MyClass'`,
         'MyClass.d.ts': `export class MyClass{}`,
       };
       expect(await loader.resolveRange({
@@ -268,7 +268,7 @@ describe('ParameterResolver', () => {
     it('should handle an ignored interface range pointing to a class', async() => {
       ignoreClasses.MyClass = true;
       resolutionContext.contentsOverrides = {
-        'A.d.ts': `export * from 'MyClass'`,
+        'A.d.ts': `export * from './MyClass'`,
         'MyClass.d.ts': `export class MyClass{}`,
       };
       expect(await loader.resolveRange({
@@ -281,7 +281,7 @@ describe('ParameterResolver', () => {
 
     it('should handle an interface range pointing to an implicit class', async() => {
       resolutionContext.contentsOverrides = {
-        'A.d.ts': `export * from 'MyClass'`,
+        'A.d.ts': `export * from './MyClass'`,
         'MyClass.d.ts': `export interface MyClass{
   constructor();
 }`,
@@ -297,7 +297,7 @@ describe('ParameterResolver', () => {
 
     it('should handle an interface range pointing to an interface', async() => {
       resolutionContext.contentsOverrides = {
-        'A.d.ts': `export * from 'MyInterface'`,
+        'A.d.ts': `export * from './MyInterface'`,
         'MyInterface.d.ts': `export interface MyInterface{
   fieldA: string;
 }`,
@@ -321,7 +321,7 @@ describe('ParameterResolver', () => {
     it('should handle an interface range pointing to a extended interface that is ignored', async() => {
       ignoreClasses.IgnoredInterface = true;
       resolutionContext.contentsOverrides = {
-        'A.d.ts': `export * from 'MyInterface'`,
+        'A.d.ts': `export * from './MyInterface'`,
         'MyInterface.d.ts': `
 export interface MyInterface extends IgnoredInterface{};
 `,
@@ -337,7 +337,7 @@ export interface MyInterface extends IgnoredInterface{};
   });
 
   describe('resolveRangeInterface', () => {
-    const classReference: ClassReference = { localName: 'A', fileName: 'A' };
+    const classReference: ClassReference = { packageName: 'P', localName: 'A', fileName: 'A' };
 
     it('should error on a non-existing interface', async() => {
       resolutionContext.contentsOverrides = {
@@ -467,7 +467,7 @@ interface IFaceB {
   });
 
   describe('isInterfaceImplicitClass', () => {
-    const classReference: ClassReference = { localName: 'A', fileName: 'A' };
+    const classReference: ClassReference = { packageName: 'P', localName: 'A', fileName: 'A' };
 
     it('should be false on an empty interface', async() => {
       resolutionContext.contentsOverrides = {
@@ -530,7 +530,7 @@ export interface A{
   });
 
   describe('loadClassOrInterfacesChain', () => {
-    const classReference: ClassReference = { localName: 'A', fileName: 'A' };
+    const classReference: ClassReference = { packageName: 'P', localName: 'A', fileName: 'A' };
 
     it('should error on a non-existing interface', async() => {
       resolutionContext.contentsOverrides = {
@@ -694,7 +694,7 @@ export class B{}
   });
 
   describe('getNestedFieldsFromInterface', () => {
-    const classReference: ClassReference = { localName: 'A', fileName: 'A' };
+    const classReference: ClassReference = { packageName: 'P', localName: 'A', fileName: 'A' };
 
     it('should handle an empty interface', async() => {
       resolutionContext.contentsOverrides = {
@@ -761,7 +761,7 @@ export interface A{
     it('should handle an interface with a class field', async() => {
       resolutionContext.contentsOverrides = {
         'A.d.ts': `
-import {B} from 'B';
+import {B} from './B';
 export interface A{
   fieldA: B;
 }
@@ -800,7 +800,7 @@ export interface A{
     it('should error on an interface with a non-existing class field', async() => {
       resolutionContext.contentsOverrides = {
         'A.d.ts': `
-import {B} from 'B';
+import {B} from './B';
 export interface A{
   fieldA: B;
 }
@@ -815,7 +815,7 @@ export interface A{
     it('should handle an interface with an empty interface field', async() => {
       resolutionContext.contentsOverrides = {
         'A.d.ts': `
-import {B} from 'B';
+import {B} from './B';
 export interface A{
   fieldA: B;
 }
@@ -841,7 +841,7 @@ export interface A{
     it('should handle an interface with an filled interface field', async() => {
       resolutionContext.contentsOverrides = {
         'A.d.ts': `
-import {B} from 'B';
+import {B} from './B';
 export interface A{
   fieldA: B;
 }
@@ -918,13 +918,13 @@ export interface B{
     it('should handle an interface with a recursive interface field', async() => {
       resolutionContext.contentsOverrides = {
         'A.d.ts': `
-import {B} from 'B';
+import {B} from './B';
 export interface A{
   fieldA: B;
 }
 `,
         'B.d.ts': `
-import {C} from 'C';
+import {C} from './C';
 export interface B{
   fieldB: C;
 }
@@ -986,7 +986,7 @@ export interface C{
   });
 
   describe('getNestedFieldsFromHash', () => {
-    const classReference: ClassReference = { localName: 'A', fileName: 'file' };
+    const classReference: ClassReference = { packageName: 'P', localName: 'A', fileName: 'file' };
 
     async function getHash(definition: string, prefix = ''):
     Promise<{ hash: TSTypeLiteral; owningClass: ClassReferenceLoaded }> {
@@ -1055,7 +1055,7 @@ export class A{
       };
       const { hash, owningClass } = await getHash(`{
   fieldA: B;
-}`, `import {B} from 'B';`);
+}`, `import {B} from './B';`);
       expect(await loader.getNestedFieldsFromHash(hash, owningClass))
         .toMatchObject([
           {
@@ -1085,7 +1085,7 @@ export class A{
       };
       const { hash, owningClass } = await getHash(`{
   fieldA: B;
-}`, `import {B} from 'B';`);
+}`, `import {B} from './B';`);
       await expect(loader.getNestedFieldsFromHash(hash, owningClass))
         .rejects.toThrow(new Error('Could not load class or interface B from B'));
     });
@@ -1096,7 +1096,7 @@ export class A{
       };
       const { hash, owningClass } = await getHash(`{
   fieldA: B;
-}`, `import {B} from 'B';`);
+}`, `import {B} from './B';`);
       expect(await loader.getNestedFieldsFromHash(hash, owningClass))
         .toMatchObject([
           {
@@ -1122,7 +1122,7 @@ export interface B{
       };
       const { hash, owningClass } = await getHash(`{
   fieldA: B;
-}`, `import {B} from 'B';`);
+}`, `import {B} from './B';`);
       expect(await loader.getNestedFieldsFromHash(hash, owningClass))
         .toMatchObject([
           {
@@ -1182,7 +1182,7 @@ export interface B{
     it('should handle a hash with a recursive interface field', async() => {
       resolutionContext.contentsOverrides = {
         'B.d.ts': `
-import {C} from 'C';
+import {C} from './C';
 export interface B{
   fieldB: C;
 }
@@ -1196,7 +1196,7 @@ export interface C{
       };
       const { hash, owningClass } = await getHash(`{
   fieldA: B;
-}`, `import {B} from 'B';`);
+}`, `import {B} from './B';`);
       expect(await loader.getNestedFieldsFromHash(hash, owningClass))
         .toMatchObject([
           {

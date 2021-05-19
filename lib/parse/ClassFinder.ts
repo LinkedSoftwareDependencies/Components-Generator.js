@@ -14,18 +14,19 @@ export class ClassFinder {
 
   /**
    * From a given types index, find all named exports.
+   * @param packageName Package we are checking.
    * @param typesPath The path to the index typings file.
    */
-  public async getPackageExports(typesPath: string): Promise<ClassIndex<ClassReference>> {
+  public async getPackageExports(packageName: string, typesPath: string): Promise<ClassIndex<ClassReference>> {
     let exports: ClassIndex<ClassReference> = {};
 
     // Start from the package index, and collect all named exports.
     const paths = [ typesPath ];
     for (const path of paths) {
-      const { named, unnamed } = await this.getFileExports(path);
+      const { named, unnamed } = await this.getFileExports(packageName, path);
       exports = { ...exports, ...named };
       for (const additionalPath of unnamed) {
-        paths.push(additionalPath);
+        paths.push(additionalPath.fileName);
       }
     }
 
@@ -34,10 +35,11 @@ export class ClassFinder {
 
   /**
    * Get all named and unnamed exports from the given file.
+   * @param packageName Package we are checking.
    * @param fileName The path to a typescript file.
    */
-  public async getFileExports(fileName: string):
-  Promise<{ named: ClassIndex<ClassReference>; unnamed: string[] }> {
+  public async getFileExports(packageName: string, fileName: string):
+  Promise<{ named: ClassIndex<ClassReference>; unnamed: { packageName: string; fileName: string }[] }> {
     // Load the elements of the class
     const {
       exportedClasses,
@@ -46,12 +48,15 @@ export class ClassFinder {
       exportedUnknowns,
       declaredClasses,
       importedElements,
-    } = await this.classLoader.loadClassElements(fileName);
-    const exportDefinitions: { named: ClassIndex<ClassReference>; unnamed: string[] } = { named: {}, unnamed: []};
+    } = await this.classLoader.loadClassElements(packageName, fileName);
+    const exportDefinitions:
+    { named: ClassIndex<ClassReference>; unnamed: { packageName: string; fileName: string }[] } =
+      { named: {}, unnamed: []};
 
     // Get all named exports
     for (const localName in exportedClasses) {
       exportDefinitions.named[localName] = {
+        packageName,
         localName,
         fileName,
       };
@@ -60,6 +65,7 @@ export class ClassFinder {
     // Get all named exports from other files
     for (const [ exportedName, { localName, fileName: importedFileName }] of Object.entries(exportedImportedElements)) {
       exportDefinitions.named[exportedName] = {
+        packageName,
         localName,
         fileName: importedFileName,
       };
@@ -72,6 +78,7 @@ export class ClassFinder {
         // First check declared classes
         if (localName in declaredClasses) {
           exportDefinitions.named[exportedName] = {
+            packageName,
             localName,
             fileName,
           };

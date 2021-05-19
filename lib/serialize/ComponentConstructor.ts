@@ -4,6 +4,7 @@ import type { ClassIndex, ClassLoaded, ClassReference } from '../parse/ClassInde
 import type { ConstructorData } from '../parse/ConstructorLoader';
 import type { PackageMetadata } from '../parse/PackageMetadataLoader';
 import type { ParameterData, ParameterRangeResolved } from '../parse/ParameterLoader';
+import type { ExternalComponents } from '../resolution/ExternalModulesLoader';
 import type {
   ComponentDefinition,
   ComponentDefinitions, ComponentDefinitionsIndex,
@@ -21,6 +22,7 @@ export class ComponentConstructor {
   private readonly pathDestination: PathDestinationDefinition;
   private readonly classReferences: ClassIndex<ClassLoaded>;
   private readonly classConstructors: ClassIndex<ConstructorData<ParameterRangeResolved>>;
+  private readonly externalComponents: ExternalComponents;
   private readonly contextParser: ContextParser;
 
   public constructor(args: ComponentConstructorArgs) {
@@ -29,6 +31,7 @@ export class ComponentConstructor {
     this.pathDestination = args.pathDestination;
     this.classReferences = args.classReferences;
     this.classConstructors = args.classConstructors;
+    this.externalComponents = args.externalComponents;
     this.contextParser = args.contextParser;
   }
 
@@ -51,10 +54,20 @@ export class ComponentConstructor {
           components: [],
         };
       }
-      const { components } = definitions[path];
+      const { components, '@context': contexts } = definitions[path];
 
       // Construct the component for this class
-      components.push(this.constructComponent(context, classReference, this.classConstructors[className]));
+      components.push(await this.constructComponent(
+        context,
+        externalContextUrl => {
+          // Append external contexts URLs to @context array
+          if (!contexts.includes(externalContextUrl)) {
+            contexts.push(externalContextUrl);
+          }
+        },
+        classReference,
+        this.classConstructors[className],
+      ));
     }
 
     return definitions;
@@ -132,24 +145,35 @@ export class ComponentConstructor {
   /**
    * Construct a component definition from the given constructor data.
    * @param context A parsed JSON-LD context.
+   * @param externalContextsCallback Callback for external contexts.
    * @param classReference Class reference of the class component.
    * @param constructorData Constructor data of the owning class.
    */
-  public constructComponent(
+  public async constructComponent(
     context: JsonLdContextNormalized,
+    externalContextsCallback: ExternalContextCallback,
     classReference: ClassLoaded,
     constructorData: ConstructorData<ParameterRangeResolved>,
-  ): ComponentDefinition {
+  ): Promise<ComponentDefinition> {
     // Fill in parameters and constructor arguments
     const parameters: ParameterDefinition[] = [];
-    const constructorArguments = this.constructParameters(context, classReference, constructorData, parameters);
+    const constructorArguments = await this.constructParameters(
+      context,
+      externalContextsCallback,
+      classReference,
+      constructorData,
+      parameters,
+    );
 
     // Fill in fields
+    const scopedId = await this.classNameToId(context, externalContextsCallback, classReference);
     return {
-      '@id': this.classNameToId(context, classReference),
+      '@id': scopedId,
       '@type': classReference.abstract ? 'AbstractClass' : 'Class',
       requireElement: classReference.localName,
-      ...classReference.superClass ? { extends: this.classNameToId(context, classReference.superClass) } : {},
+      ...classReference.superClass ?
+        { extends: await this.classNameToId(context, externalContextsCallback, classReference.superClass) } :
+        {},
       ...classReference.comment ? { comment: classReference.comment } : {},
       parameters,
       constructorArguments,
@@ -167,10 +191,31 @@ export class ComponentConstructor {
   /**
    * Construct a compacted class IRI.
    * @param context A parsed JSON-LD context.
+   * @param externalContextsCallback Callback for external contexts.
    * @param classReference The class reference.
    */
-  public classNameToId(context: JsonLdContextNormalized, classReference: ClassReference): string {
-    return context.compactIri(`${this.packageMetadata.moduleIri}/${this.getPathRelative(classReference.fileName)}#${classReference.localName}`);
+  public async classNameToId(
+    context: JsonLdContextNormalized,
+    externalContextsCallback: ExternalContextCallback,
+    classReference: ClassReference,
+  ): Promise<string> {
+    // Mint a new IRI if class is in the current package
+    if (classReference.packageName === this.packageMetadata.name) {
+      return context.compactIri(`${this.packageMetadata.moduleIri}/${this.getPathRelative(classReference.fileName)}#${classReference.localName}`);
+    }
+
+    // Use existing IRI if class is in another package
+    const moduleComponents = this.externalComponents.components[classReference.packageName];
+    if (!moduleComponents) {
+      throw new Error(`Tried to reference a class '${classReference.localName}' from an external module '${classReference.packageName}' that is not a dependency`);
+    }
+    moduleComponents.contextIris.forEach(iri => externalContextsCallback(iri));
+    const componentIri = moduleComponents.componentNamesToIris[classReference.localName];
+    if (!componentIri) {
+      throw new Error(`Tried to reference a class '${classReference.localName}' from an external module '${classReference.packageName}' that does not expose this component`);
+    }
+    const contextExternal = await this.contextParser.parse(moduleComponents.contextIris);
+    return contextExternal.compactIri(componentIri);
   }
 
   /**
@@ -203,28 +248,31 @@ export class ComponentConstructor {
    * Additionally, parameters will be appended to the parameters array.
    *
    * @param context A parsed JSON-LD context.
+   * @param externalContextsCallback Callback for external contexts.
    * @param classReference Class reference of the class component owning this constructor.
    * @param constructorData Constructor data of the owning class.
    * @param parameters The array of parameters of the owning class, which will be appended to.
    */
-  public constructParameters(
+  public async constructParameters(
     context: JsonLdContextNormalized,
+    externalContextsCallback: ExternalContextCallback,
     classReference: ClassLoaded,
     constructorData: ConstructorData<ParameterRangeResolved>,
     parameters: ParameterDefinition[],
-  ): ConstructorArgumentDefinition[] {
+  ): Promise<ConstructorArgumentDefinition[]> {
     const scope: FieldScope = {
       parentFieldNames: [],
       fieldIdsHash: {},
     };
-    return constructorData.parameters.map(parameter => this.parameterDataToConstructorArgument(
+    return await Promise.all(constructorData.parameters.map(parameter => this.parameterDataToConstructorArgument(
       context,
+      externalContextsCallback,
       classReference,
       parameter,
       parameters,
       this.fieldNameToId(context, classReference, parameter.name, scope),
       scope,
-    ));
+    )));
   }
 
   /**
@@ -234,20 +282,22 @@ export class ComponentConstructor {
    * This may be invoked recursively based on the parameter type.
    *
    * @param context A parsed JSON-LD context.
+   * @param externalContextsCallback Callback for external contexts.
    * @param classReference Class reference of the class component owning this parameter.
    * @param parameterData Parameter data.
    * @param parameters The array of parameters of the owning class, which will be appended to.
    * @param fieldId The @id of the field.
    * @param scope The current field scope.
    */
-  public parameterDataToConstructorArgument(
+  public async parameterDataToConstructorArgument(
     context: JsonLdContextNormalized,
+    externalContextsCallback: ExternalContextCallback,
     classReference: ClassLoaded,
     parameterData: ParameterData<ParameterRangeResolved>,
     parameters: ParameterDefinition[],
     fieldId: string,
     scope: FieldScope,
-  ): ConstructorArgumentDefinition {
+  ): Promise<ConstructorArgumentDefinition> {
     // Append the current field name to the scope
     if (parameterData.type === 'field') {
       scope = {
@@ -259,15 +309,19 @@ export class ComponentConstructor {
     if (parameterData.range.type === 'nested') {
       // Create a hash object with `fields` entries.
       // Each entry's value is (indirectly) recursively handled by this method again.
-      const fields = parameterData.range.value.map(subParamData => this.constructFieldDefinitionNested(
-        context,
-        classReference,
-        <ParameterData<ParameterRangeResolved> & { range: { type: 'nested' } }>parameterData,
-        parameters,
-        subParamData,
-        fieldId,
-        scope,
-      ));
+      const fields: ConstructorFieldDefinition[] = [];
+      for (const subParamData of parameterData.range.value) {
+        fields.push(await this.constructFieldDefinitionNested(
+          context,
+          externalContextsCallback,
+          classReference,
+          <ParameterData<ParameterRangeResolved> & { range: { type: 'nested' } }>parameterData,
+          parameters,
+          subParamData,
+          fieldId,
+          scope,
+        ));
+      }
       return { fields };
     }
 
@@ -282,8 +336,10 @@ export class ComponentConstructor {
         param = this.constructParameterRangeUndefined(context, classReference, parameterData, fieldId);
         break;
       case 'class':
-        param = this.constructParameterClass(
+        // eslint-disable-next-line no-case-declarations
+        param = await this.constructParameterClass(
           context,
+          externalContextsCallback,
           classReference,
           parameterData,
           parameterData.range.value,
@@ -298,6 +354,7 @@ export class ComponentConstructor {
   /**
    * For the given parameter with nested range, construct field definitions for all sub-parameters.
    * @param context A parsed JSON-LD context.
+   * @param externalContextsCallback Callback for external contexts.
    * @param classReference Class reference of the class component owning this parameter.
    * @param parameterData Parameter data with nested range.
    * @param parameters The array of parameters of the owning class, which will be appended to.
@@ -305,20 +362,22 @@ export class ComponentConstructor {
    * @param fieldId The @id of the field.
    * @param scope The current field scope.
    */
-  public constructFieldDefinitionNested(
+  public async constructFieldDefinitionNested(
     context: JsonLdContextNormalized,
+    externalContextsCallback: ExternalContextCallback,
     classReference: ClassLoaded,
     parameterData: ParameterData<ParameterRangeResolved> & { range: { type: 'nested' } },
     parameters: ParameterDefinition[],
     subParamData: ParameterData<ParameterRangeResolved>,
     fieldId: string,
     scope: FieldScope,
-  ): ConstructorFieldDefinition {
+  ): Promise<ConstructorFieldDefinition> {
     if (subParamData.type === 'field') {
       return {
         keyRaw: subParamData.name,
-        value: this.parameterDataToConstructorArgument(
+        value: await this.parameterDataToConstructorArgument(
           context,
+          externalContextsCallback,
           classReference,
           subParamData,
           parameters,
@@ -355,8 +414,9 @@ export class ComponentConstructor {
       required: true,
       unique: true,
     });
-    const value = this.parameterDataToConstructorArgument(
+    const value = await this.parameterDataToConstructorArgument(
       context,
+      externalContextsCallback,
       classReference,
       subParamData,
       subParameters,
@@ -442,22 +502,24 @@ export class ComponentConstructor {
   /**
    * Construct a parameter definition from the given parameter data with class reference range.
    * @param context A parsed JSON-LD context.
+   * @param externalContextsCallback Callback for external contexts.
    * @param classReference Class reference of the class component owning this parameter.
    * @param parameterData Parameter data.
    * @param range Range of this parameter data.
    * @param fieldId The @id of the field.
    */
-  public constructParameterClass(
+  public async constructParameterClass(
     context: JsonLdContextNormalized,
+    externalContextsCallback: ExternalContextCallback,
     classReference: ClassReference,
     parameterData: ParameterData<ParameterRangeResolved>,
     range: ClassReference,
     fieldId: string,
-  ): ParameterDefinition {
+  ): Promise<ParameterDefinition> {
     // Fill in required fields
     const definition: ParameterDefinition = {
       '@id': fieldId,
-      range: this.classNameToId(context, range),
+      range: await this.classNameToId(context, externalContextsCallback, range),
     };
 
     // Fill in optional fields
@@ -493,6 +555,7 @@ export interface ComponentConstructorArgs {
   pathDestination: PathDestinationDefinition;
   classReferences: ClassIndex<ClassLoaded>;
   classConstructors: ClassIndex<ConstructorData<ParameterRangeResolved>>;
+  externalComponents: ExternalComponents;
   contextParser: ContextParser;
 }
 
@@ -521,3 +584,5 @@ export interface FieldScope {
    */
   fieldIdsHash: Record<string, number>;
 }
+
+export type ExternalContextCallback = (contextUrl: string) => void;

@@ -1,3 +1,4 @@
+import * as Path from 'path';
 import { ClassFinder } from '../../lib/parse/ClassFinder';
 import { ClassIndexer } from '../../lib/parse/ClassIndexer';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
@@ -29,11 +30,13 @@ describe('ClassIndexer', () => {
       };
       expect(await indexer.createIndex({
         A: {
+          packageName: 'package',
           localName: 'X',
           fileName: 'x',
         },
       })).toMatchObject({
         A: {
+          packageName: 'package',
           localName: 'X',
           fileName: 'x',
           declaration: {
@@ -47,6 +50,7 @@ describe('ClassIndexer', () => {
     it('should throw on a direct class reference to an unknown file', async() => {
       await expect(indexer.createIndex({
         Unknown: {
+          packageName: 'package',
           localName: 'Unknown',
           fileName: 'unknown',
         },
@@ -58,6 +62,7 @@ Could not find mocked path for unknown.d.ts`));
       ignoreClasses.Unknown = true;
       expect(await indexer.createIndex({
         Unknown: {
+          packageName: 'package',
           localName: 'Unknown',
           fileName: 'unknown',
         },
@@ -71,6 +76,7 @@ Could not find mocked path for unknown.d.ts`));
       };
       expect(await indexer.createIndex({
         A: {
+          packageName: 'package',
           localName: 'X',
           fileName: 'x',
         },
@@ -92,6 +98,7 @@ Could not find mocked path for unknown.d.ts`));
       };
       await expect(indexer.createIndex({
         A: {
+          packageName: 'package',
           localName: 'X',
           fileName: 'x',
         },
@@ -107,15 +114,18 @@ export class Y{}
       };
       expect(await indexer.createIndex({
         A: {
+          packageName: 'package',
           localName: 'X',
           fileName: 'x',
         },
         B: {
+          packageName: 'package',
           localName: 'Y',
           fileName: 'x',
         },
       })).toMatchObject({
         A: {
+          packageName: 'package',
           localName: 'X',
           fileName: 'x',
           declaration: {
@@ -124,6 +134,7 @@ export class Y{}
           },
         },
         B: {
+          packageName: 'package',
           localName: 'Y',
           fileName: 'x',
           declaration: {
@@ -146,15 +157,18 @@ export class Y{}
       };
       expect(await indexer.createIndex({
         A: {
+          packageName: 'package',
           localName: 'X',
           fileName: 'x',
         },
         B: {
+          packageName: 'package',
           localName: 'Y',
           fileName: 'x',
         },
       })).toMatchObject({
         A: {
+          packageName: 'package',
           localName: 'X',
           fileName: 'y',
           declaration: {
@@ -163,6 +177,7 @@ export class Y{}
           },
         },
         B: {
+          packageName: 'package',
           localName: 'Y',
           fileName: 'y',
           declaration: {
@@ -179,7 +194,7 @@ export class Y{}
       resolutionContext.contentsOverrides = {
         'file.d.ts': ``,
       };
-      await expect(indexer.loadClassChain({ localName: 'A', fileName: 'file' }))
+      await expect(indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
         .rejects.toThrow(new Error('Could not load class A from file'));
     });
 
@@ -187,8 +202,9 @@ export class Y{}
       resolutionContext.contentsOverrides = {
         'file.d.ts': `export class A{}`,
       };
-      expect(await indexer.loadClassChain({ localName: 'A', fileName: 'file' }))
+      expect(await indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
         .toMatchObject({
+          packageName: 'package',
           localName: 'A',
           fileName: 'file',
           declaration: {
@@ -205,8 +221,9 @@ export class A extends B{}
 export class B{}
 `,
       };
-      expect(await indexer.loadClassChain({ localName: 'A', fileName: 'file' }))
+      expect(await indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
         .toMatchObject({
+          packageName: 'package',
           localName: 'A',
           fileName: 'file',
           declaration: {
@@ -214,6 +231,7 @@ export class B{}
             type: 'ClassDeclaration',
           },
           superClass: {
+            packageName: 'package',
             localName: 'B',
             fileName: 'file',
             declaration: {
@@ -232,8 +250,9 @@ export { X as B } from './X'
 `,
         'X.d.ts': `export class X{}`,
       };
-      expect(await indexer.loadClassChain({ localName: 'A', fileName: 'file' }))
+      expect(await indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
         .toMatchObject({
+          packageName: 'package',
           localName: 'A',
           fileName: 'file',
           declaration: {
@@ -241,8 +260,39 @@ export { X as B } from './X'
             type: 'ClassDeclaration',
           },
           superClass: {
+            packageName: 'package',
             localName: 'X',
             fileName: 'X',
+            declaration: {
+              id: { name: 'X' },
+              type: 'ClassDeclaration',
+            },
+          },
+        });
+    });
+
+    it('for an exported class with super in other package', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+export class A extends B{}
+export { X as B } from 'other-package'
+`,
+        '/some-dir/index.d.ts': `export class X{}`,
+      };
+      resolutionContext.packageNameIndexOverrides['other-package'] = '/some-dir/index.js';
+      expect(await indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
+        .toMatchObject({
+          packageName: 'package',
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'ClassDeclaration',
+          },
+          superClass: {
+            packageName: 'other-package',
+            localName: 'X',
+            fileName: Path.normalize('/some-dir/index'),
             declaration: {
               id: { name: 'X' },
               type: 'ClassDeclaration',
@@ -259,8 +309,9 @@ export * from './X'
 `,
         'X.d.ts': `export class X{}`,
       };
-      expect(await indexer.loadClassChain({ localName: 'A', fileName: 'file' }))
+      expect(await indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
         .toMatchObject({
+          packageName: 'package',
           localName: 'A',
           fileName: 'file',
           declaration: {
@@ -268,6 +319,7 @@ export * from './X'
             type: 'ClassDeclaration',
           },
           superClass: {
+            packageName: 'package',
             localName: 'X',
             fileName: 'X',
             declaration: {
@@ -288,8 +340,9 @@ export * from './Z'
         'Y.d.ts': `export * from './X'`,
         'X.d.ts': `export class X{}`,
       };
-      expect(await indexer.loadClassChain({ localName: 'A', fileName: 'file' }))
+      expect(await indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
         .toMatchObject({
+          packageName: 'package',
           localName: 'A',
           fileName: 'file',
           declaration: {
@@ -297,6 +350,7 @@ export * from './Z'
             type: 'ClassDeclaration',
           },
           superClass: {
+            packageName: 'package',
             localName: 'X',
             fileName: 'X',
             declaration: {
@@ -313,7 +367,7 @@ export * from './Z'
 export class A extends Unknown{}
 `,
       };
-      await expect(indexer.loadClassChain({ localName: 'A', fileName: 'file' }))
+      await expect(indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
         .rejects.toThrow(new Error(`Failed to load super class Unknown of A in file:
 Could not load class Unknown from file`));
     });
@@ -325,8 +379,9 @@ Could not load class Unknown from file`));
 export class A extends Unknown{}
 `,
       };
-      expect(await indexer.loadClassChain({ localName: 'A', fileName: 'file' }))
+      expect(await indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
         .toMatchObject({
+          packageName: 'package',
           localName: 'A',
           fileName: 'file',
           declaration: {

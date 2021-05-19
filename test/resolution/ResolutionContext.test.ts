@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as Path from 'path';
 import { ResolutionContext } from '../../lib/resolution/ResolutionContext';
 
 describe('ResolutionContext', () => {
@@ -105,6 +106,13 @@ describe('ResolutionContext', () => {
       expect(parsedFile1).toBe(parsedFile2);
       expect(parsedFileB1).toBe(parsedFileB2);
       expect(parsedFile1).not.toBe(parsedFileB1);
+    });
+  });
+
+  describe('resolvePackageIndex', () => {
+    it('Should resolve from the currentFilePath', async() => {
+      expect(resolutionContext.resolvePackageIndex('lru-cache', Path.join(__dirname, '../../')))
+        .toEqual(Path.join(__dirname, '../../node_modules/lru-cache/index.js'));
     });
   });
 });

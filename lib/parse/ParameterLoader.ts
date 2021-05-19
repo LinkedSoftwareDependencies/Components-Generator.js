@@ -9,7 +9,7 @@ import type {
   TSTypeReference,
 } from '@typescript-eslint/types/dist/ts-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import type { ClassReference, ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
+import type { ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
 import type { CommentData } from './CommentLoader';
 import { CommentLoader } from './CommentLoader';
 import type { ConstructorData } from './ConstructorLoader';
@@ -417,7 +417,7 @@ export type ParameterRangeResolved = {
   value: string;
 } | {
   type: 'class';
-  value: ClassReference;
+  value: ClassReferenceLoaded;
 } | {
   type: 'nested';
   value: ParameterData<ParameterRangeResolved>[];

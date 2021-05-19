@@ -100,9 +100,10 @@ export class ParameterResolver {
    */
   public async resolveRangeInterface(
     interfaceName: string,
-    owningClass: ClassReference,
+    owningClass: ClassReferenceLoaded,
   ): Promise<ParameterRangeResolved> {
     const classOrInterface = await this.loadClassOrInterfacesChain({
+      packageName: owningClass.packageName,
       localName: interfaceName,
       fileName: owningClass.fileName,
     });
@@ -160,6 +161,7 @@ export class ParameterResolver {
         .filter(interfaceName => !(interfaceName in this.ignoreClasses))
         .map(async interfaceName => {
           const superInterface = await this.loadClassOrInterfacesChain({
+            packageName: classOrInterface.packageName,
             localName: interfaceName,
             fileName: classOrInterface.fileName,
           });

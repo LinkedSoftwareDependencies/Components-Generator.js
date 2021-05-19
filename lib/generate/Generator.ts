@@ -8,6 +8,7 @@ import { ClassLoader } from '../parse/ClassLoader';
 import { ConstructorLoader } from '../parse/ConstructorLoader';
 import { PackageMetadataLoader } from '../parse/PackageMetadataLoader';
 import { ParameterResolver } from '../parse/ParameterResolver';
+import { ExternalModulesLoader } from '../resolution/ExternalModulesLoader';
 import type { ResolutionContext } from '../resolution/ResolutionContext';
 import type { PathDestinationDefinition } from '../serialize/ComponentConstructor';
 import { ComponentConstructor } from '../serialize/ComponentConstructor';
@@ -44,13 +45,23 @@ export class Generator {
     const classIndexer = new ClassIndexer({ classLoader, classFinder, ignoreClasses: this.ignoreClasses });
 
     // Find all relevant classes
-    const packageExports = await classFinder.getPackageExports(packageMetadata.typesPath);
+    const packageExports = await classFinder.getPackageExports(packageMetadata.name, packageMetadata.typesPath);
     const classIndex = await classIndexer.createIndex(packageExports);
 
     // Load constructor data
     const constructorsUnresolved = new ConstructorLoader().getConstructors(classIndex);
     const constructors = await new ParameterResolver({ classLoader, ignoreClasses: this.ignoreClasses })
       .resolveAllConstructorParameters(constructorsUnresolved, classIndex);
+
+    // Load external components
+    const logger = ComponentsManagerBuilder.createLogger(this.logLevel);
+    const externalModulesLoader = new ExternalModulesLoader({
+      pathDestination: this.pathDestination,
+      packageMetadata,
+      logger,
+    });
+    const externalPackages = externalModulesLoader.findExternalPackages(classIndex, constructors);
+    const externalComponents = await externalModulesLoader.loadExternalComponents(require, externalPackages);
 
     // Create components
     const contextConstructor = new ContextConstructor({
@@ -63,11 +74,13 @@ export class Generator {
       pathDestination: this.pathDestination,
       classReferences: classIndex,
       classConstructors: constructors,
+      externalComponents,
       contextParser: new ContextParser({
         documentLoader: new PrefetchedDocumentLoader({
-          contexts: {},
-          logger: ComponentsManagerBuilder.createLogger(this.logLevel),
+          contexts: externalComponents.moduleState.contexts,
+          logger,
         }),
+        skipValidation: true,
       }),
     });
     const components = await componentConstructor.constructComponents();

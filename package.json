@@ -74,7 +74,7 @@
     "@types/semver": "^7.3.4",
     "@typescript-eslint/typescript-estree": "^4.6.1",
     "comment-parser": "^0.7.6",
-    "componentsjs": "^4.0.0",
+    "componentsjs": "^4.2.0",
     "jsonld-context-parser": "^2.0.2",
     "lru-cache": "^6.0.0",
     "minimist": "^1.2.5",

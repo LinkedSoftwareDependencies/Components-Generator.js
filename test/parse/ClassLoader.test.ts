@@ -5,10 +5,11 @@ import { ClassLoader } from '../../lib/parse/ClassLoader';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
 describe('ClassLoader', () => {
-  const resolutionContext = new ResolutionContextMocked({});
+  let resolutionContext: ResolutionContextMocked;
   let loader: ClassLoader;
 
   beforeEach(() => {
+    resolutionContext = new ResolutionContextMocked({});
     loader = new ClassLoader({ resolutionContext });
   });
 
@@ -78,7 +79,7 @@ describe('ClassLoader', () => {
             'file.d.ts': ``,
           }),
         });
-        await expect(loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, false))
+        await expect(loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, false))
           .rejects.toThrow(new Error('Could not load class A from file'));
       });
 
@@ -94,7 +95,7 @@ export * from './lib/D';
 `,
           }),
         });
-        await expect(loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, false))
+        await expect(loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, false))
           .rejects.toThrow(new Error('Could not load class A from file'));
       });
 
@@ -106,7 +107,7 @@ declare interface A{};
 `,
           }),
         });
-        await expect(loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, false))
+        await expect(loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, false))
           .rejects.toThrow(new Error('Could not load class A from file'));
       });
 
@@ -116,7 +117,7 @@ declare interface A{};
             'file.d.ts': `export class A{}`,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, false))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, false))
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -133,7 +134,7 @@ declare interface A{};
             'file.d.ts': `declare class A{}`,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, false))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, false))
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -151,7 +152,7 @@ declare interface A{};
             'file2.d.ts': `export class B{}`,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, false))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, false))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -169,7 +170,7 @@ declare interface A{};
             'file2.d.ts': `export class B{}`,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, false))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, false))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -187,7 +188,7 @@ declare interface A{};
             'file2.d.ts': `export class B{}`,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'B', fileName: 'file' }, false))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'B', fileName: 'file' }, false))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -209,7 +210,7 @@ export * from './file3'
             'file2.d.ts': `export class B{}`,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'B', fileName: 'file' }, false))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'B', fileName: 'file' }, false))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -229,7 +230,7 @@ export * from './file3'
             'file4.d.ts': `export class B{}`,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'B', fileName: 'file' }, false))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'B', fileName: 'file' }, false))
           .toMatchObject({
             localName: 'B',
             fileName: 'file4',
@@ -248,7 +249,7 @@ export * from './file3'
             'file.d.ts': ``,
           }),
         });
-        await expect(loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+        await expect(loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .rejects.toThrow(new Error('Could not load class or interface A from file'));
       });
 
@@ -264,7 +265,7 @@ export * from './lib/D';
 `,
           }),
         });
-        await expect(loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+        await expect(loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .rejects.toThrow(new Error('Could not load class or interface A from file'));
       });
 
@@ -274,7 +275,7 @@ export * from './lib/D';
             'file.d.ts': `export class A{}`,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -291,7 +292,7 @@ export * from './lib/D';
             'file.d.ts': `declare class A{}`,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -309,7 +310,7 @@ export * from './lib/D';
             'file2.d.ts': `export class B{}`,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -327,7 +328,7 @@ export * from './lib/D';
             'file2.d.ts': `export class B{}`,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -345,7 +346,7 @@ export * from './lib/D';
             'file2.d.ts': `export class B{}`,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'B', fileName: 'file' }, true))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'B', fileName: 'file' }, true))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -367,7 +368,7 @@ export * from './file3'
             'file2.d.ts': `export class B{}`,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'B', fileName: 'file' }, true))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'B', fileName: 'file' }, true))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -387,7 +388,7 @@ export * from './file3'
             'file4.d.ts': `export class B{}`,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'B', fileName: 'file' }, true))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'B', fileName: 'file' }, true))
           .toMatchObject({
             localName: 'B',
             fileName: 'file4',
@@ -404,7 +405,7 @@ export * from './file3'
             'file.d.ts': `export interface A{}`,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -421,7 +422,7 @@ export * from './file3'
             'file.d.ts': `declare interface A{}`,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -439,7 +440,7 @@ export * from './file3'
             'file2.d.ts': `export interface B{}`,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -457,7 +458,7 @@ export * from './file3'
             'file2.d.ts': `export interface B{}`,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -475,7 +476,7 @@ export * from './file3'
             'file2.d.ts': `export interface B{}`,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'B', fileName: 'file' }, true))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'B', fileName: 'file' }, true))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -497,7 +498,7 @@ export * from './file3'
             'file2.d.ts': `export interface B{}`,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'B', fileName: 'file' }, true))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'B', fileName: 'file' }, true))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -517,7 +518,7 @@ export * from './file3'
             'file4.d.ts': `export interface B{}`,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'B', fileName: 'file' }, true))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'B', fileName: 'file' }, true))
           .toMatchObject({
             localName: 'B',
             fileName: 'file4',
@@ -539,7 +540,7 @@ export class A{}
 `,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, false))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, false))
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -562,7 +563,7 @@ declare class A{}
 `,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, false))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, false))
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -585,7 +586,7 @@ export interface A{}
 `,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -608,7 +609,7 @@ declare interface A{}
 `,
           }),
         });
-        expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+        expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -627,7 +628,7 @@ declare interface A{}
           'file.d.ts': `export abstract class A{}`,
         }),
       });
-      expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+      expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -645,7 +646,7 @@ declare interface A{}
           'file.d.ts': `declare abstract class A{}`,
         }),
       });
-      expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+      expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -663,7 +664,7 @@ declare interface A{}
           'file.d.ts': `declare class A<T extends string>{}`,
         }),
       });
-      expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+      expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -683,7 +684,7 @@ declare interface A{}
           'file.d.ts': `declare class A<T>{}`,
         }),
       });
-      expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+      expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -703,7 +704,7 @@ declare interface A{}
           'file.d.ts': `declare class A<T extends string = number>{}`,
         }),
       });
-      expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+      expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -723,7 +724,7 @@ declare interface A{}
           'file.d.ts': `export class A<T extends string>{}`,
         }),
       });
-      expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+      expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -743,7 +744,7 @@ declare interface A{}
           'file.d.ts': `declare interface A<T extends string>{}`,
         }),
       });
-      expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+      expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -763,7 +764,7 @@ declare interface A{}
           'file.d.ts': `export interface A<T extends string>{}`,
         }),
       });
-      expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+      expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -783,7 +784,7 @@ declare interface A{}
           'file.d.ts': `declare class A<T extends string, U extends MyClass, V extends number>{}`,
         }),
       });
-      expect(await loader.loadClassDeclaration({ localName: 'A', fileName: 'file' }, true))
+      expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -805,7 +806,7 @@ declare interface A{}
       resolutionContext.contentsOverrides = {
         'file.d.ts': `declare class A{}`,
       };
-      expect(await loader.loadClassElements('file'))
+      expect(await loader.loadClassElements('package', 'file'))
         .toMatchObject({
           declaredClasses: {
             A: {
@@ -816,36 +817,77 @@ declare interface A{}
     });
   });
 
+  describe('importTargetToAbsolutePath', () => {
+    it('for a local file', () => {
+      expect(loader.importTargetToAbsolutePath('package', 'dir/lib/fileA', './subdir/fileB'))
+        .toEqual({ packageName: 'package', fileName: 'dir/lib/subdir/fileB' });
+    });
+
+    it('for a package', () => {
+      resolutionContext.packageNameIndexOverrides['other-package'] = '/some-dir/index.js';
+      expect(loader.importTargetToAbsolutePath('package', 'dir/lib/fileA', 'other-package'))
+        .toEqual({ packageName: 'other-package', fileName: '/some-dir/index' });
+    });
+
+    it('for a package that does not exist', () => {
+      expect(() => loader.importTargetToAbsolutePath('package', 'dir/lib/fileA', 'other-package'))
+        .toThrow(`Could not resolve 'other-package' from path 'dir/lib/fileA'`);
+    });
+
+    it('for a file in a package', () => {
+      resolutionContext.packageNameIndexOverrides['other-package'] = '/some-dir/index.js';
+      expect(loader.importTargetToAbsolutePath('package', 'dir/lib/fileA', 'other-package/lib/bla'))
+        .toEqual({ packageName: 'other-package', fileName: '/some-dir/lib/bla' });
+    });
+
+    it('for a scoped package', () => {
+      resolutionContext.packageNameIndexOverrides['@rubensworks/other-package'] = '/some-dir/index.js';
+      expect(loader.importTargetToAbsolutePath('package', 'dir/lib/fileA', '@rubensworks/other-package'))
+        .toEqual({ packageName: '@rubensworks/other-package', fileName: '/some-dir/index' });
+    });
+
+    it('for an invalid scoped package', () => {
+      expect(() => loader.importTargetToAbsolutePath('package', 'dir/lib/fileA', '@rubensworks-invalid'))
+        .toThrow(`Invalid scoped package name for import path '@rubensworks-invalid' in 'dir/lib/fileA'`);
+    });
+
+    it('for a file in a scoped package', () => {
+      resolutionContext.packageNameIndexOverrides['@rubensworks/other-package'] = '/some-dir/index.js';
+      expect(loader.importTargetToAbsolutePath('package', 'dir/lib/fileA', '@rubensworks/other-package/lib/bla'))
+        .toEqual({ packageName: '@rubensworks/other-package', fileName: '/some-dir/lib/bla' });
+    });
+  });
+
   describe('getClassElements', () => {
     const fileName = Path.normalize('dir/file');
 
     it('for an empty file', () => {
-      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(``)))
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(``)))
         .toMatchObject({});
     });
 
     it('for a file with a const', () => {
-      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`const a = "a"`)))
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`const a = "a"`)))
         .toMatchObject({});
     });
 
     it('for a file with a const export', () => {
-      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`export const foo = "a";`)))
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export const foo = "a";`)))
         .toMatchObject({});
     });
 
     it('for a file with a namespace import', () => {
-      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`import polygons = Shapes.Polygons`)))
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`import polygons = Shapes.Polygons`)))
         .toMatchObject({});
     });
 
     it('for a file with a default import', () => {
-      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`import A from './lib/A'`)))
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`import A from './lib/A'`)))
         .toMatchObject({});
     });
 
     it('for a single declare', () => {
-      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`declare class A{}`)))
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`declare class A{}`)))
         .toMatchObject({
           declaredClasses: {
             A: {
@@ -856,7 +898,7 @@ declare interface A{}
     });
 
     it('for a single declare abstract', () => {
-      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`declare abstract class A{}`)))
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`declare abstract class A{}`)))
         .toMatchObject({
           declaredClasses: {
             A: {
@@ -867,7 +909,7 @@ declare interface A{}
     });
 
     it('for a single declare interface', () => {
-      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`declare interface A{}`)))
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`declare interface A{}`)))
         .toMatchObject({
           declaredInterfaces: {
             A: {
@@ -878,7 +920,7 @@ declare interface A{}
     });
 
     it('for a single import', () => {
-      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`import {A as B} from './lib/A'`)))
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`import {A as B} from './lib/A'`)))
         .toMatchObject({
           importedElements: {
             B: {
@@ -890,7 +932,7 @@ declare interface A{}
     });
 
     it('for a single named export', () => {
-      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`export class A{}`)))
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export class A{}`)))
         .toMatchObject({
           exportedClasses: {
             A: {
@@ -901,7 +943,7 @@ declare interface A{}
     });
 
     it('for a single named export abstract', () => {
-      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`export abstract class A{}`)))
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export abstract class A{}`)))
         .toMatchObject({
           exportedClasses: {
             A: {
@@ -912,7 +954,7 @@ declare interface A{}
     });
 
     it('for a single named generic export', () => {
-      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`export class A<T extends string>{}`)))
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export class A<T extends string>{}`)))
         .toMatchObject({
           exportedClasses: {
             A: {
@@ -923,7 +965,7 @@ declare interface A{}
     });
 
     it('for a single named generic export with default', () => {
-      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`export class A<T extends string = string>{}`)))
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export class A<T extends string = string>{}`)))
         .toMatchObject({
           exportedClasses: {
             A: {
@@ -934,7 +976,7 @@ declare interface A{}
     });
 
     it('for a single named interface export', () => {
-      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`export interface A{}`)))
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export interface A{}`)))
         .toMatchObject({
           exportedInterfaces: {
             A: {
@@ -945,14 +987,26 @@ declare interface A{}
     });
 
     it('for export all', () => {
-      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`export * from './lib/A'`)))
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export * from './lib/A'`)))
         .toMatchObject({
-          exportedImportedAll: [ Path.normalize('dir/lib/A') ],
+          exportedImportedAll: [
+            { packageName: 'package', fileName: Path.normalize('dir/lib/A') },
+          ],
+        });
+    });
+
+    it('for export all from another package', () => {
+      resolutionContext.packageNameIndexOverrides['other-package'] = '/some-dir/index.js';
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export * from 'other-package'`)))
+        .toMatchObject({
+          exportedImportedAll: [
+            { packageName: 'other-package', fileName: Path.normalize('/some-dir/index') },
+          ],
         });
     });
 
     it('for export all without source', () => {
-      expect(loader.getClassElements(fileName, <AST<TSESTreeOptions>> {
+      expect(loader.getClassElements('package', fileName, <AST<TSESTreeOptions>> {
         body: [
           {
             type: AST_NODE_TYPES.ExportAllDeclaration,
@@ -964,7 +1018,7 @@ declare interface A{}
     });
 
     it('for export all without type', () => {
-      expect(loader.getClassElements(fileName, <AST<TSESTreeOptions>> {
+      expect(loader.getClassElements('package', fileName, <AST<TSESTreeOptions>> {
         body: [
           {
             type: AST_NODE_TYPES.ExportAllDeclaration,
@@ -976,7 +1030,7 @@ declare interface A{}
     });
 
     it('for export all without value', () => {
-      expect(loader.getClassElements(fileName, <AST<TSESTreeOptions>> {
+      expect(loader.getClassElements('package', fileName, <AST<TSESTreeOptions>> {
         body: [
           {
             type: AST_NODE_TYPES.ExportAllDeclaration,
@@ -990,12 +1044,12 @@ declare interface A{}
     });
 
     it('for a single named export without name should error', () => {
-      expect(() => loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`export class{}`)))
+      expect(() => loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export class{}`)))
         .toThrow(new Error(`Export parsing failure: missing exported class name in ${fileName} on line 1 column 7`));
     });
 
     it('for a single export without target', () => {
-      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`export { A as B }`)))
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export { A as B }`)))
         .toMatchObject({
           exportedUnknowns: {
             B: 'A',
@@ -1004,7 +1058,7 @@ declare interface A{}
     });
 
     it('for a single export from file', () => {
-      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`export { A as B } from './lib/A'`)))
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export { A as B } from './lib/A'`)))
         .toMatchObject({
           exportedImportedElements: {
             B: {
@@ -1016,7 +1070,7 @@ declare interface A{}
     });
 
     it('for multiple exports from file', () => {
-      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`export { A as B, C as D, X } from './lib/A'`)))
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export { A as B, C as D, X } from './lib/A'`)))
         .toMatchObject({
           exportedImportedElements: {
             B: {
@@ -1036,7 +1090,7 @@ declare interface A{}
     });
 
     it('for a mixed file', () => {
-      expect(loader.getClassElements(fileName, resolutionContext.parseTypescriptContents(`
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`
 declare class A{}
 declare class B{}
 import {C} from './lib/C'

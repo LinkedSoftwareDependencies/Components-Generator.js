@@ -99,4 +99,14 @@ export class ResolutionContext {
       throw new Error(`Could not parse file ${filePath}, invalid syntax at line ${(<any> error).lineNumber}, column ${(<any> error).column}. Message: ${(<Error> error).message}`);
     }
   }
+
+  /**
+   * Determine the path to the index file of the given package.
+   * @param packageName A package name.
+   * @param currentFilePath The file from which resolution should start.
+   *                        The requested package has to be a dependency of this file's package.
+   */
+  public resolvePackageIndex(packageName: string, currentFilePath: string): string {
+    return require.resolve(packageName, { paths: [ currentFilePath ]});
+  }
 }

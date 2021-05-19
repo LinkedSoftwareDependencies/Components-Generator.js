@@ -4,10 +4,15 @@ import { ResolutionContext } from '../lib/resolution/ResolutionContext';
 
 export class ResolutionContextMocked extends ResolutionContext {
   public contentsOverrides: Record<string, string | AST<TSESTreeOptions>>;
+  public packageNameIndexOverrides: Record<string, string>;
 
-  public constructor(contentsOverrides: Record<string, string | AST<TSESTreeOptions>>) {
+  public constructor(
+    contentsOverrides: Record<string, string | AST<TSESTreeOptions>>,
+    packageNameIndexOverrides: Record<string, string> = {},
+  ) {
     super();
     this.contentsOverrides = contentsOverrides;
+    this.packageNameIndexOverrides = packageNameIndexOverrides;
   }
 
   public async getFileContent(filePath: string): Promise<string> {
@@ -35,5 +40,13 @@ export class ResolutionContextMocked extends ResolutionContext {
     } catch (error: unknown) {
       throw new Error(`Could not parse file ${filePath}, invalid syntax at line ${(<any> error).lineNumber}, column ${(<any> error).column}. Message: ${(<Error> error).message}`);
     }
+  }
+
+  public resolvePackageIndex(packageName: string, currentFilePath: string): string {
+    const filePath = this.packageNameIndexOverrides[packageName];
+    if (!filePath) {
+      throw new Error(`Could not resolve '${packageName}' from path '${currentFilePath}'`);
+    }
+    return filePath;
   }
 }
