@@ -337,7 +337,7 @@ export interface MyInterface extends IgnoredInterface{};
   });
 
   describe('resolveRangeInterface', () => {
-    const classReference: ClassReference = { packageName: 'P', localName: 'A', fileName: 'A' };
+    const classReference: ClassReferenceLoaded = <any> { packageName: 'P', localName: 'A', fileName: 'A' };
 
     it('should error on a non-existing interface', async() => {
       resolutionContext.contentsOverrides = {

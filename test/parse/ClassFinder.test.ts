@@ -56,7 +56,7 @@ describe('ClassFinder', () => {
           unnamed: [
             {
               packageName: 'other-package',
-              fileName: Path.normalize('/some-dir/index'),
+              fileName: '/some-dir/index',
             },
           ],
         });

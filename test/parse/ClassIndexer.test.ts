@@ -1,4 +1,3 @@
-import * as Path from 'path';
 import { ClassFinder } from '../../lib/parse/ClassFinder';
 import { ClassIndexer } from '../../lib/parse/ClassIndexer';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
@@ -292,7 +291,7 @@ export { X as B } from 'other-package'
           superClass: {
             packageName: 'other-package',
             localName: 'X',
-            fileName: Path.normalize('/some-dir/index'),
+            fileName: '/some-dir/index',
             declaration: {
               id: { name: 'X' },
               type: 'ClassDeclaration',

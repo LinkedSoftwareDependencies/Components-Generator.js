@@ -820,7 +820,7 @@ declare interface A{}
   describe('importTargetToAbsolutePath', () => {
     it('for a local file', () => {
       expect(loader.importTargetToAbsolutePath('package', 'dir/lib/fileA', './subdir/fileB'))
-        .toEqual({ packageName: 'package', fileName: 'dir/lib/subdir/fileB' });
+        .toEqual({ packageName: 'package', fileName: Path.normalize('dir/lib/subdir/fileB') });
     });
 
     it('for a package', () => {
@@ -835,15 +835,15 @@ declare interface A{}
     });
 
     it('for a file in a package', () => {
-      resolutionContext.packageNameIndexOverrides['other-package'] = '/some-dir/index.js';
+      resolutionContext.packageNameIndexOverrides['other-package'] = Path.normalize('/some-dir/index.js');
       expect(loader.importTargetToAbsolutePath('package', 'dir/lib/fileA', 'other-package/lib/bla'))
-        .toEqual({ packageName: 'other-package', fileName: '/some-dir/lib/bla' });
+        .toEqual({ packageName: 'other-package', fileName: Path.normalize('/some-dir/lib/bla') });
     });
 
     it('for a scoped package', () => {
-      resolutionContext.packageNameIndexOverrides['@rubensworks/other-package'] = '/some-dir/index.js';
+      resolutionContext.packageNameIndexOverrides['@rubensworks/other-package'] = Path.normalize('/some-dir/index.js');
       expect(loader.importTargetToAbsolutePath('package', 'dir/lib/fileA', '@rubensworks/other-package'))
-        .toEqual({ packageName: '@rubensworks/other-package', fileName: '/some-dir/index' });
+        .toEqual({ packageName: '@rubensworks/other-package', fileName: Path.normalize('/some-dir/index') });
     });
 
     it('for an invalid scoped package', () => {
@@ -852,9 +852,9 @@ declare interface A{}
     });
 
     it('for a file in a scoped package', () => {
-      resolutionContext.packageNameIndexOverrides['@rubensworks/other-package'] = '/some-dir/index.js';
+      resolutionContext.packageNameIndexOverrides['@rubensworks/other-package'] = Path.normalize('/some-dir/index.js');
       expect(loader.importTargetToAbsolutePath('package', 'dir/lib/fileA', '@rubensworks/other-package/lib/bla'))
-        .toEqual({ packageName: '@rubensworks/other-package', fileName: '/some-dir/lib/bla' });
+        .toEqual({ packageName: '@rubensworks/other-package', fileName: Path.normalize('/some-dir/lib/bla') });
     });
   });
 
@@ -1000,7 +1000,7 @@ declare interface A{}
       expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export * from 'other-package'`)))
         .toMatchObject({
           exportedImportedAll: [
-            { packageName: 'other-package', fileName: Path.normalize('/some-dir/index') },
+            { packageName: 'other-package', fileName: '/some-dir/index' },
           ],
         });
     });
