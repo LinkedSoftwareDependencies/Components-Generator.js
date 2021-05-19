@@ -1,6 +1,6 @@
 {
   "name": "componentsjs-generator",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Automatically generate component files from TypeScript classes for the Components.js dependency injection framework",
   "main": "index.js",
   "scripts": {

@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.2.0"></a>
+## [v2.2.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v2.1.0...v2.2.0) - 2021-05-19
+
+### Added
+* [Allow components from third-party packages to be used, Closes #39](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/3676b8a46d4e876ca4c7e4bba5a4ecbabbf2a5b2)
+
 <a name="v2.1.0"></a>
 ## [v2.1.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v2.0.0...v2.1.0) - 2021-01-18
 
