@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.3.0"></a>
+## [v2.3.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v2.2.0...v2.3.0) - 2021-06-08
+
+### Added
+* [Generate interface-based components](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/aba0aa12900253a687be9b37d1c61da8a2bbaf4b)
+
 <a name="v2.2.0"></a>
 ## [v2.2.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v2.1.0...v2.2.0) - 2021-05-19
 
