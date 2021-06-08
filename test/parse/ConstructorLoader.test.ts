@@ -1,4 +1,5 @@
 import { ClassFinder } from '../../lib/parse/ClassFinder';
+import type { ClassLoaded } from '../../lib/parse/ClassIndex';
 import { ClassIndexer } from '../../lib/parse/ClassIndexer';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
 import { ConstructorLoader } from '../../lib/parse/ConstructorLoader';
@@ -6,16 +7,21 @@ import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
 describe('ConstructorLoader', () => {
   const resolutionContext = new ResolutionContextMocked({});
+  let logger: any;
   let parser: ConstructorLoader;
   let classIndexer: ClassIndexer;
 
   beforeEach(() => {
     parser = new ConstructorLoader();
-    const classLoader = new ClassLoader({ resolutionContext });
+    logger = {
+      debug: jest.fn(),
+    };
+    const classLoader = new ClassLoader({ resolutionContext, logger });
     classIndexer = new ClassIndexer({
       classLoader,
       classFinder: new ClassFinder({ classLoader }),
       ignoreClasses: {},
+      logger,
     });
   });
 
@@ -23,6 +29,19 @@ describe('ConstructorLoader', () => {
     it('should return for a single class without constructor', async() => {
       resolutionContext.contentsOverrides = {
         'file.d.ts': `export class A{}`,
+      };
+      expect(parser.getConstructors({
+        A: await classIndexer.loadClassChain({ packageName: 'p', localName: 'A', fileName: 'file' }),
+      })).toEqual({
+        A: {
+          parameters: [],
+        },
+      });
+    });
+
+    it('should return for a single interface/', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export interface A{}`,
       };
       expect(parser.getConstructors({
         A: await classIndexer.loadClassChain({ packageName: 'p', localName: 'A', fileName: 'file' }),
@@ -109,7 +128,7 @@ export class B{
         'file.d.ts': `export class A{}`,
       };
       expect(parser.getConstructor(
-        await classIndexer.loadClassChain({ packageName: 'p', localName: 'A', fileName: 'file' }),
+        <ClassLoaded> await classIndexer.loadClassChain({ packageName: 'p', localName: 'A', fileName: 'file' }),
       )).toBeUndefined();
     });
 
@@ -126,7 +145,7 @@ export class B extends C{}
         'C.d.ts': `export class C{}`,
       };
       expect(parser.getConstructor(
-        await classIndexer.loadClassChain({ packageName: 'p', localName: 'A', fileName: 'file' }),
+        <ClassLoaded> await classIndexer.loadClassChain({ packageName: 'p', localName: 'A', fileName: 'file' }),
       )).toBeUndefined();
     });
 
@@ -138,7 +157,7 @@ class A{
 }`,
       };
       expect(parser.getConstructor(
-        await classIndexer.loadClassChain({ packageName: 'p', localName: 'A', fileName: 'file' }),
+        <ClassLoaded> await classIndexer.loadClassChain({ packageName: 'p', localName: 'A', fileName: 'file' }),
       )).toMatchObject({
         computed: false,
         key: {
@@ -180,7 +199,7 @@ export class C{
 `,
       };
       expect(parser.getConstructor(
-        await classIndexer.loadClassChain({ packageName: 'p', localName: 'A', fileName: 'file' }),
+        <ClassLoaded> await classIndexer.loadClassChain({ packageName: 'p', localName: 'A', fileName: 'file' }),
       )).toMatchObject({
         computed: false,
         key: {

@@ -8,10 +8,17 @@ import { ResolutionContextMocked } from '../ResolutionContextMocked';
 describe('CommentLoader', () => {
   const clazz: ClassReference = { packageName: 'p', localName: 'A', fileName: 'file' };
   const resolutionContext = new ResolutionContextMocked({});
+  let logger: any;
+
+  beforeEach(() => {
+    logger = {
+      debug: jest.fn(),
+    };
+  });
 
   describe('getCommentDataFromField', () => {
     async function createLoader() {
-      const classLoader = new ClassLoader({ resolutionContext });
+      const classLoader = new ClassLoader({ resolutionContext, logger });
       const iface = await classLoader.loadClassDeclaration(clazz, true);
       const field = <any> iface.declaration.body.body[0];
       const loader = new CommentLoader({ classLoaded: iface });
@@ -225,7 +232,7 @@ describe('CommentLoader', () => {
 
   describe('getCommentRaw', () => {
     async function createLoader() {
-      const classLoader = new ClassLoader({ resolutionContext });
+      const classLoader = new ClassLoader({ resolutionContext, logger });
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
       const constructorLoader = new ConstructorLoader();
       const field = <any> (<MethodDefinition> constructorLoader.getConstructor(classLoaded)).value.params[0];

@@ -38,6 +38,8 @@ export interface ClassLoaded extends ClassReference {
   ast: AST<TSESTreeOptions>;
   // A super class reference if the class has one
   superClass?: ClassLoaded;
+  // Interface or (abstract) class references if the class implements them
+  implementsInterfaces?: ClassReferenceLoaded[];
   // If this class is an abstract class that can not be instantiated directly
   abstract?: boolean;
   // The tsdoc comment of this class

@@ -43,10 +43,12 @@ export class ClassFinder {
     // Load the elements of the class
     const {
       exportedClasses,
+      exportedInterfaces,
       exportedImportedElements,
       exportedImportedAll,
       exportedUnknowns,
       declaredClasses,
+      declaredInterfaces,
       importedElements,
     } = await this.classLoader.loadClassElements(packageName, fileName);
     const exportDefinitions:
@@ -55,6 +57,13 @@ export class ClassFinder {
 
     // Get all named exports
     for (const localName in exportedClasses) {
+      exportDefinitions.named[localName] = {
+        packageName,
+        localName,
+        fileName,
+      };
+    }
+    for (const localName in exportedInterfaces) {
       exportDefinitions.named[localName] = {
         packageName,
         localName,
@@ -77,6 +86,16 @@ export class ClassFinder {
       for (const [ exportedName, localName ] of Object.entries(exportedUnknowns)) {
         // First check declared classes
         if (localName in declaredClasses) {
+          exportDefinitions.named[exportedName] = {
+            packageName,
+            localName,
+            fileName,
+          };
+          break;
+        }
+
+        // First check declared interfaces
+        if (localName in declaredInterfaces) {
           exportDefinitions.named[exportedName] = {
             packageName,
             localName,

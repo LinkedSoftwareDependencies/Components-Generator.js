@@ -7,7 +7,7 @@ import {
 } from 'componentsjs';
 import type { Resource } from 'rdf-object';
 import type { Logger } from 'winston';
-import type { ClassIndex, ClassLoaded, ClassReferenceLoaded } from '../parse/ClassIndex';
+import type { ClassIndex, ClassReferenceLoaded } from '../parse/ClassIndex';
 import type { ConstructorData } from '../parse/ConstructorLoader';
 import type { PackageMetadata } from '../parse/PackageMetadataLoader';
 import type { ParameterData, ParameterRangeResolved } from '../parse/ParameterLoader';
@@ -33,7 +33,7 @@ export class ExternalModulesLoader {
    * @param constructors The available constructors.
    */
   public findExternalPackages(
-    classIndex: ClassIndex<ClassLoaded>,
+    classIndex: ClassIndex<ClassReferenceLoaded>,
     constructors: ClassIndex<ConstructorData<ParameterRangeResolved>>,
   ): string[] {
     const externalPackages: Record<string, boolean> = {};
@@ -60,8 +60,15 @@ export class ExternalModulesLoader {
     if (classReference.packageName !== this.packageMetadata.name) {
       externalPackages[classReference.packageName] = true;
     }
-    if (classReference.type === 'class' && classReference.superClass) {
-      this.indexClassInExternalPackage(classReference.superClass, externalPackages);
+    if (classReference.type === 'class') {
+      if (classReference.superClass) {
+        this.indexClassInExternalPackage(classReference.superClass, externalPackages);
+      }
+      if (classReference.implementsInterfaces) {
+        for (const iface of classReference.implementsInterfaces) {
+          this.indexClassInExternalPackage(iface, externalPackages);
+        }
+      }
     }
   }
 

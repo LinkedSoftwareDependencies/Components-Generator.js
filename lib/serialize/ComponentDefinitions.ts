@@ -19,7 +19,7 @@ export interface ComponentDefinition {
   '@id': string;
   '@type': string;
   requireElement: string;
-  extends?: string;
+  extends?: string[];
   comment?: string;
   parameters: ParameterDefinition[];
   constructorArguments: ConstructorArgumentDefinition[];

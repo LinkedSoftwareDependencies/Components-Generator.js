@@ -11,12 +11,16 @@ import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
 describe('ParameterLoader', () => {
   const resolutionContext = new ResolutionContextMocked({});
+  let logger: any;
   let classLoader: ClassLoader;
   let loader: ParameterLoader;
   let constructorLoader: ConstructorLoader;
 
   beforeEach(() => {
-    classLoader = new ClassLoader({ resolutionContext });
+    logger = {
+      debug: jest.fn(),
+    };
+    classLoader = new ClassLoader({ resolutionContext, logger });
     loader = new ParameterLoader({ classLoaded: <any> { localName: 'A', fileName: 'file' }});
     constructorLoader = new ConstructorLoader();
   });

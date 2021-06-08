@@ -5,10 +5,14 @@ import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
 describe('ClassFinder', () => {
   const resolutionContext = new ResolutionContextMocked({});
+  let logger: any;
   let parser: ClassFinder;
 
   beforeEach(() => {
-    parser = new ClassFinder({ classLoader: new ClassLoader({ resolutionContext }) });
+    logger = {
+      debug: jest.fn(),
+    };
+    parser = new ClassFinder({ classLoader: new ClassLoader({ resolutionContext, logger }) });
   });
 
   describe('getFileExports', () => {
@@ -66,6 +70,26 @@ describe('ClassFinder', () => {
       resolutionContext.contentsOverrides = {
         'file.d.ts': `
 export class A{}
+export type B = string;
+`,
+      };
+      expect(await parser.getFileExports('package', 'file'))
+        .toEqual({
+          named: {
+            A: {
+              packageName: 'package',
+              fileName: 'file',
+              localName: 'A',
+            },
+          },
+          unnamed: [],
+        });
+    });
+
+    it('for an export of interfaces', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+export interface A{}
 export type B = string;
 `,
       };
@@ -174,6 +198,46 @@ export {A as B};
         'file.d.ts': `
 export {A as B};
 declare class A {}
+`,
+      };
+      expect(await parser.getFileExports('package', 'file'))
+        .toEqual({
+          named: {
+            B: {
+              packageName: 'package',
+              fileName: 'file',
+              localName: 'A',
+            },
+          },
+          unnamed: [],
+        });
+    });
+
+    it('for a declared interface with separate export', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+declare interface A {}
+export {A as B};
+`,
+      };
+      expect(await parser.getFileExports('package', 'file'))
+        .toEqual({
+          named: {
+            B: {
+              packageName: 'package',
+              fileName: 'file',
+              localName: 'A',
+            },
+          },
+          unnamed: [],
+        });
+    });
+
+    it('for a declared interface with separate export in reverse order', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+export {A as B};
+declare interface A {}
 `,
       };
       expect(await parser.getFileExports('package', 'file'))

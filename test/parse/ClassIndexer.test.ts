@@ -6,15 +6,19 @@ import { ResolutionContextMocked } from '../ResolutionContextMocked';
 describe('ClassIndexer', () => {
   const resolutionContext = new ResolutionContextMocked({});
   let ignoreClasses: Record<string, boolean>;
+  let logger: any;
   let classLoader: ClassLoader;
   let classFinder: ClassFinder;
   let indexer: ClassIndexer;
 
   beforeEach(() => {
     ignoreClasses = {};
-    classLoader = new ClassLoader({ resolutionContext });
+    logger = {
+      debug: jest.fn(),
+    };
+    classLoader = new ClassLoader({ resolutionContext, logger });
     classFinder = new ClassFinder({ classLoader });
-    indexer = new ClassIndexer({ classLoader, classFinder, ignoreClasses });
+    indexer = new ClassIndexer({ classLoader, classFinder, ignoreClasses, logger });
   });
 
   describe('createIndex', () => {
@@ -53,7 +57,7 @@ describe('ClassIndexer', () => {
           localName: 'Unknown',
           fileName: 'unknown',
         },
-      })).rejects.toThrow(new Error(`Could not load class Unknown from unknown:
+      })).rejects.toThrow(new Error(`Could not load class or interface Unknown from unknown:
 Could not find mocked path for unknown.d.ts`));
     });
 
@@ -101,7 +105,7 @@ Could not find mocked path for unknown.d.ts`));
           localName: 'X',
           fileName: 'x',
         },
-      })).rejects.toThrow(new Error('Could not load class X from x'));
+      })).rejects.toThrow(new Error('Could not load class or interface X from x'));
     });
 
     it('should load multiple direct class references', async() => {
@@ -194,7 +198,7 @@ export class Y{}
         'file.d.ts': ``,
       };
       await expect(indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
-        .rejects.toThrow(new Error('Could not load class A from file'));
+        .rejects.toThrow(new Error('Could not load class or interface A from file'));
     });
 
     it('for an exported class', async() => {
@@ -360,6 +364,17 @@ export * from './Z'
         });
     });
 
+    it('for an exported class extending a non-class should error', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+export class A extends Interface{};
+export interface Interface{};
+`,
+      };
+      await expect(indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
+        .rejects.toThrow(new Error(`Detected non-class Interface extending from a class A in file`));
+    });
+
     it('for an exported class extending an unknown class should error', async() => {
       resolutionContext.contentsOverrides = {
         'file.d.ts': `
@@ -368,7 +383,7 @@ export class A extends Unknown{}
       };
       await expect(indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
         .rejects.toThrow(new Error(`Failed to load super class Unknown of A in file:
-Could not load class Unknown from file`));
+Could not load class or interface Unknown from file`));
     });
 
     it('for an exported class extending an unknown class should not error if it is ignored', async() => {
@@ -386,6 +401,400 @@ export class A extends Unknown{}
           declaration: {
             id: { name: 'A' },
             type: 'ClassDeclaration',
+          },
+        });
+    });
+
+    it('for an exported class with implements interface in current file', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+export class A implements B{}
+export interface B{}
+`,
+      };
+      expect(await indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
+        .toMatchObject({
+          packageName: 'package',
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'ClassDeclaration',
+          },
+          implementsInterfaces: [
+            {
+              packageName: 'package',
+              localName: 'B',
+              fileName: 'file',
+              declaration: {
+                id: { name: 'B' },
+                type: 'TSInterfaceDeclaration',
+              },
+            },
+          ],
+        });
+    });
+
+    it('for an exported class with implements interface in other file', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+export class A implements B{}
+export { X as B } from './X'
+`,
+        'X.d.ts': `export interface X{}`,
+      };
+      expect(await indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
+        .toMatchObject({
+          packageName: 'package',
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'ClassDeclaration',
+          },
+          implementsInterfaces: [
+            {
+              packageName: 'package',
+              localName: 'X',
+              fileName: 'X',
+              declaration: {
+                id: { name: 'X' },
+                type: 'TSInterfaceDeclaration',
+              },
+            },
+          ],
+        });
+    });
+
+    it('for an exported class implementing an unknown interface should ignore the interface', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+export class A implements Unknown{}
+`,
+      };
+      expect(await indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
+        .toMatchObject({
+          packageName: 'package',
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'ClassDeclaration',
+          },
+          implementsInterfaces: [],
+        });
+      expect(logger.debug).toHaveBeenCalledWith(`Ignored interface Unknown implemented by A in file:
+Could not load class or interface Unknown from file`);
+    });
+
+    it('for an exported class implementing an unknown interface should not error if it is ignored', async() => {
+      ignoreClasses.Unknown = true;
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+export class A implements Unknown{}
+`,
+      };
+      expect(await indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
+        .toMatchObject({
+          packageName: 'package',
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'ClassDeclaration',
+          },
+        });
+    });
+
+    it('for an exported class implementing a class', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+export class A implements B{}
+export class B{}
+`,
+      };
+      expect(await indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
+        .toMatchObject({
+          packageName: 'package',
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'ClassDeclaration',
+          },
+          implementsInterfaces: [
+            {
+              packageName: 'package',
+              localName: 'B',
+              fileName: 'file',
+              declaration: {
+                id: { name: 'B' },
+                type: 'ClassDeclaration',
+              },
+            },
+          ],
+        });
+    });
+
+    it('for an exported interface', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export interface A{}`,
+      };
+      expect(await indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
+        .toMatchObject({
+          packageName: 'package',
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'TSInterfaceDeclaration',
+          },
+        });
+    });
+
+    it('for an exported interface with super in current file', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+export interface A extends B{}
+export interface B{}
+`,
+      };
+      expect(await indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
+        .toMatchObject({
+          packageName: 'package',
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'TSInterfaceDeclaration',
+          },
+          superInterfaces: [
+            {
+              packageName: 'package',
+              localName: 'B',
+              fileName: 'file',
+              declaration: {
+                id: { name: 'B' },
+                type: 'TSInterfaceDeclaration',
+              },
+            },
+          ],
+        });
+    });
+
+    it('for an exported interface with multiple supers in current file', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+export interface A extends B, C{}
+export interface B{}
+export interface C{}
+`,
+      };
+      expect(await indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
+        .toMatchObject({
+          packageName: 'package',
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'TSInterfaceDeclaration',
+          },
+          superInterfaces: [
+            {
+              packageName: 'package',
+              localName: 'B',
+              fileName: 'file',
+              declaration: {
+                id: { name: 'B' },
+                type: 'TSInterfaceDeclaration',
+              },
+            },
+            {
+              packageName: 'package',
+              localName: 'C',
+              fileName: 'file',
+              declaration: {
+                id: { name: 'C' },
+                type: 'TSInterfaceDeclaration',
+              },
+            },
+          ],
+        });
+    });
+
+    it('for an exported interface with super in other file', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+export interface A extends B{}
+export { X as B } from './X'
+`,
+        'X.d.ts': `export interface X{}`,
+      };
+      expect(await indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
+        .toMatchObject({
+          packageName: 'package',
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'TSInterfaceDeclaration',
+          },
+          superInterfaces: [
+            {
+              packageName: 'package',
+              localName: 'X',
+              fileName: 'X',
+              declaration: {
+                id: { name: 'X' },
+                type: 'TSInterfaceDeclaration',
+              },
+            },
+          ],
+        });
+    });
+
+    it('for an exported interface with super in other package', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+export interface A extends B{}
+export { X as B } from 'other-package'
+`,
+        '/some-dir/index.d.ts': `export interface X{}`,
+      };
+      resolutionContext.packageNameIndexOverrides['other-package'] = '/some-dir/index.js';
+      expect(await indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
+        .toMatchObject({
+          packageName: 'package',
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'TSInterfaceDeclaration',
+          },
+          superInterfaces: [
+            {
+              packageName: 'other-package',
+              localName: 'X',
+              fileName: '/some-dir/index',
+              declaration: {
+                id: { name: 'X' },
+                type: 'TSInterfaceDeclaration',
+              },
+            },
+          ],
+        });
+    });
+
+    it('for an exported interface with super in other file via export all', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+export interface A extends X{}
+export * from './X'
+`,
+        'X.d.ts': `export interface X{}`,
+      };
+      expect(await indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
+        .toMatchObject({
+          packageName: 'package',
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'TSInterfaceDeclaration',
+          },
+          superInterfaces: [
+            {
+              packageName: 'package',
+              localName: 'X',
+              fileName: 'X',
+              declaration: {
+                id: { name: 'X' },
+                type: 'TSInterfaceDeclaration',
+              },
+            },
+          ],
+        });
+    });
+
+    it('for an exported interface with super in other file via nested export all', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+export interface A extends X{}
+export * from './Z'
+`,
+        'Z.d.ts': `export * from './Y'`,
+        'Y.d.ts': `export * from './X'`,
+        'X.d.ts': `export interface X{}`,
+      };
+      expect(await indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
+        .toMatchObject({
+          packageName: 'package',
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'TSInterfaceDeclaration',
+          },
+          superInterfaces: [
+            {
+              packageName: 'package',
+              localName: 'X',
+              fileName: 'X',
+              declaration: {
+                id: { name: 'X' },
+                type: 'TSInterfaceDeclaration',
+              },
+            },
+          ],
+        });
+    });
+
+    it('for an exported interface extending a non-interface should error', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+export interface A extends AClass{};
+export class AClass{};
+`,
+      };
+      await expect(indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
+        .rejects.toThrow(new Error(`Detected non-interface A extending from a class AClass in file`));
+    });
+
+    it('for an exported interface extending an unknown interface should ignore the interface', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+export interface A extends Unknown{}
+`,
+      };
+      expect(await indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
+        .toMatchObject({
+          packageName: 'package',
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'TSInterfaceDeclaration',
+          },
+        });
+      expect(logger.debug).toHaveBeenCalledWith(`Ignored interface Unknown extended by A in file:
+Could not load class or interface Unknown from file`);
+    });
+
+    it('for an exported interface extending an unknown interface should not error if it is ignored', async() => {
+      ignoreClasses.Unknown = true;
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+export interface A extends Unknown{}
+`,
+      };
+      expect(await indexer.loadClassChain({ packageName: 'package', localName: 'A', fileName: 'file' }))
+        .toMatchObject({
+          packageName: 'package',
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'TSInterfaceDeclaration',
           },
         });
     });

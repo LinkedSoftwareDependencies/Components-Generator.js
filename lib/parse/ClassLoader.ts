@@ -2,6 +2,7 @@ import * as Path from 'path';
 import type { ClassDeclaration, TSInterfaceDeclaration } from '@typescript-eslint/types/dist/ts-estree';
 import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
+import type { Logger } from 'winston';
 import type { ResolutionContext } from '../resolution/ResolutionContext';
 import type { ClassLoaded, ClassReference, ClassReferenceLoaded, GenericTypes, InterfaceLoaded } from './ClassIndex';
 import { CommentLoader } from './CommentLoader';
@@ -11,9 +12,11 @@ import { CommentLoader } from './CommentLoader';
  */
 export class ClassLoader {
   private readonly resolutionContext: ResolutionContext;
+  private readonly logger: Logger;
 
   public constructor(args: ClassLoaderArgs) {
     this.resolutionContext = args.resolutionContext;
+    this.logger = args.logger;
   }
 
   /**
@@ -46,15 +49,36 @@ export class ClassLoader {
    * @param fileName The file name of the current class.
    */
   public getSuperInterfaceNames(declaration: TSInterfaceDeclaration, fileName: string): string[] {
-    return (declaration.extends || [])
+    return <string[]> (declaration.extends || [])
+      // eslint-disable-next-line array-callback-return
       .map(extendsExpression => {
         if (extendsExpression.type === AST_NODE_TYPES.TSInterfaceHeritage &&
           extendsExpression.expression.type === AST_NODE_TYPES.Identifier) {
           // Extensions in the form of `interface A extends B`
           return extendsExpression.expression.name;
         }
-        throw new Error(`Could not interpret type of super interface in ${fileName} on line ${extendsExpression.loc.start.line} column ${extendsExpression.loc.start.column}`);
-      });
+        // Ignore interfaces that we don't understand
+        this.logger.debug(`Ignored an interface expression of unknown type ${extendsExpression.expression.type} on ${declaration.id.name}`);
+      })
+      .filter(iface => Boolean(iface));
+  }
+
+  /**
+   * Find the interface names of the given class.
+   * @param declaration A class declaration.
+   * @param fileName The file name of the current class.
+   */
+  public getClassInterfaceNames(declaration: ClassDeclaration, fileName: string): string[] {
+    const interfaceNames = [];
+    if (declaration.implements) {
+      for (const implement of declaration.implements) {
+        if (implement.expression.type !== AST_NODE_TYPES.Identifier) {
+          throw new Error(`Could not interpret the implements type on a class in ${fileName} on line ${implement.expression.loc.start.line} column ${implement.expression.loc.start.column}`);
+        }
+        interfaceNames.push(implement.expression.name);
+      }
+    }
+    return interfaceNames;
   }
 
   /**
@@ -343,6 +367,7 @@ export class ClassLoader {
 
 export interface ClassLoaderArgs {
   resolutionContext: ResolutionContext;
+  logger: Logger;
 }
 
 /**

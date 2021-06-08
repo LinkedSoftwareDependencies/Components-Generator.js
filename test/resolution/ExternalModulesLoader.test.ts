@@ -167,6 +167,40 @@ describe('ExternalModulesLoader', () => {
         ]);
     });
 
+    it('should handle implements interfaces', () => {
+      const classIndex: ClassIndex<ClassLoaded> = <any> {
+        Class1: {
+          type: 'class',
+          localName: 'Class1',
+          packageName: 'package1',
+          implementsInterfaces: [
+            {
+              type: 'interface',
+              localName: 'Interface2',
+              packageName: 'package2',
+            },
+          ],
+        },
+        Class3: {
+          type: 'class',
+          localName: 'Class1',
+          packageName: 'package2',
+          implementsInterfaces: [
+            {
+              type: 'interface',
+              localName: 'Interface4',
+              packageName: 'my-package',
+            },
+          ],
+        },
+      };
+      expect(loader.findExternalPackages(classIndex, {}))
+        .toEqual([
+          'package1',
+          'package2',
+        ]);
+    });
+
     it('should ignore raw constructor parameters', () => {
       const constructors: ClassIndex<ConstructorData<ParameterRangeResolved>> = <any> {
         Class1: {

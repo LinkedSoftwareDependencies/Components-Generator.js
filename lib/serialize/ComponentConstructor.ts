@@ -1,6 +1,6 @@
 import * as Path from 'path';
 import type { ContextParser, JsonLdContextNormalized } from 'jsonld-context-parser';
-import type { ClassIndex, ClassLoaded, ClassReference } from '../parse/ClassIndex';
+import type { ClassIndex, ClassLoaded, ClassReference, ClassReferenceLoaded } from '../parse/ClassIndex';
 import type { ConstructorData } from '../parse/ConstructorLoader';
 import type { PackageMetadata } from '../parse/PackageMetadataLoader';
 import type { ParameterData, ParameterRangeResolved } from '../parse/ParameterLoader';
@@ -20,7 +20,7 @@ export class ComponentConstructor {
   private readonly packageMetadata: PackageMetadata;
   private readonly contextConstructor: ContextConstructor;
   private readonly pathDestination: PathDestinationDefinition;
-  private readonly classReferences: ClassIndex<ClassLoaded>;
+  private readonly classAndInterfaceIndex: ClassIndex<ClassReferenceLoaded>;
   private readonly classConstructors: ClassIndex<ConstructorData<ParameterRangeResolved>>;
   private readonly externalComponents: ExternalComponents;
   private readonly contextParser: ContextParser;
@@ -29,7 +29,7 @@ export class ComponentConstructor {
     this.packageMetadata = args.packageMetadata;
     this.contextConstructor = args.contextConstructor;
     this.pathDestination = args.pathDestination;
-    this.classReferences = args.classReferences;
+    this.classAndInterfaceIndex = args.classAndInterfaceIndex;
     this.classConstructors = args.classConstructors;
     this.externalComponents = args.externalComponents;
     this.contextParser = args.contextParser;
@@ -44,7 +44,7 @@ export class ComponentConstructor {
     // Construct a minimal context
     const context: JsonLdContextNormalized = await this.contextParser.parse(this.contextConstructor.constructContext());
 
-    for (const [ className, classReference ] of Object.entries(this.classReferences)) {
+    for (const [ className, classReference ] of Object.entries(this.classAndInterfaceIndex)) {
       // Initialize or get context and component array
       const path = this.getPathDestination(classReference.fileName);
       if (!(path in definitions)) {
@@ -152,28 +152,50 @@ export class ComponentConstructor {
   public async constructComponent(
     context: JsonLdContextNormalized,
     externalContextsCallback: ExternalContextCallback,
-    classReference: ClassLoaded,
+    classReference: ClassReferenceLoaded,
     constructorData: ConstructorData<ParameterRangeResolved>,
   ): Promise<ComponentDefinition> {
     // Fill in parameters and constructor arguments
     const parameters: ParameterDefinition[] = [];
-    const constructorArguments = await this.constructParameters(
-      context,
-      externalContextsCallback,
-      classReference,
-      constructorData,
-      parameters,
-    );
+    const constructorArguments = classReference.type === 'class' ?
+      await this.constructParameters(
+        context,
+        externalContextsCallback,
+        classReference,
+        constructorData,
+        parameters,
+      ) :
+      [];
+
+    // Determine extends field based on super class and implementing interfaces.
+    // Components.js makes no distinction between a super class and implementing interface, so we merge them here.
+    let ext: string[] | undefined;
+    if (classReference.type === 'class') {
+      if (classReference.superClass || classReference.implementsInterfaces) {
+        ext = [];
+        if (classReference.superClass) {
+          ext.push(await this.classNameToId(context, externalContextsCallback, classReference.superClass));
+        }
+        if (classReference.implementsInterfaces) {
+          for (const iface of classReference.implementsInterfaces) {
+            ext.push(await this.classNameToId(context, externalContextsCallback, iface));
+          }
+        }
+      }
+    } else if (classReference.superInterfaces) {
+      ext = [];
+      for (const iface of classReference.superInterfaces) {
+        ext.push(await this.classNameToId(context, externalContextsCallback, iface));
+      }
+    }
 
     // Fill in fields
     const scopedId = await this.classNameToId(context, externalContextsCallback, classReference);
     return {
       '@id': scopedId,
-      '@type': classReference.abstract ? 'AbstractClass' : 'Class',
+      '@type': classReference.type === 'interface' || classReference.abstract ? 'AbstractClass' : 'Class',
       requireElement: classReference.localName,
-      ...classReference.superClass ?
-        { extends: await this.classNameToId(context, externalContextsCallback, classReference.superClass) } :
-        {},
+      ...ext ? { extends: ext } : {},
       ...classReference.comment ? { comment: classReference.comment } : {},
       parameters,
       constructorArguments,
@@ -553,7 +575,7 @@ export interface ComponentConstructorArgs {
   packageMetadata: PackageMetadata;
   contextConstructor: ContextConstructor;
   pathDestination: PathDestinationDefinition;
-  classReferences: ClassIndex<ClassLoaded>;
+  classAndInterfaceIndex: ClassIndex<ClassReferenceLoaded>;
   classConstructors: ClassIndex<ConstructorData<ParameterRangeResolved>>;
   externalComponents: ExternalComponents;
   contextParser: ContextParser;

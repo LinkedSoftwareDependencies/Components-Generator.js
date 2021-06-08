@@ -1,7 +1,7 @@
 import type { ClassDeclaration, MethodDefinition } from '@typescript-eslint/types/dist/ts-estree';
 import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import type { ClassIndex, ClassLoaded } from './ClassIndex';
+import type { ClassIndex, ClassLoaded, ClassReferenceLoaded } from './ClassIndex';
 import type { ParameterDataField, ParameterRangeUnresolved } from './ParameterLoader';
 import { ParameterLoader } from './ParameterLoader';
 
@@ -13,10 +13,12 @@ export class ConstructorLoader {
    * Create a class index containing all constructor data from the classes in the given index.
    * @param classIndex An index of loaded classes.
    */
-  public getConstructors(classIndex: ClassIndex<ClassLoaded>): ClassIndex<ConstructorData<ParameterRangeUnresolved>> {
+  public getConstructors(
+    classIndex: ClassIndex<ClassReferenceLoaded>,
+  ): ClassIndex<ConstructorData<ParameterRangeUnresolved>> {
     const constructorDataIndex: ClassIndex<ConstructorData<ParameterRangeUnresolved>> = {};
     for (const [ className, classLoaded ] of Object.entries(classIndex)) {
-      const constructor = this.getConstructor(classLoaded);
+      const constructor = classLoaded.type === 'class' ? this.getConstructor(classLoaded) : undefined;
       if (constructor) {
         const parameterLoader = new ParameterLoader({ classLoaded });
         constructorDataIndex[className] = parameterLoader.loadConstructorFields(constructor);

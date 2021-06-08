@@ -6,11 +6,15 @@ import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
 describe('ClassLoader', () => {
   let resolutionContext: ResolutionContextMocked;
+  let logger: any;
   let loader: ClassLoader;
 
   beforeEach(() => {
     resolutionContext = new ResolutionContextMocked({});
-    loader = new ClassLoader({ resolutionContext });
+    logger = {
+      debug: jest.fn(),
+    };
+    loader = new ClassLoader({ resolutionContext, logger });
   });
 
   describe('getSuperClass', () => {
@@ -64,10 +68,53 @@ describe('ClassLoader', () => {
         ]);
     });
 
-    it('should error on an interface that is extended anonymously', async() => {
-      await expect(async() => loader.getSuperInterfaceNames(<any>(resolutionContext
-        .parseTypescriptContents(`interface A extends {} {}`)).body[0], 'file'))
-        .rejects.toThrow(new Error('Could not interpret type of super interface in file on line 1 column 20'));
+    it('should ignore on an interface that is extended anonymously', async() => {
+      expect(loader.getSuperInterfaceNames(<any>(resolutionContext
+        .parseTypescriptContents('interface A extends {} {}')).body[0], 'file'))
+        .toEqual([]);
+      expect(logger.debug).toHaveBeenCalledWith(`Ignored an interface expression of unknown type ObjectExpression on A`);
+    });
+
+    it('should ignore on an interface that is extended anonymously, but still handle other interfaces', async() => {
+      expect(loader.getSuperInterfaceNames(<any>(resolutionContext
+        .parseTypescriptContents('interface A extends B, {}, D {}')).body[0], 'file'))
+        .toEqual([
+          'B',
+          'D',
+        ]);
+      expect(logger.debug).toHaveBeenCalledWith(`Ignored an interface expression of unknown type ObjectExpression on A`);
+    });
+  });
+
+  describe('getClassInterfaceNames', () => {
+    it('should return undefined on a class that does not implement an interface', async() => {
+      expect(loader.getClassInterfaceNames(<any>(resolutionContext
+        .parseTypescriptContents('class A{}')).body[0], 'file'))
+        .toEqual([]);
+    });
+
+    it('should return on a class that implements one interface', async() => {
+      expect(loader.getClassInterfaceNames(<any>(resolutionContext
+        .parseTypescriptContents('class A implements X {}')).body[0], 'file'))
+        .toEqual([
+          'X',
+        ]);
+    });
+
+    it('should return on a class that multiple interfaces', async() => {
+      expect(loader.getClassInterfaceNames(<any>(resolutionContext
+        .parseTypescriptContents('class A implements X, Y, Z {}')).body[0], 'file'))
+        .toEqual([
+          'X',
+          'Y',
+          'Z',
+        ]);
+    });
+
+    it('should error on a class that is implemented anonymously', async() => {
+      await expect(async() => loader.getClassInterfaceNames(<any>(resolutionContext
+        .parseTypescriptContents(`interface A implements {} {}`)).body[0], 'file'))
+        .rejects.toThrow(new Error('Could not interpret the implements type on a class in file on line 1 column 23'));
     });
   });
 
@@ -78,6 +125,7 @@ describe('ClassLoader', () => {
           resolutionContext: new ResolutionContextMocked({
             'file.d.ts': ``,
           }),
+          logger,
         });
         await expect(loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, false))
           .rejects.toThrow(new Error('Could not load class A from file'));
@@ -94,6 +142,7 @@ export { B as X };
 export * from './lib/D';
 `,
           }),
+          logger,
         });
         await expect(loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, false))
           .rejects.toThrow(new Error('Could not load class A from file'));
@@ -106,6 +155,7 @@ export * from './lib/D';
 declare interface A{};
 `,
           }),
+          logger,
         });
         await expect(loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, false))
           .rejects.toThrow(new Error('Could not load class A from file'));
@@ -116,6 +166,7 @@ declare interface A{};
           resolutionContext: new ResolutionContextMocked({
             'file.d.ts': `export class A{}`,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, false))
           .toMatchObject({
@@ -133,6 +184,7 @@ declare interface A{};
           resolutionContext: new ResolutionContextMocked({
             'file.d.ts': `declare class A{}`,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, false))
           .toMatchObject({
@@ -151,6 +203,7 @@ declare interface A{};
             'file.d.ts': `import { B as A } from './file2'`,
             'file2.d.ts': `export class B{}`,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, false))
           .toMatchObject({
@@ -169,6 +222,7 @@ declare interface A{};
             'file.d.ts': `export { B as A } from './file2'`,
             'file2.d.ts': `export class B{}`,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, false))
           .toMatchObject({
@@ -187,6 +241,7 @@ declare interface A{};
             'file.d.ts': `export * from './file2'`,
             'file2.d.ts': `export class B{}`,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'B', fileName: 'file' }, false))
           .toMatchObject({
@@ -209,6 +264,7 @@ export * from './file3'
 `,
             'file2.d.ts': `export class B{}`,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'B', fileName: 'file' }, false))
           .toMatchObject({
@@ -229,6 +285,7 @@ export * from './file3'
             'file3.d.ts': `export * from './file4'`,
             'file4.d.ts': `export class B{}`,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'B', fileName: 'file' }, false))
           .toMatchObject({
@@ -248,6 +305,7 @@ export * from './file3'
           resolutionContext: new ResolutionContextMocked({
             'file.d.ts': ``,
           }),
+          logger,
         });
         await expect(loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .rejects.toThrow(new Error('Could not load class or interface A from file'));
@@ -264,6 +322,7 @@ export { B as X };
 export * from './lib/D';
 `,
           }),
+          logger,
         });
         await expect(loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .rejects.toThrow(new Error('Could not load class or interface A from file'));
@@ -274,6 +333,7 @@ export * from './lib/D';
           resolutionContext: new ResolutionContextMocked({
             'file.d.ts': `export class A{}`,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .toMatchObject({
@@ -291,6 +351,7 @@ export * from './lib/D';
           resolutionContext: new ResolutionContextMocked({
             'file.d.ts': `declare class A{}`,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .toMatchObject({
@@ -309,6 +370,7 @@ export * from './lib/D';
             'file.d.ts': `import { B as A } from './file2'`,
             'file2.d.ts': `export class B{}`,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .toMatchObject({
@@ -327,6 +389,7 @@ export * from './lib/D';
             'file.d.ts': `export { B as A } from './file2'`,
             'file2.d.ts': `export class B{}`,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .toMatchObject({
@@ -345,6 +408,7 @@ export * from './lib/D';
             'file.d.ts': `export * from './file2'`,
             'file2.d.ts': `export class B{}`,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'B', fileName: 'file' }, true))
           .toMatchObject({
@@ -367,6 +431,7 @@ export * from './file3'
 `,
             'file2.d.ts': `export class B{}`,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'B', fileName: 'file' }, true))
           .toMatchObject({
@@ -387,6 +452,7 @@ export * from './file3'
             'file3.d.ts': `export * from './file4'`,
             'file4.d.ts': `export class B{}`,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'B', fileName: 'file' }, true))
           .toMatchObject({
@@ -404,6 +470,7 @@ export * from './file3'
           resolutionContext: new ResolutionContextMocked({
             'file.d.ts': `export interface A{}`,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .toMatchObject({
@@ -421,6 +488,7 @@ export * from './file3'
           resolutionContext: new ResolutionContextMocked({
             'file.d.ts': `declare interface A{}`,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .toMatchObject({
@@ -439,6 +507,7 @@ export * from './file3'
             'file.d.ts': `import { B as A } from './file2'`,
             'file2.d.ts': `export interface B{}`,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .toMatchObject({
@@ -457,6 +526,7 @@ export * from './file3'
             'file.d.ts': `export { B as A } from './file2'`,
             'file2.d.ts': `export interface B{}`,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .toMatchObject({
@@ -475,6 +545,7 @@ export * from './file3'
             'file.d.ts': `export * from './file2'`,
             'file2.d.ts': `export interface B{}`,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'B', fileName: 'file' }, true))
           .toMatchObject({
@@ -497,6 +568,7 @@ export * from './file3'
 `,
             'file2.d.ts': `export interface B{}`,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'B', fileName: 'file' }, true))
           .toMatchObject({
@@ -517,6 +589,7 @@ export * from './file3'
             'file3.d.ts': `export * from './file4'`,
             'file4.d.ts': `export interface B{}`,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'B', fileName: 'file' }, true))
           .toMatchObject({
@@ -539,6 +612,7 @@ export * from './file3'
 export class A{}
 `,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, false))
           .toMatchObject({
@@ -562,6 +636,7 @@ export class A{}
 declare class A{}
 `,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, false))
           .toMatchObject({
@@ -585,6 +660,7 @@ declare class A{}
 export interface A{}
 `,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .toMatchObject({
@@ -608,6 +684,7 @@ export interface A{}
 declare interface A{}
 `,
           }),
+          logger,
         });
         expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
           .toMatchObject({
@@ -627,6 +704,7 @@ declare interface A{}
         resolutionContext: new ResolutionContextMocked({
           'file.d.ts': `export abstract class A{}`,
         }),
+        logger,
       });
       expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
         .toMatchObject({
@@ -645,6 +723,7 @@ declare interface A{}
         resolutionContext: new ResolutionContextMocked({
           'file.d.ts': `declare abstract class A{}`,
         }),
+        logger,
       });
       expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
         .toMatchObject({
@@ -663,6 +742,7 @@ declare interface A{}
         resolutionContext: new ResolutionContextMocked({
           'file.d.ts': `declare class A<T extends string>{}`,
         }),
+        logger,
       });
       expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
         .toMatchObject({
@@ -683,6 +763,7 @@ declare interface A{}
         resolutionContext: new ResolutionContextMocked({
           'file.d.ts': `declare class A<T>{}`,
         }),
+        logger,
       });
       expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
         .toMatchObject({
@@ -703,6 +784,7 @@ declare interface A{}
         resolutionContext: new ResolutionContextMocked({
           'file.d.ts': `declare class A<T extends string = number>{}`,
         }),
+        logger,
       });
       expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
         .toMatchObject({
@@ -723,6 +805,7 @@ declare interface A{}
         resolutionContext: new ResolutionContextMocked({
           'file.d.ts': `export class A<T extends string>{}`,
         }),
+        logger,
       });
       expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
         .toMatchObject({
@@ -743,6 +826,7 @@ declare interface A{}
         resolutionContext: new ResolutionContextMocked({
           'file.d.ts': `declare interface A<T extends string>{}`,
         }),
+        logger,
       });
       expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
         .toMatchObject({
@@ -763,6 +847,7 @@ declare interface A{}
         resolutionContext: new ResolutionContextMocked({
           'file.d.ts': `export interface A<T extends string>{}`,
         }),
+        logger,
       });
       expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
         .toMatchObject({
@@ -783,6 +868,7 @@ declare interface A{}
         resolutionContext: new ResolutionContextMocked({
           'file.d.ts': `declare class A<T extends string, U extends MyClass, V extends number>{}`,
         }),
+        logger,
       });
       expect(await loader.loadClassDeclaration({ packageName: 'p', localName: 'A', fileName: 'file' }, true))
         .toMatchObject({

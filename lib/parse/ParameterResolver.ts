@@ -27,14 +27,17 @@ export class ParameterResolver {
    */
   public async resolveAllConstructorParameters(
     unresolvedParametersIndex: ClassIndex<ConstructorData<ParameterRangeUnresolved>>,
-    classIndex: ClassIndex<ClassLoaded>,
+    classIndex: ClassIndex<ClassReferenceLoaded>,
   ): Promise<ClassIndex<ConstructorData<ParameterRangeResolved>>> {
     const resolvedParametersIndex: ClassIndex<ConstructorData<ParameterRangeResolved>> = {};
 
     // Resolve parameters for the different constructors in parallel
     await Promise.all(Object.entries(unresolvedParametersIndex)
       .map(async([ className, parameters ]) => {
-        resolvedParametersIndex[className] = await this.resolveConstructorParameters(parameters, classIndex[className]);
+        const classOrInterface = classIndex[className];
+        if (classOrInterface.type === 'class') {
+          resolvedParametersIndex[className] = await this.resolveConstructorParameters(parameters, classOrInterface);
+        }
       }));
 
     return resolvedParametersIndex;

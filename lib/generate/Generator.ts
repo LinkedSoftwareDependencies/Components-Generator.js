@@ -36,31 +36,32 @@ export class Generator {
   }
 
   public async generateComponents(): Promise<void> {
+    const logger = ComponentsManagerBuilder.createLogger(this.logLevel);
+
     // Load package metadata
     const packageMetadata = await new PackageMetadataLoader({ resolutionContext: this.resolutionContext })
       .load(this.pathDestination.packageRootDirectory);
 
-    const classLoader = new ClassLoader({ resolutionContext: this.resolutionContext });
+    const classLoader = new ClassLoader({ resolutionContext: this.resolutionContext, logger });
     const classFinder = new ClassFinder({ classLoader });
-    const classIndexer = new ClassIndexer({ classLoader, classFinder, ignoreClasses: this.ignoreClasses });
+    const classIndexer = new ClassIndexer({ classLoader, classFinder, ignoreClasses: this.ignoreClasses, logger });
 
     // Find all relevant classes
     const packageExports = await classFinder.getPackageExports(packageMetadata.name, packageMetadata.typesPath);
-    const classIndex = await classIndexer.createIndex(packageExports);
+    const classAndInterfaceIndex = await classIndexer.createIndex(packageExports);
 
     // Load constructor data
-    const constructorsUnresolved = new ConstructorLoader().getConstructors(classIndex);
+    const constructorsUnresolved = new ConstructorLoader().getConstructors(classAndInterfaceIndex);
     const constructors = await new ParameterResolver({ classLoader, ignoreClasses: this.ignoreClasses })
-      .resolveAllConstructorParameters(constructorsUnresolved, classIndex);
+      .resolveAllConstructorParameters(constructorsUnresolved, classAndInterfaceIndex);
 
     // Load external components
-    const logger = ComponentsManagerBuilder.createLogger(this.logLevel);
     const externalModulesLoader = new ExternalModulesLoader({
       pathDestination: this.pathDestination,
       packageMetadata,
       logger,
     });
-    const externalPackages = externalModulesLoader.findExternalPackages(classIndex, constructors);
+    const externalPackages = externalModulesLoader.findExternalPackages(classAndInterfaceIndex, constructors);
     const externalComponents = await externalModulesLoader.loadExternalComponents(require, externalPackages);
 
     // Create components
@@ -72,7 +73,7 @@ export class Generator {
       packageMetadata,
       contextConstructor,
       pathDestination: this.pathDestination,
-      classReferences: classIndex,
+      classAndInterfaceIndex,
       classConstructors: constructors,
       externalComponents,
       contextParser: new ContextParser({

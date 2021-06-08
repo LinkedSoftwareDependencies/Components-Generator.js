@@ -7,12 +7,16 @@ import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
 describe('ParameterResolver', () => {
   const resolutionContext = new ResolutionContextMocked({});
+  let logger: any;
   let classLoader: ClassLoader;
   let ignoreClasses: Record<string, boolean>;
   let loader: ParameterResolver;
 
   beforeEach(() => {
-    classLoader = new ClassLoader({ resolutionContext });
+    logger = {
+      debug: jest.fn(),
+    };
+    classLoader = new ClassLoader({ resolutionContext, logger });
     ignoreClasses = {};
     loader = new ParameterResolver({ classLoader, ignoreClasses });
   });
@@ -40,7 +44,7 @@ describe('ParameterResolver', () => {
           ],
         },
       }, {
-        A: <any>{ localName: 'A', fileName: 'A' },
+        A: <any>{ type: 'class', localName: 'A', fileName: 'A' },
       })).toEqual({
         A: {
           parameters: [
@@ -57,6 +61,27 @@ describe('ParameterResolver', () => {
           ],
         },
       });
+    });
+
+    it('should ignore interfaces', async() => {
+      expect(await loader.resolveAllConstructorParameters({
+        A: {
+          parameters: [
+            {
+              type: 'field',
+              name: 'fieldA',
+              unique: true,
+              required: true,
+              range: {
+                type: 'raw',
+                value: 'boolean',
+              },
+            },
+          ],
+        },
+      }, {
+        A: <any>{ type: 'interface', localName: 'A', fileName: 'A' },
+      })).toEqual({});
     });
   });
 
