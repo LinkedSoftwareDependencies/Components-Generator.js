@@ -70,9 +70,12 @@ export class ContextConstructor {
 
         // Generate type-scoped context when enabled
         if (this.typeScopedContexts) {
-          const typeScopedContext: Record<string, string> = {};
+          const typeScopedContext: Record<string, Record<string, string>> = {};
           for (const parameter of component.parameters) {
-            typeScopedContext[parameter['@id'].slice(Math.max(0, component['@id'].length + 1))] = parameter['@id'];
+            typeScopedContext[parameter['@id'].slice(Math.max(0, component['@id'].length + 1))] = {
+              '@id': parameter['@id'],
+              ...parameter.range === 'rdf:JSON' ? { '@type': '@json' } : {},
+            };
           }
           (<any> shortcuts[match[0]])['@context'] = typeScopedContext;
         }

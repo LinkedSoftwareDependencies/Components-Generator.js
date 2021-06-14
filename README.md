@@ -222,7 +222,7 @@ Using comment tags, arguments can be customized.
 |---|---
 | `@ignored` | This field will be ignored.
 | `@default {<value>}` | The `default` attribute of the parameter will be set to `<value>` 
-| `@range {<type>}` | The `range` attribute of the parameter will be set to `<type>`. You can only use values that fit the type of field. Options: `boolean, int, integer, number, byte, long, float, decimal, double, string`. For example, if your field has the type `number`, you could explicitly mark it as a `float` by using `@range {float}`. See [the documentation](https://componentsjs.readthedocs.io/en/latest/configuration/components/parameters/).
+| `@range {<type>}` | The `range` attribute of the parameter will be set to `<type>`. You can only use values that fit the type of field. Options: `json, boolean, int, integer, number, byte, long, float, decimal, double, string`. For example, if your field has the type `number`, you could explicitly mark it as a `float` by using `@range {float}`. See [the documentation](https://componentsjs.readthedocs.io/en/latest/configuration/components/parameters/).
 
 #### Examples
 
@@ -262,6 +262,59 @@ Component file:
       ]
     }
   ]
+}
+```
+
+**Tagging constructor fields as raw JSON:**
+
+TypeScript class:
+```typescript
+export class MyActor {
+    /**
+     * @param myValue - Values will be passed as parsed JSON @range {json}
+     * @param ignoredArg - @ignored
+     */ 
+    constructor(myValue: any, ignoredArg: string) {
+
+    }
+}
+```
+
+Component file:
+```json
+{
+  "components": [
+    {
+      "parameters": [
+        {
+          "@id": "my-actor#TestClass#myValue",
+          "range": "rdf:JSON",
+          "required": false,
+          "unique": false,
+          "comment": "Values will be passed as parsed JSON"
+        }
+      ],
+      "constructorArguments": [
+        {
+          "@id": "my-actor#TestClass#myValue"
+        }
+      ]
+    }
+  ]
+}
+```
+
+When instantiating TestClass as follows, its JSON value will be passed directly into the constructor:
+```json
+{
+  "@id": "ex:myInstance",
+  "@type": "TestClass",
+  "myValue": {
+    "someKey": {
+      "someOtherKey1": 1,
+      "someOtherKey2": "abc"
+    }  
+  }
 }
 ```
 

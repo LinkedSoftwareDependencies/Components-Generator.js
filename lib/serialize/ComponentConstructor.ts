@@ -488,7 +488,7 @@ export class ComponentConstructor {
     // Fill in required fields
     const definition: ParameterDefinition = {
       '@id': fieldId,
-      range: `xsd:${range}`,
+      range: range === 'json' ? 'rdf:JSON' : `xsd:${range}`,
     };
 
     // Fill in optional fields

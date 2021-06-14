@@ -1732,6 +1732,24 @@ describe('ComponentConstructor', () => {
         unique: true,
       });
     });
+
+    it('should construct a JSON parameter definition', () => {
+      const rangeValue = 'json';
+      expect(ctor.constructParameterRaw(context, <ClassLoaded> classReference, {
+        type: 'field',
+        name: 'field',
+        range: { type: 'raw', value: 'string' },
+        required: true,
+        unique: true,
+        comment: 'Hi',
+      }, rangeValue, 'mp:a/b/file-param#MyClass_field')).toEqual({
+        '@id': 'mp:a/b/file-param#MyClass_field',
+        comment: 'Hi',
+        range: 'rdf:JSON',
+        required: true,
+        unique: true,
+      });
+    });
   });
 
   describe('constructParameterClass', () => {
