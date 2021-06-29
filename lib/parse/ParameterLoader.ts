@@ -244,6 +244,14 @@ export class ParameterLoader {
         return { type: 'raw', value: 'string' };
       case AST_NODE_TYPES.TSTypeLiteral:
         return { type: 'hash', value: typeNode };
+      case AST_NODE_TYPES.TSUnknownKeyword:
+      case AST_NODE_TYPES.TSUndefinedKeyword:
+      case AST_NODE_TYPES.TSVoidKeyword:
+      case AST_NODE_TYPES.TSNullKeyword:
+      case AST_NODE_TYPES.TSAnyKeyword:
+      case AST_NODE_TYPES.TSUnionType:
+      case AST_NODE_TYPES.TSTupleType:
+        return { type: 'undefined' };
     }
     throw new Error(`Could not understand parameter type ${typeNode.type} of ${errorIdentifier
     } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
@@ -424,6 +432,8 @@ export type ParameterRangeUnresolved = {
 } | {
   type: 'hash';
   value: TSTypeLiteral;
+} | {
+  type: 'undefined';
 };
 
 export type ParameterRangeResolved = {

@@ -359,6 +359,14 @@ export interface MyInterface extends IgnoredInterface{};
         value: [],
       });
     });
+
+    it('should handle an undefined range', async() => {
+      expect(await loader.resolveRange({
+        type: 'undefined',
+      }, classReference)).toMatchObject({
+        type: 'undefined',
+      });
+    });
   });
 
   describe('resolveRangeInterface', () => {

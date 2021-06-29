@@ -93,6 +93,10 @@ export class ParameterResolver {
           type: 'nested',
           value: await this.getNestedFieldsFromHash(range.value, owningClass),
         };
+      case 'undefined':
+        return {
+          type: 'undefined',
+        };
     }
   }
 

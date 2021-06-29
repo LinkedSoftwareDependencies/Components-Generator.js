@@ -1064,6 +1064,41 @@ export interface A{
           },
         });
     });
+
+    it('should get the range of an unknown type as undefined', async() => {
+      expect(await getFieldRange('fieldA: unknown', {}))
+        .toEqual({ type: 'undefined' });
+    });
+
+    it('should get the range of an undefined type as undefined', async() => {
+      expect(await getFieldRange('fieldA: undefined', {}))
+        .toEqual({ type: 'undefined' });
+    });
+
+    it('should get the range of an any type as undefined', async() => {
+      expect(await getFieldRange('fieldA: any', {}))
+        .toEqual({ type: 'undefined' });
+    });
+
+    it('should get the range of an void type as undefined', async() => {
+      expect(await getFieldRange('fieldA: void', {}))
+        .toEqual({ type: 'undefined' });
+    });
+
+    it('should get the range of a null type as undefined', async() => {
+      expect(await getFieldRange('fieldA: null', {}))
+        .toEqual({ type: 'undefined' });
+    });
+
+    it('should get the range of a union type as undefined', async() => {
+      expect(await getFieldRange('fieldA: number | string', {}))
+        .toEqual({ type: 'undefined' });
+    });
+
+    it('should get the range of a tuple type as undefined', async() => {
+      expect(await getFieldRange('fieldA: [ number, string ]', {}))
+        .toEqual({ type: 'undefined' });
+    });
   });
 
   describe('getFieldDefault', () => {
