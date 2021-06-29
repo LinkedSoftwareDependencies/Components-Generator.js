@@ -7,10 +7,11 @@ import type {
   TypeNode,
   TSIndexSignature,
   TSTypeReference,
+  Parameter,
 } from '@typescript-eslint/types/dist/ts-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import type { ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
-import type { CommentData } from './CommentLoader';
+import type { CommentData, ConstructorCommentData } from './CommentLoader';
 import { CommentLoader } from './CommentLoader';
 import type { ConstructorData } from './ConstructorLoader';
 import type { TypeReferenceOverride } from './typereferenceoverride/TypeReferenceOverride';
@@ -43,16 +44,32 @@ export class ParameterLoader {
     // Load all constructor parameters
     const parameters: ParameterDataField<ParameterRangeUnresolved>[] = [];
     for (const field of constructor.value.params) {
-      if (field.type === AST_NODE_TYPES.Identifier) {
-        const commentData = constructorCommentData[field.name] || {};
-        if (!commentData.ignored) {
-          parameters.push(this.loadField(field, commentData));
-        }
-      } else {
-        throw new Error(`Could not understand constructor parameter type ${field.type} in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
-      }
+      this.loadConstructorField(parameters, constructorCommentData, field);
     }
     return { parameters };
+  }
+
+  /**
+   * Load the parameter data from the given field in a constructor.
+   * @param parameters The array of parameters that will be appended to.
+   * @param constructorCommentData Comment data from the constructor.
+   * @param field The field to load.
+   */
+  public loadConstructorField(
+    parameters: ParameterDataField<ParameterRangeUnresolved>[],
+    constructorCommentData: ConstructorCommentData,
+    field: Parameter,
+  ): void {
+    if (field.type === AST_NODE_TYPES.Identifier) {
+      const commentData = constructorCommentData[field.name] || {};
+      if (!commentData.ignored) {
+        parameters.push(this.loadField(field, commentData));
+      }
+    } else if (field.type === AST_NODE_TYPES.TSParameterProperty) {
+      this.loadConstructorField(parameters, constructorCommentData, field.parameter);
+    } else {
+      throw new Error(`Could not understand constructor parameter type ${field.type} in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
+    }
   }
 
   /**

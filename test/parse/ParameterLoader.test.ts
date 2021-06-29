@@ -209,6 +209,69 @@ export class A{
         ],
       });
     });
+
+    it('should handle a public field', async() => {
+      const { constructor, parameterLoader } = await getConstructor(`
+export class A{
+  constructor(public fieldA: string) {}
+}`);
+      expect(parameterLoader.loadConstructorFields(constructor)).toEqual({
+        parameters: [
+          {
+            type: 'field',
+            name: 'fieldA',
+            range: {
+              type: 'raw',
+              value: 'string',
+            },
+            required: true,
+            unique: true,
+          },
+        ],
+      });
+    });
+
+    it('should handle a protected field', async() => {
+      const { constructor, parameterLoader } = await getConstructor(`
+export class A{
+  constructor(protected fieldA: string) {}
+}`);
+      expect(parameterLoader.loadConstructorFields(constructor)).toEqual({
+        parameters: [
+          {
+            type: 'field',
+            name: 'fieldA',
+            range: {
+              type: 'raw',
+              value: 'string',
+            },
+            required: true,
+            unique: true,
+          },
+        ],
+      });
+    });
+
+    it('should handle a private field', async() => {
+      const { constructor, parameterLoader } = await getConstructor(`
+export class A{
+  constructor(private fieldA: string) {}
+}`);
+      expect(parameterLoader.loadConstructorFields(constructor)).toEqual({
+        parameters: [
+          {
+            type: 'field',
+            name: 'fieldA',
+            range: {
+              type: 'raw',
+              value: 'string',
+            },
+            required: true,
+            unique: true,
+          },
+        ],
+      });
+    });
   });
 
   describe('loadInterfaceFields', () => {
