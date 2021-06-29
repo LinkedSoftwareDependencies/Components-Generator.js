@@ -951,6 +951,11 @@ export interface A{
         .toEqual({ type: 'interface', value: 'MyClass' });
     });
 
+    it('should get the range of a generic class', async() => {
+      expect(await getFieldRange('fieldA: MyClass<T>', {}))
+        .toEqual({ type: 'interface', value: 'MyClass' });
+    });
+
     it('should get the range of a hash', async() => {
       expect(await getFieldRange('fieldA: { a: number }', {}))
         .toMatchObject({
