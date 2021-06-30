@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.5.0"></a>
+## [v2.5.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v2.4.0...v2.5.0) - 2021-06-30
+
+### Added
+* [Mark array properties as RDF list (support for empty arrays)](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/8527ca04877e0e97333c457b4e9b783252810068)
+* [Strip away unsupported types in constructor arguments](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/2b1fbe9d915ebf447f7a04c576c8a110b381c97d)
+* [Support keywords like 'public' in constructor args](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/ba8f743809cd1bf61dab16edac5fb6e95f384419)
+
 <a name="v2.4.0"></a>
 ## [v2.4.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v2.3.0...v2.4.0) - 2021-06-14
 
