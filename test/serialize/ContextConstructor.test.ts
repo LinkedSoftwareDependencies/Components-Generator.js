@@ -174,9 +174,11 @@ describe('ContextConstructor', () => {
               parameters: [
                 {
                   '@id': 'mp:file1#MyClass1_param1',
+                  unique: false,
                 },
                 {
                   '@id': 'mp:file1#MyClass1_param2',
+                  unique: true,
                 },
               ],
               requireElement: 'MyClass1',
@@ -205,6 +207,7 @@ describe('ContextConstructor', () => {
           '@context': {
             param1: {
               '@id': 'mp:file1#MyClass1_param1',
+              '@container': '@list',
             },
             param2: {
               '@id': 'mp:file1#MyClass1_param2',
