@@ -33,8 +33,11 @@ export class ContextConstructor {
    * @param components Optional component definitions to provide shortcuts for.
    */
   public constructContext(components?: ComponentDefinitions): ContextRaw {
-    // Determine a compact prefix to represent this package.
-    const prefix = ContextConstructor.getPackageNamePrefix(this.packageMetadata.name);
+    let prefix = this.packageMetadata.prefix;
+    if (!prefix) {
+      // Determine a compact prefix to represent this package.
+      prefix = ContextConstructor.getPackageNamePrefix(this.packageMetadata.name);
+    }
 
     // Determine component shortcuts if provided.
     const componentShortcuts = components ? this.constructComponentShortcuts(components) : {};
