@@ -7,7 +7,7 @@ import type { ResolutionContext } from '../resolution/ResolutionContext';
  */
 export class PackageMetadataLoader {
   private readonly resolutionContext: ResolutionContext;
-  private readonly prefix: string | undefined;
+  private readonly prefix?: string;
 
   public constructor(args: PackageMetadataLoaderArgs) {
     this.resolutionContext = args.resolutionContext;
