@@ -16,7 +16,7 @@ Usage:
        -e jsonld               Extension for components files (without .), defaults to 'jsonld'
        -i ignore-classes.json  Relative path to an optional file with class names to ignore
        -l info                 The logger level
-       -r prefix               Prefix of the package, optional
+       -r prefix               Optional custom JSON-LD module prefix
        --help                  Show information about this command
 
   Experimental options:

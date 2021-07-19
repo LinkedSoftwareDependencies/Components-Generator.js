@@ -25,7 +25,7 @@ export class Generator {
   private readonly ignoreClasses: Record<string, boolean>;
   private readonly typeScopedContexts: boolean;
   private readonly logLevel: LogLevel;
-  private readonly prefix: string;
+  private readonly prefix?: string;
 
   public constructor(args: GeneratorArgs) {
     this.resolutionContext = args.resolutionContext;
@@ -113,5 +113,5 @@ export interface GeneratorArgs {
   ignoreClasses: Record<string, boolean>;
   typeScopedContexts: boolean;
   logLevel: LogLevel;
-  prefix: string;
+  prefix?: string;
 }
