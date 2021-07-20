@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.6.0"></a>
+## [v2.6.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v2.5.0...v2.6.0) - 2021-07-20
+
+### Added
+* [Add CLI parameter to set prefix of package](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/a2b51b0af99f42b8d6e80496afc661c8550cef31)
+
 <a name="v2.5.0"></a>
 ## [v2.5.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v2.4.0...v2.5.0) - 2021-06-30
 
