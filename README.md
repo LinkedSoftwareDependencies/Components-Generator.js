@@ -100,6 +100,7 @@ Usage:
        -c components           Relative path to directory that will contain components files, defaults to 'components'
        -e jsonld               Extension for components files (without .), defaults to 'jsonld'
        -i ignore-classes.json  Relative path to an optional file with class names to ignore
+       -r prefix               Optional custom JSON-LD module prefix
        --help                  Show information about this command
 
   Experimental options:
