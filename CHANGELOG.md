@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.6.1"></a>
+## [v2.6.1](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v2.6.0...v2.6.1) - 2021-09-29
+
+### Fixed
+* [Fix optional types not always being parsed correctly, Closes #74](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/c95294a929452faed872838d5e8bbd2bcde13e3d)
+
 <a name="v2.6.0"></a>
 ## [v2.6.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v2.5.0...v2.6.0) - 2021-07-20
 
