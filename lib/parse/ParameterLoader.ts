@@ -166,8 +166,14 @@ export class ParameterLoader {
   }
 
   public isFieldUnique(field: Identifier | TSPropertySignature): boolean {
-    return !(field.typeAnnotation && field.typeAnnotation.typeAnnotation.type === AST_NODE_TYPES.TSArrayType) &&
-      !this.isFieldIndexedHash(field);
+    return !this.isFieldIndexedHash(field) &&
+      (!field.typeAnnotation || this.isFieldTypeUnique(field.typeAnnotation.typeAnnotation));
+  }
+
+  public isFieldTypeUnique(fieldType: TypeNode): boolean {
+    return !(fieldType.type === AST_NODE_TYPES.TSArrayType) &&
+      !(fieldType.type === AST_NODE_TYPES.TSUnionType && fieldType.types.length === 2 &&
+        fieldType.types[1].type === AST_NODE_TYPES.TSUndefinedKeyword && !this.isFieldTypeUnique(fieldType.types[0]));
   }
 
   public isFieldRequired(field: Identifier | TSPropertySignature): boolean {
@@ -244,12 +250,17 @@ export class ParameterLoader {
         return { type: 'raw', value: 'string' };
       case AST_NODE_TYPES.TSTypeLiteral:
         return { type: 'hash', value: typeNode };
+      case AST_NODE_TYPES.TSUnionType:
+        // Special case to detect optional fields, which can be marked as a union with undefined.
+        if (typeNode.types.length === 2 && typeNode.types[1].type === AST_NODE_TYPES.TSUndefinedKeyword) {
+          return this.getRangeFromTypeNode(typeNode.types[0], errorIdentifier, nestedArrays);
+        }
+        return { type: 'undefined' };
       case AST_NODE_TYPES.TSUnknownKeyword:
       case AST_NODE_TYPES.TSUndefinedKeyword:
       case AST_NODE_TYPES.TSVoidKeyword:
       case AST_NODE_TYPES.TSNullKeyword:
       case AST_NODE_TYPES.TSAnyKeyword:
-      case AST_NODE_TYPES.TSUnionType:
       case AST_NODE_TYPES.TSTupleType:
         return { type: 'undefined' };
     }

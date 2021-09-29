@@ -272,6 +272,69 @@ export class A{
         ],
       });
     });
+
+    it('should handle a public array field', async() => {
+      const { constructor, parameterLoader } = await getConstructor(`
+export class A{
+  constructor(public fieldA: string[]) {}
+}`);
+      expect(parameterLoader.loadConstructorFields(constructor)).toEqual({
+        parameters: [
+          {
+            type: 'field',
+            name: 'fieldA',
+            range: {
+              type: 'raw',
+              value: 'string',
+            },
+            required: true,
+            unique: false,
+          },
+        ],
+      });
+    });
+
+    it('should handle a public optional array field', async() => {
+      const { constructor, parameterLoader } = await getConstructor(`
+export class A{
+  constructor(public fieldA?: string[]) {}
+}`);
+      expect(parameterLoader.loadConstructorFields(constructor)).toEqual({
+        parameters: [
+          {
+            type: 'field',
+            name: 'fieldA',
+            range: {
+              type: 'raw',
+              value: 'string',
+            },
+            required: false,
+            unique: false,
+          },
+        ],
+      });
+    });
+
+    it('should handle a public optional array field as union type', async() => {
+      const { constructor, parameterLoader } = await getConstructor(`
+export class A{
+  constructor(public fieldA?: string[] | undefined) {}
+}`);
+      expect(parameterLoader.loadConstructorFields(constructor)).toEqual({
+        parameters: [
+          {
+            type: 'field',
+            name: 'fieldA',
+            range: {
+              type: 'raw',
+              value: 'string',
+            },
+            required: false,
+            unique: false,
+          },
+        ],
+      });
+    });
   });
 
   describe('loadInterfaceFields', () => {
@@ -773,6 +836,44 @@ export interface A{
           },
         },
       })).toEqual(false);
+    });
+
+    it('should return false when the type annotation is an array with union undefined', () => {
+      expect(loader.isFieldUnique(<any> {
+        name: 'fieldA',
+        typeAnnotation: {
+          typeAnnotation: {
+            type: AST_NODE_TYPES.TSUnionType,
+            types: [
+              {
+                type: AST_NODE_TYPES.TSArrayType,
+              },
+              {
+                type: AST_NODE_TYPES.TSUndefinedKeyword,
+              },
+            ],
+          },
+        },
+      })).toEqual(false);
+    });
+
+    it('should return true when the type annotation is a not array with union undefined', () => {
+      expect(loader.isFieldUnique(<any> {
+        name: 'fieldA',
+        typeAnnotation: {
+          typeAnnotation: {
+            type: AST_NODE_TYPES.TSUnionType,
+            types: [
+              {
+                type: AST_NODE_TYPES.TSAnyKeyword,
+              },
+              {
+                type: AST_NODE_TYPES.TSUndefinedKeyword,
+              },
+            ],
+          },
+        },
+      })).toEqual(true);
     });
 
     it('should return false when the type annotation is an indexed hash', () => {
