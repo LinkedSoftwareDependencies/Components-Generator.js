@@ -30,7 +30,7 @@ export interface ParameterDefinition {
   comment?: string;
   unique?: boolean;
   required?: boolean;
-  range?: string | { '@type': string; parameters: ParameterDefinition[] };
+  range?: string | { '@id': string; parameters: ParameterDefinition[] };
   lazy?: boolean;
 }
 

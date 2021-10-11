@@ -452,7 +452,7 @@ export class ComponentConstructor {
     const parameter: ParameterDefinition = {
       '@id': idCollectEntries,
       range: {
-        '@type': this.fieldNameToId(context, classReference, `${parameterData.name}_range`, scope),
+        '@id': this.fieldNameToId(context, classReference, `${parameterData.name}_range`, scope),
         parameters: subParameters,
       },
     };
