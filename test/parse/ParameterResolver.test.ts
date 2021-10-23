@@ -367,6 +367,88 @@ export interface MyInterface extends IgnoredInterface{};
         type: 'undefined',
       });
     });
+
+    it('should handle a union range', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `export * from './MyClass'`,
+        'MyClass.d.ts': `export class MyClass{}`,
+      };
+
+      expect(await loader.resolveRange({
+        type: 'union',
+        children: [
+          {
+            type: 'raw',
+            value: 'boolean',
+          },
+          {
+            type: 'raw',
+            value: 'number',
+          },
+          {
+            type: 'interface',
+            value: 'MyClass',
+          },
+        ],
+      }, classReference)).toMatchObject({
+        type: 'union',
+        children: [
+          {
+            type: 'raw',
+            value: 'boolean',
+          },
+          {
+            type: 'raw',
+            value: 'number',
+          },
+          {
+            type: 'class',
+            value: { localName: 'MyClass', fileName: 'MyClass' },
+          },
+        ],
+      });
+    });
+
+    it('should handle an intersection range', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `export * from './MyClass'`,
+        'MyClass.d.ts': `export class MyClass{}`,
+      };
+
+      expect(await loader.resolveRange({
+        type: 'intersection',
+        children: [
+          {
+            type: 'raw',
+            value: 'boolean',
+          },
+          {
+            type: 'raw',
+            value: 'number',
+          },
+          {
+            type: 'interface',
+            value: 'MyClass',
+          },
+        ],
+      }, classReference)).toMatchObject({
+        type: 'intersection',
+        children: [
+          {
+            type: 'raw',
+            value: 'boolean',
+          },
+          {
+            type: 'raw',
+            value: 'number',
+          },
+          {
+            type: 'class',
+            value: { localName: 'MyClass', fileName: 'MyClass' },
+          },
+        ],
+      });
+    });
   });
 
   describe('resolveRangeInterface', () => {

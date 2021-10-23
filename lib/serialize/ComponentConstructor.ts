@@ -5,12 +5,11 @@ import type { ConstructorData } from '../parse/ConstructorLoader';
 import type { PackageMetadata } from '../parse/PackageMetadataLoader';
 import type { ParameterData, ParameterRangeResolved } from '../parse/ParameterLoader';
 import type { ExternalComponents } from '../resolution/ExternalModulesLoader';
-import type {
-  ComponentDefinition,
+import type { ComponentDefinition,
   ComponentDefinitions, ComponentDefinitionsIndex,
   ConstructorArgumentDefinition, ConstructorFieldDefinition,
   ParameterDefinition,
-} from './ComponentDefinitions';
+  ParameterDefinitionRange } from './ComponentDefinitions';
 import type { ContextConstructor } from './ContextConstructor';
 
 /**
@@ -348,27 +347,14 @@ export class ComponentConstructor {
     }
 
     // For all other range types, create a parameter and return its parameter id.
-    let param: ParameterDefinition;
-    switch (parameterData.range.type) {
-      case 'raw':
-      case 'override':
-        param = this.constructParameterRaw(context, classReference, parameterData, parameterData.range.value, fieldId);
-        break;
-      case 'undefined':
-        param = this.constructParameterRangeUndefined(context, classReference, parameterData, fieldId);
-        break;
-      case 'class':
-        // eslint-disable-next-line no-case-declarations
-        param = await this.constructParameterClass(
-          context,
-          externalContextsCallback,
-          classReference,
-          parameterData,
-          parameterData.range.value,
-          fieldId,
-        );
-        break;
-    }
+    const param: ParameterDefinition = {
+      '@id': fieldId,
+      range: await this.constructParameterRange(parameterData.range, context, externalContextsCallback, fieldId),
+    };
+
+    // Fill in optional fields
+    this.populateOptionalParameterFields(param, parameterData);
+
     parameters.push(param);
     return { '@id': fieldId };
   }
@@ -471,83 +457,36 @@ export class ComponentConstructor {
   }
 
   /**
-   * Construct a parameter definition from the given parameter data with raw range.
-   * @param context A parsed JSON-LD context.
-   * @param classReference Class reference of the class component owning this parameter.
-   * @param parameterData Parameter data.
-   * @param range Range of this parameter data.
-   * @param fieldId The @id of the field.
-   */
-  public constructParameterRaw(
-    context: JsonLdContextNormalized,
-    classReference: ClassLoaded,
-    parameterData: ParameterData<ParameterRangeResolved>,
-    range: string,
-    fieldId: string,
-  ): ParameterDefinition {
-    // Fill in required fields
-    const definition: ParameterDefinition = {
-      '@id': fieldId,
-      range: range === 'json' ? 'rdf:JSON' : `xsd:${range}`,
-    };
-
-    // Fill in optional fields
-    this.populateOptionalParameterFields(definition, parameterData);
-
-    return definition;
-  }
-
-  /**
-   * Construct a parameter definition from the given parameter data with an undefined range.
-   * @param context A parsed JSON-LD context.
-   * @param classReference Class reference of the class component owning this parameter.
-   * @param parameterData Parameter data.
-   * @param fieldId The @id of the field.
-   */
-  public constructParameterRangeUndefined(
-    context: JsonLdContextNormalized,
-    classReference: ClassLoaded,
-    parameterData: ParameterData<ParameterRangeResolved>,
-    fieldId: string,
-  ): ParameterDefinition {
-    // Fill in required fields
-    const definition: ParameterDefinition = {
-      '@id': fieldId,
-    };
-
-    // Fill in optional fields
-    this.populateOptionalParameterFields(definition, parameterData);
-
-    return definition;
-  }
-
-  /**
-   * Construct a parameter definition from the given parameter data with class reference range.
+   * Determine the parameter definition's range definition.
+   * @param range The range of a parameter
    * @param context A parsed JSON-LD context.
    * @param externalContextsCallback Callback for external contexts.
-   * @param classReference Class reference of the class component owning this parameter.
-   * @param parameterData Parameter data.
-   * @param range Range of this parameter data.
    * @param fieldId The @id of the field.
    */
-  public async constructParameterClass(
+  public async constructParameterRange(
+    range: ParameterRangeResolved,
     context: JsonLdContextNormalized,
     externalContextsCallback: ExternalContextCallback,
-    classReference: ClassReference,
-    parameterData: ParameterData<ParameterRangeResolved>,
-    range: ClassReference,
     fieldId: string,
-  ): Promise<ParameterDefinition> {
-    // Fill in required fields
-    const definition: ParameterDefinition = {
-      '@id': fieldId,
-      range: await this.classNameToId(context, externalContextsCallback, range),
-    };
-
-    // Fill in optional fields
-    this.populateOptionalParameterFields(definition, parameterData);
-
-    return definition;
+  ): Promise<ParameterDefinitionRange> {
+    switch (range.type) {
+      case 'raw':
+      case 'override':
+        return range.value === 'json' ? 'rdf:JSON' : `xsd:${range.value}`;
+      case 'class':
+        return await this.classNameToId(context, externalContextsCallback, range.value);
+      case 'nested':
+        throw new Error('Composition of nested fields is unsupported');
+      case 'undefined':
+        return;
+      case 'union':
+      case 'intersection':
+        return {
+          '@type': range.type === 'union' ? 'ParameterRangeComposedUnion' : 'ParameterRangeComposedIntersection',
+          parameterRangeComposedChildren: await Promise.all(range.children
+            .map(child => this.constructParameterRange(child, context, externalContextsCallback, fieldId))),
+        };
+    }
   }
 
   /**

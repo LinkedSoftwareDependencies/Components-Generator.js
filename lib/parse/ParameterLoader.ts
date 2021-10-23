@@ -251,11 +251,26 @@ export class ParameterLoader {
       case AST_NODE_TYPES.TSTypeLiteral:
         return { type: 'hash', value: typeNode };
       case AST_NODE_TYPES.TSUnionType:
-        // Special case to detect optional fields, which can be marked as a union with undefined.
-        if (typeNode.types.length === 2 && typeNode.types[1].type === AST_NODE_TYPES.TSUndefinedKeyword) {
-          return this.getRangeFromTypeNode(typeNode.types[0], errorIdentifier, nestedArrays);
+        // Remove undefined types in the union, as they imply an optional field.
+        // eslint-disable-next-line no-case-declarations
+        const children = typeNode.types
+          .filter(type => type.type !== AST_NODE_TYPES.TSUndefinedKeyword)
+          .map(type => this.getRangeFromTypeNode(type, errorIdentifier, nestedArrays));
+        if (children.length === 1) {
+          return children[0];
         }
-        return { type: 'undefined' };
+        return {
+          type: 'union',
+          children,
+        };
+      case AST_NODE_TYPES.TSIntersectionType:
+        return {
+          type: 'intersection',
+          children: typeNode.types
+            .map(type => this.getRangeFromTypeNode(type, errorIdentifier, nestedArrays)),
+        };
+      case AST_NODE_TYPES.TSParenthesizedType:
+        return this.getRangeFromTypeNode(typeNode.typeAnnotation, errorIdentifier, nestedArrays);
       case AST_NODE_TYPES.TSUnknownKeyword:
       case AST_NODE_TYPES.TSUndefinedKeyword:
       case AST_NODE_TYPES.TSVoidKeyword:
@@ -445,6 +460,12 @@ export type ParameterRangeUnresolved = {
   value: TSTypeLiteral;
 } | {
   type: 'undefined';
+} | {
+  type: 'union';
+  children: ParameterRangeUnresolved[];
+} | {
+  type: 'intersection';
+  children: ParameterRangeUnresolved[];
 };
 
 export type ParameterRangeResolved = {
@@ -461,4 +482,10 @@ export type ParameterRangeResolved = {
   value: ParameterData<ParameterRangeResolved>[];
 } | {
   type: 'undefined';
+} | {
+  type: 'union';
+  children: ParameterRangeResolved[];
+} | {
+  type: 'intersection';
+  children: ParameterRangeResolved[];
 };

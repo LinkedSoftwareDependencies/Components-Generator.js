@@ -1196,9 +1196,83 @@ export interface A{
         .toEqual({ type: 'undefined' });
     });
 
-    it('should get the range of a union type as undefined', async() => {
+    it('should get the range of a union type of two raw types', async() => {
       expect(await getFieldRange('fieldA: number | string', {}))
-        .toEqual({ type: 'undefined' });
+        .toEqual({
+          type: 'union',
+          children: [
+            { type: 'raw', value: 'number' },
+            { type: 'raw', value: 'string' },
+          ],
+        });
+    });
+
+    it('should get the range of a union type of a raw type and undefined', async() => {
+      expect(await getFieldRange('fieldA: number | undefined', {}))
+        .toEqual({ type: 'raw', value: 'number' });
+    });
+
+    it('should get the range of a union type of two raw types and undefined', async() => {
+      expect(await getFieldRange('fieldA: number | string | undefined', {}))
+        .toEqual({
+          type: 'union',
+          children: [
+            { type: 'raw', value: 'number' },
+            { type: 'raw', value: 'string' },
+          ],
+        });
+    });
+
+    it('should get the range of a union type of three classes', async() => {
+      expect(await getFieldRange('fieldA: MyClass1 | MyClass2 | MyClass3', {}))
+        .toEqual({
+          type: 'union',
+          children: [
+            { type: 'interface', value: 'MyClass1' },
+            { type: 'interface', value: 'MyClass2' },
+            { type: 'interface', value: 'MyClass3' },
+          ],
+        });
+    });
+
+    it('should get the range of an intersection type of two raw types', async() => {
+      expect(await getFieldRange('fieldA: number & string', {}))
+        .toEqual({
+          type: 'intersection',
+          children: [
+            { type: 'raw', value: 'number' },
+            { type: 'raw', value: 'string' },
+          ],
+        });
+    });
+
+    it('should get the range of a intersection type of three classes', async() => {
+      expect(await getFieldRange('fieldA: MyClass1 & MyClass2 & MyClass3', {}))
+        .toEqual({
+          type: 'intersection',
+          children: [
+            { type: 'interface', value: 'MyClass1' },
+            { type: 'interface', value: 'MyClass2' },
+            { type: 'interface', value: 'MyClass3' },
+          ],
+        });
+    });
+
+    it('should get the range of nested union and types', async() => {
+      expect(await getFieldRange('fieldA: (MyClass1 | MyClass2) & MyClass3', {}))
+        .toEqual({
+          type: 'intersection',
+          children: [
+            {
+              type: 'union',
+              children: [
+                { type: 'interface', value: 'MyClass1' },
+                { type: 'interface', value: 'MyClass2' },
+              ],
+            },
+            { type: 'interface', value: 'MyClass3' },
+          ],
+        });
     });
 
     it('should get the range of a tuple type as undefined', async() => {

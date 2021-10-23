@@ -30,9 +30,14 @@ export interface ParameterDefinition {
   comment?: string;
   unique?: boolean;
   required?: boolean;
-  range?: string | { '@id': string; parameters: ParameterDefinition[] };
+  range?: ParameterDefinitionRange;
   lazy?: boolean;
 }
+
+export type ParameterDefinitionRange = string | { '@id': string; parameters: ParameterDefinition[] } | {
+  '@type': 'ParameterRangeComposedUnion' | 'ParameterRangeComposedIntersection';
+  parameterRangeComposedChildren: ParameterDefinitionRange[];
+} | undefined;
 
 export type ConstructorArgumentDefinition = string | { '@id': string } | {
   '@id'?: string;

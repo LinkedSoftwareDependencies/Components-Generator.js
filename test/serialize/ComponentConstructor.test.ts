@@ -1714,64 +1714,105 @@ describe('ComponentConstructor', () => {
     });
   });
 
-  describe('constructParameterRaw', () => {
-    it('should construct a raw parameter definition', () => {
+  describe('constructParameterRange', () => {
+    it('should construct a raw parameter range', async() => {
       const rangeValue = 'boolean';
-      expect(ctor.constructParameterRaw(context, <ClassLoaded> classReference, {
-        type: 'field',
-        name: 'field',
-        range: { type: 'raw', value: rangeValue },
-        required: true,
-        unique: true,
-        comment: 'Hi',
-      }, rangeValue, 'mp:a/b/file-param#MyClass_field')).toEqual({
-        '@id': 'mp:a/b/file-param#MyClass_field',
-        comment: 'Hi',
-        range: 'xsd:boolean',
-        required: true,
-        unique: true,
-      });
+      expect(await ctor.constructParameterRange(
+        { type: 'raw', value: rangeValue },
+        context,
+        externalContextsCallback,
+        'mp:a/b/file-param#MyClass_field',
+      )).toEqual('xsd:boolean');
     });
 
-    it('should construct a JSON parameter definition', () => {
+    it('should construct a JSON parameter range', async() => {
       const rangeValue = 'json';
-      expect(ctor.constructParameterRaw(context, <ClassLoaded> classReference, {
-        type: 'field',
-        name: 'field',
-        range: { type: 'raw', value: 'string' },
-        required: true,
-        unique: true,
-        comment: 'Hi',
-      }, rangeValue, 'mp:a/b/file-param#MyClass_field')).toEqual({
-        '@id': 'mp:a/b/file-param#MyClass_field',
-        comment: 'Hi',
-        range: 'rdf:JSON',
-        required: true,
-        unique: true,
-      });
+      expect(await ctor.constructParameterRange(
+        { type: 'override', value: rangeValue },
+        context,
+        externalContextsCallback,
+        'mp:a/b/file-param#MyClass_field',
+      )).toEqual('rdf:JSON');
     });
-  });
 
-  describe('constructParameterClass', () => {
-    it('should construct a class parameter definition', async() => {
+    it('should construct a class parameter range', async() => {
       const rangeValue: ClassReferenceLoaded = <any> {
         packageName: 'my-package',
         localName: 'ClassParam',
         fileName: Path.normalize('/docs/package/src/a/b/file-param'),
       };
-      expect(await ctor.constructParameterClass(context, externalContextsCallback, classReference, {
-        type: 'field',
-        name: 'field',
-        range: { type: 'class', value: rangeValue },
-        required: true,
-        unique: true,
-        comment: 'Hi',
-      }, rangeValue, 'mp:a/b/file-param#MyClass_field')).toEqual({
-        '@id': 'mp:a/b/file-param#MyClass_field',
-        comment: 'Hi',
-        range: 'mp:a/b/file-param#ClassParam',
-        required: true,
-        unique: true,
+      expect(await ctor.constructParameterRange(
+        { type: 'class', value: rangeValue },
+        context,
+        externalContextsCallback,
+        'mp:a/b/file-param#MyClass_field',
+      )).toEqual('mp:a/b/file-param#ClassParam');
+    });
+
+    it('should throw on a nested parameter range', async() => {
+      const rangeValue: ParameterData<any>[] = [];
+      await expect(ctor.constructParameterRange(
+        { type: 'nested', value: rangeValue },
+        context,
+        externalContextsCallback,
+        'mp:a/b/file-param#MyClass_field',
+      )).rejects.toThrow('Composition of nested fields is unsupported');
+    });
+
+    it('should construct an undefined parameter range', async() => {
+      expect(await ctor.constructParameterRange(
+        { type: 'undefined' },
+        context,
+        externalContextsCallback,
+        'mp:a/b/file-param#MyClass_field',
+      )).toBeUndefined();
+    });
+
+    it('should construct a union parameter range', async() => {
+      const rangeValueClass: ClassReferenceLoaded = <any> {
+        packageName: 'my-package',
+        localName: 'ClassParam',
+        fileName: Path.normalize('/docs/package/src/a/b/file-param'),
+      };
+      const children: ParameterRangeResolved[] = [
+        { type: 'raw', value: 'boolean' },
+        { type: 'class', value: rangeValueClass },
+      ];
+      expect(await ctor.constructParameterRange(
+        { type: 'union', children },
+        context,
+        externalContextsCallback,
+        'mp:a/b/file-param#MyClass_field',
+      )).toEqual({
+        '@type': 'ParameterRangeComposedUnion',
+        parameterRangeComposedChildren: [
+          'xsd:boolean',
+          'mp:a/b/file-param#ClassParam',
+        ],
+      });
+    });
+
+    it('should construct an intersection parameter range', async() => {
+      const rangeValueClass: ClassReferenceLoaded = <any> {
+        packageName: 'my-package',
+        localName: 'ClassParam',
+        fileName: Path.normalize('/docs/package/src/a/b/file-param'),
+      };
+      const children: ParameterRangeResolved[] = [
+        { type: 'raw', value: 'boolean' },
+        { type: 'class', value: rangeValueClass },
+      ];
+      expect(await ctor.constructParameterRange(
+        { type: 'intersection', children },
+        context,
+        externalContextsCallback,
+        'mp:a/b/file-param#MyClass_field',
+      )).toEqual({
+        '@type': 'ParameterRangeComposedIntersection',
+        parameterRangeComposedChildren: [
+          'xsd:boolean',
+          'mp:a/b/file-param#ClassParam',
+        ],
       });
     });
   });
