@@ -10,7 +10,7 @@ import type { Logger } from 'winston';
 import type { ClassIndex, ClassReferenceLoaded } from '../parse/ClassIndex';
 import type { ConstructorData } from '../parse/ConstructorLoader';
 import type { PackageMetadata } from '../parse/PackageMetadataLoader';
-import type { ParameterData, ParameterRangeResolved } from '../parse/ParameterLoader';
+import type { ParameterRangeResolved } from '../parse/ParameterLoader';
 import type { PathDestinationDefinition } from '../serialize/ComponentConstructor';
 
 /**
@@ -46,7 +46,7 @@ export class ExternalModulesLoader {
     // Handle constructor parameters
     for (const ctor of Object.values(constructors)) {
       for (const parameter of ctor.parameters) {
-        this.indexParameterInExternalPackage(parameter, externalPackages);
+        this.indexParameterRangeInExternalPackage(parameter.range, externalPackages);
       }
     }
 
@@ -72,21 +72,27 @@ export class ExternalModulesLoader {
     }
   }
 
-  public indexParameterInExternalPackage(
-    parameter: ParameterData<ParameterRangeResolved>,
+  public indexParameterRangeInExternalPackage(
+    parameterRange: ParameterRangeResolved,
     externalPackages: Record<string, boolean>,
   ): void {
-    switch (parameter.range.type) {
+    switch (parameterRange.type) {
       case 'raw':
       case 'override':
       case 'undefined':
         break;
       case 'class':
-        this.indexClassInExternalPackage(parameter.range.value, externalPackages);
+        this.indexClassInExternalPackage(parameterRange.value, externalPackages);
         break;
       case 'nested':
-        for (const nestedParameter of parameter.range.value) {
-          this.indexParameterInExternalPackage(nestedParameter, externalPackages);
+        for (const nestedParameter of parameterRange.value) {
+          this.indexParameterRangeInExternalPackage(nestedParameter.range, externalPackages);
+        }
+        break;
+      case 'union':
+      case 'intersection':
+        for (const child of parameterRange.children) {
+          this.indexParameterRangeInExternalPackage(child, externalPackages);
         }
         break;
     }
