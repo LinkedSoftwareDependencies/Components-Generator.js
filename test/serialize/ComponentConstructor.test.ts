@@ -374,6 +374,48 @@ describe('ComponentConstructor', () => {
         },
       });
     });
+
+    it('should handle a non-empty index with a class from a different package', async() => {
+      (<any> ctor).classAndInterfaceIndex = {
+        MyClass1: {
+          type: 'class',
+          packageName: 'other-package',
+          localName: 'MyClass',
+          fileName: Path.normalize('/docs/other-package/src/b/file'),
+          fileNameReferenced: Path.normalize('/docs/package/src/b/file'),
+        },
+      };
+      (<any> ctor).classConstructors = <ClassIndex<ConstructorData<ParameterRangeResolved>>> {
+        MyClass1: {
+          type: 'class',
+          parameters: [],
+        },
+      };
+      externalComponents.components['other-package'] = {
+        contextIris: [ 'http://example.org/context-other-package.jsonld' ],
+        componentNamesToIris: {
+          MyClass: 'http://example.org/other-package.ttl#MyClass',
+        },
+      };
+      expect(await ctor.constructComponents()).toEqual({
+        [Path.normalize('/docs/package/components/b/file')]: {
+          '@context': [
+            'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
+            'http://example.org/context-other-package.jsonld',
+          ],
+          '@id': 'npmd:my-package',
+          components: [
+            {
+              '@id': 'op:MyClass',
+              '@type': 'Class',
+              constructorArguments: [],
+              parameters: [],
+              requireElement: 'MyClass',
+            },
+          ],
+        },
+      });
+    });
   });
 
   describe('constructComponentsIndex', () => {
@@ -692,6 +734,7 @@ describe('ComponentConstructor', () => {
         packageName: 'my-package',
         localName: 'MyClass',
         fileName: Path.normalize('/docs/package/src/a/b/MyOwnClass'),
+        fileNameReferenced: 'unused',
       })).toEqual('mp:a/b/MyOwnClass#MyClass');
     });
 
@@ -706,6 +749,7 @@ describe('ComponentConstructor', () => {
         packageName: 'other-package',
         localName: 'MyClass',
         fileName: Path.normalize('/docs/other-package/src/a/b/MyOwnClass'),
+        fileNameReferenced: 'unused',
       })).toEqual('op:MyClass');
       expect(externalContextsCallback).toHaveBeenCalledWith('http://example.org/context-other-package.jsonld');
     });
@@ -721,6 +765,7 @@ describe('ComponentConstructor', () => {
         packageName: 'other-package',
         localName: 'MyClass',
         fileName: Path.normalize('/docs/other-package/src/a/b/MyOwnClass'),
+        fileNameReferenced: 'unused',
       })).rejects.toThrow(`Tried to reference a class 'MyClass' from an external module 'other-package' that does not expose this component`);
     });
 
@@ -735,6 +780,7 @@ describe('ComponentConstructor', () => {
         packageName: 'other-package',
         localName: 'MyClass',
         fileName: Path.normalize('/docs/other-package/src/a/b/MyOwnClass'),
+        fileNameReferenced: 'unused',
       })).rejects.toThrow(`Tried to reference a class 'MyClass' from an external module 'other-package' that is not a dependency`);
     });
   });
@@ -745,6 +791,7 @@ describe('ComponentConstructor', () => {
         packageName: 'my-package',
         localName: 'MyClass',
         fileName: Path.normalize('/docs/package/src/a/b/MyOwnClass'),
+        fileNameReferenced: 'unused',
       }, 'field', scope)).toEqual('mp:a/b/MyOwnClass#MyClass_field');
     });
 
@@ -755,6 +802,7 @@ describe('ComponentConstructor', () => {
         packageName: 'my-package',
         localName: 'MyClass',
         fileName: Path.normalize('/docs/package/src/a/b/MyOwnClass'),
+        fileNameReferenced: 'unused',
       }, 'field', scope)).toEqual('mp:a/b/MyOwnClass#MyClass_a_b_field');
     });
 
@@ -763,16 +811,19 @@ describe('ComponentConstructor', () => {
         packageName: 'my-package',
         localName: 'MyClass',
         fileName: Path.normalize('/docs/package/src/a/b/MyOwnClass'),
+        fileNameReferenced: 'unused',
       }, 'field', scope)).toEqual('mp:a/b/MyOwnClass#MyClass_field');
       expect(ctor.fieldNameToId(context, {
         packageName: 'my-package',
         localName: 'MyClass',
         fileName: Path.normalize('/docs/package/src/a/b/MyOwnClass'),
+        fileNameReferenced: 'unused',
       }, 'field', scope)).toEqual('mp:a/b/MyOwnClass#MyClass_field_1');
       expect(ctor.fieldNameToId(context, {
         packageName: 'my-package',
         localName: 'MyClass',
         fileName: Path.normalize('/docs/package/src/a/b/MyOwnClass'),
+        fileNameReferenced: 'unused',
       }, 'field', scope)).toEqual('mp:a/b/MyOwnClass#MyClass_field_2');
     });
   });

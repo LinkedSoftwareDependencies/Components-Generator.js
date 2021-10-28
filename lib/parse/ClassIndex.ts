@@ -16,6 +16,8 @@ export interface ClassReference {
   localName: string;
   // The name of the file the class is defined in.
   fileName: string;
+  // The first name of the file this class was referenced from, in a chain of imports/exports (in top-down order)
+  fileNameReferenced: string;
 }
 
 /**

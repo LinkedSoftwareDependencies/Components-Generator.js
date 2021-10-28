@@ -26,6 +26,7 @@ describe('ClassFinder', () => {
             Class: {
               packageName: 'package',
               fileName: Path.normalize('lib/B'),
+              fileNameReferenced: 'file',
               localName: 'B',
             },
           },
@@ -44,6 +45,7 @@ describe('ClassFinder', () => {
             {
               packageName: 'package',
               fileName: Path.normalize('lib/B'),
+              fileNameReferenced: 'file',
             },
           ],
         });
@@ -61,6 +63,7 @@ describe('ClassFinder', () => {
             {
               packageName: 'other-package',
               fileName: '/some-dir/index',
+              fileNameReferenced: 'file',
             },
           ],
         });
@@ -79,6 +82,7 @@ export type B = string;
             A: {
               packageName: 'package',
               fileName: 'file',
+              fileNameReferenced: 'file',
               localName: 'A',
             },
           },
@@ -99,6 +103,7 @@ export type B = string;
             A: {
               packageName: 'package',
               fileName: 'file',
+              fileNameReferenced: 'file',
               localName: 'A',
             },
           },
@@ -121,16 +126,19 @@ export * from './lib/D';
             Class1: {
               packageName: 'package',
               fileName: Path.normalize('lib/A'),
+              fileNameReferenced: 'file',
               localName: 'A',
             },
             Class2: {
               packageName: 'package',
               fileName: Path.normalize('lib/B'),
+              fileNameReferenced: 'file',
               localName: 'B',
             },
             Class3: {
               packageName: 'package',
               fileName: Path.normalize('lib/C'),
+              fileNameReferenced: 'file',
               localName: 'C',
             },
           },
@@ -138,6 +146,7 @@ export * from './lib/D';
             {
               packageName: 'package',
               fileName: Path.normalize('lib/D'),
+              fileNameReferenced: 'file',
             },
           ],
         });
@@ -186,6 +195,7 @@ export {A as B};
             B: {
               packageName: 'package',
               fileName: 'file',
+              fileNameReferenced: 'file',
               localName: 'A',
             },
           },
@@ -206,6 +216,7 @@ declare class A {}
             B: {
               packageName: 'package',
               fileName: 'file',
+              fileNameReferenced: 'file',
               localName: 'A',
             },
           },
@@ -226,6 +237,7 @@ export {A as B};
             B: {
               packageName: 'package',
               fileName: 'file',
+              fileNameReferenced: 'file',
               localName: 'A',
             },
           },
@@ -246,6 +258,7 @@ declare interface A {}
             B: {
               packageName: 'package',
               fileName: 'file',
+              fileNameReferenced: 'file',
               localName: 'A',
             },
           },
@@ -277,6 +290,7 @@ export {A};
             A: {
               packageName: 'package',
               fileName: Path.normalize('lib/A'),
+              fileNameReferenced: 'file',
               localName: 'X',
             },
           },
@@ -321,6 +335,7 @@ export {A};
           B: {
             packageName: 'package',
             fileName: Path.normalize('package-simple-named/lib/A'),
+            fileNameReferenced: Path.normalize('package-simple-named/index'),
             localName: 'A',
           },
         });
@@ -336,6 +351,7 @@ export {A};
           A: {
             packageName: 'package',
             fileName: Path.normalize('package-simple-unnamed/lib/A'),
+            fileNameReferenced: Path.normalize('package-simple-unnamed/lib/A'),
             localName: 'A',
           },
         });
@@ -355,11 +371,13 @@ export * from './lib/C';
           B: {
             packageName: 'package',
             fileName: Path.normalize('package-multiple/lib/A'),
+            fileNameReferenced: Path.normalize('package-multiple/index'),
             localName: 'A',
           },
           C: {
             packageName: 'package',
             fileName: Path.normalize('package-multiple/lib/C'),
+            fileNameReferenced: Path.normalize('package-multiple/lib/C'),
             localName: 'C',
           },
         });
@@ -380,11 +398,13 @@ export * from './sub2/C'
           B: {
             packageName: 'package',
             fileName: Path.normalize('package-nested/lib/sub1/B'),
+            fileNameReferenced: Path.normalize('package-nested/lib/sub1/B'),
             localName: 'B',
           },
           C: {
             packageName: 'package',
             fileName: Path.normalize('package-nested/lib/sub2/C'),
+            fileNameReferenced: Path.normalize('package-nested/lib/sub2/C'),
             localName: 'C',
           },
         });

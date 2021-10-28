@@ -123,6 +123,7 @@ export class ParameterResolver {
       packageName: owningClass.packageName,
       localName: interfaceName,
       fileName: owningClass.fileName,
+      fileNameReferenced: owningClass.fileNameReferenced,
     });
 
     // If we find a class, or an interface that is implicitly a class, return the class reference directly
@@ -181,6 +182,7 @@ export class ParameterResolver {
             packageName: classOrInterface.packageName,
             localName: interfaceName,
             fileName: classOrInterface.fileName,
+            fileNameReferenced: classOrInterface.fileNameReferenced,
           });
           if (superInterface.type !== 'interface') {
             throw new Error(`Detected interface ${classOrInterface.localName} extending from a class ${interfaceName} in ${classReference.fileName}`);

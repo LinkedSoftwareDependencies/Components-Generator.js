@@ -52,8 +52,10 @@ export class ClassFinder {
       importedElements,
     } = await this.classLoader.loadClassElements(packageName, fileName);
     const exportDefinitions:
-    { named: ClassIndex<ClassReference>; unnamed: { packageName: string; fileName: string }[] } =
-      { named: {}, unnamed: []};
+    {
+      named: ClassIndex<ClassReference>;
+      unnamed: { packageName: string; fileName: string; fileNameReferenced: string }[];
+    } = { named: {}, unnamed: []};
 
     // Get all named exports
     for (const localName in exportedClasses) {
@@ -61,6 +63,7 @@ export class ClassFinder {
         packageName,
         localName,
         fileName,
+        fileNameReferenced: fileName,
       };
     }
     for (const localName in exportedInterfaces) {
@@ -68,6 +71,7 @@ export class ClassFinder {
         packageName,
         localName,
         fileName,
+        fileNameReferenced: fileName,
       };
     }
 
@@ -77,6 +81,7 @@ export class ClassFinder {
         packageName,
         localName,
         fileName: importedFileName,
+        fileNameReferenced: fileName,
       };
     }
 
@@ -90,6 +95,7 @@ export class ClassFinder {
             packageName,
             localName,
             fileName,
+            fileNameReferenced: fileName,
           };
           break;
         }
@@ -100,6 +106,7 @@ export class ClassFinder {
             packageName,
             localName,
             fileName,
+            fileNameReferenced: fileName,
           };
           break;
         }

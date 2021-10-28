@@ -26,7 +26,12 @@ describe('ParameterLoader', () => {
   });
 
   describe('loadConstructorFields', () => {
-    const clazz: ClassReference = { packageName: 'p', localName: 'A', fileName: 'file' };
+    const clazz: ClassReference = {
+      packageName: 'p',
+      localName: 'A',
+      fileName: 'file',
+      fileNameReferenced: 'fileReferenced',
+    };
 
     async function getConstructor(definition: string):
     Promise<{ constructor: MethodDefinition; parameterLoader: ParameterLoader }> {
@@ -338,7 +343,12 @@ export class A{
   });
 
   describe('loadInterfaceFields', () => {
-    const clazz: ClassReference = { packageName: 'p', localName: 'A', fileName: 'file' };
+    const clazz: ClassReference = {
+      packageName: 'p',
+      localName: 'A',
+      fileName: 'file',
+      fileNameReferenced: 'fileReferenced',
+    };
 
     async function getInterface(definition: string):
     Promise<{ iface: InterfaceLoaded; parameterLoader: ParameterLoader }> {
@@ -435,7 +445,12 @@ export interface A{
   });
 
   describe('loadHashFields', () => {
-    const clazz: ClassReference = { packageName: 'p', localName: 'A', fileName: 'file' };
+    const clazz: ClassReference = {
+      packageName: 'p',
+      localName: 'A',
+      fileName: 'file',
+      fileNameReferenced: 'fileReferenced',
+    };
 
     async function getHash(definition: string):
     Promise<{ hash: TSTypeLiteral; parameterLoader: ParameterLoader }> {
@@ -952,7 +967,12 @@ export interface A{
   });
 
   describe('getFieldRange', () => {
-    const clazz: ClassReference = { packageName: 'p', localName: 'A', fileName: 'file' };
+    const clazz: ClassReference = {
+      packageName: 'p',
+      localName: 'A',
+      fileName: 'file',
+      fileNameReferenced: 'fileReferenced',
+    };
 
     async function getFieldRange(fieldDeclaration: string, commentData: CommentData):
     Promise<ParameterRangeUnresolved> {
@@ -1302,7 +1322,12 @@ export interface A{
   });
 
   describe('getIndexDomain', () => {
-    const clazz: ClassReference = { packageName: 'p', localName: 'A', fileName: 'file' };
+    const clazz: ClassReference = {
+      packageName: 'p',
+      localName: 'A',
+      fileName: 'file',
+      fileNameReferenced: 'fileReferenced',
+    };
     let parameterLoader: ParameterLoader;
 
     async function getIndexDomain(fieldDeclaration: string):
@@ -1358,7 +1383,12 @@ export interface A{
   });
 
   describe('getIndexRange', () => {
-    const clazz: ClassReference = { packageName: 'p', localName: 'A', fileName: 'file' };
+    const clazz: ClassReference = {
+      packageName: 'p',
+      localName: 'A',
+      fileName: 'file',
+      fileNameReferenced: 'fileReferenced',
+    };
 
     async function getIndexRange(fieldDeclaration: string, commentData: CommentData):
     Promise<ParameterRangeUnresolved> {
@@ -1396,7 +1426,12 @@ export interface A{
   });
 
   describe('handleTypeOverride', () => {
-    const clazz: ClassReference = { packageName: 'p', localName: 'A', fileName: 'file' };
+    const clazz: ClassReference = {
+      packageName: 'p',
+      localName: 'A',
+      fileName: 'file',
+      fileNameReferenced: 'fileReferenced',
+    };
 
     async function handleTypeOverride(type: string): Promise<ParameterRangeUnresolved | undefined> {
       resolutionContext.contentsOverrides = {

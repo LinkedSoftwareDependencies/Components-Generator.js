@@ -452,7 +452,12 @@ export interface MyInterface extends IgnoredInterface{};
   });
 
   describe('resolveRangeInterface', () => {
-    const classReference: ClassReferenceLoaded = <any> { packageName: 'P', localName: 'A', fileName: 'A' };
+    const classReference: ClassReferenceLoaded = <any> {
+      packageName: 'p',
+      localName: 'A',
+      fileName: 'A',
+      fileNameReferenced: 'fileReferenced',
+    };
 
     it('should error on a non-existing interface', async() => {
       resolutionContext.contentsOverrides = {
@@ -582,7 +587,12 @@ interface IFaceB {
   });
 
   describe('isInterfaceImplicitClass', () => {
-    const classReference: ClassReference = { packageName: 'P', localName: 'A', fileName: 'A' };
+    const classReference: ClassReference = {
+      packageName: 'p',
+      localName: 'A',
+      fileName: 'A',
+      fileNameReferenced: 'fileReferenced',
+    };
 
     it('should be false on an empty interface', async() => {
       resolutionContext.contentsOverrides = {
@@ -645,7 +655,12 @@ export interface A{
   });
 
   describe('loadClassOrInterfacesChain', () => {
-    const classReference: ClassReference = { packageName: 'P', localName: 'A', fileName: 'A' };
+    const classReference: ClassReference = {
+      packageName: 'p',
+      localName: 'A',
+      fileName: 'A',
+      fileNameReferenced: 'fileReferenced',
+    };
 
     it('should error on a non-existing interface', async() => {
       resolutionContext.contentsOverrides = {
@@ -809,7 +824,12 @@ export class B{}
   });
 
   describe('getNestedFieldsFromInterface', () => {
-    const classReference: ClassReference = { packageName: 'P', localName: 'A', fileName: 'A' };
+    const classReference: ClassReference = {
+      packageName: 'p',
+      localName: 'A',
+      fileName: 'A',
+      fileNameReferenced: 'fileReferenced',
+    };
 
     it('should handle an empty interface', async() => {
       resolutionContext.contentsOverrides = {
@@ -1101,7 +1121,12 @@ export interface C{
   });
 
   describe('getNestedFieldsFromHash', () => {
-    const classReference: ClassReference = { packageName: 'P', localName: 'A', fileName: 'file' };
+    const classReference: ClassReference = {
+      packageName: 'P',
+      localName: 'A',
+      fileName: 'file',
+      fileNameReferenced: 'fileReferenced',
+    };
 
     async function getHash(definition: string, prefix = ''):
     Promise<{ hash: TSTypeLiteral; owningClass: ClassReferenceLoaded }> {

@@ -45,7 +45,10 @@ export class ComponentConstructor {
 
     for (const [ className, classReference ] of Object.entries(this.classAndInterfaceIndex)) {
       // Initialize or get context and component array
-      const path = this.getPathDestination(classReference.fileName);
+      const sourcePath = classReference.packageName !== this.packageMetadata.name ?
+        classReference.fileNameReferenced :
+        classReference.fileName;
+      const path = this.getPathDestination(sourcePath);
       if (!(path in definitions)) {
         definitions[path] = {
           '@context': Object.keys(this.packageMetadata.contexts),

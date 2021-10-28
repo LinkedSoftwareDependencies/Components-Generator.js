@@ -31,7 +31,12 @@ describe('ConstructorLoader', () => {
         'file.d.ts': `export class A{}`,
       };
       expect(parser.getConstructors({
-        A: await classIndexer.loadClassChain({ packageName: 'p', localName: 'A', fileName: 'file' }),
+        A: await classIndexer.loadClassChain({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }),
       })).toEqual({
         A: {
           parameters: [],
@@ -44,7 +49,12 @@ describe('ConstructorLoader', () => {
         'file.d.ts': `export interface A{}`,
       };
       expect(parser.getConstructors({
-        A: await classIndexer.loadClassChain({ packageName: 'p', localName: 'A', fileName: 'file' }),
+        A: await classIndexer.loadClassChain({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }),
       })).toEqual({
         A: {
           parameters: [],
@@ -74,8 +84,18 @@ export class B{
 `,
       };
       expect(parser.getConstructors({
-        A: await classIndexer.loadClassChain({ packageName: 'p', localName: 'A', fileName: 'A' }),
-        B: await classIndexer.loadClassChain({ packageName: 'p', localName: 'B', fileName: 'B' }),
+        A: await classIndexer.loadClassChain({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'A',
+          fileNameReferenced: 'fileReferenced',
+        }),
+        B: await classIndexer.loadClassChain({
+          packageName: 'p',
+          localName: 'B',
+          fileName: 'B',
+          fileNameReferenced: 'fileReferenced',
+        }),
       })).toEqual({
         A: {
           parameters: [
@@ -128,7 +148,12 @@ export class B{
         'file.d.ts': `export class A{}`,
       };
       expect(parser.getConstructor(
-        <ClassLoaded> await classIndexer.loadClassChain({ packageName: 'p', localName: 'A', fileName: 'file' }),
+        <ClassLoaded> await classIndexer.loadClassChain({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }),
       )).toBeUndefined();
     });
 
@@ -145,7 +170,12 @@ export class B extends C{}
         'C.d.ts': `export class C{}`,
       };
       expect(parser.getConstructor(
-        <ClassLoaded> await classIndexer.loadClassChain({ packageName: 'p', localName: 'A', fileName: 'file' }),
+        <ClassLoaded> await classIndexer.loadClassChain({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }),
       )).toBeUndefined();
     });
 
@@ -157,7 +187,12 @@ class A{
 }`,
       };
       expect(parser.getConstructor(
-        <ClassLoaded> await classIndexer.loadClassChain({ packageName: 'p', localName: 'A', fileName: 'file' }),
+        <ClassLoaded> await classIndexer.loadClassChain({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }),
       )).toMatchObject({
         computed: false,
         key: {
@@ -199,7 +234,12 @@ export class C{
 `,
       };
       expect(parser.getConstructor(
-        <ClassLoaded> await classIndexer.loadClassChain({ packageName: 'p', localName: 'A', fileName: 'file' }),
+        <ClassLoaded> await classIndexer.loadClassChain({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }),
       )).toMatchObject({
         computed: false,
         key: {

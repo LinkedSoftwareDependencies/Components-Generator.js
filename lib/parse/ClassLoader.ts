@@ -173,8 +173,11 @@ export class ClassLoader {
     // If we still haven't found the class, iterate over all export all's
     for (const subFile of exportedImportedAll) {
       try {
-        return await this.loadClassDeclaration({ localName: classReference.localName, ...subFile },
-          considerInterfaces);
+        return await this.loadClassDeclaration({
+          localName: classReference.localName,
+          ...subFile,
+          fileNameReferenced: classReference.fileName,
+        }, considerInterfaces);
       } catch {
         // Ignore class not found errors
       }
@@ -230,12 +233,13 @@ export class ClassLoader {
     currentPackageName: string,
     currentFilePath: string,
     importPath: string,
-  ): { packageName: string; fileName: string } {
+  ): { packageName: string; fileName: string; fileNameReferenced: string } {
     // Handle import paths within the current package
     if (importPath.startsWith('.')) {
       return {
         packageName: currentPackageName,
         fileName: Path.join(Path.dirname(currentFilePath), importPath),
+        fileNameReferenced: currentFilePath,
       };
     }
 
@@ -276,6 +280,7 @@ export class ClassLoader {
     return {
       packageName,
       fileName: remoteFilePath,
+      fileNameReferenced: currentFilePath,
     };
   }
 
@@ -289,7 +294,7 @@ export class ClassLoader {
     const exportedClasses: Record<string, ClassDeclaration> = {};
     const exportedInterfaces: Record<string, TSInterfaceDeclaration> = {};
     const exportedImportedElements: Record<string, ClassReference> = {};
-    const exportedImportedAll: { packageName: string; fileName: string }[] = [];
+    const exportedImportedAll: { packageName: string; fileName: string; fileNameReferenced: string }[] = [];
     const exportedUnknowns: Record<string, string> = {};
     const declaredClasses: Record<string, ClassDeclaration> = {};
     const declaredInterfaces: Record<string, TSInterfaceDeclaration> = {};
@@ -381,7 +386,7 @@ export interface ClassElements {
   // Elements that have been exported via `export { A as B } from "b"`
   exportedImportedElements: Record<string, ClassReference>;
   // Exports via `export * from "b"`
-  exportedImportedAll: { packageName: string; fileName: string }[];
+  exportedImportedAll: { packageName: string; fileName: string; fileNameReferenced: string }[];
   // Things that have been exported via `export {A as B}`, where the target is not known
   exportedUnknowns: Record<string, string>;
   // Classes that have been declared in a file via `declare class A`

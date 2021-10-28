@@ -56,6 +56,7 @@ export class ClassIndexer {
             packageName: classReferenceLoaded.packageName,
             localName: superClassName,
             fileName: classReferenceLoaded.fileName,
+            fileNameReferenced: classReferenceLoaded.fileNameReferenced,
           });
         } catch (error: unknown) {
           throw new Error(`Failed to load super class ${superClassName} of ${classReference.localName} in ${classReference.fileName}:\n${(<Error>error).message}`);
@@ -78,6 +79,7 @@ export class ClassIndexer {
               packageName: classReferenceLoaded.packageName,
               localName: interfaceName,
               fileName: classReferenceLoaded.fileName,
+              fileNameReferenced: classReferenceLoaded.fileNameReferenced,
             }, true);
           } catch (error: unknown) {
             // Ignore interfaces that we don't understand
@@ -99,6 +101,7 @@ export class ClassIndexer {
               packageName: classReferenceLoaded.packageName,
               localName: interfaceName,
               fileName: classReferenceLoaded.fileName,
+              fileNameReferenced: classReferenceLoaded.fileNameReferenced,
             });
           } catch (error: unknown) {
             // Ignore interfaces that we don't understand

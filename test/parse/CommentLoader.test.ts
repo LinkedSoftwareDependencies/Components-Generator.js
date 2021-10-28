@@ -6,7 +6,12 @@ import { ConstructorLoader } from '../../lib/parse/ConstructorLoader';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
 describe('CommentLoader', () => {
-  const clazz: ClassReference = { packageName: 'p', localName: 'A', fileName: 'file' };
+  const clazz: ClassReference = {
+    packageName: 'p',
+    localName: 'A',
+    fileName: 'file',
+    fileNameReferenced: 'fileReferenced',
+  };
   const resolutionContext = new ResolutionContextMocked({});
   let logger: any;
 
