@@ -1565,14 +1565,14 @@ describe('ComponentConstructor', () => {
       ]);
     });
 
-    it('should handle a parameter with default value', async() => {
+    it('should handle a parameter with default raw value', async() => {
       const parameters: ParameterDefinition[] = [];
       expect(await ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'field',
           range: { type: 'raw', value: 'boolean' },
-          default: 'abc',
+          default: { type: 'raw', value: 'abc' },
           required: true,
           unique: true,
           comment: 'Hi',
@@ -1589,14 +1589,14 @@ describe('ComponentConstructor', () => {
       ]);
     });
 
-    it('should handle a parameter with falsy default value', async() => {
+    it('should handle a parameter with default iri value', async() => {
       const parameters: ParameterDefinition[] = [];
       expect(await ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'field',
           range: { type: 'raw', value: 'boolean' },
-          default: '',
+          default: { type: 'iri', value: 'ex:abc' },
           required: true,
           unique: true,
           comment: 'Hi',
@@ -1606,7 +1606,7 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:a/b/file-param#MyClass_field',
           comment: 'Hi',
           range: 'xsd:boolean',
-          default: '',
+          default: { '@id': 'ex:abc' },
           required: true,
           unique: true,
         },

@@ -421,7 +421,7 @@ export interface A{
           name: 'fieldA',
           comment: 'Hi',
           range: { type: 'override', value: 'number' },
-          default: '3',
+          default: { type: 'raw', value: '3' },
           required: false,
           unique: false,
         },
@@ -536,7 +536,7 @@ export interface A{
           type: 'field',
           name: 'fieldA',
           comment: 'Hi',
-          default: '3',
+          default: { type: 'raw', value: '3' },
           range: { type: 'override', value: 'number' },
           required: false,
           unique: false,
@@ -704,7 +704,7 @@ export interface A{
           type: 'override',
           value: 'float',
         },
-        default: '1.0',
+        default: { type: 'raw', value: '1.0' },
         comment: 'Hi',
       });
     });
@@ -797,7 +797,7 @@ export interface A{
           type: 'override',
           value: 'string',
         },
-        default: '1.0',
+        default: { type: 'raw', value: '1.0' },
         comment: 'Hi',
       });
     });
@@ -1308,8 +1308,20 @@ export interface A{
       expect(loader.getFieldDefault({})).toBeUndefined();
     });
 
+    it('should be defined with empty default', () => {
+      expect(loader.getFieldDefault({ default: '' })).toEqual({ type: 'raw', value: '' });
+    });
+
     it('should be defined with default', () => {
-      expect(loader.getFieldDefault({ default: 'abc' })).toEqual('abc');
+      expect(loader.getFieldDefault({ default: 'abc' })).toEqual({ type: 'raw', value: 'abc' });
+    });
+
+    it('should be defined with default that almost is an iri', () => {
+      expect(loader.getFieldDefault({ default: '<abc' })).toEqual({ type: 'raw', value: '<abc' });
+    });
+
+    it('should be defined with default iri', () => {
+      expect(loader.getFieldDefault({ default: '<abc>' })).toEqual({ type: 'iri', value: 'abc' });
     });
   });
 

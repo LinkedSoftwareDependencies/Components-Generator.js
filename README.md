@@ -222,8 +222,8 @@ Using comment tags, arguments can be customized.
 | Tag | Action
 |---|---
 | `@ignored` | This field will be ignored.
-| `@default {<value>}` | The `default` attribute of the parameter will be set to `<value>` 
-| `@range {<type>}` | The `range` attribute of the parameter will be set to `<type>`. You can only use values that fit the type of field. Options: `json, boolean, int, integer, number, byte, long, float, decimal, double, string`. For example, if your field has the type `number`, you could explicitly mark it as a `float` by using `@range {float}`. See [the documentation](https://componentsjs.readthedocs.io/en/latest/configuration/components/parameters/).
+| `@default {value | <value>}` | The `default` attribute of the parameter will be set to `value`. If the value is wrapped in `<>`, then the value is considered an IRI. 
+| `@range {type}` | The `range` attribute of the parameter will be set to `type`. You can only use values that fit the type of field. Options: `json, boolean, int, integer, number, byte, long, float, decimal, double, string`. For example, if your field has the type `number`, you could explicitly mark it as a `float` by using `@range {float}`. See [the documentation](https://componentsjs.readthedocs.io/en/latest/configuration/components/parameters/).
 
 #### Examples
 

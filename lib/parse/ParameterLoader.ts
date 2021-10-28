@@ -298,8 +298,12 @@ export class ParameterLoader {
     } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
   }
 
-  public getFieldDefault(commentData: CommentData): string | undefined {
-    return commentData.default;
+  public getFieldDefault(commentData: CommentData): ParameterDefaultValue | undefined {
+    const value = commentData.default;
+    if (value && (value.startsWith('<') && value.endsWith('>'))) {
+      return { type: 'iri', value: value.slice(1, -1) };
+    }
+    return value !== undefined ? { type: 'raw', value } : value;
   }
 
   public getFieldComment(commentData: CommentData): string | undefined {
@@ -416,7 +420,7 @@ export interface ParameterDataField<R> {
   /**
    * The default value.
    */
-  default?: string;
+  default?: ParameterDefaultValue;
   /**
    * The human-readable description of this parameter.
    */
@@ -439,11 +443,16 @@ export interface ParameterDataIndex<R> {
   /**
    * The default value.
    */
-  default?: string;
+  default?: ParameterDefaultValue;
   /**
    * The human-readable description of this parameter.
    */
   comment?: string;
+}
+
+export interface ParameterDefaultValue {
+  type: 'raw' | 'iri';
+  value: string;
 }
 
 export type ParameterRangeUnresolved = {
