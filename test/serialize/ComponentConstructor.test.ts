@@ -1564,6 +1564,54 @@ describe('ComponentConstructor', () => {
         },
       ]);
     });
+
+    it('should handle a parameter with default value', async() => {
+      const parameters: ParameterDefinition[] = [];
+      expect(await ctor
+        .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
+          type: 'field',
+          name: 'field',
+          range: { type: 'raw', value: 'boolean' },
+          default: 'abc',
+          required: true,
+          unique: true,
+          comment: 'Hi',
+        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
+      expect(parameters).toEqual([
+        {
+          '@id': 'mp:a/b/file-param#MyClass_field',
+          comment: 'Hi',
+          range: 'xsd:boolean',
+          default: 'abc',
+          required: true,
+          unique: true,
+        },
+      ]);
+    });
+
+    it('should handle a parameter with falsy default value', async() => {
+      const parameters: ParameterDefinition[] = [];
+      expect(await ctor
+        .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
+          type: 'field',
+          name: 'field',
+          range: { type: 'raw', value: 'boolean' },
+          default: '',
+          required: true,
+          unique: true,
+          comment: 'Hi',
+        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
+      expect(parameters).toEqual([
+        {
+          '@id': 'mp:a/b/file-param#MyClass_field',
+          comment: 'Hi',
+          range: 'xsd:boolean',
+          default: '',
+          required: true,
+          unique: true,
+        },
+      ]);
+    });
   });
 
   describe('constructFieldDefinitionNested', () => {

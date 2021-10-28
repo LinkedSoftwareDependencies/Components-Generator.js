@@ -411,7 +411,7 @@ export interface A{
   /**
    * Hi
    * @range {number}
-   * @default: {3}
+   * @default {3}
    */
   fieldA?: boolean[];
 }`);
@@ -421,6 +421,7 @@ export interface A{
           name: 'fieldA',
           comment: 'Hi',
           range: { type: 'override', value: 'number' },
+          default: '3',
           required: false,
           unique: false,
         },
@@ -526,7 +527,7 @@ export interface A{
   /**
    * Hi
    * @range {number}
-   * @default: {3}
+   * @default {3}
    */
   fieldA?: boolean[];
 }`);
@@ -535,6 +536,7 @@ export interface A{
           type: 'field',
           name: 'fieldA',
           comment: 'Hi',
+          default: '3',
           range: { type: 'override', value: 'number' },
           required: false,
           unique: false,

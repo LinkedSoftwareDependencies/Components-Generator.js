@@ -353,6 +353,7 @@ export class ComponentConstructor {
     const param: ParameterDefinition = {
       '@id': fieldId,
       range: await this.constructParameterRange(parameterData.range, context, externalContextsCallback, fieldId),
+      ...'default' in parameterData ? { default: parameterData.default } : {},
     };
 
     // Fill in optional fields
