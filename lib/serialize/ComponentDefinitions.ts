@@ -40,7 +40,7 @@ export type ParameterDefinitionRange = string | { '@id': string; parameters: Par
 } | undefined;
 
 export type ConstructorArgumentDefinition = string | { '@id': string } | {
-  '@id'?: string;
+  '@id': string;
   extends?: string;
   fields?: ConstructorFieldDefinition[];
   elements?: ConstructorElementDefinition[];

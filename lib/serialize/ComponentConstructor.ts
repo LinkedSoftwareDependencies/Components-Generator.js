@@ -346,7 +346,7 @@ export class ComponentConstructor {
           scope,
         ));
       }
-      return { fields };
+      return { '@id': `${fieldId}__constructorArgument`, fields };
     }
 
     // For all other range types, create a parameter and return its parameter id.
