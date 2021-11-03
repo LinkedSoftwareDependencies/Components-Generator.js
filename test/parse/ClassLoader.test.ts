@@ -2,11 +2,13 @@ import * as Path from 'path';
 import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
+import { CommentLoader } from '../../lib/parse/CommentLoader';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
 describe('ClassLoader', () => {
   let resolutionContext: ResolutionContextMocked;
   let logger: any;
+  let commentLoader: CommentLoader;
   let loader: ClassLoader;
 
   beforeEach(() => {
@@ -14,7 +16,8 @@ describe('ClassLoader', () => {
     logger = {
       debug: jest.fn(),
     };
-    loader = new ClassLoader({ resolutionContext, logger });
+    commentLoader = new CommentLoader();
+    loader = new ClassLoader({ resolutionContext, logger, commentLoader });
   });
 
   describe('getSuperClass', () => {
@@ -126,6 +129,7 @@ describe('ClassLoader', () => {
             'file.d.ts': ``,
           }),
           logger,
+          commentLoader,
         });
         await expect(loader.loadClassDeclaration({
           packageName: 'p',
@@ -148,6 +152,7 @@ export * from './lib/D';
 `,
           }),
           logger,
+          commentLoader,
         });
         await expect(loader.loadClassDeclaration({
           packageName: 'p',
@@ -166,6 +171,7 @@ declare interface A{};
 `,
           }),
           logger,
+          commentLoader,
         });
         await expect(loader.loadClassDeclaration({
           packageName: 'p',
@@ -182,6 +188,7 @@ declare interface A{};
             'file.d.ts': `export class A{}`,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -205,6 +212,7 @@ declare interface A{};
             'file.d.ts': `declare class A{}`,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -229,6 +237,7 @@ declare interface A{};
             'file2.d.ts': `export class B{}`,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -253,6 +262,7 @@ declare interface A{};
             'file2.d.ts': `export class B{}`,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -277,6 +287,7 @@ declare interface A{};
             'file2.d.ts': `export class B{}`,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -305,6 +316,7 @@ export * from './file3'
             'file2.d.ts': `export class B{}`,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -331,6 +343,7 @@ export * from './file3'
             'file4.d.ts': `export class B{}`,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -356,6 +369,7 @@ export * from './file3'
             'file.d.ts': ``,
           }),
           logger,
+          commentLoader,
         });
         await expect(loader.loadClassDeclaration({
           packageName: 'p',
@@ -378,6 +392,7 @@ export * from './lib/D';
 `,
           }),
           logger,
+          commentLoader,
         });
         await expect(loader.loadClassDeclaration({
           packageName: 'p',
@@ -394,6 +409,7 @@ export * from './lib/D';
             'file.d.ts': `export class A{}`,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -417,6 +433,7 @@ export * from './lib/D';
             'file.d.ts': `declare class A{}`,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -441,6 +458,7 @@ export * from './lib/D';
             'file2.d.ts': `export class B{}`,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -465,6 +483,7 @@ export * from './lib/D';
             'file2.d.ts': `export class B{}`,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -489,6 +508,7 @@ export * from './lib/D';
             'file2.d.ts': `export class B{}`,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -517,6 +537,7 @@ export * from './file3'
             'file2.d.ts': `export class B{}`,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -543,6 +564,7 @@ export * from './file3'
             'file4.d.ts': `export class B{}`,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -566,6 +588,7 @@ export * from './file3'
             'file.d.ts': `export interface A{}`,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -589,6 +612,7 @@ export * from './file3'
             'file.d.ts': `declare interface A{}`,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -613,6 +637,7 @@ export * from './file3'
             'file2.d.ts': `export interface B{}`,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -637,6 +662,7 @@ export * from './file3'
             'file2.d.ts': `export interface B{}`,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -661,6 +687,7 @@ export * from './file3'
             'file2.d.ts': `export interface B{}`,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -689,6 +716,7 @@ export * from './file3'
             'file2.d.ts': `export interface B{}`,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -715,6 +743,7 @@ export * from './file3'
             'file4.d.ts': `export interface B{}`,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -743,6 +772,7 @@ export class A{}
 `,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -772,6 +802,7 @@ declare class A{}
 `,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -801,6 +832,7 @@ export interface A{}
 `,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -830,6 +862,7 @@ declare interface A{}
 `,
           }),
           logger,
+          commentLoader,
         });
         expect(await loader.loadClassDeclaration({
           packageName: 'p',
@@ -855,6 +888,7 @@ declare interface A{}
           'file.d.ts': `export abstract class A{}`,
         }),
         logger,
+        commentLoader,
       });
       expect(await loader.loadClassDeclaration({
         packageName: 'p',
@@ -879,6 +913,7 @@ declare interface A{}
           'file.d.ts': `declare abstract class A{}`,
         }),
         logger,
+        commentLoader,
       });
       expect(await loader.loadClassDeclaration({
         packageName: 'p',
@@ -903,6 +938,7 @@ declare interface A{}
           'file.d.ts': `declare class A<T extends string>{}`,
         }),
         logger,
+        commentLoader,
       });
       expect(await loader.loadClassDeclaration({
         packageName: 'p',
@@ -929,6 +965,7 @@ declare interface A{}
           'file.d.ts': `declare class A<T>{}`,
         }),
         logger,
+        commentLoader,
       });
       expect(await loader.loadClassDeclaration({
         packageName: 'p',
@@ -955,6 +992,7 @@ declare interface A{}
           'file.d.ts': `declare class A<T extends string = number>{}`,
         }),
         logger,
+        commentLoader,
       });
       expect(await loader.loadClassDeclaration({
         packageName: 'p',
@@ -981,6 +1019,7 @@ declare interface A{}
           'file.d.ts': `export class A<T extends string>{}`,
         }),
         logger,
+        commentLoader,
       });
       expect(await loader.loadClassDeclaration({
         packageName: 'p',
@@ -1007,6 +1046,7 @@ declare interface A{}
           'file.d.ts': `declare interface A<T extends string>{}`,
         }),
         logger,
+        commentLoader,
       });
       expect(await loader.loadClassDeclaration({
         packageName: 'p',
@@ -1033,6 +1073,7 @@ declare interface A{}
           'file.d.ts': `export interface A<T extends string>{}`,
         }),
         logger,
+        commentLoader,
       });
       expect(await loader.loadClassDeclaration({
         packageName: 'p',
@@ -1059,6 +1100,7 @@ declare interface A{}
           'file.d.ts': `declare class A<T extends string, U extends MyClass, V extends number>{}`,
         }),
         logger,
+        commentLoader,
       });
       expect(await loader.loadClassDeclaration({
         packageName: 'p',

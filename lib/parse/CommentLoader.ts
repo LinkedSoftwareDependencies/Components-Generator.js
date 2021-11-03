@@ -1,5 +1,5 @@
-import type { ClassDeclaration, TSInterfaceDeclaration,
-  MethodDefinition, TSPropertySignature, TSIndexSignature, BaseNode } from '@typescript-eslint/types/dist/ts-estree';
+import type { MethodDefinition, TSPropertySignature,
+  TSIndexSignature, BaseNode } from '@typescript-eslint/types/dist/ts-estree';
 import * as commentParse from 'comment-parser';
 import type { ClassReference, ClassReferenceLoaded } from './ClassIndex';
 import type { ParameterRangeUnresolved } from './ParameterLoader';
@@ -8,21 +8,19 @@ import type { ParameterRangeUnresolved } from './ParameterLoader';
  * Loads comments from fields in a given class.
  */
 export class CommentLoader {
-  private readonly classLoaded: ClassReferenceLoaded;
-
-  public constructor(args: CommentLoaderArgs) {
-    this.classLoaded = args.classLoaded;
-  }
-
   /**
    * Extract comment data from the given constructor.
+   * @param classLoaded The loaded class in which the constructor is defined.
    * @param constructor A constructor.
    */
-  public getCommentDataFromConstructor(constructor: MethodDefinition): ConstructorCommentData {
+  public getCommentDataFromConstructor(
+    classLoaded: ClassReferenceLoaded,
+    constructor: MethodDefinition,
+  ): ConstructorCommentData {
     // Get the constructor comment
-    const comment = this.getCommentRaw(constructor);
+    const comment = this.getCommentRaw(classLoaded, constructor);
     if (comment) {
-      return CommentLoader.getCommentDataFromConstructorComment(comment, this.classLoaded);
+      return CommentLoader.getCommentDataFromConstructorComment(comment, classLoaded);
     }
 
     return {};
@@ -49,24 +47,28 @@ export class CommentLoader {
 
   /**
    * Extract comment data from the given field.
+   * @param classLoaded The loaded class in which the field is defined.
    * @param field A field.
    */
-  public getCommentDataFromField(field: TSPropertySignature | TSIndexSignature): CommentData {
-    const comment = this.getCommentRaw(field);
+  public getCommentDataFromField(
+    classLoaded: ClassReferenceLoaded,
+    field: TSPropertySignature | TSIndexSignature,
+  ): CommentData {
+    const comment = this.getCommentRaw(classLoaded, field);
     if (comment) {
-      return CommentLoader.getCommentDataFromComment(comment, this.classLoaded);
+      return CommentLoader.getCommentDataFromComment(comment, classLoaded);
     }
     return {};
   }
 
   /**
    * Extract comment data from the given class.
-   * @param clazz A class or interface.
+   * @param classLoaded The loaded class or interface.
    */
-  public getCommentDataFromClassOrInterface(clazz: ClassDeclaration | TSInterfaceDeclaration): CommentData {
-    const comment = this.getCommentRaw(clazz);
+  public getCommentDataFromClassOrInterface(classLoaded: ClassReferenceLoaded): CommentData {
+    const comment = this.getCommentRaw(classLoaded, classLoaded.declaration);
     if (comment) {
-      return CommentLoader.getCommentDataFromComment(comment, this.classLoaded);
+      return CommentLoader.getCommentDataFromComment(comment, classLoaded);
     }
     return {};
   }
@@ -125,20 +127,17 @@ export class CommentLoader {
 
   /**
    * Get the comment string from the given node.
+   * @param classLoaded The loaded class in which the field is defined.
    * @param node A node, such as a field or constructor.
    */
-  public getCommentRaw(node: BaseNode): string | undefined {
+  public getCommentRaw(classLoaded: ClassReferenceLoaded, node: BaseNode): string | undefined {
     const line = node.loc.start.line;
-    for (const comment of this.classLoaded.ast.comments || []) {
+    for (const comment of classLoaded.ast.comments || []) {
       if (comment.loc.end.line === line - 1) {
         return `/*${comment.value}*/`;
       }
     }
   }
-}
-
-export interface CommentLoaderArgs {
-  classLoaded: ClassReferenceLoaded;
 }
 
 export type ConstructorCommentData = Record<string, CommentData>;

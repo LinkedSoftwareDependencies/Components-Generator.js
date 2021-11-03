@@ -2,6 +2,7 @@ import type { ClassDeclaration, MethodDefinition } from '@typescript-eslint/type
 import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import type { ClassIndex, ClassLoaded, ClassReferenceLoaded } from './ClassIndex';
+import type { CommentLoader } from './CommentLoader';
 import type { ParameterDataField, ParameterRangeUnresolved } from './ParameterLoader';
 import { ParameterLoader } from './ParameterLoader';
 
@@ -9,6 +10,12 @@ import { ParameterLoader } from './ParameterLoader';
  * Loads the constructor data of classes.
  */
 export class ConstructorLoader {
+  private readonly commentLoader: CommentLoader;
+
+  public constructor(args: ConstructorLoaderArgs) {
+    this.commentLoader = args.commentLoader;
+  }
+
   /**
    * Create a class index containing all constructor data from the classes in the given index.
    * @param classIndex An index of loaded classes.
@@ -20,7 +27,7 @@ export class ConstructorLoader {
     for (const [ className, classLoaded ] of Object.entries(classIndex)) {
       const constructor = classLoaded.type === 'class' ? this.getConstructor(classLoaded) : undefined;
       if (constructor) {
-        const parameterLoader = new ParameterLoader({ classLoaded });
+        const parameterLoader = new ParameterLoader({ classLoaded, commentLoader: this.commentLoader });
         constructorDataIndex[className] = parameterLoader.loadConstructorFields(constructor);
       } else {
         constructorDataIndex[className] = { parameters: []};
@@ -87,6 +94,10 @@ export class ConstructorLoader {
     }
     throw new Error(`Could not find class ${className} in ${fileName}`);
   }
+}
+
+export interface ConstructorLoaderArgs {
+  commentLoader: CommentLoader;
 }
 
 /**

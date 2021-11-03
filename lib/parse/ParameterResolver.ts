@@ -2,6 +2,7 @@ import type { TSTypeLiteral } from '@typescript-eslint/types/dist/ts-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import type { ClassIndex, ClassLoaded, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
 import type { ClassLoader } from './ClassLoader';
+import type { CommentLoader } from './CommentLoader';
 import type { ConstructorData } from './ConstructorLoader';
 import type { ParameterData,
   ParameterDataField,
@@ -13,10 +14,12 @@ import {
 
 export class ParameterResolver {
   private readonly classLoader: ClassLoader;
+  private readonly commentLoader: CommentLoader;
   private readonly ignoreClasses: Record<string, boolean>;
 
   public constructor(args: ParameterResolverArgs) {
     this.classLoader = args.classLoader;
+    this.commentLoader = args.commentLoader;
     this.ignoreClasses = args.ignoreClasses;
   }
 
@@ -198,7 +201,7 @@ export class ParameterResolver {
    * @param iface A loaded interface.
    */
   public async getNestedFieldsFromInterface(iface: InterfaceLoaded): Promise<ParameterData<ParameterRangeResolved>[]> {
-    const parameterLoader = new ParameterLoader({ classLoaded: iface });
+    const parameterLoader = new ParameterLoader({ classLoaded: iface, commentLoader: this.commentLoader });
     const unresolvedFields = parameterLoader.loadInterfaceFields(iface);
     return this.resolveParameterData(unresolvedFields, iface);
   }
@@ -210,13 +213,14 @@ export class ParameterResolver {
    */
   public async getNestedFieldsFromHash(hash: TSTypeLiteral, owningClass: ClassReferenceLoaded):
   Promise<ParameterData<ParameterRangeResolved>[]> {
-    const parameterLoader = new ParameterLoader({ classLoaded: owningClass });
-    const unresolvedFields = parameterLoader.loadHashFields(hash);
+    const parameterLoader = new ParameterLoader({ classLoaded: owningClass, commentLoader: this.commentLoader });
+    const unresolvedFields = parameterLoader.loadHashFields(owningClass, hash);
     return this.resolveParameterData(unresolvedFields, owningClass);
   }
 }
 
 export interface ParameterResolverArgs {
   classLoader: ClassLoader;
+  commentLoader: CommentLoader;
   ignoreClasses: Record<string, boolean>;
 }

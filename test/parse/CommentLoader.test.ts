@@ -23,11 +23,11 @@ describe('CommentLoader', () => {
 
   describe('getCommentDataFromField', () => {
     async function createLoader() {
-      const classLoader = new ClassLoader({ resolutionContext, logger });
+      const loader = new CommentLoader();
+      const classLoader = new ClassLoader({ resolutionContext, logger, commentLoader: loader });
       const iface = await classLoader.loadClassDeclaration(clazz, true);
-      const field = <any> iface.declaration.body.body[0];
-      const loader = new CommentLoader({ classLoaded: iface });
-      return { loader, field };
+      const field: any = iface.declaration.body.body[0];
+      return { loader, field, iface };
     }
 
     it('should be empty for no comment', async() => {
@@ -36,8 +36,8 @@ describe('CommentLoader', () => {
   fieldA: boolean;
 }`,
       };
-      const { loader, field } = await createLoader();
-      expect(loader.getCommentDataFromField(field)).toEqual({});
+      const { loader, field, iface } = await createLoader();
+      expect(loader.getCommentDataFromField(iface, field)).toEqual({});
     });
 
     it('should be defined for a simple comment', async() => {
@@ -49,8 +49,8 @@ describe('CommentLoader', () => {
   fieldA: boolean;
 }`,
       };
-      const { loader, field } = await createLoader();
-      expect(loader.getCommentDataFromField(field)).toEqual({
+      const { loader, field, iface } = await createLoader();
+      expect(loader.getCommentDataFromField(iface, field)).toEqual({
         description: 'This is a field!',
       });
     });
@@ -66,8 +66,8 @@ describe('CommentLoader', () => {
   fieldA: boolean;
 }`,
       };
-      const { loader, field } = await createLoader();
-      expect(loader.getCommentDataFromField(field)).toEqual({
+      const { loader, field, iface } = await createLoader();
+      expect(loader.getCommentDataFromField(iface, field)).toEqual({
         description: 'This is a field! And this is a new line. And another one.',
       });
     });
@@ -84,8 +84,8 @@ describe('CommentLoader', () => {
   fieldA: boolean;
 }`,
       };
-      const { loader, field } = await createLoader();
-      expect(loader.getCommentDataFromField(field)).toEqual({
+      const { loader, field, iface } = await createLoader();
+      expect(loader.getCommentDataFromField(iface, field)).toEqual({
         default: 'true',
         description: 'This is a field!',
         ignored: true,
@@ -237,14 +237,12 @@ describe('CommentLoader', () => {
 
   describe('getCommentRaw', () => {
     async function createLoader() {
-      const classLoader = new ClassLoader({ resolutionContext, logger });
+      const loader = new CommentLoader();
+      const classLoader = new ClassLoader({ resolutionContext, logger, commentLoader: loader });
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
-      const constructorLoader = new ConstructorLoader();
+      const constructorLoader = new ConstructorLoader({ commentLoader: loader });
       const field = <any> (<MethodDefinition> constructorLoader.getConstructor(classLoaded)).value.params[0];
-
-      const loader = new CommentLoader({ classLoaded });
-
-      return { loader, field };
+      return { loader, field, classLoaded };
     }
 
     it('should be undefined for no comment', async() => {
@@ -253,8 +251,8 @@ describe('CommentLoader', () => {
   constructor(fieldA: boolean) {}
 }`,
       };
-      const { loader, field } = await createLoader();
-      expect(loader.getCommentRaw(field)).toBeUndefined();
+      const { loader, field, classLoaded } = await createLoader();
+      expect(loader.getCommentRaw(classLoaded, field)).toBeUndefined();
     });
 
     it('should be undefined for an unrelated comment', async() => {
@@ -267,16 +265,15 @@ describe('CommentLoader', () => {
   constructor(fieldA: boolean) {}
 }`,
       };
-      const { loader, field } = await createLoader();
-      expect(loader.getCommentRaw(field)).toBeUndefined();
+      const { loader, field, classLoaded } = await createLoader();
+      expect(loader.getCommentRaw(classLoaded, field)).toBeUndefined();
     });
 
     it('should be undefined for no comments in ast', async() => {
-      expect(new CommentLoader(<any> {
-        classLoaded: {
-          ast: {},
-        },
-      }).getCommentRaw(<any> { loc: { start: { line: 0 }}})).toBeUndefined();
+      expect(new CommentLoader().getCommentRaw(
+        <any> { ast: {}},
+        <any> { loc: { start: { line: 0 }}},
+      )).toBeUndefined();
     });
 
     it('should be defined for a constructor comment', async() => {
@@ -288,8 +285,8 @@ describe('CommentLoader', () => {
   constructor(fieldA: boolean) {}
 }`,
       };
-      const { loader, field } = await createLoader();
-      expect(loader.getCommentRaw(field)).toEqual('/**\n   * This is a comment!\n   */');
+      const { loader, field, classLoaded } = await createLoader();
+      expect(loader.getCommentRaw(classLoaded, field)).toEqual('/**\n   * This is a comment!\n   */');
     });
   });
 });

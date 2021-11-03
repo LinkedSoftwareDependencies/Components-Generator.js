@@ -1,6 +1,7 @@
 import * as Path from 'path';
 import { ClassFinder } from '../../lib/parse/ClassFinder';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
+import { CommentLoader } from '../../lib/parse/CommentLoader';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
 describe('ClassFinder', () => {
@@ -12,7 +13,8 @@ describe('ClassFinder', () => {
     logger = {
       debug: jest.fn(),
     };
-    parser = new ClassFinder({ classLoader: new ClassLoader({ resolutionContext, logger }) });
+    const commentLoader = new CommentLoader();
+    parser = new ClassFinder({ classLoader: new ClassLoader({ resolutionContext, logger, commentLoader }) });
   });
 
   describe('getFileExports', () => {

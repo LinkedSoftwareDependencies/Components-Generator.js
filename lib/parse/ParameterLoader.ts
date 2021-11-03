@@ -11,8 +11,8 @@ import type {
 } from '@typescript-eslint/types/dist/ts-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import type { ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
-import type { CommentData, ConstructorCommentData } from './CommentLoader';
-import { CommentLoader } from './CommentLoader';
+import type { CommentData, ConstructorCommentData, CommentLoader } from './CommentLoader';
+
 import type { ConstructorData } from './ConstructorLoader';
 import type { TypeReferenceOverride } from './typereferenceoverride/TypeReferenceOverride';
 import { TypeReferenceOverrideAliasRecord } from './typereferenceoverride/TypeReferenceOverrideAliasRecord';
@@ -30,7 +30,7 @@ export class ParameterLoader {
 
   public constructor(args: ParameterLoaderArgs) {
     this.classLoaded = args.classLoaded;
-    this.commentLoader = new CommentLoader({ classLoaded: this.classLoaded });
+    this.commentLoader = args.commentLoader;
   }
 
   /**
@@ -39,7 +39,7 @@ export class ParameterLoader {
    */
   public loadConstructorFields(constructor: MethodDefinition): ConstructorData<ParameterRangeUnresolved> {
     // Load the constructor comment
-    const constructorCommentData = this.commentLoader.getCommentDataFromConstructor(constructor);
+    const constructorCommentData = this.commentLoader.getCommentDataFromConstructor(this.classLoaded, constructor);
 
     // Load all constructor parameters
     const parameters: ParameterDataField<ParameterRangeUnresolved>[] = [];
@@ -78,36 +78,49 @@ export class ParameterLoader {
    * @param iface An interface
    */
   public loadInterfaceFields(iface: InterfaceLoaded): ParameterData<ParameterRangeUnresolved>[] {
-    return <ParameterData<ParameterRangeUnresolved>[]> iface.declaration.body.body
-      .map(field => this.loadTypeElementField(field))
+    let fields: ParameterData<ParameterRangeUnresolved>[] = <ParameterData<ParameterRangeUnresolved>[]> iface
+      .declaration.body.body
+      .map(field => this.loadTypeElementField(iface, field))
       .filter(Boolean);
+    if (iface.superInterfaces && iface.superInterfaces.length > 0) {
+      fields = fields.concat(...iface.superInterfaces.map(superIface => this.loadInterfaceFields(superIface)));
+    }
+    return fields;
   }
 
   /**
    * Load all parameter data from all fields in the given hash.
+   * @param classLoaded The loaded class in which the field is defined.
    * @param hash An hash element.
    */
-  public loadHashFields(hash: TSTypeLiteral): ParameterData<ParameterRangeUnresolved>[] {
+  public loadHashFields(
+    classLoaded: ClassReferenceLoaded,
+    hash: TSTypeLiteral,
+  ): ParameterData<ParameterRangeUnresolved>[] {
     return <ParameterData<ParameterRangeUnresolved>[]> hash.members
-      .map(field => this.loadTypeElementField(field))
+      .map(field => this.loadTypeElementField(classLoaded, field))
       .filter(Boolean);
   }
 
   /**
    * Load the parameter data from the given type element.
+   * @param classLoaded The loaded class in which the field is defined.
    * @param typeElement A type element, such as an interface or hash field.
    */
-  public loadTypeElementField(typeElement: TypeElement): ParameterData<ParameterRangeUnresolved> | undefined {
+  public loadTypeElementField(
+    classLoaded: ClassReferenceLoaded,
+    typeElement: TypeElement,
+  ): ParameterData<ParameterRangeUnresolved> | undefined {
     let commentData;
     switch (typeElement.type) {
       case AST_NODE_TYPES.TSPropertySignature:
-        commentData = this.commentLoader.getCommentDataFromField(typeElement);
+        commentData = this.commentLoader.getCommentDataFromField(classLoaded, typeElement);
         if (!commentData.ignored) {
           return this.loadField(typeElement, commentData);
         }
         return;
       case AST_NODE_TYPES.TSIndexSignature:
-        commentData = this.commentLoader.getCommentDataFromField(typeElement);
+        commentData = this.commentLoader.getCommentDataFromField(classLoaded, typeElement);
         if (!commentData.ignored) {
           return this.loadIndex(typeElement, commentData);
         }
@@ -391,6 +404,7 @@ export class ParameterLoader {
 
 export interface ParameterLoaderArgs {
   classLoaded: ClassReferenceLoaded;
+  commentLoader: CommentLoader;
 }
 
 export type ParameterData<R> = ParameterDataField<R> | ParameterDataIndex<R>;

@@ -2,21 +2,24 @@ import { ClassFinder } from '../../lib/parse/ClassFinder';
 import type { ClassLoaded } from '../../lib/parse/ClassIndex';
 import { ClassIndexer } from '../../lib/parse/ClassIndexer';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
+import { CommentLoader } from '../../lib/parse/CommentLoader';
 import { ConstructorLoader } from '../../lib/parse/ConstructorLoader';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
 describe('ConstructorLoader', () => {
   const resolutionContext = new ResolutionContextMocked({});
   let logger: any;
+  let commentLoader: CommentLoader;
   let parser: ConstructorLoader;
   let classIndexer: ClassIndexer;
 
   beforeEach(() => {
-    parser = new ConstructorLoader();
+    commentLoader = new CommentLoader();
+    parser = new ConstructorLoader({ commentLoader });
     logger = {
       debug: jest.fn(),
     };
-    const classLoader = new ClassLoader({ resolutionContext, logger });
+    const classLoader = new ClassLoader({ resolutionContext, logger, commentLoader });
     classIndexer = new ClassIndexer({
       classLoader,
       classFinder: new ClassFinder({ classLoader }),

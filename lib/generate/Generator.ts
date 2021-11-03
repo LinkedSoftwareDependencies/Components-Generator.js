@@ -5,6 +5,7 @@ import { ContextParser } from 'jsonld-context-parser';
 import { ClassFinder } from '../parse/ClassFinder';
 import { ClassIndexer } from '../parse/ClassIndexer';
 import { ClassLoader } from '../parse/ClassLoader';
+import { CommentLoader } from '../parse/CommentLoader';
 import { ConstructorLoader } from '../parse/ConstructorLoader';
 import { PackageMetadataLoader } from '../parse/PackageMetadataLoader';
 import { ParameterResolver } from '../parse/ParameterResolver';
@@ -45,7 +46,8 @@ export class Generator {
       prefix: this.prefix })
       .load(this.pathDestination.packageRootDirectory);
 
-    const classLoader = new ClassLoader({ resolutionContext: this.resolutionContext, logger });
+    const commentLoader = new CommentLoader();
+    const classLoader = new ClassLoader({ resolutionContext: this.resolutionContext, logger, commentLoader });
     const classFinder = new ClassFinder({ classLoader });
     const classIndexer = new ClassIndexer({ classLoader, classFinder, ignoreClasses: this.ignoreClasses, logger });
 
@@ -54,8 +56,8 @@ export class Generator {
     const classAndInterfaceIndex = await classIndexer.createIndex(packageExports);
 
     // Load constructor data
-    const constructorsUnresolved = new ConstructorLoader().getConstructors(classAndInterfaceIndex);
-    const constructors = await new ParameterResolver({ classLoader, ignoreClasses: this.ignoreClasses })
+    const constructorsUnresolved = new ConstructorLoader({ commentLoader }).getConstructors(classAndInterfaceIndex);
+    const constructors = await new ParameterResolver({ classLoader, commentLoader, ignoreClasses: this.ignoreClasses })
       .resolveAllConstructorParameters(constructorsUnresolved, classAndInterfaceIndex);
 
     // Load external components

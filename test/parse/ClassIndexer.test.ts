@@ -1,6 +1,7 @@
 import { ClassFinder } from '../../lib/parse/ClassFinder';
 import { ClassIndexer } from '../../lib/parse/ClassIndexer';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
+import { CommentLoader } from '../../lib/parse/CommentLoader';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
 describe('ClassIndexer', () => {
@@ -16,7 +17,8 @@ describe('ClassIndexer', () => {
     logger = {
       debug: jest.fn(),
     };
-    classLoader = new ClassLoader({ resolutionContext, logger });
+    const commentLoader = new CommentLoader();
+    classLoader = new ClassLoader({ resolutionContext, logger, commentLoader });
     classFinder = new ClassFinder({ classLoader });
     indexer = new ClassIndexer({ classLoader, classFinder, ignoreClasses, logger });
   });

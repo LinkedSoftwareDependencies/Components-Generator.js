@@ -5,7 +5,7 @@ import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import type { Logger } from 'winston';
 import type { ResolutionContext } from '../resolution/ResolutionContext';
 import type { ClassLoaded, ClassReference, ClassReferenceLoaded, GenericTypes, InterfaceLoaded } from './ClassIndex';
-import { CommentLoader } from './CommentLoader';
+import type { CommentLoader } from './CommentLoader';
 
 /**
  * Loads typescript classes from class references.
@@ -13,10 +13,12 @@ import { CommentLoader } from './CommentLoader';
 export class ClassLoader {
   private readonly resolutionContext: ResolutionContext;
   private readonly logger: Logger;
+  private readonly commentLoader: CommentLoader;
 
   public constructor(args: ClassLoaderArgs) {
     this.resolutionContext = args.resolutionContext;
     this.logger = args.logger;
+    this.commentLoader = args.commentLoader;
   }
 
   /**
@@ -205,8 +207,7 @@ export class ClassLoader {
    * @param classLoaded A loaded class or interface.
    */
   public enhanceLoadedWithComment(classLoaded: ClassReferenceLoaded): ClassReferenceLoaded {
-    const commentData = new CommentLoader({ classLoaded })
-      .getCommentDataFromClassOrInterface(classLoaded.declaration);
+    const commentData = this.commentLoader.getCommentDataFromClassOrInterface(classLoaded);
     if (commentData.description) {
       classLoaded.comment = commentData.description;
     }
@@ -373,6 +374,7 @@ export class ClassLoader {
 export interface ClassLoaderArgs {
   resolutionContext: ResolutionContext;
   logger: Logger;
+  commentLoader: CommentLoader;
 }
 
 /**

@@ -1,9 +1,10 @@
 import type { MethodDefinition, TSTypeLiteral, Identifier, TSIndexSignature,
-  TSTypeAnnotation, TypeNode, TSTypeReference } from '@typescript-eslint/types/dist/ts-estree';
+  TSTypeReference } from '@typescript-eslint/types/dist/ts-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import type { ClassReference, InterfaceLoaded } from '../../lib/parse/ClassIndex';
+import type { ClassReference, ClassReferenceLoaded, InterfaceLoaded } from '../../lib/parse/ClassIndex';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
 import type { CommentData } from '../../lib/parse/CommentLoader';
+import { CommentLoader } from '../../lib/parse/CommentLoader';
 import { ConstructorLoader } from '../../lib/parse/ConstructorLoader';
 import type { ParameterRangeUnresolved } from '../../lib/parse/ParameterLoader';
 import { ParameterLoader } from '../../lib/parse/ParameterLoader';
@@ -12,6 +13,7 @@ import { ResolutionContextMocked } from '../ResolutionContextMocked';
 describe('ParameterLoader', () => {
   const resolutionContext = new ResolutionContextMocked({});
   let logger: any;
+  let commentLoader: CommentLoader;
   let classLoader: ClassLoader;
   let loader: ParameterLoader;
   let constructorLoader: ConstructorLoader;
@@ -20,9 +22,10 @@ describe('ParameterLoader', () => {
     logger = {
       debug: jest.fn(),
     };
-    classLoader = new ClassLoader({ resolutionContext, logger });
-    loader = new ParameterLoader({ classLoaded: <any> { localName: 'A', fileName: 'file' }});
-    constructorLoader = new ConstructorLoader();
+    commentLoader = new CommentLoader();
+    classLoader = new ClassLoader({ resolutionContext, logger, commentLoader });
+    loader = new ParameterLoader({ classLoaded: <any> { localName: 'A', fileName: 'file' }, commentLoader });
+    constructorLoader = new ConstructorLoader({ commentLoader });
   });
 
   describe('loadConstructorFields', () => {
@@ -40,7 +43,7 @@ describe('ParameterLoader', () => {
       };
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
       const constructor = <any> (<MethodDefinition> constructorLoader.getConstructor(classLoaded));
-      const parameterLoader = new ParameterLoader({ classLoaded });
+      const parameterLoader = new ParameterLoader({ classLoaded, commentLoader });
 
       return { constructor, parameterLoader };
     }
@@ -356,7 +359,7 @@ export class A{
         'file.d.ts': definition,
       };
       const classLoaded = <InterfaceLoaded> await classLoader.loadClassDeclaration(clazz, true);
-      const parameterLoader = new ParameterLoader({ classLoaded });
+      const parameterLoader = new ParameterLoader({ classLoaded, commentLoader });
 
       return { iface: classLoaded, parameterLoader };
     }
@@ -443,6 +446,83 @@ export interface A{
         },
       ]);
     });
+
+    it('should handle an interface that extends another interface', async() => {
+      const { iface, parameterLoader } = await getInterface(`
+export interface A{
+  fieldA: MyClass1;
+}`);
+      iface.superInterfaces = [
+        (await getInterface(`
+export interface A{
+  fieldB: MyClass2;
+}`)).iface,
+      ];
+      expect(parameterLoader.loadInterfaceFields(iface)).toEqual([
+        {
+          type: 'field',
+          name: 'fieldA',
+          range: { type: 'interface', value: 'MyClass1' },
+          required: true,
+          unique: true,
+        },
+        {
+          type: 'field',
+          name: 'fieldB',
+          range: { type: 'interface', value: 'MyClass2' },
+          required: true,
+          unique: true,
+        },
+      ]);
+    });
+
+    it('should handle an interface that extends two other interfaces', async() => {
+      const { iface, parameterLoader } = await getInterface(`
+export interface A{
+  fieldA: MyClass1;
+}`);
+      iface.superInterfaces = [
+        (await getInterface(`
+export interface A{
+  fieldB: MyClass2;
+}`)).iface,
+        (await getInterface(`
+export interface A{
+  fieldC: MyClass3;
+  fieldD: MyClass4;
+}`)).iface,
+      ];
+      expect(parameterLoader.loadInterfaceFields(iface)).toEqual([
+        {
+          type: 'field',
+          name: 'fieldA',
+          range: { type: 'interface', value: 'MyClass1' },
+          required: true,
+          unique: true,
+        },
+        {
+          type: 'field',
+          name: 'fieldB',
+          range: { type: 'interface', value: 'MyClass2' },
+          required: true,
+          unique: true,
+        },
+        {
+          type: 'field',
+          name: 'fieldC',
+          range: { type: 'interface', value: 'MyClass3' },
+          required: true,
+          unique: true,
+        },
+        {
+          type: 'field',
+          name: 'fieldD',
+          range: { type: 'interface', value: 'MyClass4' },
+          required: true,
+          unique: true,
+        },
+      ]);
+    });
   });
 
   describe('loadHashFields', () => {
@@ -454,7 +534,7 @@ export interface A{
     };
 
     async function getHash(definition: string):
-    Promise<{ hash: TSTypeLiteral; parameterLoader: ParameterLoader }> {
+    Promise<{ hash: TSTypeLiteral; parameterLoader: ParameterLoader; classLoaded: ClassReferenceLoaded }> {
       resolutionContext.contentsOverrides = {
         'file.d.ts': `export class A{
   constructor(fieldA: ${definition}) {}
@@ -463,32 +543,32 @@ export interface A{
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
       const hash: TSTypeLiteral = (<any> (<MethodDefinition> constructorLoader.getConstructor(classLoaded))
         .value.params[0]).typeAnnotation.typeAnnotation;
-      const parameterLoader = new ParameterLoader({ classLoaded });
+      const parameterLoader = new ParameterLoader({ classLoaded, commentLoader });
 
-      return { hash, parameterLoader };
+      return { hash, parameterLoader, classLoaded };
     }
 
     it('should be empty for an empty hash', async() => {
-      const { hash, parameterLoader } = await getHash(`{}`);
-      expect(parameterLoader.loadHashFields(hash)).toEqual([]);
+      const { hash, parameterLoader, classLoaded } = await getHash(`{}`);
+      expect(parameterLoader.loadHashFields(classLoaded, hash)).toEqual([]);
     });
 
     it('should error for an hash with methods', async() => {
-      const { hash, parameterLoader } = await getHash(`
+      const { hash, parameterLoader, classLoaded } = await getHash(`
 {
   a(): void;
   b(): void;
 }`);
-      expect(() => parameterLoader.loadHashFields(hash))
+      expect(() => parameterLoader.loadHashFields(classLoaded, hash))
         .toThrow(new Error('Unsupported field type TSMethodSignature in A in file'));
     });
 
     it('should handle a simple field without comment', async() => {
-      const { hash, parameterLoader } = await getHash(`
+      const { hash, parameterLoader, classLoaded } = await getHash(`
 {
   fieldA: boolean;
 }`);
-      expect(parameterLoader.loadHashFields(hash)).toEqual([
+      expect(parameterLoader.loadHashFields(classLoaded, hash)).toEqual([
         {
           type: 'field',
           name: 'fieldA',
@@ -500,29 +580,29 @@ export interface A{
     });
 
     it('should handle a field that should be ignored', async() => {
-      const { hash, parameterLoader } = await getHash(`
+      const { hash, parameterLoader, classLoaded } = await getHash(`
 {
   /**
    * @ignored
    */
   fieldA: boolean;
 }`);
-      expect(parameterLoader.loadHashFields(hash)).toEqual([]);
+      expect(parameterLoader.loadHashFields(classLoaded, hash)).toEqual([]);
     });
 
     it('should handle an index signature that should be ignored', async() => {
-      const { hash, parameterLoader } = await getHash(`
+      const { hash, parameterLoader, classLoaded } = await getHash(`
 {
   /**
    * @ignored
    */
   [key: string]: boolean;
 }`);
-      expect(parameterLoader.loadHashFields(hash)).toEqual([]);
+      expect(parameterLoader.loadHashFields(classLoaded, hash)).toEqual([]);
     });
 
     it('should handle a simple field with comment', async() => {
-      const { hash, parameterLoader } = await getHash(`
+      const { hash, parameterLoader, classLoaded } = await getHash(`
 {
   /**
    * Hi
@@ -531,7 +611,7 @@ export interface A{
    */
   fieldA?: boolean[];
 }`);
-      expect(parameterLoader.loadHashFields(hash)).toEqual([
+      expect(parameterLoader.loadHashFields(classLoaded, hash)).toEqual([
         {
           type: 'field',
           name: 'fieldA',
@@ -545,11 +625,11 @@ export interface A{
     });
 
     it('should handle an interface field', async() => {
-      const { hash, parameterLoader } = await getHash(`
+      const { hash, parameterLoader, classLoaded } = await getHash(`
 {
   fieldA: MyClass;
 }`);
-      expect(parameterLoader.loadHashFields(hash)).toEqual([
+      expect(parameterLoader.loadHashFields(classLoaded, hash)).toEqual([
         {
           type: 'field',
           name: 'fieldA',
@@ -561,11 +641,11 @@ export interface A{
     });
 
     it('should handle a string index signature with raw value', async() => {
-      const { hash, parameterLoader } = await getHash(`
+      const { hash, parameterLoader, classLoaded } = await getHash(`
 {
   [key: string]: string;
 }`);
-      expect(parameterLoader.loadHashFields(hash)).toEqual([
+      expect(parameterLoader.loadHashFields(classLoaded, hash)).toEqual([
         {
           type: 'index',
           domain: 'string',
@@ -575,11 +655,11 @@ export interface A{
     });
 
     it('should handle a number index signature with raw value', async() => {
-      const { hash, parameterLoader } = await getHash(`
+      const { hash, parameterLoader, classLoaded } = await getHash(`
 {
   [key: number]: string;
 }`);
-      expect(parameterLoader.loadHashFields(hash)).toEqual([
+      expect(parameterLoader.loadHashFields(classLoaded, hash)).toEqual([
         {
           type: 'index',
           domain: 'number',
@@ -589,11 +669,11 @@ export interface A{
     });
 
     it('should handle a number index signature with interface value', async() => {
-      const { hash, parameterLoader } = await getHash(`
+      const { hash, parameterLoader, classLoaded } = await getHash(`
 {
   [key: number]: MyClass;
 }`);
-      expect(parameterLoader.loadHashFields(hash)).toEqual([
+      expect(parameterLoader.loadHashFields(classLoaded, hash)).toEqual([
         {
           type: 'index',
           domain: 'number',
@@ -603,12 +683,12 @@ export interface A{
     });
 
     it('should handle a string index signature, and raw field', async() => {
-      const { hash, parameterLoader } = await getHash(`
+      const { hash, parameterLoader, classLoaded } = await getHash(`
 {
   [key: string]: string;
   something: string;
 }`);
-      expect(parameterLoader.loadHashFields(hash)).toEqual([
+      expect(parameterLoader.loadHashFields(classLoaded, hash)).toEqual([
         {
           type: 'index',
           domain: 'string',
@@ -625,20 +705,20 @@ export interface A{
     });
 
     it('should error on no index signature', async() => {
-      const { hash, parameterLoader } = await getHash(`
+      const { hash, parameterLoader, classLoaded } = await getHash(`
 {
   []: string;
 }`);
-      expect(() => parameterLoader.loadHashFields(hash))
+      expect(() => parameterLoader.loadHashFields(classLoaded, hash))
         .toThrow(new Error('Expected exactly one key in index signature in A at file'));
     });
 
     it('should error on multiple index signatures', async() => {
-      const { hash, parameterLoader } = await getHash(`
+      const { hash, parameterLoader, classLoaded } = await getHash(`
 {
   [key1: string, key2: string]: string;
 }`);
-      expect(() => parameterLoader.loadHashFields(hash))
+      expect(() => parameterLoader.loadHashFields(classLoaded, hash))
         .toThrow(new Error('Expected exactly one key in index signature in A at file'));
     });
   });
@@ -986,7 +1066,7 @@ export interface A{
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
       const field: Identifier = <any> (<MethodDefinition> constructorLoader.getConstructor(classLoaded))
         .value.params[0];
-      const parameterLoader = new ParameterLoader({ classLoaded });
+      const parameterLoader = new ParameterLoader({ classLoaded, commentLoader });
       return parameterLoader.getFieldRange(field, commentData);
     }
 
@@ -1124,7 +1204,7 @@ export interface A{
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
       const field: Identifier = <any> (<MethodDefinition> constructorLoader.getConstructor(classLoaded))
         .value.params[0];
-      const parameterLoader = new ParameterLoader({ classLoaded });
+      const parameterLoader = new ParameterLoader({ classLoaded, commentLoader });
 
       expect(parameterLoader.getFieldRange(field, {}))
         .toEqual({ type: 'interface', value: 'MyClass' });
@@ -1139,7 +1219,7 @@ export interface A{
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
       const field: Identifier = <any> (<MethodDefinition> constructorLoader.getConstructor(classLoaded))
         .value.params[0];
-      const parameterLoader = new ParameterLoader({ classLoaded });
+      const parameterLoader = new ParameterLoader({ classLoaded, commentLoader });
 
       expect(parameterLoader.getFieldRange(field, {}))
         .toEqual({ type: 'raw', value: 'string' });
@@ -1154,7 +1234,7 @@ export interface A{
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
       const field: Identifier = <any> (<MethodDefinition> constructorLoader.getConstructor(classLoaded))
         .value.params[0];
-      const parameterLoader = new ParameterLoader({ classLoaded });
+      const parameterLoader = new ParameterLoader({ classLoaded, commentLoader });
 
       expect(() => parameterLoader.getFieldRange(field, {}))
         .toThrow(new Error('Found untyped generic field type at field fieldA in A at file'));
@@ -1355,7 +1435,7 @@ export interface A{
       const field: any = <any>(<MethodDefinition>constructorLoader.getConstructor(classLoaded))
         .value.params[0];
       const indexSignature: TSIndexSignature = field.typeAnnotation.typeAnnotation.members[0];
-      parameterLoader = new ParameterLoader({ classLoaded });
+      parameterLoader = new ParameterLoader({ classLoaded, commentLoader });
       return parameterLoader.getIndexDomain(indexSignature);
     }
 
@@ -1415,7 +1495,7 @@ export interface A{
       const field: any = <any>(<MethodDefinition>constructorLoader.getConstructor(classLoaded))
         .value.params[0];
       const indexSignature: TSIndexSignature = field.typeAnnotation.typeAnnotation.members[0];
-      const parameterLoader = new ParameterLoader({ classLoaded });
+      const parameterLoader = new ParameterLoader({ classLoaded, commentLoader });
       return parameterLoader.getIndexRange(indexSignature, commentData);
     }
 
@@ -1456,9 +1536,9 @@ export interface A{
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
       const field: Identifier = <any> (<MethodDefinition> constructorLoader.getConstructor(classLoaded))
         .value.params[0];
-      const parameterLoader = new ParameterLoader({ classLoaded });
-      const typeNode: TypeNode = (<TSTypeAnnotation> field.typeAnnotation).typeAnnotation;
-      return parameterLoader.handleTypeOverride(<TSTypeReference> typeNode);
+      const parameterLoader = new ParameterLoader({ classLoaded, commentLoader });
+      const typeNode: TSTypeReference = <TSTypeReference> field.typeAnnotation!.typeAnnotation;
+      return parameterLoader.handleTypeOverride(typeNode);
     }
 
     it('should do nothing on an unsupported type', async() => {

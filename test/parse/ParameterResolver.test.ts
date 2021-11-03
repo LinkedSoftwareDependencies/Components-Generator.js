@@ -1,6 +1,7 @@
 import type { TSTypeLiteral, MethodDefinition } from '@typescript-eslint/types/dist/ts-estree';
 import type { ClassLoaded, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from '../../lib/parse/ClassIndex';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
+import { CommentLoader } from '../../lib/parse/CommentLoader';
 import { ConstructorLoader } from '../../lib/parse/ConstructorLoader';
 import { ParameterResolver } from '../../lib/parse/ParameterResolver';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
@@ -8,6 +9,7 @@ import { ResolutionContextMocked } from '../ResolutionContextMocked';
 describe('ParameterResolver', () => {
   const resolutionContext = new ResolutionContextMocked({});
   let logger: any;
+  let commentLoader: CommentLoader;
   let classLoader: ClassLoader;
   let ignoreClasses: Record<string, boolean>;
   let loader: ParameterResolver;
@@ -16,9 +18,10 @@ describe('ParameterResolver', () => {
     logger = {
       debug: jest.fn(),
     };
-    classLoader = new ClassLoader({ resolutionContext, logger });
+    commentLoader = new CommentLoader();
+    classLoader = new ClassLoader({ resolutionContext, logger, commentLoader });
     ignoreClasses = {};
-    loader = new ParameterResolver({ classLoader, ignoreClasses });
+    loader = new ParameterResolver({ classLoader, ignoreClasses, commentLoader });
   });
 
   describe('resolveAllConstructorParameters', () => {
@@ -1136,7 +1139,8 @@ export class A{
   constructor(fieldA: ${definition}) {}
 }`;
       const classLoaded = await classLoader.loadClassDeclaration(classReference, false);
-      const hash: TSTypeLiteral = (<any> (<MethodDefinition> new ConstructorLoader().getConstructor(classLoaded))
+      const hash: TSTypeLiteral = (<any> (<MethodDefinition> new ConstructorLoader({ commentLoader })
+        .getConstructor(classLoaded))
         .value.params[0]).typeAnnotation.typeAnnotation;
 
       return { hash, owningClass: classLoaded };
