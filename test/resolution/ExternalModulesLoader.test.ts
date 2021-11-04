@@ -5,30 +5,23 @@ import type { ConstructorData } from '../../lib/parse/ConstructorLoader';
 import type { ParameterRangeResolved } from '../../lib/parse/ParameterLoader';
 import { ExternalModulesLoader } from '../../lib/resolution/ExternalModulesLoader';
 
+let packageJsons: Record<string, any> = {};
 let loadComponentResources: (componentResources: Record<string, Resource>, objectLoader: RdfObjectLoader) => void;
 jest.mock('componentsjs', () => ({
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
   ...<any>jest.requireActual('componentsjs'),
   ModuleStateBuilder: jest.fn().mockImplementation(() => ({
     buildNodeModuleImportPaths: () => [ '/path/1/', '/path/2/' ],
-    buildPackageJsons: () => ({
-      package1: {
-        name: 'package1',
-        'lsd:contexts': {
-          'http://example.org/context1': true,
-        },
-      },
-      package2: {
-        name: 'package2',
-        'lsd:contexts': {
-          'http://example.org/context2': true,
-        },
-      },
-    }),
+    buildPackageJsons(nodeModulePaths: string[]) {
+      return Object.fromEntries(Object.entries(packageJsons)
+        .filter(([ key, value ]) => nodeModulePaths.some(nodeModulePath => nodeModulePath === value.path)));
+    },
     preprocessPackageJsons: jest.fn(),
-    buildComponentModules: () => ({
-      type: 'componentModules',
-    }),
+    buildComponentModules(packageJsonsArg: Record<string, any>) {
+      return Object.fromEntries(Object.entries(packageJsonsArg)
+        .filter(([ key, value ]) => value['lsd:module'])
+        .map(([ key, value ]) => [ value['lsd:module'], value ]));
+    },
     buildComponentContexts: () => ({
       type: 'contexts',
     }),
@@ -50,6 +43,24 @@ describe('ExternalModulesLoader', () => {
   let req: any;
 
   beforeEach(() => {
+    packageJsons = {
+      package1: {
+        name: 'package1',
+        path: '/path/1/package1',
+        'lsd:module': 'urn:package1',
+        'lsd:contexts': {
+          'http://example.org/context1': true,
+        },
+      },
+      package2: {
+        name: 'package2',
+        path: '/path/1/package2',
+        'lsd:module': 'urn:package2',
+        'lsd:contexts': {
+          'http://example.org/context2': true,
+        },
+      },
+    };
     logger = {
       info: jest.fn(),
       warn: jest.fn(),
@@ -395,7 +406,22 @@ describe('ExternalModulesLoader', () => {
       expect(await loader.buildModuleStateSelective(req, [ 'package1', 'package2' ]))
         .toEqual({
           componentModules: {
-            type: 'componentModules',
+            'urn:package1': {
+              name: 'package1',
+              path: '/path/1/package1',
+              'lsd:module': 'urn:package1',
+              'lsd:contexts': {
+                'http://example.org/context1': true,
+              },
+            },
+            'urn:package2': {
+              name: 'package2',
+              path: '/path/1/package2',
+              'lsd:module': 'urn:package2',
+              'lsd:contexts': {
+                'http://example.org/context2': true,
+              },
+            },
           },
           contexts: {
             type: 'contexts',
@@ -412,19 +438,291 @@ describe('ExternalModulesLoader', () => {
             '/path/1/package1',
             '/path/1/package2',
           ],
+          packageJsons,
+        });
+    });
+
+    it('should create a module state for nested dependencies', async() => {
+      packageJsons = {
+        package1: {
+          name: 'package1',
+          path: '/path/1/package1',
+          'lsd:module': 'urn:package1',
+          'lsd:contexts': {
+            'http://example.org/context1': true,
+          },
+        },
+        package2: {
+          name: 'package2',
+          path: '/path/1/package2',
+          'lsd:module': 'urn:package2',
+          'lsd:contexts': {
+            'http://example.org/context2': true,
+          },
+        },
+        package3: {
+          name: 'package3',
+          path: '/path/1/package3',
+          'lsd:module': 'urn:package3',
+          'lsd:contexts': {
+            'http://example.org/context2': true,
+          },
+          dependencies: {
+            'package3-1': 'ANY',
+            'package3-2': 'ANY',
+            'package3-3': 'ANY',
+          },
+        },
+        'package3-1': {
+          name: 'package3-1',
+          path: '/path/1/package3-1',
+          'lsd:module': 'urn:package3-1',
+          'lsd:contexts': {
+            'http://example.org/context2': true,
+          },
+        },
+        'package3-2': {
+          name: 'package3-2',
+          path: '/path/1/package3-2',
+          'lsd:module': 'urn:package3-2',
+          'lsd:contexts': {
+            'http://example.org/context2': true,
+          },
+          dependencies: {
+            'package3-2-1': 'ANY',
+            'package3-2-2': 'ANY',
+            'package3-2-3': 'ANY',
+          },
+        },
+        'package3-3': {
+          name: 'package3-3',
+          path: '/path/1/package3-3',
+          'lsd:module': 'urn:package3-3',
+          dependencies: {
+            'package3-3-ignored': 'ANY',
+          },
+        },
+        'package3-2-1': {
+          name: 'package3-2-1',
+          path: '/path/1/package3-2-1',
+          'lsd:module': 'urn:package3-2-1',
+          'lsd:contexts': {
+            'http://example.org/context2': true,
+          },
+        },
+        'package3-2-2': {
+          name: 'package3-2-2',
+          path: '/path/1/package3-2-2',
+          'lsd:module': 'urn:package3-2-2',
+          'lsd:contexts': {
+            'http://example.org/context2': true,
+          },
+        },
+        'package3-2-3': {
+          name: 'package3-2-3',
+          path: '/path/1/package3-2-3',
+          'lsd:module': 'urn:package3-2-3',
+          'lsd:contexts': {
+            'http://example.org/context2': true,
+          },
+        },
+        'package3-3-ignored': {
+          name: 'package3-3-ignored',
+          path: '/path/1/package3-3-ignored',
+          dependencies: {
+            'package3-3-ignored-1': 'ANY',
+          },
+        },
+        'package3-3-ignored-1': {
+          name: 'package3-3-ignored-1',
+          path: '/path/1/package3-3-ignored-1',
+        },
+      };
+
+      expect(await loader.buildModuleStateSelective(req, [ 'package1', 'package3' ]))
+        .toEqual({
+          componentModules: {
+            'urn:package1': {
+              'lsd:contexts': {
+                'http://example.org/context1': true,
+              },
+              'lsd:module': 'urn:package1',
+              name: 'package1',
+              path: '/path/1/package1',
+            },
+            'urn:package3': {
+              dependencies: {
+                'package3-1': 'ANY',
+                'package3-2': 'ANY',
+                'package3-3': 'ANY',
+              },
+              'lsd:contexts': {
+                'http://example.org/context2': true,
+              },
+              'lsd:module': 'urn:package3',
+              name: 'package3',
+              path: '/path/1/package3',
+            },
+            'urn:package3-1': {
+              'lsd:contexts': {
+                'http://example.org/context2': true,
+              },
+              'lsd:module': 'urn:package3-1',
+              name: 'package3-1',
+              path: '/path/1/package3-1',
+            },
+            'urn:package3-2': {
+              dependencies: {
+                'package3-2-1': 'ANY',
+                'package3-2-2': 'ANY',
+                'package3-2-3': 'ANY',
+              },
+              'lsd:contexts': {
+                'http://example.org/context2': true,
+              },
+              'lsd:module': 'urn:package3-2',
+              name: 'package3-2',
+              path: '/path/1/package3-2',
+            },
+            'urn:package3-2-1': {
+              'lsd:contexts': {
+                'http://example.org/context2': true,
+              },
+              'lsd:module': 'urn:package3-2-1',
+              name: 'package3-2-1',
+              path: '/path/1/package3-2-1',
+            },
+            'urn:package3-2-2': {
+              'lsd:contexts': {
+                'http://example.org/context2': true,
+              },
+              'lsd:module': 'urn:package3-2-2',
+              name: 'package3-2-2',
+              path: '/path/1/package3-2-2',
+            },
+            'urn:package3-2-3': {
+              'lsd:contexts': {
+                'http://example.org/context2': true,
+              },
+              'lsd:module': 'urn:package3-2-3',
+              name: 'package3-2-3',
+              path: '/path/1/package3-2-3',
+            },
+            'urn:package3-3': {
+              'lsd:module': 'urn:package3-3',
+              name: 'package3-3',
+              path: '/path/1/package3-3',
+              dependencies: {
+                'package3-3-ignored': 'ANY',
+              },
+            },
+          },
+          contexts: {
+            type: 'contexts',
+          },
+          importPaths: {
+            type: 'importPaths',
+          },
+          mainModulePath: '/',
+          nodeModuleImportPaths: [
+            '/path/1/',
+            '/path/2/',
+          ],
+          nodeModulePaths: [
+            '/path/1/package1',
+            '/path/1/package3',
+            '/path/1/package3-1',
+            '/path/1/package3-2',
+            '/path/1/package3-3',
+            '/path/1/package3-2-1',
+            '/path/1/package3-2-2',
+            '/path/1/package3-2-3',
+            '/path/1/package3-3-ignored',
+          ],
           packageJsons: {
             package1: {
               name: 'package1',
+              path: '/path/1/package1',
+              'lsd:module': 'urn:package1',
               'lsd:contexts': {
                 'http://example.org/context1': true,
               },
             },
-            package2: {
-              name: 'package2',
+            // No package2
+            package3: {
+              name: 'package3',
+              path: '/path/1/package3',
+              'lsd:module': 'urn:package3',
+              'lsd:contexts': {
+                'http://example.org/context2': true,
+              },
+              dependencies: {
+                'package3-1': 'ANY',
+                'package3-2': 'ANY',
+                'package3-3': 'ANY',
+              },
+            },
+            'package3-1': {
+              name: 'package3-1',
+              path: '/path/1/package3-1',
+              'lsd:module': 'urn:package3-1',
               'lsd:contexts': {
                 'http://example.org/context2': true,
               },
             },
+            'package3-2': {
+              name: 'package3-2',
+              path: '/path/1/package3-2',
+              'lsd:module': 'urn:package3-2',
+              'lsd:contexts': {
+                'http://example.org/context2': true,
+              },
+              dependencies: {
+                'package3-2-1': 'ANY',
+                'package3-2-2': 'ANY',
+                'package3-2-3': 'ANY',
+              },
+            },
+            'package3-3': {
+              name: 'package3-3',
+              path: '/path/1/package3-3',
+              'lsd:module': 'urn:package3-3',
+              dependencies: {
+                'package3-3-ignored': 'ANY',
+              },
+            },
+            'package3-2-1': {
+              name: 'package3-2-1',
+              path: '/path/1/package3-2-1',
+              'lsd:module': 'urn:package3-2-1',
+              'lsd:contexts': {
+                'http://example.org/context2': true,
+              },
+            },
+            'package3-2-2': {
+              name: 'package3-2-2',
+              path: '/path/1/package3-2-2',
+              'lsd:module': 'urn:package3-2-2',
+              'lsd:contexts': {
+                'http://example.org/context2': true,
+              },
+            },
+            'package3-2-3': {
+              name: 'package3-2-3',
+              path: '/path/1/package3-2-3',
+              'lsd:module': 'urn:package3-2-3',
+              'lsd:contexts': {
+                'http://example.org/context2': true,
+              },
+            },
+            'package3-3-ignored': {
+              name: 'package3-3-ignored',
+              path: '/path/1/package3-3-ignored',
+              dependencies: {
+                'package3-3-ignored-1': 'ANY',
+              },
+            },
+            // No 'package3-3-ignored-1'
           },
         });
     });

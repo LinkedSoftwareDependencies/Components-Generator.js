@@ -113,10 +113,38 @@ export class ExternalModulesLoader {
     const moduleStateBuilder = new ModuleStateBuilder(this.logger);
     const mainModulePath = this.pathDestination.packageRootDirectory;
     const nodeModuleImportPaths = moduleStateBuilder.buildNodeModuleImportPaths(mainModulePath);
-    const nodeModulePaths = this.buildNodeModulePathsSelective(req, nodeModuleImportPaths, packageNames);
-    const packageJsons = await moduleStateBuilder.buildPackageJsons(nodeModulePaths);
-    await moduleStateBuilder.preprocessPackageJsons(packageJsons);
-    const componentModules = await moduleStateBuilder.buildComponentModules(packageJsons);
+
+    // This loop makes sure that we also consider dependencies (recursively) of the given package names
+    let nodeModulePaths: string[] = [];
+    let packageJsons: Record<string, any> = {};
+    let componentModules: Record<string, string> = {};
+    let packageNamesNew: string[] = packageNames;
+    while (packageNamesNew.length > 0) {
+      const nodeModulePathsNew = this.buildNodeModulePathsSelective(req, nodeModuleImportPaths, packageNamesNew);
+      const packageJsonsNew = await moduleStateBuilder.buildPackageJsons(nodeModulePathsNew);
+      await moduleStateBuilder.preprocessPackageJsons(packageJsonsNew);
+      const componentModulesNew = await moduleStateBuilder.buildComponentModules(packageJsonsNew);
+
+      // Determine (Components.js) modules that we haven't seen yet
+      const newComponentModuleIris = Object.keys(componentModulesNew)
+        // eslint-disable-next-line @typescript-eslint/no-loop-func
+        .filter(componentModuleNew => !componentModules[componentModuleNew]);
+
+      nodeModulePaths = [ ...nodeModulePaths, ...nodeModulePathsNew ];
+      packageJsons = { ...packageJsons, ...packageJsonsNew };
+      componentModules = { ...componentModules, ...componentModulesNew };
+      packageNamesNew = [];
+
+      // For the new modules, extract their dependencies, and handle them in the next iteration
+      for (const packageJson of Object.values(packageJsonsNew)) {
+        if (packageJson.dependencies) {
+          if (newComponentModuleIris.some(iri => packageJson['lsd:module'] === iri)) {
+            packageNamesNew.push(...Object.keys(packageJson.dependencies));
+          }
+        }
+      }
+    }
+
     const contexts = await moduleStateBuilder.buildComponentContexts(packageJsons);
     const importPaths = await moduleStateBuilder.buildComponentImportPaths(packageJsons);
     return {
