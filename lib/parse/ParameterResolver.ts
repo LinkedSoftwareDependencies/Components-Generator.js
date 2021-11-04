@@ -110,6 +110,16 @@ export class ParameterResolver {
           type: 'intersection',
           children: await Promise.all(range.children.map(child => this.resolveRange(child, owningClass))),
         };
+      case 'tuple':
+        return {
+          type: 'tuple',
+          elements: await Promise.all(range.elements.map(child => this.resolveRange(child, owningClass))),
+        };
+      case 'rest':
+        return {
+          type: 'rest',
+          value: await this.resolveRange(range.value, owningClass),
+        };
     }
   }
 

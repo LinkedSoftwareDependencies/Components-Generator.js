@@ -289,8 +289,18 @@ export class ParameterLoader {
       case AST_NODE_TYPES.TSVoidKeyword:
       case AST_NODE_TYPES.TSNullKeyword:
       case AST_NODE_TYPES.TSAnyKeyword:
-      case AST_NODE_TYPES.TSTupleType:
         return { type: 'undefined' };
+      case AST_NODE_TYPES.TSTupleType:
+        return {
+          type: 'tuple',
+          elements: typeNode.elementTypes
+            .map(type => this.getRangeFromTypeNode(type, errorIdentifier, nestedArrays)),
+        };
+      case AST_NODE_TYPES.TSRestType:
+        return {
+          type: 'rest',
+          value: this.getRangeFromTypeNode(typeNode.typeAnnotation, errorIdentifier, nestedArrays),
+        };
     }
     throw new Error(`Could not understand parameter type ${typeNode.type} of ${errorIdentifier
     } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
@@ -489,6 +499,12 @@ export type ParameterRangeUnresolved = {
 } | {
   type: 'intersection';
   children: ParameterRangeUnresolved[];
+} | {
+  type: 'tuple';
+  elements: ParameterRangeUnresolved[];
+} | {
+  type: 'rest';
+  value: ParameterRangeUnresolved;
 };
 
 export type ParameterRangeResolved = {
@@ -511,4 +527,10 @@ export type ParameterRangeResolved = {
 } | {
   type: 'intersection';
   children: ParameterRangeResolved[];
+} | {
+  type: 'tuple';
+  elements: ParameterRangeResolved[];
+} | {
+  type: 'rest';
+  value: ParameterRangeResolved;
 };

@@ -496,6 +496,18 @@ export class ComponentConstructor {
           parameterRangeComposedChildren: await Promise.all(range.children
             .map(child => this.constructParameterRange(child, context, externalContextsCallback, fieldId))),
         };
+      case 'tuple':
+        return {
+          '@type': 'ParameterRangeTuple',
+          parameterRangeTupleElements: await Promise.all(range.elements
+            .map(child => this.constructParameterRange(child, context, externalContextsCallback, fieldId))),
+        };
+      case 'rest':
+        return {
+          '@type': 'ParameterRangeRest',
+          parameterRangeValue: await this
+            .constructParameterRange(range.value, context, externalContextsCallback, fieldId),
+        };
     }
   }
 

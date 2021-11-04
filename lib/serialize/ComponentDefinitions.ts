@@ -38,6 +38,12 @@ export interface ParameterDefinition {
 export type ParameterDefinitionRange = string | { '@id': string; parameters: ParameterDefinition[] } | {
   '@type': 'ParameterRangeComposedUnion' | 'ParameterRangeComposedIntersection';
   parameterRangeComposedChildren: ParameterDefinitionRange[];
+} | {
+  '@type': 'ParameterRangeTuple';
+  parameterRangeTupleElements: ParameterDefinitionRange[];
+} | {
+  '@type': 'ParameterRangeRest';
+  parameterRangeValue: ParameterDefinitionRange;
 } | undefined;
 
 export type ConstructorArgumentDefinition = string | { '@id': string } | {

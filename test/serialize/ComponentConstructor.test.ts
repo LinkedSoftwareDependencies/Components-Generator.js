@@ -1927,6 +1927,57 @@ describe('ComponentConstructor', () => {
         ],
       });
     });
+
+    it('should construct a tuple parameter range', async() => {
+      const rangeValueClass: ClassReferenceLoaded = <any> {
+        packageName: 'my-package',
+        localName: 'ClassParam',
+        fileName: Path.normalize('/docs/package/src/a/b/file-param'),
+      };
+      const elements: ParameterRangeResolved[] = [
+        { type: 'raw', value: 'boolean' },
+        { type: 'class', value: rangeValueClass },
+      ];
+      expect(await ctor.constructParameterRange(
+        { type: 'tuple', elements },
+        context,
+        externalContextsCallback,
+        'mp:a/b/file-param#MyClass_field',
+      )).toEqual({
+        '@type': 'ParameterRangeTuple',
+        parameterRangeTupleElements: [
+          'xsd:boolean',
+          'mp:a/b/file-param#ClassParam',
+        ],
+      });
+    });
+
+    it('should construct a tuple parameter range with rest type', async() => {
+      const rangeValueClass: ClassReferenceLoaded = <any> {
+        packageName: 'my-package',
+        localName: 'ClassParam',
+        fileName: Path.normalize('/docs/package/src/a/b/file-param'),
+      };
+      const elements: ParameterRangeResolved[] = [
+        { type: 'rest', value: { type: 'raw', value: 'boolean' }},
+        { type: 'class', value: rangeValueClass },
+      ];
+      expect(await ctor.constructParameterRange(
+        { type: 'tuple', elements },
+        context,
+        externalContextsCallback,
+        'mp:a/b/file-param#MyClass_field',
+      )).toEqual({
+        '@type': 'ParameterRangeTuple',
+        parameterRangeTupleElements: [
+          {
+            '@type': 'ParameterRangeRest',
+            parameterRangeValue: 'xsd:boolean',
+          },
+          'mp:a/b/file-param#ClassParam',
+        ],
+      });
+    });
   });
 
   describe('populateOptionalParameterFields', () => {

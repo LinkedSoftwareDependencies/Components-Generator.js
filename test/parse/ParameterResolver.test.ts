@@ -452,6 +452,86 @@ export interface MyInterface extends IgnoredInterface{};
         ],
       });
     });
+
+    it('should handle a tuple range', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `export * from './MyClass'`,
+        'MyClass.d.ts': `export class MyClass{}`,
+      };
+
+      expect(await loader.resolveRange({
+        type: 'tuple',
+        elements: [
+          {
+            type: 'raw',
+            value: 'boolean',
+          },
+          {
+            type: 'raw',
+            value: 'number',
+          },
+          {
+            type: 'interface',
+            value: 'MyClass',
+          },
+        ],
+      }, classReference)).toMatchObject({
+        type: 'tuple',
+        elements: [
+          {
+            type: 'raw',
+            value: 'boolean',
+          },
+          {
+            type: 'raw',
+            value: 'number',
+          },
+          {
+            type: 'class',
+            value: { localName: 'MyClass', fileName: 'MyClass' },
+          },
+        ],
+      });
+    });
+
+    it('should handle a tuple range with rest type', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `export * from './MyClass'`,
+        'MyClass.d.ts': `export class MyClass{}`,
+      };
+
+      expect(await loader.resolveRange({
+        type: 'tuple',
+        elements: [
+          {
+            type: 'raw',
+            value: 'boolean',
+          },
+          {
+            type: 'rest',
+            value: {
+              type: 'interface',
+              value: 'MyClass',
+            },
+          },
+        ],
+      }, classReference)).toMatchObject({
+        type: 'tuple',
+        elements: [
+          {
+            type: 'raw',
+            value: 'boolean',
+          },
+          {
+            type: 'rest',
+            value: {
+              type: 'class',
+              value: { localName: 'MyClass', fileName: 'MyClass' },
+            },
+          },
+        ],
+      });
+    });
   });
 
   describe('resolveRangeInterface', () => {

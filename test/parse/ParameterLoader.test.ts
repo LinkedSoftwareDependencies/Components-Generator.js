@@ -1377,9 +1377,37 @@ export interface A{
         });
     });
 
-    it('should get the range of a tuple type as undefined', async() => {
+    it('should get the range of a tuple type of fixed length', async() => {
       expect(await getFieldRange('fieldA: [ number, string ]', {}))
-        .toEqual({ type: 'undefined' });
+        .toEqual({
+          type: 'tuple',
+          elements: [
+            { type: 'raw', value: 'number' },
+            { type: 'raw', value: 'string' },
+          ],
+        });
+    });
+
+    it('should get the range of a tuple type with rest types', async() => {
+      expect(await getFieldRange('fieldA: [ number, ...string, ...number, ...(boolean | string) ]', {}))
+        .toEqual({
+          type: 'tuple',
+          elements: [
+            { type: 'raw', value: 'number' },
+            { type: 'rest', value: { type: 'raw', value: 'string' }},
+            { type: 'rest', value: { type: 'raw', value: 'number' }},
+            {
+              type: 'rest',
+              value: {
+                type: 'union',
+                children: [
+                  { type: 'raw', value: 'boolean' },
+                  { type: 'raw', value: 'string' },
+                ],
+              },
+            },
+          ],
+        });
     });
   });
 
