@@ -101,18 +101,10 @@ export class ParameterResolver {
           type: 'undefined',
         };
       case 'union':
-        return {
-          type: 'union',
-          children: await Promise.all(range.children.map(child => this.resolveRange(child, owningClass))),
-        };
       case 'intersection':
-        return {
-          type: 'intersection',
-          children: await Promise.all(range.children.map(child => this.resolveRange(child, owningClass))),
-        };
       case 'tuple':
         return {
-          type: 'tuple',
+          type: range.type,
           elements: await Promise.all(range.elements.map(child => this.resolveRange(child, owningClass))),
         };
       case 'rest':

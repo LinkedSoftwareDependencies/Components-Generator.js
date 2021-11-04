@@ -379,7 +379,7 @@ export interface MyInterface extends IgnoredInterface{};
 
       expect(await loader.resolveRange({
         type: 'union',
-        children: [
+        elements: [
           {
             type: 'raw',
             value: 'boolean',
@@ -395,7 +395,7 @@ export interface MyInterface extends IgnoredInterface{};
         ],
       }, classReference)).toMatchObject({
         type: 'union',
-        children: [
+        elements: [
           {
             type: 'raw',
             value: 'boolean',
@@ -420,7 +420,7 @@ export interface MyInterface extends IgnoredInterface{};
 
       expect(await loader.resolveRange({
         type: 'intersection',
-        children: [
+        elements: [
           {
             type: 'raw',
             value: 'boolean',
@@ -436,7 +436,7 @@ export interface MyInterface extends IgnoredInterface{};
         ],
       }, classReference)).toMatchObject({
         type: 'intersection',
-        children: [
+        elements: [
           {
             type: 'raw',
             value: 'boolean',

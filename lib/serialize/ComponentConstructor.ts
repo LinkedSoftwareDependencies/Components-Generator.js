@@ -479,6 +479,7 @@ export class ComponentConstructor {
     externalContextsCallback: ExternalContextCallback,
     fieldId: string,
   ): Promise<ParameterDefinitionRange> {
+    let type: string;
     switch (range.type) {
       case 'raw':
       case 'override':
@@ -491,15 +492,21 @@ export class ComponentConstructor {
         return;
       case 'union':
       case 'intersection':
-        return {
-          '@type': range.type === 'union' ? 'ParameterRangeComposedUnion' : 'ParameterRangeComposedIntersection',
-          parameterRangeComposedChildren: await Promise.all(range.children
-            .map(child => this.constructParameterRange(child, context, externalContextsCallback, fieldId))),
-        };
       case 'tuple':
+        switch (range.type) {
+          case 'union':
+            type = 'ParameterRangeUnion';
+            break;
+          case 'intersection':
+            type = 'ParameterRangeIntersection';
+            break;
+          case 'tuple':
+            type = 'ParameterRangeTuple';
+            break;
+        }
         return {
-          '@type': 'ParameterRangeTuple',
-          parameterRangeTupleElements: await Promise.all(range.elements
+          '@type': <any> type,
+          parameterRangeElements: await Promise.all(range.elements
             .map(child => this.constructParameterRange(child, context, externalContextsCallback, fieldId))),
         };
       case 'rest':

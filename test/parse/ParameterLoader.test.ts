@@ -1302,7 +1302,7 @@ export interface A{
       expect(await getFieldRange('fieldA: number | string', {}))
         .toEqual({
           type: 'union',
-          children: [
+          elements: [
             { type: 'raw', value: 'number' },
             { type: 'raw', value: 'string' },
           ],
@@ -1318,7 +1318,7 @@ export interface A{
       expect(await getFieldRange('fieldA: number | string | undefined', {}))
         .toEqual({
           type: 'union',
-          children: [
+          elements: [
             { type: 'raw', value: 'number' },
             { type: 'raw', value: 'string' },
           ],
@@ -1329,7 +1329,7 @@ export interface A{
       expect(await getFieldRange('fieldA: MyClass1 | MyClass2 | MyClass3', {}))
         .toEqual({
           type: 'union',
-          children: [
+          elements: [
             { type: 'interface', value: 'MyClass1' },
             { type: 'interface', value: 'MyClass2' },
             { type: 'interface', value: 'MyClass3' },
@@ -1341,7 +1341,7 @@ export interface A{
       expect(await getFieldRange('fieldA: number & string', {}))
         .toEqual({
           type: 'intersection',
-          children: [
+          elements: [
             { type: 'raw', value: 'number' },
             { type: 'raw', value: 'string' },
           ],
@@ -1352,7 +1352,7 @@ export interface A{
       expect(await getFieldRange('fieldA: MyClass1 & MyClass2 & MyClass3', {}))
         .toEqual({
           type: 'intersection',
-          children: [
+          elements: [
             { type: 'interface', value: 'MyClass1' },
             { type: 'interface', value: 'MyClass2' },
             { type: 'interface', value: 'MyClass3' },
@@ -1364,10 +1364,10 @@ export interface A{
       expect(await getFieldRange('fieldA: (MyClass1 | MyClass2) & MyClass3', {}))
         .toEqual({
           type: 'intersection',
-          children: [
+          elements: [
             {
               type: 'union',
-              children: [
+              elements: [
                 { type: 'interface', value: 'MyClass1' },
                 { type: 'interface', value: 'MyClass2' },
               ],
@@ -1400,7 +1400,7 @@ export interface A{
               type: 'rest',
               value: {
                 type: 'union',
-                children: [
+                elements: [
                   { type: 'raw', value: 'boolean' },
                   { type: 'raw', value: 'string' },
                 ],

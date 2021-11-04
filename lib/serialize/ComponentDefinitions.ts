@@ -36,11 +36,8 @@ export interface ParameterDefinition {
 }
 
 export type ParameterDefinitionRange = string | { '@id': string; parameters: ParameterDefinition[] } | {
-  '@type': 'ParameterRangeComposedUnion' | 'ParameterRangeComposedIntersection';
-  parameterRangeComposedChildren: ParameterDefinitionRange[];
-} | {
-  '@type': 'ParameterRangeTuple';
-  parameterRangeTupleElements: ParameterDefinitionRange[];
+  '@type': 'ParameterRangeUnion' | 'ParameterRangeIntersection' | 'ParameterRangeTuple';
+  parameterRangeElements: ParameterDefinitionRange[];
 } | {
   '@type': 'ParameterRangeRest';
   parameterRangeValue: ParameterDefinitionRange;

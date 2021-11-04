@@ -274,12 +274,12 @@ export class ParameterLoader {
         }
         return {
           type: 'union',
-          children,
+          elements: children,
         };
       case AST_NODE_TYPES.TSIntersectionType:
         return {
           type: 'intersection',
-          children: typeNode.types
+          elements: typeNode.types
             .map(type => this.getRangeFromTypeNode(type, errorIdentifier, nestedArrays)),
         };
       case AST_NODE_TYPES.TSParenthesizedType:
@@ -495,10 +495,10 @@ export type ParameterRangeUnresolved = {
   type: 'undefined';
 } | {
   type: 'union';
-  children: ParameterRangeUnresolved[];
+  elements: ParameterRangeUnresolved[];
 } | {
   type: 'intersection';
-  children: ParameterRangeUnresolved[];
+  elements: ParameterRangeUnresolved[];
 } | {
   type: 'tuple';
   elements: ParameterRangeUnresolved[];
@@ -523,10 +523,10 @@ export type ParameterRangeResolved = {
   type: 'undefined';
 } | {
   type: 'union';
-  children: ParameterRangeResolved[];
+  elements: ParameterRangeResolved[];
 } | {
   type: 'intersection';
-  children: ParameterRangeResolved[];
+  elements: ParameterRangeResolved[];
 } | {
   type: 'tuple';
   elements: ParameterRangeResolved[];

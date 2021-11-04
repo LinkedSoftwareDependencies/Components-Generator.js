@@ -1891,13 +1891,13 @@ describe('ComponentConstructor', () => {
         { type: 'class', value: rangeValueClass },
       ];
       expect(await ctor.constructParameterRange(
-        { type: 'union', children },
+        { type: 'union', elements: children },
         context,
         externalContextsCallback,
         'mp:a/b/file-param#MyClass_field',
       )).toEqual({
-        '@type': 'ParameterRangeComposedUnion',
-        parameterRangeComposedChildren: [
+        '@type': 'ParameterRangeUnion',
+        parameterRangeElements: [
           'xsd:boolean',
           'mp:a/b/file-param#ClassParam',
         ],
@@ -1915,13 +1915,13 @@ describe('ComponentConstructor', () => {
         { type: 'class', value: rangeValueClass },
       ];
       expect(await ctor.constructParameterRange(
-        { type: 'intersection', children },
+        { type: 'intersection', elements: children },
         context,
         externalContextsCallback,
         'mp:a/b/file-param#MyClass_field',
       )).toEqual({
-        '@type': 'ParameterRangeComposedIntersection',
-        parameterRangeComposedChildren: [
+        '@type': 'ParameterRangeIntersection',
+        parameterRangeElements: [
           'xsd:boolean',
           'mp:a/b/file-param#ClassParam',
         ],
@@ -1945,7 +1945,7 @@ describe('ComponentConstructor', () => {
         'mp:a/b/file-param#MyClass_field',
       )).toEqual({
         '@type': 'ParameterRangeTuple',
-        parameterRangeTupleElements: [
+        parameterRangeElements: [
           'xsd:boolean',
           'mp:a/b/file-param#ClassParam',
         ],
@@ -1969,7 +1969,7 @@ describe('ComponentConstructor', () => {
         'mp:a/b/file-param#MyClass_field',
       )).toEqual({
         '@type': 'ParameterRangeTuple',
-        parameterRangeTupleElements: [
+        parameterRangeElements: [
           {
             '@type': 'ParameterRangeRest',
             parameterRangeValue: 'xsd:boolean',

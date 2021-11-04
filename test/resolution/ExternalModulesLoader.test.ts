@@ -339,7 +339,7 @@ describe('ExternalModulesLoader', () => {
             {
               range: {
                 type: 'union',
-                children: [
+                elements: [
                   {
                     type: 'class',
                     value: {
@@ -373,13 +373,84 @@ describe('ExternalModulesLoader', () => {
             {
               range: {
                 type: 'intersection',
-                children: [
+                elements: [
                   {
                     type: 'class',
                     value: {
                       type: 'class',
                       localName: 'Class1',
                       packageName: 'package1',
+                    },
+                  },
+                  {
+                    type: 'class',
+                    value: {
+                      type: 'class',
+                      localName: 'Class2',
+                      packageName: 'package2',
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      };
+      expect(loader.findExternalPackages({}, constructors))
+        .toEqual([ 'package1', 'package2' ]);
+    });
+
+    it('should handle tuple constructor parameters', () => {
+      const constructors: ClassIndex<ConstructorData<ParameterRangeResolved>> = <any> {
+        Class1: {
+          parameters: [
+            {
+              range: {
+                type: 'tuple',
+                elements: [
+                  {
+                    type: 'class',
+                    value: {
+                      type: 'class',
+                      localName: 'Class1',
+                      packageName: 'package1',
+                    },
+                  },
+                  {
+                    type: 'class',
+                    value: {
+                      type: 'class',
+                      localName: 'Class2',
+                      packageName: 'package2',
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      };
+      expect(loader.findExternalPackages({}, constructors))
+        .toEqual([ 'package1', 'package2' ]);
+    });
+
+    it('should handle tuple constructor parameters with rest type', () => {
+      const constructors: ClassIndex<ConstructorData<ParameterRangeResolved>> = <any> {
+        Class1: {
+          parameters: [
+            {
+              range: {
+                type: 'tuple',
+                elements: [
+                  {
+                    type: 'rest',
+                    value: {
+                      type: 'class',
+                      value: {
+                        type: 'class',
+                        localName: 'Class1',
+                        packageName: 'package1',
+                      },
                     },
                   },
                   {

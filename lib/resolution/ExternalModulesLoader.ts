@@ -91,9 +91,13 @@ export class ExternalModulesLoader {
         break;
       case 'union':
       case 'intersection':
-        for (const child of parameterRange.children) {
+      case 'tuple':
+        for (const child of parameterRange.elements) {
           this.indexParameterRangeInExternalPackage(child, externalPackages);
         }
+        break;
+      case 'rest':
+        this.indexParameterRangeInExternalPackage(parameterRange.value, externalPackages);
         break;
     }
   }
