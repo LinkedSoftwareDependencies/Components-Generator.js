@@ -96,7 +96,7 @@
     "fs-extra": "^9.0.0",
     "husky": "^6.0.0",
     "jest": "^27.0.1",
-    "jest-extended": "^0.11.2",
+    "jest-extended": "^1.0.0",
     "manual-git-changelog": "^1.0.1",
     "rimraf": "latest",
     "ts-jest": "^27.0.1",
