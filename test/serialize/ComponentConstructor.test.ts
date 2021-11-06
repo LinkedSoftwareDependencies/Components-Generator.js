@@ -121,14 +121,12 @@ describe('ComponentConstructor', () => {
               type: 'field',
               name: 'fieldA',
               range: { type: 'raw', value: 'boolean' },
-              unique: true,
               comment: 'Hi1',
             },
             {
               type: 'field',
               name: 'fieldB',
               range: { type: 'raw', value: 'string' },
-              unique: true,
               comment: 'Hi2',
             },
           ],
@@ -161,13 +159,11 @@ describe('ComponentConstructor', () => {
                   '@id': 'mp:b/file#MyClass2_fieldA',
                   comment: 'Hi1',
                   range: 'xsd:boolean',
-                  unique: true,
                 },
                 {
                   '@id': 'mp:b/file#MyClass2_fieldB',
                   comment: 'Hi2',
                   range: 'xsd:string',
-                  unique: true,
                 },
               ],
             },
@@ -201,14 +197,12 @@ describe('ComponentConstructor', () => {
               type: 'field',
               name: 'fieldA',
               range: { type: 'raw', value: 'boolean' },
-              unique: true,
               comment: 'Hi1',
             },
             {
               type: 'field',
               name: 'fieldB',
               range: { type: 'raw', value: 'string' },
-              unique: true,
               comment: 'Hi2',
             },
           ],
@@ -249,13 +243,11 @@ describe('ComponentConstructor', () => {
                   '@id': 'mp:b/file2#MyClass2_fieldA',
                   comment: 'Hi1',
                   range: 'xsd:boolean',
-                  unique: true,
                 },
                 {
                   '@id': 'mp:b/file2#MyClass2_fieldB',
                   comment: 'Hi2',
                   range: 'xsd:string',
-                  unique: true,
                 },
               ],
             },
@@ -299,14 +291,12 @@ describe('ComponentConstructor', () => {
               type: 'field',
               name: 'fieldA',
               range: { type: 'raw', value: 'boolean' },
-              unique: true,
               comment: 'Hi1',
             },
             {
               type: 'field',
               name: 'fieldB',
               range: { type: 'raw', value: 'string' },
-              unique: true,
               comment: 'Hi2',
             },
           ],
@@ -348,13 +338,11 @@ describe('ComponentConstructor', () => {
                   '@id': 'mp:b/file#MyClass2_fieldA',
                   comment: 'Hi1',
                   range: 'xsd:boolean',
-                  unique: true,
                 },
                 {
                   '@id': 'mp:b/file#MyClass2_fieldB',
                   comment: 'Hi2',
                   range: 'xsd:string',
-                  unique: true,
                 },
               ],
             },
@@ -519,14 +507,12 @@ describe('ComponentConstructor', () => {
             type: 'field',
             name: 'fieldA',
             range: { type: 'raw', value: 'boolean' },
-            unique: true,
             comment: 'Hi1',
           },
           {
             type: 'field',
             name: 'fieldB',
             range: { type: 'raw', value: 'string' },
-            unique: true,
             comment: 'Hi2',
           },
         ],
@@ -542,13 +528,11 @@ describe('ComponentConstructor', () => {
             '@id': 'mp:a/b/file-param#MyClass_fieldA',
             comment: 'Hi1',
             range: 'xsd:boolean',
-            unique: true,
           },
           {
             '@id': 'mp:a/b/file-param#MyClass_fieldB',
             comment: 'Hi2',
             range: 'xsd:string',
-            unique: true,
           },
         ],
         requireElement: 'MyClass',
@@ -829,14 +813,12 @@ describe('ComponentConstructor', () => {
             type: 'field',
             name: 'fieldA',
             range: { type: 'raw', value: 'boolean' },
-            unique: true,
             comment: 'Hi1',
           },
           {
             type: 'field',
             name: 'fieldB',
             range: { type: 'raw', value: 'string' },
-            unique: true,
             comment: 'Hi2',
           },
         ],
@@ -849,13 +831,11 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:a/b/file-param#MyClass_fieldA',
           comment: 'Hi1',
           range: 'xsd:boolean',
-          unique: true,
         },
         {
           '@id': 'mp:a/b/file-param#MyClass_fieldB',
           comment: 'Hi2',
           range: 'xsd:string',
-          unique: true,
         },
       ]);
     });
@@ -868,21 +848,18 @@ describe('ComponentConstructor', () => {
             type: 'field',
             name: 'field',
             range: { type: 'raw', value: 'boolean' },
-            unique: true,
             comment: 'Hi1',
           },
           {
             type: 'field',
             name: 'field',
             range: { type: 'raw', value: 'string' },
-            unique: true,
             comment: 'Hi2',
           },
           {
             type: 'field',
             name: 'field',
             range: { type: 'raw', value: 'string' },
-            unique: true,
             comment: 'Hi3',
           },
         ],
@@ -896,19 +873,16 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:a/b/file-param#MyClass_field',
           comment: 'Hi1',
           range: 'xsd:boolean',
-          unique: true,
         },
         {
           '@id': 'mp:a/b/file-param#MyClass_field_1',
           comment: 'Hi2',
           range: 'xsd:string',
-          unique: true,
         },
         {
           '@id': 'mp:a/b/file-param#MyClass_field_2',
           comment: 'Hi3',
           range: 'xsd:string',
-          unique: true,
         },
       ]);
     });
@@ -927,19 +901,16 @@ describe('ComponentConstructor', () => {
                   type: 'field',
                   name: 'fieldA',
                   range: { type: 'raw', value: 'boolean' },
-                  unique: true,
                   comment: 'Hi1',
                 },
                 {
                   type: 'field',
                   name: 'fieldB',
                   range: { type: 'raw', value: 'string' },
-                  unique: true,
                   comment: 'Hi2',
                 },
               ],
             },
-            unique: true,
             comment: 'Hi',
           },
         ],
@@ -957,13 +928,11 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:a/b/file-param#MyClass_field_fieldA',
           comment: 'Hi1',
           range: 'xsd:boolean',
-          unique: true,
         },
         {
           '@id': 'mp:a/b/file-param#MyClass_field_fieldB',
           comment: 'Hi2',
           range: 'xsd:string',
-          unique: true,
         },
       ]);
     });
@@ -992,12 +961,10 @@ describe('ComponentConstructor', () => {
                       },
                     ],
                   },
-                  unique: true,
                   comment: 'Hi1',
                 },
               ],
             },
-            unique: true,
             comment: 'Hi',
           },
         ],
@@ -1032,13 +999,11 @@ describe('ComponentConstructor', () => {
             parameters: [
               {
                 '@id': 'mp:a/b/file-param#MyClass_field_fieldA_key',
-                unique: true,
               },
               {
                 '@id': 'mp:a/b/file-param#MyClass_field_fieldA_value',
                 comment: 'Hi1',
                 range: 'xsd:boolean',
-                unique: true,
               },
             ],
           },
@@ -1055,7 +1020,6 @@ describe('ComponentConstructor', () => {
           type: 'field',
           name: 'field',
           range: { type: 'raw', value: 'boolean' },
-          unique: true,
           comment: 'Hi',
         }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
       expect(parameters).toEqual([
@@ -1063,7 +1027,6 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:a/b/file-param#MyClass_field',
           comment: 'Hi',
           range: 'xsd:boolean',
-          unique: true,
         },
       ]);
     });
@@ -1075,7 +1038,6 @@ describe('ComponentConstructor', () => {
           type: 'field',
           name: 'field',
           range: { type: 'override', value: 'boolean' },
-          unique: true,
           comment: 'Hi',
         }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
       expect(parameters).toEqual([
@@ -1083,7 +1045,6 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:a/b/file-param#MyClass_field',
           comment: 'Hi',
           range: 'xsd:boolean',
-          unique: true,
         },
       ]);
     });
@@ -1100,7 +1061,6 @@ describe('ComponentConstructor', () => {
               localName: 'ClassParam',
               fileName: Path.normalize('/docs/package/src/a/b/file-param'),
             }},
-          unique: true,
           comment: 'Hi',
         }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
       expect(parameters).toEqual([
@@ -1108,7 +1068,6 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:a/b/file-param#MyClass_field',
           comment: 'Hi',
           range: 'mp:a/b/file-param#ClassParam',
-          unique: true,
         },
       ]);
     });
@@ -1120,7 +1079,6 @@ describe('ComponentConstructor', () => {
           type: 'field',
           name: 'field',
           range: { type: 'undefined' },
-          unique: true,
           comment: 'Hi',
         }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
       expect(parameters).toEqual([
@@ -1130,7 +1088,6 @@ describe('ComponentConstructor', () => {
           range: {
             '@type': 'ParameterRangeUndefined',
           },
-          unique: true,
         },
       ]);
     });
@@ -1142,7 +1099,6 @@ describe('ComponentConstructor', () => {
           type: 'field',
           name: 'field',
           range: { type: 'nested', value: []},
-          unique: true,
           comment: 'Hi',
         }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({
         '@id': 'mp:a/b/file-param#MyClass_field__constructorArgument',
@@ -1164,12 +1120,10 @@ describe('ComponentConstructor', () => {
                 type: 'field',
                 name: 'field',
                 range: { type: 'raw', value: 'boolean' },
-                unique: true,
                 comment: 'Hi',
               },
             ],
           },
-          unique: true,
           comment: 'Hi',
         }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({
         '@id': 'mp:a/b/file-param#MyClass_field__constructorArgument',
@@ -1182,7 +1136,6 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:a/b/file-param#MyClass_field_field',
           comment: 'Hi',
           range: 'xsd:boolean',
-          unique: true,
         },
       ]);
     });
@@ -1200,19 +1153,16 @@ describe('ComponentConstructor', () => {
                 type: 'field',
                 name: 'fieldA',
                 range: { type: 'raw', value: 'boolean' },
-                unique: true,
                 comment: 'Hi1',
               },
               {
                 type: 'field',
                 name: 'fieldB',
                 range: { type: 'raw', value: 'string' },
-                unique: true,
                 comment: 'Hi2',
               },
             ],
           },
-          unique: true,
           comment: 'Hi',
         }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({
         '@id': 'mp:a/b/file-param#MyClass_field__constructorArgument',
@@ -1226,13 +1176,11 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:a/b/file-param#MyClass_field_fieldA',
           comment: 'Hi1',
           range: 'xsd:boolean',
-          unique: true,
         },
         {
           '@id': 'mp:a/b/file-param#MyClass_field_fieldB',
           comment: 'Hi2',
           range: 'xsd:string',
-          unique: true,
         },
       ]);
     });
@@ -1250,7 +1198,6 @@ describe('ComponentConstructor', () => {
                 type: 'field',
                 name: 'fieldA',
                 range: { type: 'raw', value: 'boolean' },
-                unique: true,
                 comment: 'Hi1',
               },
               {
@@ -1263,17 +1210,14 @@ describe('ComponentConstructor', () => {
                       type: 'field',
                       name: 'fieldB',
                       range: { type: 'raw', value: 'string' },
-                      unique: true,
                       comment: 'Hi2',
                     },
                   ],
                 },
-                unique: true,
                 comment: 'Hi',
               },
             ],
           },
-          unique: true,
           comment: 'Hi',
         }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({
         '@id': 'mp:a/b/file-param#MyClass_field__constructorArgument',
@@ -1295,13 +1239,11 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:a/b/file-param#MyClass_field_fieldA',
           comment: 'Hi1',
           range: 'xsd:boolean',
-          unique: true,
         },
         {
           '@id': 'mp:a/b/file-param#MyClass_field_fieldSub_fieldB',
           comment: 'Hi2',
           range: 'xsd:string',
-          unique: true,
         },
       ]);
     });
@@ -1319,7 +1261,6 @@ describe('ComponentConstructor', () => {
                 type: 'field',
                 name: 'field',
                 range: { type: 'raw', value: 'boolean' },
-                unique: true,
                 comment: 'Hi1',
               },
               {
@@ -1332,17 +1273,14 @@ describe('ComponentConstructor', () => {
                       type: 'field',
                       name: 'field',
                       range: { type: 'raw', value: 'string' },
-                      unique: true,
                       comment: 'Hi2',
                     },
                   ],
                 },
-                unique: true,
                 comment: 'Hi',
               },
             ],
           },
-          unique: true,
           comment: 'Hi',
         }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({
         '@id': 'mp:a/b/file-param#MyClass_field__constructorArgument',
@@ -1364,13 +1302,11 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:a/b/file-param#MyClass_field_field',
           comment: 'Hi1',
           range: 'xsd:boolean',
-          unique: true,
         },
         {
           '@id': 'mp:a/b/file-param#MyClass_field_value_field',
           comment: 'Hi2',
           range: 'xsd:string',
-          unique: true,
         },
       ]);
     });
@@ -1392,7 +1328,6 @@ describe('ComponentConstructor', () => {
               },
             ],
           },
-          unique: true,
           comment: 'Hi',
         }, parameters, 'mp:a/b/file-param#MyClass_fieldA', scope)).toEqual({
         '@id': 'mp:a/b/file-param#MyClass_fieldA__constructorArgument',
@@ -1413,13 +1348,11 @@ describe('ComponentConstructor', () => {
             parameters: [
               {
                 '@id': 'mp:a/b/file-param#MyClass_fieldA_key',
-                unique: true,
               },
               {
                 '@id': 'mp:a/b/file-param#MyClass_fieldA_value',
                 comment: 'Hi1',
                 range: 'xsd:boolean',
-                unique: true,
               },
             ],
           },
@@ -1446,12 +1379,10 @@ describe('ComponentConstructor', () => {
                 type: 'field',
                 name: 'fieldB',
                 range: { type: 'raw', value: 'boolean' },
-                unique: true,
                 comment: 'Hi1',
               },
             ],
           },
-          unique: true,
           comment: 'Hi',
         }, parameters, 'mp:a/b/file-param#MyClass_fieldA', scope)).toEqual({
         '@id': 'mp:a/b/file-param#MyClass_fieldA__constructorArgument',
@@ -1476,13 +1407,11 @@ describe('ComponentConstructor', () => {
             parameters: [
               {
                 '@id': 'mp:a/b/file-param#MyClass_fieldA_key',
-                unique: true,
               },
               {
                 '@id': 'mp:a/b/file-param#MyClass_fieldA_value',
                 comment: 'Hi1',
                 range: 'xsd:boolean',
-                unique: true,
               },
             ],
           },
@@ -1491,7 +1420,6 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:a/b/file-param#MyClass_fieldA_fieldB',
           comment: 'Hi1',
           range: 'xsd:boolean',
-          unique: true,
         },
       ]);
     });
@@ -1504,7 +1432,6 @@ describe('ComponentConstructor', () => {
           name: 'field',
           range: { type: 'raw', value: 'boolean' },
           default: { type: 'raw', value: 'abc' },
-          unique: true,
           comment: 'Hi',
         }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
       expect(parameters).toEqual([
@@ -1513,7 +1440,6 @@ describe('ComponentConstructor', () => {
           comment: 'Hi',
           range: 'xsd:boolean',
           default: 'abc',
-          unique: true,
         },
       ]);
     });
@@ -1526,7 +1452,6 @@ describe('ComponentConstructor', () => {
           name: 'field',
           range: { type: 'raw', value: 'boolean' },
           default: { type: 'iri', value: 'ex:abc' },
-          unique: true,
           comment: 'Hi',
         }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
       expect(parameters).toEqual([
@@ -1535,7 +1460,6 @@ describe('ComponentConstructor', () => {
           comment: 'Hi',
           range: 'xsd:boolean',
           default: { '@id': 'ex:abc' },
-          unique: true,
         },
       ]);
     });
@@ -1558,12 +1482,10 @@ describe('ComponentConstructor', () => {
               type: 'field',
               name: 'fieldA',
               range: { type: 'raw', value: 'boolean' },
-              unique: true,
               comment: 'Hi',
             },
           ],
         },
-        unique: true,
         comment: 'Hi',
       };
       const subParamData: ParameterData<ParameterRangeResolved> = (<any> parameterData).range.value[0];
@@ -1583,7 +1505,6 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:a/b/file-param#MyClass_fieldA',
           comment: 'Hi',
           range: 'xsd:boolean',
-          unique: true,
         },
       ]);
     });
@@ -1605,17 +1526,14 @@ describe('ComponentConstructor', () => {
                     type: 'field',
                     name: 'field',
                     range: { type: 'raw', value: 'boolean' },
-                    unique: true,
                     comment: 'Hi',
                   },
                 ],
               },
-              unique: true,
               comment: 'Hi',
             },
           ],
         },
-        unique: true,
         comment: 'Hi',
       };
       const subParamData: ParameterData<ParameterRangeResolved> = (<any> parameterData).range.value[0];
@@ -1648,7 +1566,6 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:a/b/file-param#MyClass_field_field',
           comment: 'Hi',
           range: 'xsd:boolean',
-          unique: true,
         },
       ]);
     });
@@ -1668,7 +1585,6 @@ describe('ComponentConstructor', () => {
             },
           ],
         },
-        unique: false,
         comment: 'Hi',
       };
       const subParamData: ParameterData<ParameterRangeResolved> = (<any> parameterData).range.value[0];
@@ -1696,13 +1612,11 @@ describe('ComponentConstructor', () => {
             parameters: [
               {
                 '@id': 'mp:a/b/file-param#MyClass_fieldA_key',
-                unique: true,
               },
               {
                 '@id': 'mp:a/b/file-param#MyClass_fieldA_value',
                 comment: 'Hi',
                 range: 'xsd:boolean',
-                unique: true,
               },
             ],
           },
@@ -1897,6 +1811,18 @@ describe('ComponentConstructor', () => {
         ],
       });
     });
+
+    it('should construct an array parameter range', async() => {
+      expect(await ctor.constructParameterRange(
+        { type: 'array', value: { type: 'raw', value: 'boolean' }},
+        context,
+        externalContextsCallback,
+        'mp:a/b/file-param#MyClass_field',
+      )).toEqual({
+        '@type': 'ParameterRangeArray',
+        parameterRangeValue: 'xsd:boolean',
+      });
+    });
   });
 
   describe('populateOptionalParameterFields', () => {
@@ -1906,7 +1832,6 @@ describe('ComponentConstructor', () => {
         type: 'field',
         name: 'field',
         range: { type: 'raw', value: 'boolean' },
-        unique: false,
         comment: undefined,
       });
       expect(field).toEqual({
@@ -1920,7 +1845,6 @@ describe('ComponentConstructor', () => {
         type: 'field',
         name: 'field',
         range: { type: 'raw', value: 'boolean' },
-        unique: false,
         comment: 'Hi',
       });
       expect(field).toEqual({
@@ -1935,12 +1859,10 @@ describe('ComponentConstructor', () => {
         type: 'field',
         name: 'field',
         range: { type: 'raw', value: 'boolean' },
-        unique: true,
         comment: undefined,
       });
       expect(field).toEqual({
         '@id': 'ex:field',
-        unique: true,
       });
     });
   });

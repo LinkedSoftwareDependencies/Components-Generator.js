@@ -28,7 +28,6 @@ export interface ComponentDefinition {
 export interface ParameterDefinition {
   '@id': string;
   comment?: string;
-  unique?: boolean;
   range?: ParameterDefinitionRange;
   default?: string | { '@id': string };
   lazy?: boolean;
@@ -38,7 +37,7 @@ export type ParameterDefinitionRange = string | { '@id': string; parameters: Par
   '@type': 'ParameterRangeUnion' | 'ParameterRangeIntersection' | 'ParameterRangeTuple';
   parameterRangeElements: ParameterDefinitionRange[];
 } | {
-  '@type': 'ParameterRangeRest';
+  '@type': 'ParameterRangeRest' | 'ParameterRangeArray';
   parameterRangeValue: ParameterDefinitionRange;
 } | {
   '@type': 'ParameterRangeUndefined';

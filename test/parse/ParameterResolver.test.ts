@@ -37,7 +37,6 @@ describe('ParameterResolver', () => {
             {
               type: 'field',
               name: 'fieldA',
-              unique: true,
               range: {
                 type: 'raw',
                 value: 'boolean',
@@ -53,7 +52,6 @@ describe('ParameterResolver', () => {
             {
               type: 'field',
               name: 'fieldA',
-              unique: true,
               range: {
                 type: 'raw',
                 value: 'boolean',
@@ -71,7 +69,6 @@ describe('ParameterResolver', () => {
             {
               type: 'field',
               name: 'fieldA',
-              unique: true,
               range: {
                 type: 'raw',
                 value: 'boolean',
@@ -98,7 +95,6 @@ describe('ParameterResolver', () => {
         {
           type: 'field',
           name: 'fieldA',
-          unique: true,
           range: {
             type: 'raw',
             value: 'boolean',
@@ -109,7 +105,6 @@ describe('ParameterResolver', () => {
           {
             type: 'field',
             name: 'fieldA',
-            unique: true,
             range: {
               type: 'raw',
               value: 'boolean',
@@ -131,7 +126,6 @@ describe('ParameterResolver', () => {
         {
           type: 'field',
           name: 'fieldA',
-          unique: true,
           range: {
             type: 'raw',
             value: 'boolean',
@@ -140,7 +134,6 @@ describe('ParameterResolver', () => {
         {
           type: 'field',
           name: 'fieldB',
-          unique: true,
           range: {
             type: 'raw',
             value: 'number',
@@ -150,7 +143,6 @@ describe('ParameterResolver', () => {
         {
           type: 'field',
           name: 'fieldA',
-          unique: true,
           range: {
             type: 'raw',
             value: 'boolean',
@@ -159,7 +151,6 @@ describe('ParameterResolver', () => {
         {
           type: 'field',
           name: 'fieldB',
-          unique: true,
           range: {
             type: 'raw',
             value: 'number',
@@ -199,7 +190,6 @@ describe('ParameterResolver', () => {
         {
           type: 'field',
           name: 'fieldA',
-          unique: true,
           range: {
             type: 'interface',
             value: 'MyClass',
@@ -209,7 +199,6 @@ describe('ParameterResolver', () => {
         {
           type: 'field',
           name: 'fieldA',
-          unique: true,
           range: {
             type: 'class',
             value: { localName: 'MyClass', fileName: 'MyClass' },
@@ -328,7 +317,6 @@ describe('ParameterResolver', () => {
           {
             name: 'fieldA',
             range: { type: 'raw', value: 'string' },
-            unique: true,
           },
         ],
       });
@@ -520,6 +508,27 @@ export interface MyInterface extends IgnoredInterface{};
         ],
       });
     });
+
+    it('should handle an array range', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `export * from './MyClass'`,
+        'MyClass.d.ts': `export class MyClass{}`,
+      };
+
+      expect(await loader.resolveRange({
+        type: 'array',
+        value: {
+          type: 'interface',
+          value: 'MyClass',
+        },
+      }, classReference)).toMatchObject({
+        type: 'array',
+        value: {
+          type: 'class',
+          value: { localName: 'MyClass', fileName: 'MyClass' },
+        },
+      });
+    });
   });
 
   describe('resolveRangeInterface', () => {
@@ -599,7 +608,6 @@ interface IFaceA {
                 type: 'raw',
                 value: 'string',
               },
-              unique: true,
             },
             {
               type: 'field',
@@ -608,7 +616,6 @@ interface IFaceA {
                 type: 'raw',
                 value: 'number',
               },
-              unique: true,
             },
           ],
         });
@@ -642,11 +649,9 @@ interface IFaceB {
                       type: 'raw',
                       value: 'number',
                     },
-                    unique: true,
                   },
                 ],
               },
-              unique: true,
             },
           ],
         });
@@ -927,7 +932,6 @@ export interface A{
               type: 'raw',
               value: 'string',
             },
-            unique: true,
           },
         ]);
     });
@@ -953,7 +957,6 @@ export interface A{
               type: 'override',
               value: 'boolean',
             },
-            unique: true,
           },
         ]);
     });
@@ -978,7 +981,6 @@ export interface A{
               type: 'class',
               value: { localName: 'B', fileName: 'B' },
             },
-            unique: true,
           },
         ]);
     });
@@ -1031,7 +1033,6 @@ export interface A{
               type: 'nested',
               value: [],
             },
-            unique: true,
           },
         ]);
     });
@@ -1065,11 +1066,9 @@ export interface B{
                     type: 'raw',
                     value: 'boolean',
                   },
-                  unique: true,
                 },
               ],
             },
-            unique: true,
           },
         ]);
     });
@@ -1100,11 +1099,9 @@ export interface B{
                     type: 'raw',
                     value: 'boolean',
                   },
-                  unique: true,
                 },
               ],
             },
-            unique: true,
           },
         ]);
     });
@@ -1152,7 +1149,6 @@ export interface C{
                           type: 'raw',
                           value: 'boolean',
                         },
-                        unique: true,
                       },
                       {
                         type: 'field',
@@ -1161,15 +1157,12 @@ export interface C{
                           type: 'raw',
                           value: 'number',
                         },
-                        unique: true,
                       },
                     ],
                   },
-                  unique: true,
                 },
               ],
             },
-            unique: true,
           },
         ]);
     });
@@ -1217,7 +1210,6 @@ export class A{
               type: 'raw',
               value: 'string',
             },
-            unique: true,
           },
         ]);
     });
@@ -1238,7 +1230,6 @@ export class A{
               type: 'override',
               value: 'boolean',
             },
-            unique: true,
           },
         ]);
     });
@@ -1259,7 +1250,6 @@ export class A{
               type: 'class',
               value: { localName: 'B', fileName: 'B' },
             },
-            unique: true,
           },
         ]);
     });
@@ -1299,7 +1289,6 @@ export class A{
               type: 'nested',
               value: [],
             },
-            unique: true,
           },
         ]);
     });
@@ -1329,11 +1318,9 @@ export interface B{
                     type: 'raw',
                     value: 'boolean',
                   },
-                  unique: true,
                 },
               ],
             },
-            unique: true,
           },
         ]);
     });
@@ -1358,11 +1345,9 @@ export interface B{
                     type: 'raw',
                     value: 'boolean',
                   },
-                  unique: true,
                 },
               ],
             },
-            unique: true,
           },
         ]);
     });
@@ -1406,7 +1391,6 @@ export interface C{
                           type: 'raw',
                           value: 'boolean',
                         },
-                        unique: true,
                       },
                       {
                         type: 'field',
@@ -1415,15 +1399,12 @@ export interface C{
                           type: 'raw',
                           value: 'number',
                         },
-                        unique: true,
                       },
                     ],
                   },
-                  unique: true,
                 },
               ],
             },
-            unique: true,
           },
         ]);
     });
@@ -1458,7 +1439,6 @@ export interface C{
                           type: 'raw',
                           value: 'boolean',
                         },
-                        unique: true,
                       },
                       {
                         type: 'field',
@@ -1467,15 +1447,12 @@ export interface C{
                           type: 'raw',
                           value: 'number',
                         },
-                        unique: true,
                       },
                     ],
                   },
-                  unique: true,
                 },
               ],
             },
-            unique: true,
           },
         ]);
     });

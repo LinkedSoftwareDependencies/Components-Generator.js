@@ -110,7 +110,6 @@ export class B{
                 type: 'override',
                 value: 'float',
               },
-              unique: true,
             },
             {
               type: 'field',
@@ -128,7 +127,6 @@ export class B{
                   },
                 ],
               },
-              unique: false,
             },
           ],
         },
@@ -142,7 +140,6 @@ export class B{
                 type: 'raw',
                 value: 'string',
               },
-              unique: true,
             },
           ],
         },

@@ -72,7 +72,6 @@ export class A{
               type: 'raw',
               value: 'string',
             },
-            unique: true,
           },
         ],
       });
@@ -96,7 +95,6 @@ export class A{
               type: 'override',
               value: 'float',
             },
-            unique: true,
           },
         ],
       });
@@ -115,7 +113,7 @@ export class A{
       });
     });
 
-    it('should handle a multiple fields', async() => {
+    it('should handle multiple fields', async() => {
       const { constructor, parameterLoader } = await getConstructor(`
 export class A{
   /**
@@ -135,7 +133,6 @@ export class A{
               type: 'override',
               value: 'float',
             },
-            unique: true,
           },
           {
             type: 'field',
@@ -153,7 +150,6 @@ export class A{
                 },
               ],
             },
-            unique: false,
           },
         ],
       });
@@ -192,7 +188,6 @@ export class A{
               },
             },
             type: 'field',
-            unique: true,
           },
         ],
       });
@@ -214,7 +209,6 @@ export class A{
               },
             },
             type: 'field',
-            unique: false,
           },
         ],
       });
@@ -234,7 +228,6 @@ export class A{
               type: 'raw',
               value: 'string',
             },
-            unique: true,
           },
         ],
       });
@@ -254,7 +247,6 @@ export class A{
               type: 'raw',
               value: 'string',
             },
-            unique: true,
           },
         ],
       });
@@ -274,7 +266,6 @@ export class A{
               type: 'raw',
               value: 'string',
             },
-            unique: true,
           },
         ],
       });
@@ -291,10 +282,12 @@ export class A{
             type: 'field',
             name: 'fieldA',
             range: {
-              type: 'raw',
-              value: 'string',
+              type: 'array',
+              value: {
+                type: 'raw',
+                value: 'string',
+              },
             },
-            unique: false,
           },
         ],
       });
@@ -322,7 +315,6 @@ export class A{
                 },
               ],
             },
-            unique: true,
           },
         ],
       });
@@ -354,7 +346,6 @@ export class A{
                 },
               ],
             },
-            unique: true,
           },
         ],
       });
@@ -382,7 +373,6 @@ export class A{
                 },
               ],
             },
-            unique: true,
           },
         ],
       });
@@ -410,7 +400,6 @@ export class A{
                 },
               ],
             },
-            unique: true,
           },
         ],
       });
@@ -430,15 +419,17 @@ export class A{
               type: 'union',
               elements: [
                 {
-                  type: 'raw',
-                  value: 'string',
+                  type: 'array',
+                  value: {
+                    type: 'raw',
+                    value: 'string',
+                  },
                 },
                 {
                   type: 'undefined',
                 },
               ],
             },
-            unique: false,
           },
         ],
       });
@@ -458,15 +449,17 @@ export class A{
               type: 'union',
               elements: [
                 {
-                  type: 'raw',
-                  value: 'string',
+                  type: 'array',
+                  value: {
+                    type: 'raw',
+                    value: 'string',
+                  },
                 },
                 {
                   type: 'undefined',
                 },
               ],
             },
-            unique: false,
           },
         ],
       });
@@ -486,15 +479,17 @@ export class A{
               type: 'union',
               elements: [
                 {
-                  type: 'raw',
-                  value: 'string',
+                  type: 'array',
+                  value: {
+                    type: 'raw',
+                    value: 'string',
+                  },
                 },
                 {
                   type: 'undefined',
                 },
               ],
             },
-            unique: false,
           },
         ],
       });
@@ -547,7 +542,6 @@ export interface A{
           type: 'field',
           name: 'fieldA',
           range: { type: 'raw', value: 'boolean' },
-          unique: true,
         },
       ]);
     });
@@ -586,7 +580,6 @@ export interface A{
             ],
           },
           default: { type: 'raw', value: '3' },
-          unique: false,
         },
       ]);
     });
@@ -601,7 +594,6 @@ export interface A{
           type: 'field',
           name: 'fieldA',
           range: { type: 'interface', value: 'MyClass' },
-          unique: true,
         },
       ]);
     });
@@ -622,13 +614,11 @@ export interface A{
           type: 'field',
           name: 'fieldA',
           range: { type: 'interface', value: 'MyClass1' },
-          unique: true,
         },
         {
           type: 'field',
           name: 'fieldB',
           range: { type: 'interface', value: 'MyClass2' },
-          unique: true,
         },
       ]);
     });
@@ -654,25 +644,21 @@ export interface A{
           type: 'field',
           name: 'fieldA',
           range: { type: 'interface', value: 'MyClass1' },
-          unique: true,
         },
         {
           type: 'field',
           name: 'fieldB',
           range: { type: 'interface', value: 'MyClass2' },
-          unique: true,
         },
         {
           type: 'field',
           name: 'fieldC',
           range: { type: 'interface', value: 'MyClass3' },
-          unique: true,
         },
         {
           type: 'field',
           name: 'fieldD',
           range: { type: 'interface', value: 'MyClass4' },
-          unique: true,
         },
       ]);
     });
@@ -726,7 +712,6 @@ export interface A{
           type: 'field',
           name: 'fieldA',
           range: { type: 'raw', value: 'boolean' },
-          unique: true,
         },
       ]);
     });
@@ -776,7 +761,6 @@ export interface A{
               { type: 'undefined' },
             ],
           },
-          unique: false,
         },
       ]);
     });
@@ -791,7 +775,6 @@ export interface A{
           type: 'field',
           name: 'fieldA',
           range: { type: 'interface', value: 'MyClass' },
-          unique: true,
         },
       ]);
     });
@@ -854,7 +837,6 @@ export interface A{
           type: 'field',
           name: 'something',
           range: { type: 'raw', value: 'string' },
-          unique: true,
         },
       ]);
     });
@@ -898,13 +880,12 @@ export interface A{
       }, {})).toEqual({
         type: 'field',
         name: 'fieldA',
-        unique: false,
         range: {
           type: 'union',
           elements: [
             {
-              type: 'raw',
-              value: 'boolean',
+              type: 'array',
+              value: { type: 'raw', value: 'boolean' },
             },
             {
               type: 'undefined',
@@ -932,10 +913,9 @@ export interface A{
       }, {})).toEqual({
         type: 'field',
         name: 'fieldA',
-        unique: false,
         range: {
-          type: 'raw',
-          value: 'boolean',
+          type: 'array',
+          value: { type: 'raw', value: 'boolean' },
         },
       });
     });
@@ -966,7 +946,6 @@ export interface A{
       })).toEqual({
         type: 'field',
         name: 'fieldA',
-        unique: false,
         range: {
           type: 'union',
           elements: [
@@ -994,13 +973,10 @@ export interface A{
           name: 'key',
           typeAnnotation: {
             typeAnnotation: {
-              type: AST_NODE_TYPES.TSArrayType,
-              elementType: {
-                type: AST_NODE_TYPES.TSTypeReference,
-                typeName: {
-                  type: AST_NODE_TYPES.Identifier,
-                  name: 'String',
-                },
+              type: AST_NODE_TYPES.TSTypeReference,
+              typeName: {
+                type: AST_NODE_TYPES.Identifier,
+                name: 'String',
               },
             },
           },
@@ -1021,8 +997,11 @@ export interface A{
         type: 'index',
         domain: 'string',
         range: {
-          type: 'raw',
-          value: 'boolean',
+          type: 'array',
+          value: {
+            type: 'raw',
+            value: 'boolean',
+          },
         },
       });
     });
@@ -1035,13 +1014,10 @@ export interface A{
           name: 'key',
           typeAnnotation: {
             typeAnnotation: {
-              type: AST_NODE_TYPES.TSArrayType,
-              elementType: {
-                type: AST_NODE_TYPES.TSTypeReference,
-                typeName: {
-                  type: AST_NODE_TYPES.Identifier,
-                  name: 'String',
-                },
+              type: AST_NODE_TYPES.TSTypeReference,
+              typeName: {
+                type: AST_NODE_TYPES.Identifier,
+                name: 'String',
               },
             },
           },
@@ -1101,99 +1077,6 @@ export interface A{
           name: 'fieldA',
         },
       })).toThrow(new Error('Unsupported field key type unknown in interface A in file'));
-    });
-  });
-
-  describe('isFieldUnique', () => {
-    it('should return true when there is no type annotation', () => {
-      expect(loader.isFieldUnique(<any> {})).toEqual(true);
-    });
-
-    it('should return true when the type annotation is not array', () => {
-      expect(loader.isFieldUnique(<any> {
-        typeAnnotation: {
-          typeAnnotation: {
-            type: AST_NODE_TYPES.TSAnyKeyword,
-          },
-        },
-      })).toEqual(true);
-    });
-
-    it('should return false when the type annotation is array', () => {
-      expect(loader.isFieldUnique(<any> {
-        name: 'fieldA',
-        typeAnnotation: {
-          typeAnnotation: {
-            type: AST_NODE_TYPES.TSArrayType,
-          },
-        },
-      })).toEqual(false);
-    });
-
-    it('should return false when the type annotation is an array with union undefined', () => {
-      expect(loader.isFieldUnique(<any> {
-        name: 'fieldA',
-        typeAnnotation: {
-          typeAnnotation: {
-            type: AST_NODE_TYPES.TSUnionType,
-            types: [
-              {
-                type: AST_NODE_TYPES.TSArrayType,
-              },
-              {
-                type: AST_NODE_TYPES.TSUndefinedKeyword,
-              },
-            ],
-          },
-        },
-      })).toEqual(false);
-    });
-
-    it('should return true when the type annotation is a not array with union undefined', () => {
-      expect(loader.isFieldUnique(<any> {
-        name: 'fieldA',
-        typeAnnotation: {
-          typeAnnotation: {
-            type: AST_NODE_TYPES.TSUnionType,
-            types: [
-              {
-                type: AST_NODE_TYPES.TSAnyKeyword,
-              },
-              {
-                type: AST_NODE_TYPES.TSUndefinedKeyword,
-              },
-            ],
-          },
-        },
-      })).toEqual(true);
-    });
-
-    it('should return false when the type annotation is an indexed hash', () => {
-      expect(loader.isFieldUnique(<any> {
-        name: 'fieldA',
-        typeAnnotation: {
-          typeAnnotation: {
-            type: AST_NODE_TYPES.TSTypeLiteral,
-            members: [
-              { type: AST_NODE_TYPES.TSIndexSignature },
-            ],
-          },
-        },
-      })).toEqual(false);
-    });
-
-    it('should return true when the type annotation is a hash without index', () => {
-      expect(loader.isFieldUnique(<any> {
-        name: 'fieldA',
-        typeAnnotation: {
-          typeAnnotation: {
-            type: AST_NODE_TYPES.TSTypeLiteral,
-            members: [
-              { type: 'bla' },
-            ],
-          },
-        },
-      })).toEqual(true);
     });
   });
 
@@ -1265,17 +1148,17 @@ export interface A{
 
     it('should get the range of a string array field type', async() => {
       expect(await getFieldRange('fieldA: string[]', {}))
-        .toEqual({ type: 'raw', value: 'string' });
+        .toEqual({ type: 'array', value: { type: 'raw', value: 'string' }});
     });
 
     it('should get the range of a String array field type', async() => {
       expect(await getFieldRange('fieldA: String[]', {}))
-        .toEqual({ type: 'raw', value: 'string' });
+        .toEqual({ type: 'array', value: { type: 'raw', value: 'string' }});
     });
 
     it('should get the range of a string Array field type', async() => {
       expect(await getFieldRange('fieldA: Array<string>', {}))
-        .toEqual({ type: 'raw', value: 'string' });
+        .toEqual({ type: 'array', value: { type: 'raw', value: 'string' }});
     });
 
     it('should error on an Array field type with no params', async() => {
@@ -1288,14 +1171,14 @@ export interface A{
         .rejects.toThrow(new Error('Found invalid Array field type at field fieldA in A at file'));
     });
 
-    it('should error on a nested array', async() => {
-      await expect(async() => await getFieldRange('fieldA: string[][]', {}))
-        .rejects.toThrow(new Error('Detected illegal nested array type for field fieldA in A at file'));
+    it('should handle a nested array', async() => {
+      expect(await getFieldRange('fieldA: string[][]', {}))
+        .toEqual({ type: 'array', value: { type: 'array', value: { type: 'raw', value: 'string' }}});
     });
 
-    it('should error on a nested Array', async() => {
-      await expect(async() => await getFieldRange('fieldA: Array<Array<string>>', {}))
-        .rejects.toThrow(new Error('Detected illegal nested array type for field fieldA in A at file'));
+    it('should handle a nested Array', async() => {
+      expect(await getFieldRange('fieldA: Array<Array<string>>', {}))
+        .toEqual({ type: 'array', value: { type: 'array', value: { type: 'raw', value: 'string' }}});
     });
 
     it('should get the range of a class', async() => {

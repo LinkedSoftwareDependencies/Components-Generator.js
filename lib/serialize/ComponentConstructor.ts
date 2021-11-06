@@ -427,10 +427,7 @@ export class ComponentConstructor {
 
     // Create sub parameters for key and value
     const subParameters: ParameterDefinition[] = [];
-    subParameters.push({
-      '@id': idKey,
-      unique: true,
-    });
+    subParameters.push({ '@id': idKey });
     const value = await this.parameterDataToConstructorArgument(
       context,
       externalContextsCallback,
@@ -440,7 +437,6 @@ export class ComponentConstructor {
       idValue,
       scope,
     );
-    subParameters[subParameters.length - 1].unique = true;
 
     // Construct parameter, which has key and value as sub-parameters
     const parameter: ParameterDefinition = {
@@ -450,8 +446,6 @@ export class ComponentConstructor {
         parameters: subParameters,
       },
     };
-    // Params for collected entries are never required, and can have more than one entry.
-    parameterData.unique = false;
     this.populateOptionalParameterFields(parameter, parameterData);
     parameters.push(parameter);
 
@@ -509,8 +503,9 @@ export class ComponentConstructor {
             .map(child => this.constructParameterRange(child, context, externalContextsCallback, fieldId))),
         };
       case 'rest':
+      case 'array':
         return {
-          '@type': 'ParameterRangeRest',
+          '@type': range.type === 'rest' ? 'ParameterRangeRest' : 'ParameterRangeArray',
           parameterRangeValue: await this
             .constructParameterRange(range.value, context, externalContextsCallback, fieldId),
         };
@@ -528,9 +523,6 @@ export class ComponentConstructor {
   ): void {
     if (parameterData.comment) {
       parameterDefinition.comment = parameterData.comment;
-    }
-    if ('unique' in parameterData && parameterData.unique) {
-      parameterDefinition.unique = parameterData.unique;
     }
   }
 }

@@ -75,7 +75,12 @@ export class ContextConstructor {
             typeScopedContext[parameter['@id'].slice(Math.max(0, component['@id'].length + 1))] = {
               '@id': parameter['@id'],
               ...parameter.range === 'rdf:JSON' ? { '@type': '@json' } : {},
-              ...parameter.unique || parameter.range === 'rdf:JSON' ? {} : { '@container': '@list' },
+              // Mark as list container if range is array
+              ...typeof parameter.range === 'object' &&
+                ('@type' in parameter.range) &&
+                parameter.range['@type'] === 'ParameterRangeArray' ?
+                { '@container': '@list' } :
+                {},
             };
           }
           (<any> shortcuts[match[0]])['@context'] = typeScopedContext;

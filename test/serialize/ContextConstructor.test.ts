@@ -175,11 +175,13 @@ describe('ContextConstructor', () => {
                 parameters: [
                   {
                     '@id': 'mp:file1#MyClass1_param1',
-                    unique: false,
+                    range: {
+                      '@type': 'ParameterRangeArray',
+                      parameterRangeValue: 'xsd:float',
+                    },
                   },
                   {
                     '@id': 'mp:file1#MyClass1_param2',
-                    unique: true,
                   },
                 ],
                 requireElement: 'MyClass1',

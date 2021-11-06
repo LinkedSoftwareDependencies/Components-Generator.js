@@ -470,6 +470,30 @@ describe('ExternalModulesLoader', () => {
       expect(loader.findExternalPackages({}, constructors))
         .toEqual([ 'package1', 'package2' ]);
     });
+
+    it('should handle array constructor parameters', () => {
+      const constructors: ClassIndex<ConstructorData<ParameterRangeResolved>> = <any> {
+        Class1: {
+          parameters: [
+            {
+              range: {
+                type: 'array',
+                value: {
+                  type: 'class',
+                  value: {
+                    type: 'class',
+                    localName: 'Class1',
+                    packageName: 'package1',
+                  },
+                },
+              },
+            },
+          ],
+        },
+      };
+      expect(loader.findExternalPackages({}, constructors))
+        .toEqual([ 'package1' ]);
+    });
   });
 
   describe('buildModuleStateSelective', () => {
