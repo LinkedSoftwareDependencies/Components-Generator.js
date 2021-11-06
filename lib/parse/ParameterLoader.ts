@@ -271,14 +271,10 @@ export class ParameterLoader {
   }
 
   public getFieldRange(field: Identifier | TSPropertySignature, commentData: CommentData): ParameterRangeUnresolved {
-    // Check comment data
     let range: ParameterRangeUnresolved | undefined;
-    if (commentData.range) {
-      range = commentData.range;
-    }
 
     // Check the typescript raw field type
-    if (!range && field.typeAnnotation) {
+    if (field.typeAnnotation) {
       range = this.getRangeFromTypeNode(field.typeAnnotation.typeAnnotation, this.getErrorIdentifierField(field));
     }
 
@@ -306,7 +302,49 @@ export class ParameterLoader {
       }
     }
 
+    // Check comment data
+    if (commentData.range) {
+      range = this.overrideRawRange(range, commentData.range);
+    }
+
     return range;
+  }
+
+  /**
+   * Apply a range override on the given range
+   * @param range The range to override in.
+   * @param override The range set set.
+   */
+  public overrideRawRange(
+    range: ParameterRangeUnresolved,
+    override: ParameterRangeUnresolved,
+  ): ParameterRangeUnresolved {
+    switch (range.type) {
+      case 'raw':
+        // Only raw types are replaced
+        return override;
+      case 'undefined':
+      case 'override':
+      case 'interface':
+      case 'hash':
+        // Override has no effect here
+        return range;
+      case 'union':
+      case 'intersection':
+      case 'tuple':
+        // Recursively apply override operation on elements
+        return {
+          type: range.type,
+          elements: range.elements.map(element => this.overrideRawRange(element, override)),
+        };
+      case 'rest':
+      case 'array':
+        // Recursively apply override operation on value
+        return {
+          type: range.type,
+          value: this.overrideRawRange(range.value, override),
+        };
+    }
   }
 
   public getFieldDefault(commentData: CommentData): ParameterDefaultValue | undefined {

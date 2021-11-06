@@ -119,8 +119,11 @@ export class B{
                 type: 'union',
                 elements: [
                   {
-                    type: 'override',
-                    value: 'float',
+                    type: 'array',
+                    value: {
+                      type: 'override',
+                      value: 'float',
+                    },
                   },
                   {
                     type: 'undefined',

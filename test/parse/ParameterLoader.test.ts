@@ -142,8 +142,11 @@ export class A{
               type: 'union',
               elements: [
                 {
-                  type: 'override',
-                  value: 'float',
+                  type: 'array',
+                  value: {
+                    type: 'override',
+                    value: 'float',
+                  },
                 },
                 {
                   type: 'undefined',
@@ -575,7 +578,13 @@ export interface A{
           range: {
             type: 'union',
             elements: [
-              { type: 'override', value: 'number' },
+              {
+                type: 'array',
+                value: {
+                  type: 'override',
+                  value: 'number',
+                },
+              },
               { type: 'undefined' },
             ],
           },
@@ -757,7 +766,13 @@ export interface A{
           range: {
             type: 'union',
             elements: [
-              { type: 'override', value: 'number' },
+              {
+                type: 'array',
+                value: {
+                  type: 'override',
+                  value: 'number',
+                },
+              },
               { type: 'undefined' },
             ],
           },
@@ -950,8 +965,11 @@ export interface A{
           type: 'union',
           elements: [
             {
-              type: 'override',
-              value: 'float',
+              type: 'array',
+              value: {
+                type: 'override',
+                value: 'float',
+              },
             },
             {
               type: 'undefined',
@@ -1447,6 +1465,232 @@ export interface A{
             },
           ],
         });
+    });
+  });
+
+  describe('overrideRawRange', () => {
+    it('should override a raw range', () => {
+      expect(loader.overrideRawRange(
+        {
+          type: 'raw',
+          value: 'string',
+        },
+        {
+          type: 'raw',
+          value: 'boolean',
+        },
+      )).toEqual({
+        type: 'raw',
+        value: 'boolean',
+      });
+    });
+
+    it('should not override an undefined range', () => {
+      expect(loader.overrideRawRange(
+        {
+          type: 'undefined',
+        },
+        {
+          type: 'raw',
+          value: 'boolean',
+        },
+      )).toEqual({
+        type: 'undefined',
+      });
+    });
+
+    it('should not override an override range', () => {
+      expect(loader.overrideRawRange(
+        {
+          type: 'override',
+          value: 'bla',
+        },
+        {
+          type: 'raw',
+          value: 'boolean',
+        },
+      )).toEqual({
+        type: 'override',
+        value: 'bla',
+      });
+    });
+
+    it('should not override an interface range', () => {
+      expect(loader.overrideRawRange(
+        {
+          type: 'interface',
+          value: 'bla',
+        },
+        {
+          type: 'raw',
+          value: 'boolean',
+        },
+      )).toEqual({
+        type: 'interface',
+        value: 'bla',
+      });
+    });
+
+    it('should not override a hash range', () => {
+      expect(loader.overrideRawRange(
+        {
+          type: 'hash',
+          value: <any> 'bla',
+        },
+        {
+          type: 'raw',
+          value: 'boolean',
+        },
+      )).toEqual({
+        type: 'hash',
+        value: 'bla',
+      });
+    });
+
+    it('should recursively override a union range', () => {
+      expect(loader.overrideRawRange(
+        {
+          type: 'union',
+          elements: [
+            {
+              type: 'raw',
+              value: 'string',
+            },
+            {
+              type: 'undefined',
+              value: 'string',
+            },
+          ],
+        },
+        {
+          type: 'raw',
+          value: 'boolean',
+        },
+      )).toEqual({
+        type: 'union',
+        elements: [
+          {
+            type: 'raw',
+            value: 'boolean',
+          },
+          {
+            type: 'undefined',
+            value: 'string',
+          },
+        ],
+      });
+    });
+
+    it('should recursively override an intersection range', () => {
+      expect(loader.overrideRawRange(
+        {
+          type: 'intersection',
+          elements: [
+            {
+              type: 'raw',
+              value: 'string',
+            },
+            {
+              type: 'undefined',
+              value: 'string',
+            },
+          ],
+        },
+        {
+          type: 'raw',
+          value: 'boolean',
+        },
+      )).toEqual({
+        type: 'intersection',
+        elements: [
+          {
+            type: 'raw',
+            value: 'boolean',
+          },
+          {
+            type: 'undefined',
+            value: 'string',
+          },
+        ],
+      });
+    });
+
+    it('should recursively override a tuple range', () => {
+      expect(loader.overrideRawRange(
+        {
+          type: 'tuple',
+          elements: [
+            {
+              type: 'raw',
+              value: 'string',
+            },
+            {
+              type: 'undefined',
+              value: 'string',
+            },
+          ],
+        },
+        {
+          type: 'raw',
+          value: 'boolean',
+        },
+      )).toEqual({
+        type: 'tuple',
+        elements: [
+          {
+            type: 'raw',
+            value: 'boolean',
+          },
+          {
+            type: 'undefined',
+            value: 'string',
+          },
+        ],
+      });
+    });
+
+    it('should recursively override a rest range', () => {
+      expect(loader.overrideRawRange(
+        {
+          type: 'rest',
+          value: {
+            type: 'raw',
+            value: 'string',
+          },
+        },
+        {
+          type: 'raw',
+          value: 'boolean',
+        },
+      )).toEqual({
+        type: 'rest',
+        value: {
+          type: 'raw',
+          value: 'boolean',
+        },
+      });
+    });
+
+    it('should recursively override an array range', () => {
+      expect(loader.overrideRawRange(
+        {
+          type: 'array',
+          value: {
+            type: 'raw',
+            value: 'string',
+          },
+        },
+        {
+          type: 'raw',
+          value: 'boolean',
+        },
+      )).toEqual({
+        type: 'array',
+        value: {
+          type: 'raw',
+          value: 'boolean',
+        },
+      });
     });
   });
 
