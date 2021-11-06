@@ -141,7 +141,7 @@ export class MyClass extends OtherClass {
   /**
    * @param paramA - My parameter
    */
-  constructor(paramA: boolean, paramB: number) {
+  constructor(paramA: boolean, paramB: number, paramC: string[]) {
   
   }
 }
@@ -165,20 +165,24 @@ Component file:
         {
           "@id": "ex:MyFile#MyClass_paramA",
           "range": "xsd:boolean",
-          "comment": "My parameter",
-          "unique": true,
-          "required": true
+          "comment": "My parameter"
         },
         {
           "@id": "ex:MyFile#MyClass_paramB",
-          "range": "xsd:integer",
-          "unique": true,
-          "required": true
+          "range": "xsd:integer"
+        },
+        {
+          "@id": "ex:MyFile#MyClass_paramC",
+          "range": {
+            "@type": "ParameterRangeArray",
+            "parameterRangeValue": "xsd:integer"
+          }
         }
       ],
       "constructorArguments": [
         { "@id": "ex:MyFile#MyClass_paramA" },
-        { "@id": "ex:MyFile#MyClass_paramB" }
+        { "@id": "ex:MyFile#MyClass_paramB" },
+        { "@id": "ex:MyFile#MyClass_paramC" }
       ]
     }
   ]
@@ -191,25 +195,33 @@ Each argument in the constructor of the class must be one of the following:
 
 * A primitive type such as `boolean, number, string`, which will be mapped to an [XSD type](https://componentsjs.readthedocs.io/en/latest/configuration/components/parameters/) 
 * Another class, which will be mapped to the component `@id`.
-* A hash or interface containing key-value pairs where each value matches one of the possible options. Nesting is allowed.  
-* An array of any of the allowed types.
+* A record or interface containing key-value pairs where each value matches one of the possible options. Nesting is allowed.  
+* An array, tuple, union, or intersection over any of the allowed types.
   
 Here is an example that showcases all of these options:  
    ```typescript
   import {Logger} from "@comunica/core";
   export class SampleActor {
-      constructor(args:HashArg, testArray:HashArg[], numberSample: number, componentExample: Logger) {}
+      constructor(
+        args: HashArg,
+        number: number,
+        component: Logger,
+        array: HashArg[],
+        complexComposition: (SomeClass & OtherClass) | string,
+        complexTuple: [ number, SomeClass, ...string[] ],
+        optional?: number,
+      ) {}
   }
   export interface HashArg {
       args: NestedHashArg;
-      arraySample: NestedHashArg[];
+      array: NestedHashArg[];
   }
   export interface NestedHashArg extends ExtendsTest {
       test: boolean;
-      componentTest: Logger;
+      component: Logger;
   }
   export interface ExtendsTest {
-      stringTest: String;
+      string: string;
   }
 ``` 
 
@@ -250,9 +262,10 @@ Component file:
       "parameters": [
         {
           "@id": "my-actor#TestClass#myByte",
-          "range": "xsd:byte",
-          "required": false,
-          "unique": false,
+          "range": {
+            "@type": "ParameterRangeArray",
+            "parameterRangeValue": "xsd:byte"
+          },
           "comment": "This is an array of bytes"
         }
       ],
@@ -290,8 +303,6 @@ Component file:
         {
           "@id": "my-actor#TestClass#myValue",
           "range": "rdf:JSON",
-          "required": false,
-          "unique": false,
           "comment": "Values will be passed as parsed JSON"
         }
       ],
@@ -335,7 +346,7 @@ export interface IActorBindingArgs {
    * @range {float}
    * @default {5.0}
    */
-   floatField?: number;
+   floatField: number;
 }
 ```
 
@@ -348,8 +359,6 @@ Component file:
         {
           "@id": "my-actor#floatField",
           "range": "xsd:float",
-          "required": false,
-          "unique": true,
           "default": "5.0",
           "comment": "This field is very important"
         }
