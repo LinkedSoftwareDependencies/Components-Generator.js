@@ -40,7 +40,9 @@ export type ParameterDefinitionRange = string | { '@id': string; parameters: Par
 } | {
   '@type': 'ParameterRangeRest';
   parameterRangeValue: ParameterDefinitionRange;
-} | undefined;
+} | {
+  '@type': 'ParameterRangeUndefined';
+};
 
 export type ConstructorArgumentDefinition = string | { '@id': string } | {
   '@id': string;

@@ -1127,6 +1127,9 @@ describe('ComponentConstructor', () => {
         {
           '@id': 'mp:a/b/file-param#MyClass_field',
           comment: 'Hi',
+          range: {
+            '@type': 'ParameterRangeUndefined',
+          },
           unique: true,
         },
       ]);
@@ -1791,7 +1794,9 @@ describe('ComponentConstructor', () => {
         context,
         externalContextsCallback,
         'mp:a/b/file-param#MyClass_field',
-      )).toBeUndefined();
+      )).toEqual({
+        '@type': 'ParameterRangeUndefined',
+      });
     });
 
     it('should construct a union parameter range', async() => {

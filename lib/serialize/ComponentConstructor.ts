@@ -486,7 +486,9 @@ export class ComponentConstructor {
       case 'nested':
         throw new Error('Composition of nested fields is unsupported');
       case 'undefined':
-        return;
+        return {
+          '@type': 'ParameterRangeUndefined',
+        };
       case 'union':
       case 'intersection':
       case 'tuple':
