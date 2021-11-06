@@ -29,7 +29,6 @@ export interface ParameterDefinition {
   '@id': string;
   comment?: string;
   unique?: boolean;
-  required?: boolean;
   range?: ParameterDefinitionRange;
   default?: string | { '@id': string };
   lazy?: boolean;

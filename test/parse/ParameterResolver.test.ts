@@ -38,7 +38,6 @@ describe('ParameterResolver', () => {
               type: 'field',
               name: 'fieldA',
               unique: true,
-              required: true,
               range: {
                 type: 'raw',
                 value: 'boolean',
@@ -55,7 +54,6 @@ describe('ParameterResolver', () => {
               type: 'field',
               name: 'fieldA',
               unique: true,
-              required: true,
               range: {
                 type: 'raw',
                 value: 'boolean',
@@ -74,7 +72,6 @@ describe('ParameterResolver', () => {
               type: 'field',
               name: 'fieldA',
               unique: true,
-              required: true,
               range: {
                 type: 'raw',
                 value: 'boolean',
@@ -102,7 +99,6 @@ describe('ParameterResolver', () => {
           type: 'field',
           name: 'fieldA',
           unique: true,
-          required: true,
           range: {
             type: 'raw',
             value: 'boolean',
@@ -114,7 +110,6 @@ describe('ParameterResolver', () => {
             type: 'field',
             name: 'fieldA',
             unique: true,
-            required: true,
             range: {
               type: 'raw',
               value: 'boolean',
@@ -137,7 +132,6 @@ describe('ParameterResolver', () => {
           type: 'field',
           name: 'fieldA',
           unique: true,
-          required: true,
           range: {
             type: 'raw',
             value: 'boolean',
@@ -147,7 +141,6 @@ describe('ParameterResolver', () => {
           type: 'field',
           name: 'fieldB',
           unique: true,
-          required: true,
           range: {
             type: 'raw',
             value: 'number',
@@ -158,7 +151,6 @@ describe('ParameterResolver', () => {
           type: 'field',
           name: 'fieldA',
           unique: true,
-          required: true,
           range: {
             type: 'raw',
             value: 'boolean',
@@ -168,7 +160,6 @@ describe('ParameterResolver', () => {
           type: 'field',
           name: 'fieldB',
           unique: true,
-          required: true,
           range: {
             type: 'raw',
             value: 'number',
@@ -209,7 +200,6 @@ describe('ParameterResolver', () => {
           type: 'field',
           name: 'fieldA',
           unique: true,
-          required: true,
           range: {
             type: 'interface',
             value: 'MyClass',
@@ -220,7 +210,6 @@ describe('ParameterResolver', () => {
           type: 'field',
           name: 'fieldA',
           unique: true,
-          required: true,
           range: {
             type: 'class',
             value: { localName: 'MyClass', fileName: 'MyClass' },
@@ -339,7 +328,6 @@ describe('ParameterResolver', () => {
           {
             name: 'fieldA',
             range: { type: 'raw', value: 'string' },
-            required: true,
             unique: true,
           },
         ],
@@ -611,7 +599,6 @@ interface IFaceA {
                 type: 'raw',
                 value: 'string',
               },
-              required: true,
               unique: true,
             },
             {
@@ -621,7 +608,6 @@ interface IFaceA {
                 type: 'raw',
                 value: 'number',
               },
-              required: true,
               unique: true,
             },
           ],
@@ -656,12 +642,10 @@ interface IFaceB {
                       type: 'raw',
                       value: 'number',
                     },
-                    required: true,
                     unique: true,
                   },
                 ],
               },
-              required: true,
               unique: true,
             },
           ],
@@ -943,7 +927,6 @@ export interface A{
               type: 'raw',
               value: 'string',
             },
-            required: true,
             unique: true,
           },
         ]);
@@ -970,7 +953,6 @@ export interface A{
               type: 'override',
               value: 'boolean',
             },
-            required: true,
             unique: true,
           },
         ]);
@@ -996,7 +978,6 @@ export interface A{
               type: 'class',
               value: { localName: 'B', fileName: 'B' },
             },
-            required: true,
             unique: true,
           },
         ]);
@@ -1050,7 +1031,6 @@ export interface A{
               type: 'nested',
               value: [],
             },
-            required: true,
             unique: true,
           },
         ]);
@@ -1085,12 +1065,10 @@ export interface B{
                     type: 'raw',
                     value: 'boolean',
                   },
-                  required: true,
                   unique: true,
                 },
               ],
             },
-            required: true,
             unique: true,
           },
         ]);
@@ -1122,12 +1100,10 @@ export interface B{
                     type: 'raw',
                     value: 'boolean',
                   },
-                  required: true,
                   unique: true,
                 },
               ],
             },
-            required: true,
             unique: true,
           },
         ]);
@@ -1176,7 +1152,6 @@ export interface C{
                           type: 'raw',
                           value: 'boolean',
                         },
-                        required: true,
                         unique: true,
                       },
                       {
@@ -1186,17 +1161,14 @@ export interface C{
                           type: 'raw',
                           value: 'number',
                         },
-                        required: true,
                         unique: true,
                       },
                     ],
                   },
-                  required: true,
                   unique: true,
                 },
               ],
             },
-            required: true,
             unique: true,
           },
         ]);
@@ -1245,7 +1217,6 @@ export class A{
               type: 'raw',
               value: 'string',
             },
-            required: true,
             unique: true,
           },
         ]);
@@ -1267,7 +1238,6 @@ export class A{
               type: 'override',
               value: 'boolean',
             },
-            required: true,
             unique: true,
           },
         ]);
@@ -1289,7 +1259,6 @@ export class A{
               type: 'class',
               value: { localName: 'B', fileName: 'B' },
             },
-            required: true,
             unique: true,
           },
         ]);
@@ -1330,7 +1299,6 @@ export class A{
               type: 'nested',
               value: [],
             },
-            required: true,
             unique: true,
           },
         ]);
@@ -1361,12 +1329,10 @@ export interface B{
                     type: 'raw',
                     value: 'boolean',
                   },
-                  required: true,
                   unique: true,
                 },
               ],
             },
-            required: true,
             unique: true,
           },
         ]);
@@ -1392,12 +1358,10 @@ export interface B{
                     type: 'raw',
                     value: 'boolean',
                   },
-                  required: true,
                   unique: true,
                 },
               ],
             },
-            required: true,
             unique: true,
           },
         ]);
@@ -1442,7 +1406,6 @@ export interface C{
                           type: 'raw',
                           value: 'boolean',
                         },
-                        required: true,
                         unique: true,
                       },
                       {
@@ -1452,17 +1415,14 @@ export interface C{
                           type: 'raw',
                           value: 'number',
                         },
-                        required: true,
                         unique: true,
                       },
                     ],
                   },
-                  required: true,
                   unique: true,
                 },
               ],
             },
-            required: true,
             unique: true,
           },
         ]);
@@ -1498,7 +1458,6 @@ export interface C{
                           type: 'raw',
                           value: 'boolean',
                         },
-                        required: true,
                         unique: true,
                       },
                       {
@@ -1508,17 +1467,14 @@ export interface C{
                           type: 'raw',
                           value: 'number',
                         },
-                        required: true,
                         unique: true,
                       },
                     ],
                   },
-                  required: true,
                   unique: true,
                 },
               ],
             },
-            required: true,
             unique: true,
           },
         ]);

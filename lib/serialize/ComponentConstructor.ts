@@ -429,7 +429,6 @@ export class ComponentConstructor {
     const subParameters: ParameterDefinition[] = [];
     subParameters.push({
       '@id': idKey,
-      required: true,
       unique: true,
     });
     const value = await this.parameterDataToConstructorArgument(
@@ -441,7 +440,6 @@ export class ComponentConstructor {
       idValue,
       scope,
     );
-    subParameters[subParameters.length - 1].required = true;
     subParameters[subParameters.length - 1].unique = true;
 
     // Construct parameter, which has key and value as sub-parameters
@@ -454,7 +452,6 @@ export class ComponentConstructor {
     };
     // Params for collected entries are never required, and can have more than one entry.
     parameterData.unique = false;
-    parameterData.required = false;
     this.populateOptionalParameterFields(parameter, parameterData);
     parameters.push(parameter);
 
@@ -532,9 +529,6 @@ export class ComponentConstructor {
     }
     if ('unique' in parameterData && parameterData.unique) {
       parameterDefinition.unique = parameterData.unique;
-    }
-    if ('required' in parameterData && parameterData.required) {
-      parameterDefinition.required = parameterData.required;
     }
   }
 }

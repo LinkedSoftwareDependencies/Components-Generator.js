@@ -142,7 +142,6 @@ export class ParameterLoader {
       type: 'field',
       name: this.getFieldName(field),
       unique: this.isFieldUnique(field),
-      required: this.isFieldRequired(field),
       range: this.getFieldRange(field, commentData),
     };
 
@@ -187,10 +186,6 @@ export class ParameterLoader {
     return !(fieldType.type === AST_NODE_TYPES.TSArrayType) &&
       !(fieldType.type === AST_NODE_TYPES.TSUnionType && fieldType.types.length === 2 &&
         fieldType.types[1].type === AST_NODE_TYPES.TSUndefinedKeyword && !this.isFieldTypeUnique(fieldType.types[0]));
-  }
-
-  public isFieldRequired(field: Identifier | TSPropertySignature): boolean {
-    return !field.optional && !this.isFieldIndexedHash(field);
   }
 
   public getErrorIdentifierField(field: Identifier | TSPropertySignature): string {
@@ -264,21 +259,9 @@ export class ParameterLoader {
       case AST_NODE_TYPES.TSTypeLiteral:
         return { type: 'hash', value: typeNode };
       case AST_NODE_TYPES.TSUnionType:
-        // Remove undefined types in the union, as they imply an optional field.
-        // eslint-disable-next-line no-case-declarations
-        const children = typeNode.types
-          .filter(type => type.type !== AST_NODE_TYPES.TSUndefinedKeyword)
-          .map(type => this.getRangeFromTypeNode(type, errorIdentifier, nestedArrays));
-        if (children.length === 1) {
-          return children[0];
-        }
-        return {
-          type: 'union',
-          elements: children,
-        };
       case AST_NODE_TYPES.TSIntersectionType:
         return {
-          type: 'intersection',
+          type: typeNode.type === AST_NODE_TYPES.TSUnionType ? 'union' : 'intersection',
           elements: typeNode.types
             .map(type => this.getRangeFromTypeNode(type, errorIdentifier, nestedArrays)),
         };
@@ -308,17 +291,41 @@ export class ParameterLoader {
 
   public getFieldRange(field: Identifier | TSPropertySignature, commentData: CommentData): ParameterRangeUnresolved {
     // Check comment data
+    let range: ParameterRangeUnresolved | undefined;
     if (commentData.range) {
-      return commentData.range;
+      range = commentData.range;
     }
 
     // Check the typescript raw field type
-    if (field.typeAnnotation) {
-      return this.getRangeFromTypeNode(field.typeAnnotation.typeAnnotation, this.getErrorIdentifierField(field));
+    if (!range && field.typeAnnotation) {
+      range = this.getRangeFromTypeNode(field.typeAnnotation.typeAnnotation, this.getErrorIdentifierField(field));
     }
 
-    throw new Error(`Missing field type on ${this.getFieldName(field)
-    } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
+    // Throw if no range was found
+    if (!range) {
+      throw new Error(`Missing field type on ${this.getFieldName(field)
+      } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
+    }
+
+    // If the field has the '?' annotation, explicitly allow undefined as value to make it be considered optional.
+    if (field.optional) {
+      if (range.type === 'union') {
+        // Don't add undefined element if it is already present
+        if (!range.elements.some(element => element.type === 'undefined')) {
+          range.elements.push({ type: 'undefined' });
+        }
+      } else {
+        range = {
+          type: 'union',
+          elements: [
+            range,
+            { type: 'undefined' },
+          ],
+        };
+      }
+    }
+
+    return range;
   }
 
   public getFieldDefault(commentData: CommentData): ParameterDefaultValue | undefined {
@@ -433,10 +440,6 @@ export interface ParameterDataField<R> {
    * This is always false for an array.
    */
   unique: boolean;
-  /**
-   * If the parameter MUST have a value.
-   */
-  required: boolean;
   /**
    * The range of the parameter values.
    */

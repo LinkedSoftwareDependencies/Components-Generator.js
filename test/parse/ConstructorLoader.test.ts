@@ -110,7 +110,6 @@ export class B{
                 type: 'override',
                 value: 'float',
               },
-              required: true,
               unique: true,
             },
             {
@@ -118,10 +117,17 @@ export class B{
               comment: 'This is B',
               name: 'fieldB',
               range: {
-                type: 'override',
-                value: 'float',
+                type: 'union',
+                elements: [
+                  {
+                    type: 'override',
+                    value: 'float',
+                  },
+                  {
+                    type: 'undefined',
+                  },
+                ],
               },
-              required: false,
               unique: false,
             },
           ],
@@ -136,7 +142,6 @@ export class B{
                 type: 'raw',
                 value: 'string',
               },
-              required: true,
               unique: true,
             },
           ],

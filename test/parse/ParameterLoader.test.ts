@@ -72,7 +72,6 @@ export class A{
               type: 'raw',
               value: 'string',
             },
-            required: true,
             unique: true,
           },
         ],
@@ -97,7 +96,6 @@ export class A{
               type: 'override',
               value: 'float',
             },
-            required: true,
             unique: true,
           },
         ],
@@ -137,7 +135,6 @@ export class A{
               type: 'override',
               value: 'float',
             },
-            required: true,
             unique: true,
           },
           {
@@ -145,10 +142,17 @@ export class A{
             comment: 'This is B',
             name: 'fieldB',
             range: {
-              type: 'override',
-              value: 'float',
+              type: 'union',
+              elements: [
+                {
+                  type: 'override',
+                  value: 'float',
+                },
+                {
+                  type: 'undefined',
+                },
+              ],
             },
-            required: false,
             unique: false,
           },
         ],
@@ -187,7 +191,6 @@ export class A{
                 type: 'TSTypeLiteral',
               },
             },
-            required: true,
             type: 'field',
             unique: true,
           },
@@ -210,7 +213,6 @@ export class A{
                 type: 'TSTypeLiteral',
               },
             },
-            required: false,
             type: 'field',
             unique: false,
           },
@@ -232,7 +234,6 @@ export class A{
               type: 'raw',
               value: 'string',
             },
-            required: true,
             unique: true,
           },
         ],
@@ -253,7 +254,6 @@ export class A{
               type: 'raw',
               value: 'string',
             },
-            required: true,
             unique: true,
           },
         ],
@@ -274,7 +274,6 @@ export class A{
               type: 'raw',
               value: 'string',
             },
-            required: true,
             unique: true,
           },
         ],
@@ -295,8 +294,123 @@ export class A{
               type: 'raw',
               value: 'string',
             },
-            required: true,
             unique: false,
+          },
+        ],
+      });
+    });
+
+    it('should handle a public optional field', async() => {
+      const { constructor, parameterLoader } = await getConstructor(`
+export class A{
+  constructor(public fieldA?: string) {}
+}`);
+      expect(parameterLoader.loadConstructorFields(constructor)).toEqual({
+        parameters: [
+          {
+            type: 'field',
+            name: 'fieldA',
+            range: {
+              type: 'union',
+              elements: [
+                {
+                  type: 'raw',
+                  value: 'string',
+                },
+                {
+                  type: 'undefined',
+                },
+              ],
+            },
+            unique: true,
+          },
+        ],
+      });
+    });
+
+    it('should handle a public optional union field', async() => {
+      const { constructor, parameterLoader } = await getConstructor(`
+export class A{
+  constructor(public fieldA?: string | number) {}
+}`);
+      expect(parameterLoader.loadConstructorFields(constructor)).toEqual({
+        parameters: [
+          {
+            type: 'field',
+            name: 'fieldA',
+            range: {
+              type: 'union',
+              elements: [
+                {
+                  type: 'raw',
+                  value: 'string',
+                },
+                {
+                  type: 'raw',
+                  value: 'number',
+                },
+                {
+                  type: 'undefined',
+                },
+              ],
+            },
+            unique: true,
+          },
+        ],
+      });
+    });
+
+    it('should handle a public optional field as union type', async() => {
+      const { constructor, parameterLoader } = await getConstructor(`
+export class A{
+  constructor(public fieldA?: string | undefined) {}
+}`);
+      expect(parameterLoader.loadConstructorFields(constructor)).toEqual({
+        parameters: [
+          {
+            type: 'field',
+            name: 'fieldA',
+            range: {
+              type: 'union',
+              elements: [
+                {
+                  type: 'raw',
+                  value: 'string',
+                },
+                {
+                  type: 'undefined',
+                },
+              ],
+            },
+            unique: true,
+          },
+        ],
+      });
+    });
+
+    it('should handle a public required field as union type', async() => {
+      const { constructor, parameterLoader } = await getConstructor(`
+export class A{
+  constructor(public fieldA: string | undefined) {}
+}`);
+      expect(parameterLoader.loadConstructorFields(constructor)).toEqual({
+        parameters: [
+          {
+            type: 'field',
+            name: 'fieldA',
+            range: {
+              type: 'union',
+              elements: [
+                {
+                  type: 'raw',
+                  value: 'string',
+                },
+                {
+                  type: 'undefined',
+                },
+              ],
+            },
+            unique: true,
           },
         ],
       });
@@ -313,10 +427,17 @@ export class A{
             type: 'field',
             name: 'fieldA',
             range: {
-              type: 'raw',
-              value: 'string',
+              type: 'union',
+              elements: [
+                {
+                  type: 'raw',
+                  value: 'string',
+                },
+                {
+                  type: 'undefined',
+                },
+              ],
             },
-            required: false,
             unique: false,
           },
         ],
@@ -334,10 +455,45 @@ export class A{
             type: 'field',
             name: 'fieldA',
             range: {
-              type: 'raw',
-              value: 'string',
+              type: 'union',
+              elements: [
+                {
+                  type: 'raw',
+                  value: 'string',
+                },
+                {
+                  type: 'undefined',
+                },
+              ],
             },
-            required: false,
+            unique: false,
+          },
+        ],
+      });
+    });
+
+    it('should handle a public required array field as union type', async() => {
+      const { constructor, parameterLoader } = await getConstructor(`
+export class A{
+  constructor(public fieldA: string[] | undefined) {}
+}`);
+      expect(parameterLoader.loadConstructorFields(constructor)).toEqual({
+        parameters: [
+          {
+            type: 'field',
+            name: 'fieldA',
+            range: {
+              type: 'union',
+              elements: [
+                {
+                  type: 'raw',
+                  value: 'string',
+                },
+                {
+                  type: 'undefined',
+                },
+              ],
+            },
             unique: false,
           },
         ],
@@ -391,7 +547,6 @@ export interface A{
           type: 'field',
           name: 'fieldA',
           range: { type: 'raw', value: 'boolean' },
-          required: true,
           unique: true,
         },
       ]);
@@ -423,9 +578,14 @@ export interface A{
           type: 'field',
           name: 'fieldA',
           comment: 'Hi',
-          range: { type: 'override', value: 'number' },
+          range: {
+            type: 'union',
+            elements: [
+              { type: 'override', value: 'number' },
+              { type: 'undefined' },
+            ],
+          },
           default: { type: 'raw', value: '3' },
-          required: false,
           unique: false,
         },
       ]);
@@ -441,7 +601,6 @@ export interface A{
           type: 'field',
           name: 'fieldA',
           range: { type: 'interface', value: 'MyClass' },
-          required: true,
           unique: true,
         },
       ]);
@@ -463,14 +622,12 @@ export interface A{
           type: 'field',
           name: 'fieldA',
           range: { type: 'interface', value: 'MyClass1' },
-          required: true,
           unique: true,
         },
         {
           type: 'field',
           name: 'fieldB',
           range: { type: 'interface', value: 'MyClass2' },
-          required: true,
           unique: true,
         },
       ]);
@@ -497,28 +654,24 @@ export interface A{
           type: 'field',
           name: 'fieldA',
           range: { type: 'interface', value: 'MyClass1' },
-          required: true,
           unique: true,
         },
         {
           type: 'field',
           name: 'fieldB',
           range: { type: 'interface', value: 'MyClass2' },
-          required: true,
           unique: true,
         },
         {
           type: 'field',
           name: 'fieldC',
           range: { type: 'interface', value: 'MyClass3' },
-          required: true,
           unique: true,
         },
         {
           type: 'field',
           name: 'fieldD',
           range: { type: 'interface', value: 'MyClass4' },
-          required: true,
           unique: true,
         },
       ]);
@@ -573,7 +726,6 @@ export interface A{
           type: 'field',
           name: 'fieldA',
           range: { type: 'raw', value: 'boolean' },
-          required: true,
           unique: true,
         },
       ]);
@@ -617,8 +769,13 @@ export interface A{
           name: 'fieldA',
           comment: 'Hi',
           default: { type: 'raw', value: '3' },
-          range: { type: 'override', value: 'number' },
-          required: false,
+          range: {
+            type: 'union',
+            elements: [
+              { type: 'override', value: 'number' },
+              { type: 'undefined' },
+            ],
+          },
           unique: false,
         },
       ]);
@@ -634,7 +791,6 @@ export interface A{
           type: 'field',
           name: 'fieldA',
           range: { type: 'interface', value: 'MyClass' },
-          required: true,
           unique: true,
         },
       ]);
@@ -698,7 +854,6 @@ export interface A{
           type: 'field',
           name: 'something',
           range: { type: 'raw', value: 'string' },
-          required: true,
           unique: true,
         },
       ]);
@@ -744,7 +899,40 @@ export interface A{
         type: 'field',
         name: 'fieldA',
         unique: false,
-        required: false,
+        range: {
+          type: 'union',
+          elements: [
+            {
+              type: 'raw',
+              value: 'boolean',
+            },
+            {
+              type: 'undefined',
+            },
+          ],
+        },
+      });
+    });
+
+    it('should get optional data', () => {
+      expect(loader.loadField(<any> {
+        name: 'fieldA',
+        typeAnnotation: {
+          typeAnnotation: {
+            type: AST_NODE_TYPES.TSArrayType,
+            elementType: {
+              type: AST_NODE_TYPES.TSTypeReference,
+              typeName: {
+                type: AST_NODE_TYPES.Identifier,
+                name: 'Boolean',
+              },
+            },
+          },
+        },
+      }, {})).toEqual({
+        type: 'field',
+        name: 'fieldA',
+        unique: false,
         range: {
           type: 'raw',
           value: 'boolean',
@@ -752,7 +940,7 @@ export interface A{
       });
     });
 
-    it('should also get optional data', () => {
+    it('should get optional data with override', () => {
       expect(loader.loadField(<any> {
         name: 'fieldA',
         typeAnnotation: {
@@ -779,10 +967,17 @@ export interface A{
         type: 'field',
         name: 'fieldA',
         unique: false,
-        required: false,
         range: {
-          type: 'override',
-          value: 'float',
+          type: 'union',
+          elements: [
+            {
+              type: 'override',
+              value: 'float',
+            },
+            {
+              type: 'undefined',
+            },
+          ],
         },
         default: { type: 'raw', value: '1.0' },
         comment: 'Hi',
@@ -989,52 +1184,6 @@ export interface A{
 
     it('should return true when the type annotation is a hash without index', () => {
       expect(loader.isFieldUnique(<any> {
-        name: 'fieldA',
-        typeAnnotation: {
-          typeAnnotation: {
-            type: AST_NODE_TYPES.TSTypeLiteral,
-            members: [
-              { type: 'bla' },
-            ],
-          },
-        },
-      })).toEqual(true);
-    });
-  });
-
-  describe('isFieldRequired', () => {
-    it('should be true without optional field', () => {
-      expect(loader.isFieldRequired(<any> {})).toEqual(true);
-    });
-
-    it('should be true with a falsy optional field', () => {
-      expect(loader.isFieldRequired(<any> {
-        optional: false,
-      })).toEqual(true);
-    });
-
-    it('should be false with a truthy optional field', () => {
-      expect(loader.isFieldRequired(<any> {
-        optional: true,
-      })).toEqual(false);
-    });
-
-    it('should return false when the type annotation is an indexed hash', () => {
-      expect(loader.isFieldRequired(<any> {
-        name: 'fieldA',
-        typeAnnotation: {
-          typeAnnotation: {
-            type: AST_NODE_TYPES.TSTypeLiteral,
-            members: [
-              { type: AST_NODE_TYPES.TSIndexSignature },
-            ],
-          },
-        },
-      })).toEqual(false);
-    });
-
-    it('should return true when the type annotation is a hash without index', () => {
-      expect(loader.isFieldRequired(<any> {
         name: 'fieldA',
         typeAnnotation: {
           typeAnnotation: {
@@ -1311,7 +1460,13 @@ export interface A{
 
     it('should get the range of a union type of a raw type and undefined', async() => {
       expect(await getFieldRange('fieldA: number | undefined', {}))
-        .toEqual({ type: 'raw', value: 'number' });
+        .toEqual({
+          type: 'union',
+          elements: [
+            { type: 'raw', value: 'number' },
+            { type: 'undefined' },
+          ],
+        });
     });
 
     it('should get the range of a union type of two raw types and undefined', async() => {
@@ -1321,6 +1476,7 @@ export interface A{
           elements: [
             { type: 'raw', value: 'number' },
             { type: 'raw', value: 'string' },
+            { type: 'undefined' },
           ],
         });
     });
