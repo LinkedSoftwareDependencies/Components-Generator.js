@@ -3,6 +3,9 @@
   "version": "2.6.1",
   "description": "Automatically generate component files from TypeScript classes for the Components.js dependency injection framework",
   "main": "index.js",
+  "engines": {
+    "node": ">=12.0"
+  },
   "scripts": {
     "build": "tsc",
     "test": "jest ${1}",
