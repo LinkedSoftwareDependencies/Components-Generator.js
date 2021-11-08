@@ -4,6 +4,7 @@ import type { ClassIndex, ClassLoaded } from '../../lib/parse/ClassIndex';
 import type { ConstructorData } from '../../lib/parse/ConstructorLoader';
 import type { ParameterRangeResolved } from '../../lib/parse/ParameterLoader';
 import { ExternalModulesLoader } from '../../lib/resolution/ExternalModulesLoader';
+import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
 let packageJsons: Record<string, any> = {};
 let loadComponentResources: (componentResources: Record<string, Resource>, objectLoader: RdfObjectLoader) => void;
@@ -39,6 +40,7 @@ jest.mock('componentsjs', () => ({
 
 describe('ExternalModulesLoader', () => {
   let logger: any;
+  let resolutionContext: ResolutionContextMocked;
   let loader: ExternalModulesLoader;
   let req: any;
 
@@ -65,6 +67,7 @@ describe('ExternalModulesLoader', () => {
       info: jest.fn(),
       warn: jest.fn(),
     };
+    resolutionContext = new ResolutionContextMocked({});
     loader = new ExternalModulesLoader({
       pathDestination: {
         packageRootDirectory: '/',
@@ -80,6 +83,8 @@ describe('ExternalModulesLoader', () => {
         importPaths: {},
         typesPath: '',
       },
+      resolutionContext,
+      debugState: false,
       logger,
     });
     req = {
@@ -835,6 +840,7 @@ describe('ExternalModulesLoader', () => {
           moduleState: expect.anything(),
         });
       expect(logger.warn).not.toHaveBeenCalled();
+      expect(resolutionContext.contentsOverrides).toEqual({});
     });
 
     it('should warn on components without a package.json', async() => {
@@ -853,6 +859,57 @@ describe('ExternalModulesLoader', () => {
           moduleState: expect.anything(),
         });
       expect(logger.warn).toHaveBeenCalledWith('Could not find a package.json for \'package3\'');
+      expect(resolutionContext.contentsOverrides).toEqual({});
+    });
+
+    it('should dump the state when debugState is true', async() => {
+      loader = new ExternalModulesLoader({
+        pathDestination: {
+          packageRootDirectory: '/',
+          originalPath: '/src',
+          replacementPath: '/components',
+        },
+        packageMetadata: {
+          name: 'my-package',
+          version: '2.3.4',
+          moduleIri: 'https://linkedsoftwaredependencies.org/bundles/npm/my-package/',
+          componentsPath: 'components',
+          contexts: {},
+          importPaths: {},
+          typesPath: '',
+        },
+        resolutionContext,
+        debugState: true,
+        logger,
+      });
+
+      expect(await loader.loadExternalComponents(req, [ 'package1', 'package2' ]))
+        .toEqual({
+          components: {
+            package1: {
+              contextIris: [
+                'http://example.org/context1',
+              ],
+              componentNamesToIris: {
+                Component1: 'urn:Component1',
+              },
+            },
+            package2: {
+              contextIris: [
+                'http://example.org/context2',
+              ],
+              componentNamesToIris: {
+                Component2: 'urn:Component2',
+                Component3: 'urn:Component3',
+              },
+            },
+          },
+          moduleState: expect.anything(),
+        });
+      expect(logger.warn).not.toHaveBeenCalled();
+      expect(resolutionContext.contentsOverrides).toEqual({
+        'componentsjs-generator-debug-state.json': `{\n  "externalPackages": [\n    "package1",\n    "package2"\n  ],\n  "moduleState": {\n    "mainModulePath": "/",\n    "componentModules": {\n      "urn:package1": {\n        "name": "package1",\n        "path": "/path/1/package1",\n        "lsd:module": "urn:package1",\n        "lsd:contexts": {\n          "http://example.org/context1": true\n        }\n      },\n      "urn:package2": {\n        "name": "package2",\n        "path": "/path/1/package2",\n        "lsd:module": "urn:package2",\n        "lsd:contexts": {\n          "http://example.org/context2": true\n        }\n      }\n    },\n    "importPaths": {\n      "type": "importPaths"\n    },\n    "contexts": {\n      "type": "contexts"\n    },\n    "nodeModuleImportPaths": [\n      "/path/1/",\n      "/path/2/"\n    ],\n    "nodeModulePaths": [\n      "/path/1/package1",\n      "/path/1/package2"\n    ]\n  }\n}`,
+      });
     });
   });
 });

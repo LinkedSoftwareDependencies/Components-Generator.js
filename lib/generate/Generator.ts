@@ -26,6 +26,7 @@ export class Generator {
   private readonly ignoreClasses: Record<string, boolean>;
   private readonly typeScopedContexts: boolean;
   private readonly logLevel: LogLevel;
+  private readonly debugState: boolean;
   private readonly prefix?: string;
 
   public constructor(args: GeneratorArgs) {
@@ -35,6 +36,7 @@ export class Generator {
     this.ignoreClasses = args.ignoreClasses;
     this.typeScopedContexts = args.typeScopedContexts;
     this.logLevel = args.logLevel;
+    this.debugState = args.debugState;
     this.prefix = args.prefix;
   }
 
@@ -64,6 +66,8 @@ export class Generator {
     const externalModulesLoader = new ExternalModulesLoader({
       pathDestination: this.pathDestination,
       packageMetadata,
+      resolutionContext: this.resolutionContext,
+      debugState: this.debugState,
       logger,
     });
     const externalPackages = externalModulesLoader.findExternalPackages(classAndInterfaceIndex, constructors);
@@ -115,5 +119,6 @@ export interface GeneratorArgs {
   ignoreClasses: Record<string, boolean>;
   typeScopedContexts: boolean;
   logLevel: LogLevel;
+  debugState: boolean;
   prefix?: string;
 }

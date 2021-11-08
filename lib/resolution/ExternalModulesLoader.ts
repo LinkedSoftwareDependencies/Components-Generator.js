@@ -12,6 +12,7 @@ import type { ConstructorData } from '../parse/ConstructorLoader';
 import type { PackageMetadata } from '../parse/PackageMetadataLoader';
 import type { ParameterRangeResolved } from '../parse/ParameterLoader';
 import type { PathDestinationDefinition } from '../serialize/ComponentConstructor';
+import type { ResolutionContext } from './ResolutionContext';
 
 /**
  * Loads components from Node modules.
@@ -19,11 +20,15 @@ import type { PathDestinationDefinition } from '../serialize/ComponentConstructo
 export class ExternalModulesLoader {
   private readonly pathDestination: PathDestinationDefinition;
   private readonly packageMetadata: PackageMetadata;
+  private readonly resolutionContext: ResolutionContext;
+  private readonly debugState: boolean;
   private readonly logger: Logger;
 
   public constructor(args: ExternalModulesLoaderArgs) {
     this.pathDestination = args.pathDestination;
     this.packageMetadata = args.packageMetadata;
+    this.resolutionContext = args.resolutionContext;
+    this.debugState = args.debugState;
     this.logger = args.logger;
   }
 
@@ -189,6 +194,11 @@ export class ExternalModulesLoader {
     // Load module state for the external packages
     const moduleState = await this.buildModuleStateSelective(req, externalPackages);
 
+    // Dump the module state to a file if needed
+    if (this.debugState) {
+      await this.dumpModuleState(moduleState, externalPackages);
+    }
+
     // Load components for this module state (code inspired by ComponentsManagerBuilder from Components.js)
     const componentResources: Record<string, Resource> = {};
     const objectLoader = ComponentsManagerBuilder.createObjectLoader();
@@ -245,6 +255,26 @@ export class ExternalModulesLoader {
 
     return externalComponents;
   }
+
+  /**
+   * Create a 'componentsjs-debug-state.json' file with the given module state.
+   * @param moduleState The module state to dump.
+   * @param externalPackages The external packages to include in the dump.
+   */
+  public async dumpModuleState(moduleState: IModuleState, externalPackages: string[]): Promise<void> {
+    const contents = JSON.stringify({
+      externalPackages,
+      moduleState: {
+        mainModulePath: moduleState.mainModulePath,
+        componentModules: moduleState.componentModules,
+        importPaths: moduleState.importPaths,
+        contexts: moduleState.contexts,
+        nodeModuleImportPaths: moduleState.nodeModuleImportPaths,
+        nodeModulePaths: moduleState.nodeModulePaths,
+      },
+    }, null, '  ');
+    await this.resolutionContext.writeFileContent('componentsjs-generator-debug-state.json', contents);
+  }
 }
 
 /**
@@ -267,5 +297,7 @@ export interface ExternalComponents {
 export interface ExternalModulesLoaderArgs {
   pathDestination: PathDestinationDefinition;
   packageMetadata: PackageMetadata;
+  resolutionContext: ResolutionContext;
+  debugState: boolean;
   logger: Logger;
 }

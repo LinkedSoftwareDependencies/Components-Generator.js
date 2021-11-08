@@ -17,6 +17,7 @@ Usage:
        -i ignore-classes.json  Relative path to an optional file with class names to ignore
        -l info                 The logger level
        -r prefix               Optional custom JSON-LD module prefix
+       --debugState            If a 'componentsjs-generator-debug-state.json' file should be created with debug information
        --help                  Show information about this command
 
   Experimental options:
@@ -40,6 +41,7 @@ if (args.help) {
     fileExtension: args.e || 'jsonld',
     typeScopedContexts: args.typeScopedContexts,
     logLevel: args.l || 'info',
+    debugState: args.debugState,
     prefix: args.r,
     ignoreClasses: args.i ?
       // eslint-disable-next-line no-sync
