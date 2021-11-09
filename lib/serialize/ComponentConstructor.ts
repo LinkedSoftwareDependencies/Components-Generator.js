@@ -160,6 +160,7 @@ export class ComponentConstructor {
   ): Promise<ComponentDefinition> {
     // Fill in parameters and constructor arguments
     const parameters: ParameterDefinition[] = [];
+    const scopedId = await this.classNameToId(context, externalContextsCallback, classReference);
     const constructorArguments = classReference.type === 'class' ?
       await this.constructParameters(
         context,
@@ -167,6 +168,7 @@ export class ComponentConstructor {
         classReference,
         constructorData,
         parameters,
+        scopedId,
       ) :
       [];
 
@@ -193,7 +195,6 @@ export class ComponentConstructor {
     }
 
     // Fill in fields
-    const scopedId = await this.classNameToId(context, externalContextsCallback, classReference);
     return {
       '@id': scopedId,
       '@type': classReference.type === 'interface' || classReference.abstract ? 'AbstractClass' : 'Class',
@@ -277,6 +278,7 @@ export class ComponentConstructor {
    * @param classReference Class reference of the class component owning this constructor.
    * @param constructorData Constructor data of the owning class.
    * @param parameters The array of parameters of the owning class, which will be appended to.
+   * @param componentIri IRI of the component these parameters are part of.
    */
   public async constructParameters(
     context: JsonLdContextNormalized,
@@ -284,8 +286,10 @@ export class ComponentConstructor {
     classReference: ClassLoaded,
     constructorData: ConstructorData<ParameterRangeResolved>,
     parameters: ParameterDefinition[],
+    componentIri: string,
   ): Promise<ConstructorArgumentDefinition[]> {
     const scope: FieldScope = {
+      componentIri,
       parentFieldNames: [],
       fieldIdsHash: {},
       defaultNested: [],
@@ -370,7 +374,9 @@ export class ComponentConstructor {
     const param: ParameterDefinition = {
       '@id': fieldId,
       range: await this.constructParameterRange(parameterData.range, context, externalContextsCallback, fieldId),
-      ...defaultValue !== undefined ? { default: this.constructDefaultValueDefinition(defaultValue) } : {},
+      ...defaultValue !== undefined ?
+        { default: this.constructDefaultValueDefinition(defaultValue, scope.componentIri) } :
+        {},
     };
 
     // Fill in optional fields
@@ -380,10 +386,18 @@ export class ComponentConstructor {
     return { '@id': fieldId };
   }
 
-  public constructDefaultValueDefinition(defaultValue: DefaultValue): DefaultValueDefinition {
-    return defaultValue.type === 'raw' ?
-      defaultValue.value :
-      { '@id': defaultValue.value, '@type': defaultValue.typeIri };
+  public constructDefaultValueDefinition(defaultValue: DefaultValue, baseIRI: string): DefaultValueDefinition {
+    if (defaultValue.type === 'raw') {
+      return defaultValue.value;
+    }
+
+    // Resolve relative IRI
+    let iri = defaultValue.value;
+    if (iri && !iri.includes(':')) {
+      iri = `${baseIRI}_${iri}`;
+    }
+
+    return { '@id': iri, '@type': defaultValue.typeIri };
   }
 
   /**
@@ -582,6 +596,10 @@ export interface PathDestinationDefinition {
 }
 
 export interface FieldScope {
+  /**
+   * IRI of the component.
+   */
+  componentIri: string;
   /**
    * All parent field names for the current scope.
    */

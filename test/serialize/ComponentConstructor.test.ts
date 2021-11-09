@@ -84,6 +84,7 @@ describe('ComponentConstructor', () => {
     externalContextsCallback = jest.fn();
 
     scope = {
+      componentIri: 'ex:component#c',
       parentFieldNames: [],
       fieldIdsHash: {},
       defaultNested: [],
@@ -834,7 +835,7 @@ describe('ComponentConstructor', () => {
       const parameters: ParameterDefinition[] = [];
       expect(await ctor.constructParameters(context, externalContextsCallback, <ClassLoaded> classReference, {
         parameters: [],
-      }, parameters)).toEqual([]);
+      }, parameters, scope.componentIri)).toEqual([]);
       expect(parameters).toEqual([]);
     });
 
@@ -859,7 +860,7 @@ describe('ComponentConstructor', () => {
             comment: 'Hi2',
           },
         ],
-      }, parameters)).toEqual([
+      }, parameters, scope.componentIri)).toEqual([
         { '@id': 'mp:a/b/file-param#MyClass_fieldA' },
         { '@id': 'mp:a/b/file-param#MyClass_fieldB' },
       ]);
@@ -910,7 +911,7 @@ describe('ComponentConstructor', () => {
             comment: 'Hi3',
           },
         ],
-      }, parameters)).toEqual([
+      }, parameters, scope.componentIri)).toEqual([
         { '@id': 'mp:a/b/file-param#MyClass_field' },
         { '@id': 'mp:a/b/file-param#MyClass_field_1' },
         { '@id': 'mp:a/b/file-param#MyClass_field_2' },
@@ -973,7 +974,7 @@ describe('ComponentConstructor', () => {
             comment: 'Hi',
           },
         ],
-      }, parameters)).toEqual([
+      }, parameters, scope.componentIri)).toEqual([
         {
           '@id': 'mp:a/b/file-param#MyClass_field__constructorArgument',
           fields: [
@@ -1035,7 +1036,7 @@ describe('ComponentConstructor', () => {
             comment: 'Hi',
           },
         ],
-      }, parameters)).toEqual([
+      }, parameters, scope.componentIri)).toEqual([
         {
           '@id': 'mp:a/b/file-param#MyClass_field__constructorArgument',
           fields: [
@@ -1809,6 +1810,30 @@ describe('ComponentConstructor', () => {
           comment: 'Hi',
           range: 'xsd:boolean',
           default: { '@id': 'ex:abc' },
+          required: true,
+          unique: true,
+        },
+      ]);
+    });
+
+    it('should handle a parameter with default iri value that is relative', async() => {
+      const parameters: ParameterDefinition[] = [];
+      expect(await ctor
+        .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
+          type: 'field',
+          name: 'field',
+          range: { type: 'raw', value: 'boolean' },
+          default: { type: 'iri', value: 'abc' },
+          required: true,
+          unique: true,
+          comment: 'Hi',
+        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
+      expect(parameters).toEqual([
+        {
+          '@id': 'mp:a/b/file-param#MyClass_field',
+          comment: 'Hi',
+          range: 'xsd:boolean',
+          default: { '@id': 'ex:component#c_abc' },
           required: true,
           unique: true,
         },
