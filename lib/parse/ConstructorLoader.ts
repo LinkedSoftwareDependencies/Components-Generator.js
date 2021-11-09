@@ -24,13 +24,14 @@ export class ConstructorLoader {
     classIndex: ClassIndex<ClassReferenceLoaded>,
   ): ClassIndex<ConstructorData<ParameterRangeUnresolved>> {
     const constructorDataIndex: ClassIndex<ConstructorData<ParameterRangeUnresolved>> = {};
-    for (const [ className, classLoaded ] of Object.entries(classIndex)) {
-      const constructor = classLoaded.type === 'class' ? this.getConstructor(classLoaded) : undefined;
-      if (constructor) {
+    for (const [ className, classLoadedRoot ] of Object.entries(classIndex)) {
+      const constructorData = classLoadedRoot.type === 'class' ? this.getConstructor(classLoadedRoot) : undefined;
+      if (constructorData) {
+        const { constructor, classLoaded } = constructorData;
         const parameterLoader = new ParameterLoader({ classLoaded, commentLoader: this.commentLoader });
-        constructorDataIndex[className] = parameterLoader.loadConstructorFields(constructor);
+        constructorDataIndex[className] = parameterLoader.loadConstructorFields(constructor, classLoaded);
       } else {
-        constructorDataIndex[className] = { parameters: []};
+        constructorDataIndex[className] = { parameters: [], classLoaded: classLoadedRoot };
       }
     }
     return constructorDataIndex;
@@ -41,18 +42,23 @@ export class ConstructorLoader {
    * Can be undefined if no explicit constructor exists in this class or any of its super classes.
    * @param classLoaded A loaded class reference.
    */
-  public getConstructor(classLoaded: ClassLoaded): MethodDefinition | undefined {
+  public getConstructor(
+    classLoaded: ClassLoaded,
+  ): { constructor: MethodDefinition; classLoaded: ClassLoaded } | undefined {
     // First look for the constructor in this class
-    let constructor = this.getConstructorInClass(classLoaded.declaration);
+    let constructor: MethodDefinition | undefined = this.getConstructorInClass(classLoaded.declaration);
 
     // If no constructor was found, look in the super class
     if (!constructor) {
       if (classLoaded.superClass) {
-        constructor = this.getConstructor(classLoaded.superClass);
+        const constructorDataSuper = this.getConstructor(classLoaded.superClass);
+        if (constructorDataSuper) {
+          ({ constructor, classLoaded } = constructorDataSuper);
+        }
       }
     }
 
-    return constructor;
+    return constructor ? { constructor, classLoaded } : undefined;
   }
 
   /**
@@ -105,4 +111,5 @@ export interface ConstructorLoaderArgs {
  */
 export interface ConstructorData<R> {
   parameters: ParameterDataField<R>[];
+  classLoaded: ClassReferenceLoaded;
 }

@@ -1,4 +1,4 @@
-import type { TSTypeLiteral, MethodDefinition } from '@typescript-eslint/types/dist/ts-estree';
+import type { TSTypeLiteral } from '@typescript-eslint/types/dist/ts-estree';
 import type { ClassLoaded, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from '../../lib/parse/ClassIndex';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
 import { CommentLoader } from '../../lib/parse/CommentLoader';
@@ -26,13 +26,14 @@ describe('ParameterResolver', () => {
 
   describe('resolveAllConstructorParameters', () => {
     it('should handle an empty index', async() => {
-      expect(await loader.resolveAllConstructorParameters({}, {}))
+      expect(await loader.resolveAllConstructorParameters({}))
         .toEqual({});
     });
 
     it('should handle a non-empty simple index', async() => {
       expect(await loader.resolveAllConstructorParameters({
         A: {
+          classLoaded: <any> { type: 'class', localName: 'A', fileName: 'A' },
           parameters: [
             {
               type: 'field',
@@ -46,10 +47,9 @@ describe('ParameterResolver', () => {
             },
           ],
         },
-      }, {
-        A: <any>{ type: 'class', localName: 'A', fileName: 'A' },
       })).toEqual({
         A: {
+          classLoaded: <any> { type: 'class', localName: 'A', fileName: 'A' },
           parameters: [
             {
               type: 'field',
@@ -69,6 +69,7 @@ describe('ParameterResolver', () => {
     it('should ignore interfaces', async() => {
       expect(await loader.resolveAllConstructorParameters({
         A: {
+          classLoaded: <any> { type: 'interface', localName: 'A', fileName: 'A' },
           parameters: [
             {
               type: 'field',
@@ -82,34 +83,22 @@ describe('ParameterResolver', () => {
             },
           ],
         },
-      }, {
-        A: <any>{ type: 'interface', localName: 'A', fileName: 'A' },
       })).toEqual({});
     });
   });
 
   describe('resolveConstructorParameters', () => {
-    const classReference: ClassLoaded = <any>{ localName: 'A', fileName: 'A' };
+    const classLoaded: ClassLoaded = <any>{ localName: 'A', fileName: 'A' };
 
     it('should handle an empty array', async() => {
-      expect(await loader.resolveConstructorParameters({ parameters: []}, classReference))
-        .toEqual({ parameters: []});
+      expect(await loader.resolveConstructorParameters({ classLoaded, parameters: []}))
+        .toEqual({ classLoaded, parameters: []});
     });
 
     it('should handle a raw parameter', async() => {
-      expect(await loader.resolveConstructorParameters({ parameters: [
-        {
-          type: 'field',
-          name: 'fieldA',
-          unique: true,
-          required: true,
-          range: {
-            type: 'raw',
-            value: 'boolean',
-          },
-        },
-      ]}, classReference))
-        .toEqual({ parameters: [
+      expect(await loader.resolveConstructorParameters({
+        classLoaded,
+        parameters: [
           {
             type: 'field',
             name: 'fieldA',
@@ -120,7 +109,23 @@ describe('ParameterResolver', () => {
               value: 'boolean',
             },
           },
-        ]});
+        ],
+      }))
+        .toEqual({
+          classLoaded,
+          parameters: [
+            {
+              type: 'field',
+              name: 'fieldA',
+              unique: true,
+              required: true,
+              range: {
+                type: 'raw',
+                value: 'boolean',
+              },
+            },
+          ],
+        });
     });
   });
 
@@ -1219,8 +1224,8 @@ export class A{
   constructor(fieldA: ${definition}) {}
 }`;
       const classLoaded = await classLoader.loadClassDeclaration(classReference, false);
-      const hash: TSTypeLiteral = (<any> (<MethodDefinition> new ConstructorLoader({ commentLoader })
-        .getConstructor(classLoaded))
+      const hash: TSTypeLiteral = (<any> (new ConstructorLoader({ commentLoader })
+        .getConstructor(classLoaded)!.constructor)
         .value.params[0]).typeAnnotation.typeAnnotation;
 
       return { hash, owningClass: classLoaded };

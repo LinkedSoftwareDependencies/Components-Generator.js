@@ -60,7 +60,7 @@ export class Generator {
     // Load constructor data
     const constructorsUnresolved = new ConstructorLoader({ commentLoader }).getConstructors(classAndInterfaceIndex);
     const constructors = await new ParameterResolver({ classLoader, commentLoader, ignoreClasses: this.ignoreClasses })
-      .resolveAllConstructorParameters(constructorsUnresolved, classAndInterfaceIndex);
+      .resolveAllConstructorParameters(constructorsUnresolved);
 
     // Load external components
     const externalModulesLoader = new ExternalModulesLoader({

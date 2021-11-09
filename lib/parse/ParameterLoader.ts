@@ -10,7 +10,7 @@ import type {
   Parameter,
 } from '@typescript-eslint/types/dist/ts-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import type { ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
+import type { ClassReferenceLoaded, InterfaceLoaded, ClassLoaded } from './ClassIndex';
 import type { CommentData, ConstructorCommentData, CommentLoader } from './CommentLoader';
 import type { ConstructorData } from './ConstructorLoader';
 import type { TypeReferenceOverride } from './typereferenceoverride/TypeReferenceOverride';
@@ -35,10 +35,14 @@ export class ParameterLoader {
   /**
    * Load all parameter data from all fields in the given constructor.
    * @param constructor A constructor
+   * @param classLoaded The class in which the constructor is defined.
    */
-  public loadConstructorFields(constructor: MethodDefinition): ConstructorData<ParameterRangeUnresolved> {
+  public loadConstructorFields(
+    constructor: MethodDefinition,
+    classLoaded: ClassLoaded,
+  ): ConstructorData<ParameterRangeUnresolved> {
     // Load the constructor comment
-    const constructorCommentData = this.commentLoader.getCommentDataFromConstructor(this.classLoaded, constructor);
+    const constructorCommentData = this.commentLoader.getCommentDataFromConstructor(classLoaded, constructor);
 
     // Load all constructor parameters
     const parameters: ParameterDataField<ParameterRangeUnresolved>[] = [];
@@ -46,7 +50,7 @@ export class ParameterLoader {
       this.loadConstructorField(parameters, constructorCommentData, field);
     }
 
-    return { parameters };
+    return { parameters, classLoaded };
   }
 
   /**

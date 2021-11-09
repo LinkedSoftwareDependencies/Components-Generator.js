@@ -26,20 +26,17 @@ export class ParameterResolver {
   /**
    * Resolve all constructor parameters of a given constructor index.
    * @param unresolvedParametersIndex An index of unresolved constructor data.
-   * @param classIndex A class index.
    */
   public async resolveAllConstructorParameters(
     unresolvedParametersIndex: ClassIndex<ConstructorData<ParameterRangeUnresolved>>,
-    classIndex: ClassIndex<ClassReferenceLoaded>,
   ): Promise<ClassIndex<ConstructorData<ParameterRangeResolved>>> {
     const resolvedParametersIndex: ClassIndex<ConstructorData<ParameterRangeResolved>> = {};
 
     // Resolve parameters for the different constructors in parallel
     await Promise.all(Object.entries(unresolvedParametersIndex)
       .map(async([ className, parameters ]) => {
-        const classOrInterface = classIndex[className];
-        if (classOrInterface.type === 'class') {
-          resolvedParametersIndex[className] = await this.resolveConstructorParameters(parameters, classOrInterface);
+        if (parameters.classLoaded.type === 'class') {
+          resolvedParametersIndex[className] = await this.resolveConstructorParameters(parameters);
         }
       }));
 
@@ -49,14 +46,16 @@ export class ParameterResolver {
   /**
    * Resolve all parameters of a given constructor.
    * @param unresolvedConstructorData Unresolved constructor data.
-   * @param owningClass The class in which the given constructor is declared.
    */
   public async resolveConstructorParameters(
     unresolvedConstructorData: ConstructorData<ParameterRangeUnresolved>,
-    owningClass: ClassLoaded,
   ): Promise<ConstructorData<ParameterRangeResolved>> {
     return {
-      parameters: await this.resolveParameterData(unresolvedConstructorData.parameters, owningClass),
+      parameters: await this.resolveParameterData(
+        unresolvedConstructorData.parameters,
+        unresolvedConstructorData.classLoaded,
+      ),
+      classLoaded: unresolvedConstructorData.classLoaded,
     };
   }
 

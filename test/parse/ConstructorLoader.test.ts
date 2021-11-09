@@ -33,34 +33,38 @@ describe('ConstructorLoader', () => {
       resolutionContext.contentsOverrides = {
         'file.d.ts': `export class A{}`,
       };
+      const A = await classIndexer.loadClassChain({
+        packageName: 'p',
+        localName: 'A',
+        fileName: 'file',
+        fileNameReferenced: 'fileReferenced',
+      });
       expect(parser.getConstructors({
-        A: await classIndexer.loadClassChain({
-          packageName: 'p',
-          localName: 'A',
-          fileName: 'file',
-          fileNameReferenced: 'fileReferenced',
-        }),
+        A,
       })).toEqual({
         A: {
           parameters: [],
+          classLoaded: A,
         },
       });
     });
 
-    it('should return for a single interface/', async() => {
+    it('should return for a single interface', async() => {
       resolutionContext.contentsOverrides = {
         'file.d.ts': `export interface A{}`,
       };
+      const A = await classIndexer.loadClassChain({
+        packageName: 'p',
+        localName: 'A',
+        fileName: 'file',
+        fileNameReferenced: 'fileReferenced',
+      });
       expect(parser.getConstructors({
-        A: await classIndexer.loadClassChain({
-          packageName: 'p',
-          localName: 'A',
-          fileName: 'file',
-          fileNameReferenced: 'fileReferenced',
-        }),
+        A,
       })).toEqual({
         A: {
           parameters: [],
+          classLoaded: A,
         },
       });
     });
@@ -86,19 +90,21 @@ export class B{
 }
 `,
       };
+      const A = await classIndexer.loadClassChain({
+        packageName: 'p',
+        localName: 'A',
+        fileName: 'A',
+        fileNameReferenced: 'fileReferenced',
+      });
+      const B = await classIndexer.loadClassChain({
+        packageName: 'p',
+        localName: 'B',
+        fileName: 'B',
+        fileNameReferenced: 'fileReferenced',
+      });
       expect(parser.getConstructors({
-        A: await classIndexer.loadClassChain({
-          packageName: 'p',
-          localName: 'A',
-          fileName: 'A',
-          fileNameReferenced: 'fileReferenced',
-        }),
-        B: await classIndexer.loadClassChain({
-          packageName: 'p',
-          localName: 'B',
-          fileName: 'B',
-          fileNameReferenced: 'fileReferenced',
-        }),
+        A,
+        B,
       })).toEqual({
         A: {
           parameters: [
@@ -125,6 +131,7 @@ export class B{
               unique: false,
             },
           ],
+          classLoaded: A,
         },
         B: {
           parameters: [
@@ -140,6 +147,7 @@ export class B{
               unique: true,
             },
           ],
+          classLoaded: B,
         },
       });
     });
@@ -189,33 +197,37 @@ class A{
   constructor() {}
 }`,
       };
+      const classLoaded = <ClassLoaded> await classIndexer.loadClassChain({
+        packageName: 'p',
+        localName: 'A',
+        fileName: 'file',
+        fileNameReferenced: 'fileReferenced',
+      });
       expect(parser.getConstructor(
-        <ClassLoaded> await classIndexer.loadClassChain({
-          packageName: 'p',
-          localName: 'A',
-          fileName: 'file',
-          fileNameReferenced: 'fileReferenced',
-        }),
+        classLoaded,
       )).toMatchObject({
-        computed: false,
-        key: {
-          name: 'constructor',
-          type: 'Identifier',
-        },
-        kind: 'constructor',
-        static: false,
-        type: 'MethodDefinition',
-        value: {
-          async: false,
-          body: {
-            body: [],
-            type: 'BlockStatement',
+        classLoaded,
+        constructor: {
+          computed: false,
+          key: {
+            name: 'constructor',
+            type: 'Identifier',
           },
-          expression: false,
-          generator: false,
-          id: null,
-          params: [],
-          type: 'FunctionExpression',
+          kind: 'constructor',
+          static: false,
+          type: 'MethodDefinition',
+          value: {
+            async: false,
+            body: {
+              body: [],
+              type: 'BlockStatement',
+            },
+            expression: false,
+            generator: false,
+            id: null,
+            params: [],
+            type: 'FunctionExpression',
+          },
         },
       });
     });
@@ -236,33 +248,39 @@ export class C{
 }
 `,
       };
+      const classLoaded = <ClassLoaded> await classIndexer.loadClassChain({
+        packageName: 'p',
+        localName: 'A',
+        fileName: 'file',
+        fileNameReferenced: 'fileReferenced',
+      });
       expect(parser.getConstructor(
-        <ClassLoaded> await classIndexer.loadClassChain({
-          packageName: 'p',
-          localName: 'A',
-          fileName: 'file',
-          fileNameReferenced: 'fileReferenced',
-        }),
+        classLoaded,
       )).toMatchObject({
-        computed: false,
-        key: {
-          name: 'constructor',
-          type: 'Identifier',
+        classLoaded: {
+          localName: 'C',
         },
-        kind: 'constructor',
-        static: false,
-        type: 'MethodDefinition',
-        value: {
-          async: false,
-          body: {
-            body: [],
-            type: 'BlockStatement',
+        constructor: {
+          computed: false,
+          key: {
+            name: 'constructor',
+            type: 'Identifier',
           },
-          expression: false,
-          generator: false,
-          id: null,
-          params: [],
-          type: 'FunctionExpression',
+          kind: 'constructor',
+          static: false,
+          type: 'MethodDefinition',
+          value: {
+            async: false,
+            body: {
+              body: [],
+              type: 'BlockStatement',
+            },
+            expression: false,
+            generator: false,
+            id: null,
+            params: [],
+            type: 'FunctionExpression',
+          },
         },
       });
     });

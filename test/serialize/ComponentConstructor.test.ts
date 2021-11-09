@@ -114,10 +114,12 @@ describe('ComponentConstructor', () => {
       (<any> ctor).classConstructors = <ClassIndex<ConstructorData<ParameterRangeResolved>>> {
         MyClass1: {
           type: 'class',
+          classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
           parameters: [],
         },
         MyClass2: {
           type: 'class',
+          classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass2,
           parameters: [
             {
               type: 'field',
@@ -199,9 +201,11 @@ describe('ComponentConstructor', () => {
       };
       (<any> ctor).classConstructors = <ClassIndex<ConstructorData<ParameterRangeResolved>>> {
         MyClass1: {
+          classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
           parameters: [],
         },
         MyClass2: {
+          classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass2,
           parameters: [
             {
               type: 'field',
@@ -301,9 +305,11 @@ describe('ComponentConstructor', () => {
       };
       (<any> ctor).classConstructors = <ClassIndex<ConstructorData<ParameterRangeResolved>>> {
         MyClass1: {
+          classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
           parameters: [],
         },
         MyClass2: {
+          classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass2,
           parameters: [
             {
               type: 'field',
@@ -390,6 +396,7 @@ describe('ComponentConstructor', () => {
       (<any> ctor).classConstructors = <ClassIndex<ConstructorData<ParameterRangeResolved>>> {
         MyClass1: {
           type: 'class',
+          classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
           parameters: [],
         },
       };
@@ -516,6 +523,7 @@ describe('ComponentConstructor', () => {
   describe('constructComponent', () => {
     it('should handle a component with empty constructor', async() => {
       expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
+        classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
       })).toEqual({
         '@id': 'mp:a/b/file-param#MyClass',
@@ -528,6 +536,7 @@ describe('ComponentConstructor', () => {
 
     it('should handle a component with non-empty constructor', async() => {
       expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
+        classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [
           {
             type: 'field',
@@ -576,6 +585,7 @@ describe('ComponentConstructor', () => {
     it('should handle a component with abstract class', async() => {
       (<ClassLoaded> classReference).abstract = true;
       expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
+        classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
       })).toEqual({
         '@id': 'mp:a/b/file-param#MyClass',
@@ -593,6 +603,7 @@ describe('ComponentConstructor', () => {
         fileName: Path.normalize('/docs/package/src/a/b/SuperFile'),
       };
       expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
+        classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
       })).toEqual({
         '@id': 'mp:a/b/file-param#MyClass',
@@ -618,6 +629,7 @@ describe('ComponentConstructor', () => {
         },
       ];
       expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
+        classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
       })).toEqual({
         '@id': 'mp:a/b/file-param#MyClass',
@@ -651,6 +663,7 @@ describe('ComponentConstructor', () => {
         },
       ];
       expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
+        classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
       })).toEqual({
         '@id': 'mp:a/b/file-param#MyClass',
@@ -669,6 +682,7 @@ describe('ComponentConstructor', () => {
     it('should handle a component with comment', async() => {
       classReference.comment = 'Hi';
       expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
+        classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
       })).toEqual({
         '@id': 'mp:a/b/file-param#MyClass',
@@ -683,6 +697,7 @@ describe('ComponentConstructor', () => {
     it('should handle an interface component', async() => {
       classReference.type = 'interface';
       expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
+        classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
       })).toEqual({
         '@id': 'mp:a/b/file-param#MyClass',
@@ -708,6 +723,7 @@ describe('ComponentConstructor', () => {
         },
       ];
       expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
+        classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
       })).toEqual({
         '@id': 'mp:a/b/file-param#MyClass',
@@ -834,6 +850,7 @@ describe('ComponentConstructor', () => {
     it('should handle a constructor with no params', async() => {
       const parameters: ParameterDefinition[] = [];
       expect(await ctor.constructParameters(context, externalContextsCallback, <ClassLoaded> classReference, {
+        classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
       }, parameters, scope.componentIri)).toEqual([]);
       expect(parameters).toEqual([]);
@@ -842,6 +859,7 @@ describe('ComponentConstructor', () => {
     it('should handle a constructor with two params', async() => {
       const parameters: ParameterDefinition[] = [];
       expect(await ctor.constructParameters(context, externalContextsCallback, <ClassLoaded> classReference, {
+        classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [
           {
             type: 'field',
@@ -885,6 +903,7 @@ describe('ComponentConstructor', () => {
     it('should handle a constructor with three params with identical names', async() => {
       const parameters: ParameterDefinition[] = [];
       expect(await ctor.constructParameters(context, externalContextsCallback, <ClassLoaded> classReference, {
+        classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [
           {
             type: 'field',
@@ -944,6 +963,7 @@ describe('ComponentConstructor', () => {
     it('should handle a constructor with a nested param with two sub-params', async() => {
       const parameters: ParameterDefinition[] = [];
       expect(await ctor.constructParameters(context, externalContextsCallback, <ClassLoaded> classReference, {
+        classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [
           {
             type: 'field',
@@ -1004,6 +1024,7 @@ describe('ComponentConstructor', () => {
     it('should handle a constructor with a nested param with a hash', async() => {
       const parameters: ParameterDefinition[] = [];
       expect(await ctor.constructParameters(context, externalContextsCallback, <ClassLoaded> classReference, {
+        classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [
           {
             type: 'field',

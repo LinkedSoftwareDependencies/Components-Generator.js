@@ -1,4 +1,3 @@
-import type { MethodDefinition } from '@typescript-eslint/types/dist/ts-estree';
 import type { ClassReference } from '../../lib/parse/ClassIndex';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
 import { CommentLoader } from '../../lib/parse/CommentLoader';
@@ -410,7 +409,7 @@ describe('CommentLoader', () => {
       const classLoader = new ClassLoader({ resolutionContext, logger, commentLoader: loader });
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
       const constructorLoader = new ConstructorLoader({ commentLoader: loader });
-      const field = <any> (<MethodDefinition> constructorLoader.getConstructor(classLoaded)).value.params[0];
+      const field = <any> (constructorLoader.getConstructor(classLoaded)!.constructor).value.params[0];
       return { loader, field, classLoaded };
     }
 
