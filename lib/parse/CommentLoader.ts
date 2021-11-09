@@ -2,7 +2,7 @@ import type { MethodDefinition, TSPropertySignature,
   TSIndexSignature, BaseNode } from '@typescript-eslint/types/dist/ts-estree';
 import * as commentParse from 'comment-parser';
 import type { ClassReference, ClassReferenceLoaded } from './ClassIndex';
-import type { ParameterRangeUnresolved } from './ParameterLoader';
+import type { DefaultNested, DefaultValue, ParameterRangeUnresolved } from './ParameterLoader';
 
 /**
  * Loads comments from fields in a given class.
@@ -38,7 +38,16 @@ export class CommentLoader {
     const commentData = CommentLoader.getCommentDataFromComment(comment, clazz);
     if (commentData.params) {
       for (const [ key, value ] of Object.entries(commentData.params)) {
-        data[key] = CommentLoader.getCommentDataFromComment(`/**${value.replace(/@/gu, '\n * @')}*/`, clazz);
+        const subCommentData = CommentLoader.getCommentDataFromComment(`/**${value.replace(/@/gu, '\n * @')}*/`, clazz);
+
+        // Since we're in the scope of a param (key), prepend the defaultNested paramPath array with the current param.
+        if (subCommentData.defaultNested) {
+          for (const defaultNested of subCommentData.defaultNested) {
+            defaultNested.paramPath.unshift(key);
+          }
+        }
+
+        data[key] = subCommentData;
       }
     }
 
@@ -104,7 +113,7 @@ export class CommentLoader {
             if (tag.type.length === 0) {
               throw new Error(`Missing @default value {something} on a field in class ${clazz.localName} at ${clazz.fileName}`);
             }
-            data.default = tag.type;
+            data.default = CommentLoader.getDefaultValue(tag.type);
             break;
           case 'ignored':
             data.ignored = true;
@@ -118,11 +127,61 @@ export class CommentLoader {
               data.params[tag.name] = data.params[tag.name].slice(2);
             }
             break;
+          case 'defaultnested':
+            if (tag.type.length === 0 || tag.name.length === 0) {
+              throw new Error(`Invalid @defaultNested syntax on a field in class ${clazz.localName} at ${clazz.fileName}: expected @defaultNested {<id> a <Type>} path_to_param`);
+            }
+            if (!data.defaultNested) {
+              data.defaultNested = [];
+            }
+            data.defaultNested.push({
+              paramPath: tag.name.split('_'),
+              value: CommentLoader.getDefaultValue(tag.type),
+            });
+            break;
         }
       }
     }
 
     return data;
+  }
+
+  /**
+   * Parse the microsyntax of a default value.
+   *
+   * Can be one of:
+   * * raw value: "abc"
+   * * iri value: "<ex:abc>"
+   * * type value: "a <ex:Type>"
+   * * iri and type value: "<ex:abc> a <ex:Type>"
+   *
+   * @param value A default value string.
+   */
+  public static getDefaultValue(value: string): DefaultValue {
+    if (!value.startsWith('<') && !value.startsWith('a ')) {
+      return {
+        type: 'raw',
+        value,
+      };
+    }
+
+    const [ idRaw, typeRaw ] = value.startsWith('a ') ?
+      [ undefined, value.slice(2) ] :
+      value.split(' a ');
+    return {
+      type: 'iri',
+      value: idRaw ? CommentLoader.getIriValue(idRaw) : undefined,
+      typeIri: typeRaw ? CommentLoader.getIriValue(typeRaw) : undefined,
+    };
+  }
+
+  /**
+   * Unbox an IRI wrapped in <>
+   * @param iriBoxed An iri string within <>
+   */
+  public static getIriValue(iriBoxed: string): string | undefined {
+    const match = /^<([^>]*)>$/u.exec(iriBoxed);
+    return match ? match[1] : undefined;
   }
 
   /**
@@ -150,7 +209,7 @@ export interface CommentData {
   /**
    * The default value.
    */
-  default?: string;
+  default?: DefaultValue;
   /**
    * If the field referenced by this comment should be ignored.
    */
@@ -163,4 +222,8 @@ export interface CommentData {
    * Parameters that were defined in this comment.
    */
   params?: Record<string, string>;
+  /**
+   * The nested default values on parameters.
+   */
+  defaultNested?: DefaultNested[];
 }

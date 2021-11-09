@@ -31,9 +31,11 @@ export interface ParameterDefinition {
   unique?: boolean;
   required?: boolean;
   range?: ParameterDefinitionRange;
-  default?: string | { '@id': string };
+  default?: DefaultValueDefinition;
   lazy?: boolean;
 }
+
+export type DefaultValueDefinition = string | { '@id'?: string; '@type'?: string };
 
 export type ParameterDefinitionRange = string | { '@id': string; parameters: ParameterDefinition[] } | {
   '@type': 'ParameterRangeUnion' | 'ParameterRangeIntersection' | 'ParameterRangeTuple';

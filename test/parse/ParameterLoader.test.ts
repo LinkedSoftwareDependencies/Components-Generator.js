@@ -773,7 +773,17 @@ export interface A{
           type: 'override',
           value: 'float',
         },
-        default: '1.0',
+        default: { type: 'raw', value: '1.0' },
+        defaultNested: [
+          {
+            paramPath: [ 'a', 'b' ],
+            value: { type: 'raw', value: 'A' },
+          },
+          {
+            paramPath: [ 'c' ],
+            value: { type: 'raw', value: 'B' },
+          },
+        ],
         description: 'Hi',
       })).toEqual({
         type: 'field',
@@ -785,6 +795,16 @@ export interface A{
           value: 'float',
         },
         default: { type: 'raw', value: '1.0' },
+        defaultNested: [
+          {
+            paramPath: [ 'a', 'b' ],
+            value: { type: 'raw', value: 'A' },
+          },
+          {
+            paramPath: [ 'c' ],
+            value: { type: 'raw', value: 'B' },
+          },
+        ],
         comment: 'Hi',
       });
     });
@@ -868,7 +888,7 @@ export interface A{
           type: 'override',
           value: 'string',
         },
-        default: '1.0',
+        default: { type: 'raw', value: '1.0' },
         description: 'Hi',
       })).toEqual({
         type: 'index',
@@ -1408,28 +1428,6 @@ export interface A{
             },
           ],
         });
-    });
-  });
-
-  describe('getFieldDefault', () => {
-    it('should be undefined without default', () => {
-      expect(loader.getFieldDefault({})).toBeUndefined();
-    });
-
-    it('should be defined with empty default', () => {
-      expect(loader.getFieldDefault({ default: '' })).toEqual({ type: 'raw', value: '' });
-    });
-
-    it('should be defined with default', () => {
-      expect(loader.getFieldDefault({ default: 'abc' })).toEqual({ type: 'raw', value: 'abc' });
-    });
-
-    it('should be defined with default that almost is an iri', () => {
-      expect(loader.getFieldDefault({ default: '<abc' })).toEqual({ type: 'raw', value: '<abc' });
-    });
-
-    it('should be defined with default iri', () => {
-      expect(loader.getFieldDefault({ default: '<abc>' })).toEqual({ type: 'iri', value: 'abc' });
     });
   });
 

@@ -86,7 +86,10 @@ describe('CommentLoader', () => {
       };
       const { loader, field, iface } = await createLoader();
       expect(loader.getCommentDataFromField(iface, field)).toEqual({
-        default: 'true',
+        default: {
+          type: 'raw',
+          value: 'true',
+        },
         description: 'This is a field!',
         ignored: true,
         range: {
@@ -137,6 +140,28 @@ describe('CommentLoader', () => {
         },
       });
     });
+
+    it('should return data for a param with defaultNested', async() => {
+      expect(CommentLoader.getCommentDataFromConstructorComment(
+        `/**
+ * @param fieldA - @defaultNested {<#bus> a <cc:lib/Bus#Bus>} args_bus
+*/`,
+        clazz,
+      )).toEqual({
+        fieldA: {
+          defaultNested: [
+            {
+              paramPath: [ 'fieldA', 'args', 'bus' ],
+              value: {
+                type: 'iri',
+                value: '#bus',
+                typeIri: 'cc:lib/Bus#Bus',
+              },
+            },
+          ],
+        },
+      });
+    });
   });
 
   describe('getCommentDataFromComment', () => {
@@ -180,7 +205,10 @@ describe('CommentLoader', () => {
         '/**\n   * @default {true}\n   */',
         clazz,
       )).toEqual({
-        default: 'true',
+        default: {
+          type: 'raw',
+          value: 'true',
+        },
       });
     });
 
@@ -189,6 +217,43 @@ describe('CommentLoader', () => {
         '/**\n   * @default true\n   */',
         clazz,
       )).toThrow(new Error('Missing @default value {something} on a field in class A at file'));
+    });
+
+    it('should retrieve a default iri tag', async() => {
+      expect(CommentLoader.getCommentDataFromComment(
+        '/**\n   * @default {<ex:abc>}\n   */',
+        clazz,
+      )).toEqual({
+        default: {
+          type: 'iri',
+          value: 'ex:abc',
+        },
+      });
+    });
+
+    it('should retrieve a default iri and type tag', async() => {
+      expect(CommentLoader.getCommentDataFromComment(
+        '/**\n   * @default {<ex:abc> a <ex:Type>}\n   */',
+        clazz,
+      )).toEqual({
+        default: {
+          type: 'iri',
+          value: 'ex:abc',
+          typeIri: 'ex:Type',
+        },
+      });
+    });
+
+    it('should retrieve a default type tag', async() => {
+      expect(CommentLoader.getCommentDataFromComment(
+        '/**\n   * @default {a <ex:abc>}\n   */',
+        clazz,
+      )).toEqual({
+        default: {
+          type: 'iri',
+          typeIri: 'ex:abc',
+        },
+      });
     });
 
     it('should retrieve an ignored tag', async() => {
@@ -232,6 +297,110 @@ describe('CommentLoader', () => {
           fieldB: 'This is another field',
         },
       });
+    });
+
+    it('should retrieve a defaultNested tag with id and type', async() => {
+      expect(CommentLoader.getCommentDataFromComment(
+        '/**\n   * @defaultNested {<#bus> a <cc:lib/Bus#Bus>} args_bus\n   */',
+        clazz,
+      )).toEqual({
+        defaultNested: [
+          {
+            paramPath: [ 'args', 'bus' ],
+            value: {
+              type: 'iri',
+              value: '#bus',
+              typeIri: 'cc:lib/Bus#Bus',
+            },
+          },
+        ],
+      });
+    });
+
+    it('should retrieve a defaultNested tag with id and without type', async() => {
+      expect(CommentLoader.getCommentDataFromComment(
+        '/**\n   * @defaultNested {<#bus>} args_bus\n   */',
+        clazz,
+      )).toEqual({
+        defaultNested: [
+          {
+            paramPath: [ 'args', 'bus' ],
+            value: {
+              type: 'iri',
+              value: '#bus',
+            },
+          },
+        ],
+      });
+    });
+
+    it('should retrieve a defaultNested tag without id and with type', async() => {
+      expect(CommentLoader.getCommentDataFromComment(
+        '/**\n   * @defaultNested {a <cc:lib/Bus#Bus>} args_bus\n   */',
+        clazz,
+      )).toEqual({
+        defaultNested: [
+          {
+            paramPath: [ 'args', 'bus' ],
+            value: {
+              type: 'iri',
+              typeIri: 'cc:lib/Bus#Bus',
+            },
+          },
+        ],
+      });
+    });
+
+    it('should retrieve multiple defaultNested tags with id and type', async() => {
+      expect(CommentLoader.getCommentDataFromComment(
+        `/**\n   * @defaultNested {<#bus> a <cc:lib/Bus#Bus>} args_bus\n @defaultNested {<#bus2> a <cc:lib/Bus#Bus>} args_bus2\n   */`,
+        clazz,
+      )).toEqual({
+        defaultNested: [
+          {
+            paramPath: [ 'args', 'bus' ],
+            value: {
+              type: 'iri',
+              value: '#bus',
+              typeIri: 'cc:lib/Bus#Bus',
+            },
+          },
+          {
+            paramPath: [ 'args', 'bus2' ],
+            value: {
+              type: 'iri',
+              value: '#bus2',
+              typeIri: 'cc:lib/Bus#Bus',
+            },
+          },
+        ],
+      });
+    });
+
+    it('should throw on a defaultNested with empty value', async() => {
+      expect(() => CommentLoader.getCommentDataFromComment(
+        '/**\n   * @defaultNested {} args_bus\n   */',
+        clazz,
+      )).toThrow(`Invalid @defaultNested syntax on a field in class A at file: expected @defaultNested {<id> a <Type>} path_to_param`);
+    });
+
+    it('should throw on a defaultNested with empty path', async() => {
+      expect(() => CommentLoader.getCommentDataFromComment(
+        '/**\n   * @defaultNested {<#bus> a <cc:lib/Bus#Bus>}\n   */',
+        clazz,
+      )).toThrow(`Invalid @defaultNested syntax on a field in class A at file: expected @defaultNested {<id> a <Type>} path_to_param`);
+    });
+  });
+
+  describe('getIriValue', () => {
+    it('should handle valid IRIs', async() => {
+      expect(CommentLoader.getIriValue('<ex:abc>')).toEqual('ex:abc');
+    });
+
+    it('should return undefined for invalid IRIs', async() => {
+      expect(CommentLoader.getIriValue('ex:abc>')).toBeUndefined();
+      expect(CommentLoader.getIriValue('<ex:abc')).toBeUndefined();
+      expect(CommentLoader.getIriValue('ex:abc')).toBeUndefined();
     });
   });
 

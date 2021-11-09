@@ -3,13 +3,14 @@ import type { ContextParser, JsonLdContextNormalized } from 'jsonld-context-pars
 import type { ClassIndex, ClassLoaded, ClassReference, ClassReferenceLoaded } from '../parse/ClassIndex';
 import type { ConstructorData } from '../parse/ConstructorLoader';
 import type { PackageMetadata } from '../parse/PackageMetadataLoader';
-import type { ParameterData, ParameterRangeResolved } from '../parse/ParameterLoader';
+import type { DefaultNested, DefaultValue, ParameterData, ParameterRangeResolved } from '../parse/ParameterLoader';
 import type { ExternalComponents } from '../resolution/ExternalModulesLoader';
-import type { ComponentDefinition,
+import type {
+  ComponentDefinition,
   ComponentDefinitions, ComponentDefinitionsIndex,
-  ConstructorArgumentDefinition, ConstructorFieldDefinition,
-  ParameterDefinition,
-  ParameterDefinitionRange } from './ComponentDefinitions';
+  ConstructorArgumentDefinition, ConstructorFieldDefinition, DefaultValueDefinition,
+  ParameterDefinition, ParameterDefinitionRange,
+} from './ComponentDefinitions';
 import type { ContextConstructor } from './ContextConstructor';
 
 /**
@@ -287,6 +288,7 @@ export class ComponentConstructor {
     const scope: FieldScope = {
       parentFieldNames: [],
       fieldIdsHash: {},
+      defaultNested: [],
     };
     return await Promise.all(constructorData.parameters.map(parameter => this.parameterDataToConstructorArgument(
       context,
@@ -322,12 +324,16 @@ export class ComponentConstructor {
     fieldId: string,
     scope: FieldScope,
   ): Promise<ConstructorArgumentDefinition> {
-    // Append the current field name to the scope
     if (parameterData.type === 'field') {
+      // Append the current field name to the scope
       scope = {
         ...scope,
         parentFieldNames: [ ...scope.parentFieldNames, parameterData.name ],
       };
+      // Obtain the defaultNested targets
+      if (parameterData.defaultNested) {
+        scope.defaultNested = parameterData.defaultNested;
+      }
     }
 
     if (parameterData.range.type === 'nested') {
@@ -349,17 +355,22 @@ export class ComponentConstructor {
       return { '@id': `${fieldId}__constructorArgument`, fields };
     }
 
+    // Check if we have a defaultNested value that applies on this field
+    let defaultValue: DefaultValue | undefined = parameterData.default;
+    for (const defaultNested of scope.defaultNested) {
+      if (defaultNested.paramPath.join('_') === scope.parentFieldNames.join('_')) {
+        if (defaultValue) {
+          throw new Error(`Detected conflicting default values on field '${fieldId}'`);
+        }
+        defaultValue = defaultNested.value;
+      }
+    }
+
     // For all other range types, create a parameter and return its parameter id.
     const param: ParameterDefinition = {
       '@id': fieldId,
       range: await this.constructParameterRange(parameterData.range, context, externalContextsCallback, fieldId),
-      ...parameterData.default !== undefined ?
-        {
-          default: parameterData.default.type === 'raw' ?
-            parameterData.default.value :
-            { '@id': parameterData.default.value },
-        } :
-        {},
+      ...defaultValue !== undefined ? { default: this.constructDefaultValueDefinition(defaultValue) } : {},
     };
 
     // Fill in optional fields
@@ -367,6 +378,12 @@ export class ComponentConstructor {
 
     parameters.push(param);
     return { '@id': fieldId };
+  }
+
+  public constructDefaultValueDefinition(defaultValue: DefaultValue): DefaultValueDefinition {
+    return defaultValue.type === 'raw' ?
+      defaultValue.value :
+      { '@id': defaultValue.value, '@type': defaultValue.typeIri };
   }
 
   /**
@@ -573,6 +590,10 @@ export interface FieldScope {
    * A hash containing all previously created field names, to ensure uniqueness.
    */
   fieldIdsHash: Record<string, number>;
+  /**
+   * The nested default values on parameters.
+   */
+  defaultNested: DefaultNested[];
 }
 
 export type ExternalContextCallback = (contextUrl: string) => void;

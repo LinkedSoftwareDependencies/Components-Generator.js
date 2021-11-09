@@ -12,7 +12,6 @@ import type {
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import type { ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
 import type { CommentData, ConstructorCommentData, CommentLoader } from './CommentLoader';
-
 import type { ConstructorData } from './ConstructorLoader';
 import type { TypeReferenceOverride } from './typereferenceoverride/TypeReferenceOverride';
 import { TypeReferenceOverrideAliasRecord } from './typereferenceoverride/TypeReferenceOverrideAliasRecord';
@@ -46,6 +45,7 @@ export class ParameterLoader {
     for (const field of constructor.value.params) {
       this.loadConstructorField(parameters, constructorCommentData, field);
     }
+
     return { parameters };
   }
 
@@ -144,13 +144,9 @@ export class ParameterLoader {
       unique: this.isFieldUnique(field),
       required: this.isFieldRequired(field),
       range: this.getFieldRange(field, commentData),
+      default: commentData.default,
+      defaultNested: commentData.defaultNested,
     };
-
-    // Optional data
-    const defaultValue = this.getFieldDefault(commentData);
-    if (defaultValue) {
-      parameterData.default = defaultValue;
-    }
 
     const comment = this.getFieldComment(commentData);
     if (comment) {
@@ -321,14 +317,6 @@ export class ParameterLoader {
     } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
   }
 
-  public getFieldDefault(commentData: CommentData): ParameterDefaultValue | undefined {
-    const value = commentData.default;
-    if (value && (value.startsWith('<') && value.endsWith('>'))) {
-      return { type: 'iri', value: value.slice(1, -1) };
-    }
-    return value !== undefined ? { type: 'raw', value } : value;
-  }
-
   public getFieldComment(commentData: CommentData): string | undefined {
     return commentData.description;
   }
@@ -348,10 +336,7 @@ export class ParameterLoader {
     };
 
     // Optional data
-    const defaultValue = this.getFieldDefault(commentData);
-    if (defaultValue) {
-      parameterData.default = defaultValue;
-    }
+    parameterData.default = commentData.default;
 
     const comment = this.getFieldComment(commentData);
     if (comment) {
@@ -444,11 +429,15 @@ export interface ParameterDataField<R> {
   /**
    * The default value.
    */
-  default?: ParameterDefaultValue;
+  default?: DefaultValue;
   /**
    * The human-readable description of this parameter.
    */
   comment?: string;
+  /**
+   * The nested default values on parameters.
+   */
+  defaultNested?: DefaultNested[];
 }
 
 export interface ParameterDataIndex<R> {
@@ -467,16 +456,11 @@ export interface ParameterDataIndex<R> {
   /**
    * The default value.
    */
-  default?: ParameterDefaultValue;
+  default?: DefaultValue;
   /**
    * The human-readable description of this parameter.
    */
   comment?: string;
-}
-
-export interface ParameterDefaultValue {
-  type: 'raw' | 'iri';
-  value: string;
 }
 
 export type ParameterRangeUnresolved = {
@@ -533,4 +517,31 @@ export type ParameterRangeResolved = {
 } | {
   type: 'rest';
   value: ParameterRangeResolved;
+};
+
+/**
+ * Represents a default value that is to be set on a nested parameter,
+ * indicated by a path of parameter keys.
+ */
+export interface DefaultNested {
+  /**
+   * The path of parameter keys in which the default value applies.
+   */
+  paramPath: string[];
+  /**
+   * A default value for the path.
+   */
+  value: DefaultValue;
+}
+
+/**
+ * A default value
+ */
+export type DefaultValue = {
+  type: 'raw';
+  value: string;
+} | {
+  type: 'iri';
+  value?: string;
+  typeIri?: string;
 };

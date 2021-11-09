@@ -86,6 +86,7 @@ describe('ComponentConstructor', () => {
     scope = {
       parentFieldNames: [],
       fieldIdsHash: {},
+      defaultNested: [],
     };
   });
 
@@ -1284,6 +1285,207 @@ describe('ComponentConstructor', () => {
           unique: true,
         },
       ]);
+    });
+
+    it('should handle a nested parameter definition with multiple raw fields and scoped default', async() => {
+      const parameters: ParameterDefinition[] = [];
+      expect(await ctor
+        .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
+          type: 'field',
+          name: 'field',
+          defaultNested: [
+            {
+              paramPath: [ 'field', 'fieldA' ],
+              value: { type: 'raw', value: 'VALUE' },
+            },
+          ],
+          range: {
+            type: 'nested',
+            value: [
+              {
+                type: 'field',
+                name: 'fieldA',
+                range: { type: 'raw', value: 'boolean' },
+                required: true,
+                unique: true,
+                comment: 'Hi1',
+              },
+              {
+                type: 'field',
+                name: 'fieldB',
+                range: { type: 'raw', value: 'string' },
+                required: true,
+                unique: true,
+                comment: 'Hi2',
+              },
+            ],
+          },
+          required: true,
+          unique: true,
+          comment: 'Hi',
+        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({
+        '@id': 'mp:a/b/file-param#MyClass_field__constructorArgument',
+        fields: [
+          { keyRaw: 'fieldA', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldA' }},
+          { keyRaw: 'fieldB', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldB' }},
+        ],
+      });
+      expect(parameters).toEqual([
+        {
+          '@id': 'mp:a/b/file-param#MyClass_field_fieldA',
+          comment: 'Hi1',
+          default: 'VALUE',
+          range: 'xsd:boolean',
+          required: true,
+          unique: true,
+        },
+        {
+          '@id': 'mp:a/b/file-param#MyClass_field_fieldB',
+          comment: 'Hi2',
+          range: 'xsd:string',
+          required: true,
+          unique: true,
+        },
+      ]);
+    });
+
+    it('should handle a deep nested parameter definition with multiple raw fields and scoped default', async() => {
+      const parameters: ParameterDefinition[] = [];
+      expect(await ctor
+        .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
+          type: 'field',
+          name: 'field',
+          defaultNested: [
+            {
+              paramPath: [ 'field', 'fieldA', 'field1' ],
+              value: { type: 'raw', value: 'VALUE' },
+            },
+          ],
+          range: {
+            type: 'nested',
+            value: [
+              {
+                type: 'field',
+                name: 'fieldA',
+                range: {
+                  type: 'nested',
+                  value: [
+                    {
+                      type: 'field',
+                      name: 'field1',
+                      range: { type: 'raw', value: 'boolean' },
+                      required: true,
+                      unique: true,
+                      comment: 'Hi1',
+                    },
+                    {
+                      type: 'field',
+                      name: 'field2',
+                      range: { type: 'raw', value: 'string' },
+                      required: true,
+                      unique: true,
+                      comment: 'Hi2',
+                    },
+                  ],
+                },
+                required: true,
+                unique: true,
+                comment: 'Hi1',
+              },
+              {
+                type: 'field',
+                name: 'fieldB',
+                range: { type: 'raw', value: 'string' },
+                required: true,
+                unique: true,
+                comment: 'Hi2',
+              },
+            ],
+          },
+          required: true,
+          unique: true,
+          comment: 'Hi',
+        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({
+        '@id': 'mp:a/b/file-param#MyClass_field__constructorArgument',
+        fields: [
+          {
+            keyRaw: 'fieldA',
+            value: {
+              '@id': 'mp:a/b/file-param#MyClass_field_fieldA__constructorArgument',
+              fields: [
+                { keyRaw: 'field1', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldA_field1' }},
+                { keyRaw: 'field2', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldA_field2' }},
+              ],
+            },
+          },
+          { keyRaw: 'fieldB', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldB' }},
+        ],
+      });
+      expect(parameters).toEqual([
+        {
+          '@id': 'mp:a/b/file-param#MyClass_field_fieldA_field1',
+          comment: 'Hi1',
+          default: 'VALUE',
+          range: 'xsd:boolean',
+          required: true,
+          unique: true,
+        },
+        {
+          '@id': 'mp:a/b/file-param#MyClass_field_fieldA_field2',
+          comment: 'Hi2',
+          range: 'xsd:string',
+          required: true,
+          unique: true,
+        },
+        {
+          '@id': 'mp:a/b/file-param#MyClass_field_fieldB',
+          comment: 'Hi2',
+          range: 'xsd:string',
+          required: true,
+          unique: true,
+        },
+      ]);
+    });
+
+    it('should throw if a default and nested default both apply', async() => {
+      const parameters: ParameterDefinition[] = [];
+      await expect(ctor
+        .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
+          type: 'field',
+          name: 'field',
+          defaultNested: [
+            {
+              paramPath: [ 'field', 'fieldA' ],
+              value: { type: 'raw', value: 'VALUE' },
+            },
+          ],
+          range: {
+            type: 'nested',
+            value: [
+              {
+                type: 'field',
+                name: 'fieldA',
+                range: { type: 'raw', value: 'boolean' },
+                default: { type: 'raw', value: 'VALUEOTHER' },
+                required: true,
+                unique: true,
+                comment: 'Hi1',
+              },
+              {
+                type: 'field',
+                name: 'fieldB',
+                range: { type: 'raw', value: 'string' },
+                required: true,
+                unique: true,
+                comment: 'Hi2',
+              },
+            ],
+          },
+          required: true,
+          unique: true,
+          comment: 'Hi',
+        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).rejects
+        .toThrow(`Detected conflicting default values on field 'mp:a/b/file-param#MyClass_field_fieldA'`);
     });
 
     it('should handle a recursive nested parameter definition', async() => {
