@@ -1,7 +1,7 @@
 import type { TSTypeLiteral, Identifier, TSIndexSignature,
   TSTypeReference } from '@typescript-eslint/types/dist/ts-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import type { ClassReference, ClassReferenceLoaded, InterfaceLoaded } from '../../lib/parse/ClassIndex';
+import type { ClassLoaded, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from '../../lib/parse/ClassIndex';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
 import type { CommentData } from '../../lib/parse/CommentLoader';
 import { CommentLoader } from '../../lib/parse/CommentLoader';
@@ -16,6 +16,7 @@ describe('ParameterLoader', () => {
   let commentLoader: CommentLoader;
   let classLoader: ClassLoader;
   let loader: ParameterLoader;
+  let classLoadedDummy: ClassLoaded;
   let constructorLoader: ConstructorLoader;
 
   beforeEach(() => {
@@ -24,7 +25,8 @@ describe('ParameterLoader', () => {
     };
     commentLoader = new CommentLoader();
     classLoader = new ClassLoader({ resolutionContext, logger, commentLoader });
-    loader = new ParameterLoader({ classLoaded: <any> { localName: 'A', fileName: 'file' }, commentLoader });
+    classLoadedDummy = <any> { localName: 'A', fileName: 'file' };
+    loader = new ParameterLoader({ commentLoader });
     constructorLoader = new ConstructorLoader({ commentLoader });
   });
 
@@ -42,7 +44,7 @@ describe('ParameterLoader', () => {
       };
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
       const constructorChain = constructorLoader.getConstructorChain(classLoaded);
-      const parameterLoader = new ParameterLoader({ classLoaded, commentLoader });
+      const parameterLoader = new ParameterLoader({ commentLoader });
 
       return { constructorChain, parameterLoader, classLoaded };
     }
@@ -160,7 +162,7 @@ export class A{
     });
 
     it('should error on an unknown field type', async() => {
-      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
+      const { constructorChain, parameterLoader } = await getConstructor(`
 export class A{
   constructor(fieldA = 'true') {}
 }`);
@@ -371,7 +373,7 @@ export class A{
         'file.d.ts': definition,
       };
       const classLoaded = <InterfaceLoaded> await classLoader.loadClassDeclaration(clazz, true);
-      const parameterLoader = new ParameterLoader({ classLoaded, commentLoader });
+      const parameterLoader = new ParameterLoader({ commentLoader });
 
       return { iface: classLoaded, parameterLoader };
     }
@@ -555,7 +557,7 @@ export interface A{
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
       const hash: TSTypeLiteral = (<any> constructorLoader.getConstructor(classLoaded)!.constructor
         .value.params[0]).typeAnnotation.typeAnnotation;
-      const parameterLoader = new ParameterLoader({ classLoaded, commentLoader });
+      const parameterLoader = new ParameterLoader({ commentLoader });
 
       return { hash, parameterLoader, classLoaded };
     }
@@ -737,7 +739,7 @@ export interface A{
 
   describe('loadField', () => {
     it('should get required data', () => {
-      expect(loader.loadField(<any> {
+      expect(loader.loadField(classLoadedDummy, <any> {
         name: 'fieldA',
         typeAnnotation: {
           typeAnnotation: {
@@ -765,7 +767,7 @@ export interface A{
     });
 
     it('should also get optional data', () => {
-      expect(loader.loadField(<any> {
+      expect(loader.loadField(classLoadedDummy, <any> {
         name: 'fieldA',
         typeAnnotation: {
           typeAnnotation: {
@@ -824,7 +826,7 @@ export interface A{
 
   describe('loadIndex', () => {
     it('should get required data', () => {
-      expect(loader.loadIndex(<any> {
+      expect(loader.loadIndex(classLoadedDummy, <any> {
         type: AST_NODE_TYPES.TSIndexSignature,
         parameters: [{
           type: AST_NODE_TYPES.Identifier,
@@ -865,7 +867,7 @@ export interface A{
     });
 
     it('should also get optional data', () => {
-      expect(loader.loadIndex(<any> {
+      expect(loader.loadIndex(classLoadedDummy, <any> {
         type: AST_NODE_TYPES.TSIndexSignature,
         parameters: [{
           type: AST_NODE_TYPES.Identifier,
@@ -917,13 +919,13 @@ export interface A{
 
   describe('getFieldName', () => {
     it('should get the field name of an Identifier', () => {
-      expect(loader.getFieldName(<any> {
+      expect(loader.getFieldName(classLoadedDummy, <any> {
         name: 'fieldA',
       })).toEqual('fieldA');
     });
 
     it('should get the field name of a TSPropertySignature', () => {
-      expect(loader.getFieldName(<any> {
+      expect(loader.getFieldName(classLoadedDummy, <any> {
         key: {
           type: AST_NODE_TYPES.Identifier,
           name: 'fieldA',
@@ -932,7 +934,7 @@ export interface A{
     });
 
     it('should error on getting the field name of an unknown type', () => {
-      expect(() => loader.getFieldName(<any> {
+      expect(() => loader.getFieldName(classLoadedDummy, <any> {
         key: {
           type: 'unknown',
           name: 'fieldA',
@@ -1098,8 +1100,8 @@ export interface A{
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
       const field: Identifier = <any> (constructorLoader.getConstructor(classLoaded)!.constructor)
         .value.params[0];
-      const parameterLoader = new ParameterLoader({ classLoaded, commentLoader });
-      return parameterLoader.getFieldRange(field, commentData);
+      const parameterLoader = new ParameterLoader({ commentLoader });
+      return parameterLoader.getFieldRange(classLoaded, field, commentData);
     }
 
     it('should get the range of a raw Boolean field type and ignore empty comment data', async() => {
@@ -1236,9 +1238,9 @@ export interface A{
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
       const field: Identifier = <any> (constructorLoader.getConstructor(classLoaded)!.constructor)
         .value.params[0];
-      const parameterLoader = new ParameterLoader({ classLoaded, commentLoader });
+      const parameterLoader = new ParameterLoader({ commentLoader });
 
-      expect(parameterLoader.getFieldRange(field, {}))
+      expect(parameterLoader.getFieldRange(classLoaded, field, {}))
         .toEqual({ type: 'interface', value: 'MyClass' });
     });
 
@@ -1251,9 +1253,9 @@ export interface A{
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
       const field: Identifier = <any> (constructorLoader.getConstructor(classLoaded)!.constructor)
         .value.params[0];
-      const parameterLoader = new ParameterLoader({ classLoaded, commentLoader });
+      const parameterLoader = new ParameterLoader({ commentLoader });
 
-      expect(parameterLoader.getFieldRange(field, {}))
+      expect(parameterLoader.getFieldRange(classLoaded, field, {}))
         .toEqual({ type: 'raw', value: 'string' });
     });
 
@@ -1266,9 +1268,9 @@ export interface A{
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
       const field: Identifier = <any> (constructorLoader.getConstructor(classLoaded)!.constructor)
         .value.params[0];
-      const parameterLoader = new ParameterLoader({ classLoaded, commentLoader });
+      const parameterLoader = new ParameterLoader({ commentLoader });
 
-      expect(() => parameterLoader.getFieldRange(field, {}))
+      expect(() => parameterLoader.getFieldRange(classLoaded, field, {}))
         .toThrow(new Error('Found untyped generic field type at field fieldA in A at file'));
     });
 
@@ -1473,8 +1475,8 @@ export interface A{
       const field: any = <any>(constructorLoader.getConstructor(classLoaded)!.constructor)
         .value.params[0];
       const indexSignature: TSIndexSignature = field.typeAnnotation.typeAnnotation.members[0];
-      parameterLoader = new ParameterLoader({ classLoaded, commentLoader });
-      return parameterLoader.getIndexDomain(indexSignature);
+      parameterLoader = new ParameterLoader({ commentLoader });
+      return parameterLoader.getIndexDomain(classLoaded, indexSignature);
     }
 
     it('should get the domain of a raw Boolean', async() => {
@@ -1498,7 +1500,7 @@ export interface A{
     });
 
     it('should error on missing key type', async() => {
-      await expect(async() => parameterLoader.getIndexDomain(<any> {
+      await expect(async() => parameterLoader.getIndexDomain(classLoadedDummy, <any> {
         type: AST_NODE_TYPES.TSIndexSignature,
         parameters: [{
           type: AST_NODE_TYPES.Identifier,
@@ -1533,8 +1535,8 @@ export interface A{
       const field: any = <any>(constructorLoader.getConstructor(classLoaded)!.constructor)
         .value.params[0];
       const indexSignature: TSIndexSignature = field.typeAnnotation.typeAnnotation.members[0];
-      const parameterLoader = new ParameterLoader({ classLoaded, commentLoader });
-      return parameterLoader.getIndexRange(indexSignature, commentData);
+      const parameterLoader = new ParameterLoader({ commentLoader });
+      return parameterLoader.getIndexRange(classLoaded, indexSignature, commentData);
     }
 
     it('should get the range of a raw Boolean field type and ignore empty comment data', async() => {
@@ -1574,7 +1576,7 @@ export interface A{
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
       const field: Identifier = <any> (constructorLoader.getConstructor(classLoaded)!.constructor)
         .value.params[0];
-      const parameterLoader = new ParameterLoader({ classLoaded, commentLoader });
+      const parameterLoader = new ParameterLoader({ commentLoader });
       const typeNode: TSTypeReference = <TSTypeReference> field.typeAnnotation!.typeAnnotation;
       return parameterLoader.handleTypeOverride(typeNode);
     }

@@ -202,7 +202,7 @@ export class ParameterResolver {
    * @param iface A loaded interface.
    */
   public async getNestedFieldsFromInterface(iface: InterfaceLoaded): Promise<ParameterData<ParameterRangeResolved>[]> {
-    const parameterLoader = new ParameterLoader({ classLoaded: iface, commentLoader: this.commentLoader });
+    const parameterLoader = new ParameterLoader({ commentLoader: this.commentLoader });
     const unresolvedFields = parameterLoader.loadInterfaceFields(iface);
     return this.resolveParameterData(unresolvedFields, iface);
   }
@@ -214,7 +214,7 @@ export class ParameterResolver {
    */
   public async getNestedFieldsFromHash(hash: TSTypeLiteral, owningClass: ClassReferenceLoaded):
   Promise<ParameterData<ParameterRangeResolved>[]> {
-    const parameterLoader = new ParameterLoader({ classLoaded: owningClass, commentLoader: this.commentLoader });
+    const parameterLoader = new ParameterLoader({ commentLoader: this.commentLoader });
     const unresolvedFields = parameterLoader.loadHashFields(owningClass, hash);
     return this.resolveParameterData(unresolvedFields, owningClass);
   }

@@ -30,10 +30,7 @@ export class ConstructorLoader {
 
       // Fill in constructor data if we're loading a class, and we find a constructor in the inheritance chain.
       if (classLoadedRoot.type === 'class') {
-        const parameterLoader = new ParameterLoader({
-          classLoaded: classLoadedRoot,
-          commentLoader: this.commentLoader,
-        });
+        const parameterLoader = new ParameterLoader({ commentLoader: this.commentLoader });
         const constructorChain = this.getConstructorChain(classLoadedRoot);
         if (constructorChain.length > 0) {
           constructorDataIndex[className] = parameterLoader.loadConstructorFields(constructorChain);

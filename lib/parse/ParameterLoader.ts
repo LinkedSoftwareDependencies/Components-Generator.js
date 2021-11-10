@@ -23,11 +23,9 @@ export class ParameterLoader {
     new TypeReferenceOverrideAliasRecord(),
   ];
 
-  private readonly classLoaded: ClassReferenceLoaded;
   private readonly commentLoader: CommentLoader;
 
   public constructor(args: ParameterLoaderArgs) {
-    this.classLoaded = args.classLoaded;
     this.commentLoader = args.commentLoader;
   }
 
@@ -44,7 +42,7 @@ export class ParameterLoader {
     // Load all constructor parameters
     const parameters: ParameterDataField<ParameterRangeUnresolved>[] = [];
     for (const field of constructorChain[0].constructor.value.params) {
-      this.loadConstructorField(parameters, constructorCommentData, field);
+      this.loadConstructorField(constructorChain[0].classLoaded, parameters, constructorCommentData, field);
     }
 
     return { parameters, classLoaded: constructorChain[0].classLoaded };
@@ -52,11 +50,13 @@ export class ParameterLoader {
 
   /**
    * Load the parameter data from the given field in a constructor.
+   * @param classLoaded The loaded class in which the field is defined.
    * @param parameters The array of parameters that will be appended to.
    * @param constructorCommentData Comment data from the constructor.
    * @param field The field to load.
    */
   public loadConstructorField(
+    classLoaded: ClassReferenceLoaded,
     parameters: ParameterDataField<ParameterRangeUnresolved>[],
     constructorCommentData: ConstructorCommentData,
     field: Parameter,
@@ -64,12 +64,12 @@ export class ParameterLoader {
     if (field.type === AST_NODE_TYPES.Identifier) {
       const commentData = constructorCommentData[field.name] || {};
       if (!commentData.ignored) {
-        parameters.push(this.loadField(field, commentData));
+        parameters.push(this.loadField(classLoaded, field, commentData));
       }
     } else if (field.type === AST_NODE_TYPES.TSParameterProperty) {
-      this.loadConstructorField(parameters, constructorCommentData, field.parameter);
+      this.loadConstructorField(classLoaded, parameters, constructorCommentData, field.parameter);
     } else {
-      throw new Error(`Could not understand constructor parameter type ${field.type} in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
+      throw new Error(`Could not understand constructor parameter type ${field.type} in ${classLoaded.localName} at ${classLoaded.fileName}`);
     }
   }
 
@@ -117,34 +117,38 @@ export class ParameterLoader {
       case AST_NODE_TYPES.TSPropertySignature:
         commentData = this.commentLoader.getCommentDataFromField(classLoaded, typeElement);
         if (!commentData.ignored) {
-          return this.loadField(typeElement, commentData);
+          return this.loadField(classLoaded, typeElement, commentData);
         }
         return;
       case AST_NODE_TYPES.TSIndexSignature:
         commentData = this.commentLoader.getCommentDataFromField(classLoaded, typeElement);
         if (!commentData.ignored) {
-          return this.loadIndex(typeElement, commentData);
+          return this.loadIndex(classLoaded, typeElement, commentData);
         }
         return;
       default:
-        throw new Error(`Unsupported field type ${typeElement.type} in ${this.classLoaded.localName} in ${this.classLoaded.fileName}`);
+        throw new Error(`Unsupported field type ${typeElement.type} in ${classLoaded.localName} in ${classLoaded.fileName}`);
     }
   }
 
   /**
    * Load the parameter data from the given field.
+   * @param classLoaded The loaded class in which the field is defined.
    * @param field A field.
    * @param commentData Comment data about the given field.
    */
-  public loadField(field: Identifier | TSPropertySignature, commentData: CommentData):
-  ParameterDataField<ParameterRangeUnresolved> {
+  public loadField(
+    classLoaded: ClassReferenceLoaded,
+    field: Identifier | TSPropertySignature,
+    commentData: CommentData,
+  ): ParameterDataField<ParameterRangeUnresolved> {
     // Required data
     const parameterData: ParameterDataField<ParameterRangeUnresolved> = {
       type: 'field',
-      name: this.getFieldName(field),
+      name: this.getFieldName(classLoaded, field),
       unique: this.isFieldUnique(field),
       required: this.isFieldRequired(field),
-      range: this.getFieldRange(field, commentData),
+      range: this.getFieldRange(classLoaded, field, commentData),
       default: commentData.default,
       defaultNested: commentData.defaultNested,
     };
@@ -157,7 +161,7 @@ export class ParameterLoader {
     return parameterData;
   }
 
-  public getFieldName(field: Identifier | TSPropertySignature): string {
+  public getFieldName(classLoaded: ClassReferenceLoaded, field: Identifier | TSPropertySignature): string {
     if ('name' in field) {
       // If Identifier
       return field.name;
@@ -166,7 +170,7 @@ export class ParameterLoader {
     if (field.key.type === AST_NODE_TYPES.Identifier) {
       return field.key.name;
     }
-    throw new Error(`Unsupported field key type ${field.key.type} in interface ${this.classLoaded.localName} in ${this.classLoaded.fileName}`);
+    throw new Error(`Unsupported field key type ${field.key.type} in interface ${classLoaded.localName} in ${classLoaded.fileName}`);
   }
 
   public isFieldIndexedHash(field: Identifier | TSPropertySignature): boolean {
@@ -190,8 +194,8 @@ export class ParameterLoader {
     return !field.optional && !this.isFieldIndexedHash(field);
   }
 
-  public getErrorIdentifierField(field: Identifier | TSPropertySignature): string {
-    return `field ${this.getFieldName(field)}`;
+  public getErrorIdentifierField(classLoaded: ClassReferenceLoaded, field: Identifier | TSPropertySignature): string {
+    return `field ${this.getFieldName(classLoaded, field)}`;
   }
 
   public getErrorIdentifierIndex(): string {
@@ -199,6 +203,7 @@ export class ParameterLoader {
   }
 
   public getRangeFromTypeNode(
+    classLoaded: ClassReferenceLoaded,
     typeNode: TypeNode,
     errorIdentifier: string,
     nestedArrays = 0,
@@ -206,7 +211,7 @@ export class ParameterLoader {
     // Don't allow arrays to be nested
     if (nestedArrays > 1) {
       throw new Error(`Detected illegal nested array type for ${errorIdentifier
-      } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
+      } in ${classLoaded.localName} at ${classLoaded.fileName}`);
     }
 
     let typeAliasOverride: ParameterRangeUnresolved | undefined;
@@ -224,19 +229,24 @@ export class ParameterLoader {
               return { type: 'raw', value: 'string' };
             case 'Array':
               if (typeNode.typeParameters && typeNode.typeParameters.params.length === 1) {
-                return this.getRangeFromTypeNode(typeNode.typeParameters.params[0], errorIdentifier, nestedArrays + 1);
+                return this.getRangeFromTypeNode(
+                  classLoaded,
+                  typeNode.typeParameters.params[0],
+                  errorIdentifier,
+                  nestedArrays + 1,
+                );
               }
               throw new Error(`Found invalid Array field type at ${errorIdentifier
-              } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
+              } in ${classLoaded.localName} at ${classLoaded.fileName}`);
             default:
               // First check if the type is be a generic type
-              if (typeNode.typeName.name in this.classLoaded.generics) {
-                const genericProperties = this.classLoaded.generics[typeNode.typeName.name];
+              if (typeNode.typeName.name in classLoaded.generics) {
+                const genericProperties = classLoaded.generics[typeNode.typeName.name];
                 if (!genericProperties.type) {
                   throw new Error(`Found untyped generic field type at ${errorIdentifier
-                  } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
+                  } in ${classLoaded.localName} at ${classLoaded.fileName}`);
                 }
-                return this.getRangeFromTypeNode(genericProperties.type, errorIdentifier);
+                return this.getRangeFromTypeNode(classLoaded, genericProperties.type, errorIdentifier, nestedArrays);
               }
 
               // Check if this node is a predefined type alias
@@ -251,7 +261,7 @@ export class ParameterLoader {
         }
         break;
       case AST_NODE_TYPES.TSArrayType:
-        return this.getRangeFromTypeNode(typeNode.elementType, errorIdentifier, nestedArrays + 1);
+        return this.getRangeFromTypeNode(classLoaded, typeNode.elementType, errorIdentifier, nestedArrays + 1);
       case AST_NODE_TYPES.TSBooleanKeyword:
         return { type: 'raw', value: 'boolean' };
       case AST_NODE_TYPES.TSNumberKeyword:
@@ -265,7 +275,7 @@ export class ParameterLoader {
         // eslint-disable-next-line no-case-declarations
         const children = typeNode.types
           .filter(type => type.type !== AST_NODE_TYPES.TSUndefinedKeyword)
-          .map(type => this.getRangeFromTypeNode(type, errorIdentifier, nestedArrays));
+          .map(type => this.getRangeFromTypeNode(classLoaded, type, errorIdentifier, nestedArrays));
         if (children.length === 1) {
           return children[0];
         }
@@ -277,10 +287,10 @@ export class ParameterLoader {
         return {
           type: 'intersection',
           elements: typeNode.types
-            .map(type => this.getRangeFromTypeNode(type, errorIdentifier, nestedArrays)),
+            .map(type => this.getRangeFromTypeNode(classLoaded, type, errorIdentifier, nestedArrays)),
         };
       case AST_NODE_TYPES.TSParenthesizedType:
-        return this.getRangeFromTypeNode(typeNode.typeAnnotation, errorIdentifier, nestedArrays);
+        return this.getRangeFromTypeNode(classLoaded, typeNode.typeAnnotation, errorIdentifier, nestedArrays);
       case AST_NODE_TYPES.TSUnknownKeyword:
       case AST_NODE_TYPES.TSUndefinedKeyword:
       case AST_NODE_TYPES.TSVoidKeyword:
@@ -291,19 +301,23 @@ export class ParameterLoader {
         return {
           type: 'tuple',
           elements: typeNode.elementTypes
-            .map(type => this.getRangeFromTypeNode(type, errorIdentifier, nestedArrays)),
+            .map(type => this.getRangeFromTypeNode(classLoaded, type, errorIdentifier, nestedArrays)),
         };
       case AST_NODE_TYPES.TSRestType:
         return {
           type: 'rest',
-          value: this.getRangeFromTypeNode(typeNode.typeAnnotation, errorIdentifier, nestedArrays),
+          value: this.getRangeFromTypeNode(classLoaded, typeNode.typeAnnotation, errorIdentifier, nestedArrays),
         };
     }
     throw new Error(`Could not understand parameter type ${typeNode.type} of ${errorIdentifier
-    } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
+    } in ${classLoaded.localName} at ${classLoaded.fileName}`);
   }
 
-  public getFieldRange(field: Identifier | TSPropertySignature, commentData: CommentData): ParameterRangeUnresolved {
+  public getFieldRange(
+    classLoaded: ClassReferenceLoaded,
+    field: Identifier | TSPropertySignature,
+    commentData: CommentData,
+  ): ParameterRangeUnresolved {
     // Check comment data
     if (commentData.range) {
       return commentData.range;
@@ -311,11 +325,15 @@ export class ParameterLoader {
 
     // Check the typescript raw field type
     if (field.typeAnnotation) {
-      return this.getRangeFromTypeNode(field.typeAnnotation.typeAnnotation, this.getErrorIdentifierField(field));
+      return this.getRangeFromTypeNode(
+        classLoaded,
+        field.typeAnnotation.typeAnnotation,
+        this.getErrorIdentifierField(classLoaded, field),
+      );
     }
 
-    throw new Error(`Missing field type on ${this.getFieldName(field)
-    } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
+    throw new Error(`Missing field type on ${this.getFieldName(classLoaded, field)
+    } in ${classLoaded.localName} at ${classLoaded.fileName}`);
   }
 
   public getFieldComment(commentData: CommentData): string | undefined {
@@ -324,16 +342,17 @@ export class ParameterLoader {
 
   /**
    * Load the parameter data from the given index signature.
+   * @param classLoaded The loaded class in which the field is defined.
    * @param indexSignature An index signature.
    * @param commentData Comment data about the given field.
    */
-  public loadIndex(indexSignature: TSIndexSignature, commentData: CommentData):
+  public loadIndex(classLoaded: ClassReferenceLoaded, indexSignature: TSIndexSignature, commentData: CommentData):
   ParameterDataIndex<ParameterRangeUnresolved> {
     // Required data
     const parameterData: ParameterDataIndex<ParameterRangeUnresolved> = {
       type: 'index',
-      domain: this.getIndexDomain(indexSignature),
-      range: this.getIndexRange(indexSignature, commentData),
+      domain: this.getIndexDomain(classLoaded, indexSignature),
+      range: this.getIndexRange(classLoaded, indexSignature, commentData),
     };
 
     // Optional data
@@ -347,29 +366,39 @@ export class ParameterLoader {
     return parameterData;
   }
 
-  public getIndexDomain(indexSignature: TSIndexSignature): 'string' | 'number' | 'boolean' {
+  public getIndexDomain(
+    classLoaded: ClassReferenceLoaded,
+    indexSignature: TSIndexSignature,
+  ): 'string' | 'number' | 'boolean' {
     if (indexSignature.parameters.length !== 1) {
       throw new Error(`Expected exactly one key in index signature in ${
-        this.classLoaded.localName} at ${this.classLoaded.fileName}`);
+        classLoaded.localName} at ${classLoaded.fileName}`);
     }
     if (indexSignature.parameters[0].type !== 'Identifier') {
       throw new Error(`Only identifier-based index signatures are allowed in ${
-        this.classLoaded.localName} at ${this.classLoaded.fileName}`);
+        classLoaded.localName} at ${classLoaded.fileName}`);
     }
     if (!indexSignature.parameters[0].typeAnnotation) {
       throw new Error(`Missing key type annotation in index signature in ${
-        this.classLoaded.localName} at ${this.classLoaded.fileName}`);
+        classLoaded.localName} at ${classLoaded.fileName}`);
     }
-    const type = this.getRangeFromTypeNode(indexSignature.parameters[0].typeAnnotation.typeAnnotation,
-      this.getErrorIdentifierIndex());
+    const type = this.getRangeFromTypeNode(
+      classLoaded,
+      indexSignature.parameters[0].typeAnnotation.typeAnnotation,
+      this.getErrorIdentifierIndex(),
+    );
     if (type.type !== 'raw') {
       throw new Error(`Only raw types are allowed in index signature keys in ${
-        this.classLoaded.localName} at ${this.classLoaded.fileName}`);
+        classLoaded.localName} at ${classLoaded.fileName}`);
     }
     return type.value;
   }
 
-  public getIndexRange(indexSignature: TSIndexSignature, commentData: CommentData): ParameterRangeUnresolved {
+  public getIndexRange(
+    classLoaded: ClassReferenceLoaded,
+    indexSignature: TSIndexSignature,
+    commentData: CommentData,
+  ): ParameterRangeUnresolved {
     // Check comment data
     if (commentData.range) {
       return commentData.range;
@@ -377,11 +406,15 @@ export class ParameterLoader {
 
     // Check the typescript raw field type
     if (indexSignature.typeAnnotation) {
-      return this.getRangeFromTypeNode(indexSignature.typeAnnotation.typeAnnotation, this.getErrorIdentifierIndex());
+      return this.getRangeFromTypeNode(
+        classLoaded,
+        indexSignature.typeAnnotation.typeAnnotation,
+        this.getErrorIdentifierIndex(),
+      );
     }
 
     throw new Error(`Missing field type on ${this.getErrorIdentifierIndex()
-    } in ${this.classLoaded.localName} at ${this.classLoaded.fileName}`);
+    } in ${classLoaded.localName} at ${classLoaded.fileName}`);
   }
 
   /**
@@ -399,7 +432,6 @@ export class ParameterLoader {
 }
 
 export interface ParameterLoaderArgs {
-  classLoaded: ClassReferenceLoaded;
   commentLoader: CommentLoader;
 }
 
