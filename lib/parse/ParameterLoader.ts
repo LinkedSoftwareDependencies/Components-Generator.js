@@ -256,7 +256,7 @@ export class ParameterLoader {
               }
 
               // Otherwise, assume we have an interface/class parameter
-              return { type: 'interface', value: typeNode.typeName.name };
+              return { type: 'interface', value: typeNode.typeName.name, origin: classLoaded };
           }
         }
         break;
@@ -505,6 +505,10 @@ export type ParameterRangeUnresolved = {
 } | {
   type: 'interface';
   value: string;
+  /**
+   * The place from which the interface was referenced.
+   */
+  origin: ClassReferenceLoaded;
 } | {
   type: 'hash';
   value: TSTypeLiteral;

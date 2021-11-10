@@ -89,7 +89,7 @@ export class ParameterResolver {
             type: 'undefined',
           };
         }
-        return await this.resolveRangeInterface(range.value, owningClass);
+        return await this.resolveRangeInterface(range.value, range.origin);
       case 'hash':
         return {
           type: 'nested',

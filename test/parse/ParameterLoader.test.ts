@@ -454,7 +454,7 @@ export interface A{
         {
           type: 'field',
           name: 'fieldA',
-          range: { type: 'interface', value: 'MyClass' },
+          range: { type: 'interface', value: 'MyClass', origin: iface },
           required: true,
           unique: true,
         },
@@ -466,24 +466,25 @@ export interface A{
 export interface A{
   fieldA: MyClass1;
 }`);
-      iface.superInterfaces = [
-        (await getInterface(`
+      const ifaceSuper = (await getInterface(`
 export interface A{
   fieldB: MyClass2;
-}`)).iface,
+}`)).iface;
+      iface.superInterfaces = [
+        ifaceSuper,
       ];
       expect(parameterLoader.loadInterfaceFields(iface)).toEqual([
         {
           type: 'field',
           name: 'fieldA',
-          range: { type: 'interface', value: 'MyClass1' },
+          range: { type: 'interface', value: 'MyClass1', origin: iface },
           required: true,
           unique: true,
         },
         {
           type: 'field',
           name: 'fieldB',
-          range: { type: 'interface', value: 'MyClass2' },
+          range: { type: 'interface', value: 'MyClass2', origin: ifaceSuper },
           required: true,
           unique: true,
         },
@@ -495,43 +496,45 @@ export interface A{
 export interface A{
   fieldA: MyClass1;
 }`);
-      iface.superInterfaces = [
-        (await getInterface(`
+      const ifaceSuper1 = (await getInterface(`
 export interface A{
   fieldB: MyClass2;
-}`)).iface,
-        (await getInterface(`
+}`)).iface;
+      const ifaceSuper2 = (await getInterface(`
 export interface A{
   fieldC: MyClass3;
   fieldD: MyClass4;
-}`)).iface,
+}`)).iface;
+      iface.superInterfaces = [
+        ifaceSuper1,
+        ifaceSuper2,
       ];
       expect(parameterLoader.loadInterfaceFields(iface)).toEqual([
         {
           type: 'field',
           name: 'fieldA',
-          range: { type: 'interface', value: 'MyClass1' },
+          range: { type: 'interface', value: 'MyClass1', origin: iface },
           required: true,
           unique: true,
         },
         {
           type: 'field',
           name: 'fieldB',
-          range: { type: 'interface', value: 'MyClass2' },
+          range: { type: 'interface', value: 'MyClass2', origin: ifaceSuper1 },
           required: true,
           unique: true,
         },
         {
           type: 'field',
           name: 'fieldC',
-          range: { type: 'interface', value: 'MyClass3' },
+          range: { type: 'interface', value: 'MyClass3', origin: ifaceSuper2 },
           required: true,
           unique: true,
         },
         {
           type: 'field',
           name: 'fieldD',
-          range: { type: 'interface', value: 'MyClass4' },
+          range: { type: 'interface', value: 'MyClass4', origin: ifaceSuper2 },
           required: true,
           unique: true,
         },
@@ -647,7 +650,7 @@ export interface A{
         {
           type: 'field',
           name: 'fieldA',
-          range: { type: 'interface', value: 'MyClass' },
+          range: { type: 'interface', value: 'MyClass', origin: classLoaded },
           required: true,
           unique: true,
         },
@@ -691,7 +694,7 @@ export interface A{
         {
           type: 'index',
           domain: 'number',
-          range: { type: 'interface', value: 'MyClass' },
+          range: { type: 'interface', value: 'MyClass', origin: classLoaded },
         },
       ]);
     });
@@ -1185,12 +1188,12 @@ export interface A{
 
     it('should get the range of a class', async() => {
       expect(await getFieldRange('fieldA: MyClass', {}))
-        .toEqual({ type: 'interface', value: 'MyClass' });
+        .toEqual({ type: 'interface', value: 'MyClass', origin: expect.anything() });
     });
 
     it('should get the range of a generic class', async() => {
       expect(await getFieldRange('fieldA: MyClass<T>', {}))
-        .toEqual({ type: 'interface', value: 'MyClass' });
+        .toEqual({ type: 'interface', value: 'MyClass', origin: expect.anything() });
     });
 
     it('should get the range of a hash', async() => {
@@ -1241,7 +1244,7 @@ export interface A{
       const parameterLoader = new ParameterLoader({ commentLoader });
 
       expect(parameterLoader.getFieldRange(classLoaded, field, {}))
-        .toEqual({ type: 'interface', value: 'MyClass' });
+        .toEqual({ type: 'interface', value: 'MyClass', origin: classLoaded });
     });
 
     it('should get the range of a generic raw type', async() => {
@@ -1364,9 +1367,9 @@ export interface A{
         .toEqual({
           type: 'union',
           elements: [
-            { type: 'interface', value: 'MyClass1' },
-            { type: 'interface', value: 'MyClass2' },
-            { type: 'interface', value: 'MyClass3' },
+            { type: 'interface', value: 'MyClass1', origin: expect.anything() },
+            { type: 'interface', value: 'MyClass2', origin: expect.anything() },
+            { type: 'interface', value: 'MyClass3', origin: expect.anything() },
           ],
         });
     });
@@ -1387,9 +1390,9 @@ export interface A{
         .toEqual({
           type: 'intersection',
           elements: [
-            { type: 'interface', value: 'MyClass1' },
-            { type: 'interface', value: 'MyClass2' },
-            { type: 'interface', value: 'MyClass3' },
+            { type: 'interface', value: 'MyClass1', origin: expect.anything() },
+            { type: 'interface', value: 'MyClass2', origin: expect.anything() },
+            { type: 'interface', value: 'MyClass3', origin: expect.anything() },
           ],
         });
     });
@@ -1402,11 +1405,11 @@ export interface A{
             {
               type: 'union',
               elements: [
-                { type: 'interface', value: 'MyClass1' },
-                { type: 'interface', value: 'MyClass2' },
+                { type: 'interface', value: 'MyClass1', origin: expect.anything() },
+                { type: 'interface', value: 'MyClass2', origin: expect.anything() },
               ],
             },
-            { type: 'interface', value: 'MyClass3' },
+            { type: 'interface', value: 'MyClass3', origin: expect.anything() },
           ],
         });
     });

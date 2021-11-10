@@ -218,6 +218,7 @@ describe('ParameterResolver', () => {
           range: {
             type: 'interface',
             value: 'MyClass',
+            origin: classReference,
           },
         },
       ], classReference)).toMatchObject([
@@ -246,6 +247,7 @@ describe('ParameterResolver', () => {
           range: {
             type: 'interface',
             value: 'MyClass',
+            origin: classReference,
           },
         },
       ], classReference)).toMatchObject([
@@ -292,9 +294,26 @@ describe('ParameterResolver', () => {
       expect(await loader.resolveRange({
         type: 'interface',
         value: 'MyClass',
+        origin: classReference,
       }, classReference)).toMatchObject({
         type: 'class',
         value: { localName: 'MyClass', fileName: 'MyClass' },
+      });
+    });
+
+    it('should handle an interface range pointing to a class with another origin', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `export * from './MyClass'`,
+        'MyClass.d.ts': `export class MyClass{}`,
+        'OtherClass.d.ts': `export class OtherClass{}`,
+      };
+      expect(await loader.resolveRange({
+        type: 'interface',
+        value: 'OtherClass',
+        origin: <any> { localName: 'OtherClass', fileName: 'OtherClass' },
+      }, classReference)).toMatchObject({
+        type: 'class',
+        value: { localName: 'OtherClass', fileName: 'OtherClass' },
       });
     });
 
@@ -307,6 +326,7 @@ describe('ParameterResolver', () => {
       expect(await loader.resolveRange({
         type: 'interface',
         value: 'MyClass',
+        origin: classReference,
       }, classReference)).toMatchObject({
         type: 'undefined',
       });
@@ -322,6 +342,7 @@ describe('ParameterResolver', () => {
       expect(await loader.resolveRange({
         type: 'interface',
         value: 'MyClass',
+        origin: classReference,
       }, classReference)).toMatchObject({
         type: 'class',
         value: { localName: 'MyClass', fileName: 'MyClass' },
@@ -338,6 +359,7 @@ describe('ParameterResolver', () => {
       expect(await loader.resolveRange({
         type: 'interface',
         value: 'MyInterface',
+        origin: classReference,
       }, classReference)).toMatchObject({
         type: 'nested',
         value: [
@@ -362,6 +384,7 @@ export interface MyInterface extends IgnoredInterface{};
       expect(await loader.resolveRange({
         type: 'interface',
         value: 'MyInterface',
+        origin: classReference,
       }, classReference)).toMatchObject({
         type: 'nested',
         value: [],
@@ -396,6 +419,7 @@ export interface MyInterface extends IgnoredInterface{};
           {
             type: 'interface',
             value: 'MyClass',
+            origin: classReference,
           },
         ],
       }, classReference)).toMatchObject({
@@ -437,6 +461,7 @@ export interface MyInterface extends IgnoredInterface{};
           {
             type: 'interface',
             value: 'MyClass',
+            origin: classReference,
           },
         ],
       }, classReference)).toMatchObject({
@@ -478,6 +503,7 @@ export interface MyInterface extends IgnoredInterface{};
           {
             type: 'interface',
             value: 'MyClass',
+            origin: classReference,
           },
         ],
       }, classReference)).toMatchObject({
@@ -517,6 +543,7 @@ export interface MyInterface extends IgnoredInterface{};
             value: {
               type: 'interface',
               value: 'MyClass',
+              origin: classReference,
             },
           },
         ],
