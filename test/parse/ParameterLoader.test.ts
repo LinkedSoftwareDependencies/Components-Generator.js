@@ -1,7 +1,7 @@
-import type { MethodDefinition, TSTypeLiteral, Identifier, TSIndexSignature,
+import type { TSTypeLiteral, Identifier, TSIndexSignature,
   TSTypeReference } from '@typescript-eslint/types/dist/ts-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import type { ClassLoaded, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from '../../lib/parse/ClassIndex';
+import type { ClassReference, ClassReferenceLoaded, InterfaceLoaded } from '../../lib/parse/ClassIndex';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
 import type { CommentData } from '../../lib/parse/CommentLoader';
 import { CommentLoader } from '../../lib/parse/CommentLoader';
@@ -36,35 +36,34 @@ describe('ParameterLoader', () => {
       fileNameReferenced: 'fileReferenced',
     };
 
-    async function getConstructor(definition: string):
-    Promise<{ constructor: MethodDefinition; parameterLoader: ParameterLoader; classLoaded: ClassLoaded }> {
+    async function getConstructor(definition: string) {
       resolutionContext.contentsOverrides = {
         'file.d.ts': definition,
       };
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
-      const constructor = constructorLoader.getConstructor(classLoaded)!.constructor;
+      const constructorChain = constructorLoader.getConstructorChain(classLoaded);
       const parameterLoader = new ParameterLoader({ classLoaded, commentLoader });
 
-      return { constructor, parameterLoader, classLoaded };
+      return { constructorChain, parameterLoader, classLoaded };
     }
 
     it('should be empty for an empty constructor', async() => {
-      const { constructor, parameterLoader, classLoaded } = await getConstructor(`
+      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
 export class A{
   constructor() {}
 }`);
-      expect(parameterLoader.loadConstructorFields(constructor, classLoaded)).toEqual({
+      expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
         parameters: [],
       });
     });
 
     it('should handle a single field without comment', async() => {
-      const { constructor, parameterLoader, classLoaded } = await getConstructor(`
+      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
 export class A{
   constructor(fieldA: string) {}
 }`);
-      expect(parameterLoader.loadConstructorFields(constructor, classLoaded)).toEqual({
+      expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
         parameters: [
           {
@@ -82,14 +81,14 @@ export class A{
     });
 
     it('should handle a single field with comment', async() => {
-      const { constructor, parameterLoader, classLoaded } = await getConstructor(`
+      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
 export class A{
   /**
    * @param fieldA - This is a great field! @range {float}
    */
   constructor(fieldA: string) {}
 }`);
-      expect(parameterLoader.loadConstructorFields(constructor, classLoaded)).toEqual({
+      expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
         parameters: [
           {
@@ -108,21 +107,21 @@ export class A{
     });
 
     it('should handle a single ignored field', async() => {
-      const { constructor, parameterLoader, classLoaded } = await getConstructor(`
+      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
 export class A{
   /**
    * @param fieldA - This is a great field! @ignored
    */
   constructor(fieldA: string) {}
 }`);
-      expect(parameterLoader.loadConstructorFields(constructor, classLoaded)).toEqual({
+      expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
         parameters: [],
       });
     });
 
     it('should handle a multiple fields', async() => {
-      const { constructor, parameterLoader, classLoaded } = await getConstructor(`
+      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
 export class A{
   /**
    * @param fieldA - This is a great field! @range {float}
@@ -131,7 +130,7 @@ export class A{
    */
   constructor(fieldA: string, fieldB?: number[], fieldC?: string[]) {}
 }`);
-      expect(parameterLoader.loadConstructorFields(constructor, classLoaded)).toEqual({
+      expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
         parameters: [
           {
@@ -161,20 +160,20 @@ export class A{
     });
 
     it('should error on an unknown field type', async() => {
-      const { constructor, parameterLoader, classLoaded } = await getConstructor(`
+      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
 export class A{
   constructor(fieldA = 'true') {}
 }`);
-      expect(() => parameterLoader.loadConstructorFields(constructor, classLoaded))
+      expect(() => parameterLoader.loadConstructorFields(constructorChain))
         .toThrow(new Error('Could not understand constructor parameter type AssignmentPattern in A at file'));
     });
 
     it('should handle a hash field', async() => {
-      const { constructor, parameterLoader, classLoaded } = await getConstructor(`
+      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
 export class A{
   constructor(fieldA: { a: string }) {}
 }`);
-      expect(parameterLoader.loadConstructorFields(constructor, classLoaded)).toMatchObject({
+      expect(parameterLoader.loadConstructorFields(constructorChain)).toMatchObject({
         classLoaded,
         parameters: [
           {
@@ -202,11 +201,11 @@ export class A{
     });
 
     it('should handle a hash field with indexed element', async() => {
-      const { constructor, parameterLoader, classLoaded } = await getConstructor(`
+      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
 export class A{
   constructor(fieldA: { [key: string]: string }) {}
 }`);
-      expect(parameterLoader.loadConstructorFields(constructor, classLoaded)).toMatchObject({
+      expect(parameterLoader.loadConstructorFields(constructorChain)).toMatchObject({
         classLoaded,
         parameters: [
           {
@@ -226,11 +225,11 @@ export class A{
     });
 
     it('should handle a public field', async() => {
-      const { constructor, parameterLoader, classLoaded } = await getConstructor(`
+      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
 export class A{
   constructor(public fieldA: string) {}
 }`);
-      expect(parameterLoader.loadConstructorFields(constructor, classLoaded)).toEqual({
+      expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
         parameters: [
           {
@@ -248,11 +247,11 @@ export class A{
     });
 
     it('should handle a protected field', async() => {
-      const { constructor, parameterLoader, classLoaded } = await getConstructor(`
+      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
 export class A{
   constructor(protected fieldA: string) {}
 }`);
-      expect(parameterLoader.loadConstructorFields(constructor, classLoaded)).toEqual({
+      expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
         parameters: [
           {
@@ -270,11 +269,11 @@ export class A{
     });
 
     it('should handle a private field', async() => {
-      const { constructor, parameterLoader, classLoaded } = await getConstructor(`
+      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
 export class A{
   constructor(private fieldA: string) {}
 }`);
-      expect(parameterLoader.loadConstructorFields(constructor, classLoaded)).toEqual({
+      expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
         parameters: [
           {
@@ -292,11 +291,11 @@ export class A{
     });
 
     it('should handle a public array field', async() => {
-      const { constructor, parameterLoader, classLoaded } = await getConstructor(`
+      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
 export class A{
   constructor(public fieldA: string[]) {}
 }`);
-      expect(parameterLoader.loadConstructorFields(constructor, classLoaded)).toEqual({
+      expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
         parameters: [
           {
@@ -314,11 +313,11 @@ export class A{
     });
 
     it('should handle a public optional array field', async() => {
-      const { constructor, parameterLoader, classLoaded } = await getConstructor(`
+      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
 export class A{
   constructor(public fieldA?: string[]) {}
 }`);
-      expect(parameterLoader.loadConstructorFields(constructor, classLoaded)).toEqual({
+      expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
         parameters: [
           {
@@ -336,11 +335,11 @@ export class A{
     });
 
     it('should handle a public optional array field as union type', async() => {
-      const { constructor, parameterLoader, classLoaded } = await getConstructor(`
+      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
 export class A{
   constructor(public fieldA?: string[] | undefined) {}
 }`);
-      expect(parameterLoader.loadConstructorFields(constructor, classLoaded)).toEqual({
+      expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
         parameters: [
           {

@@ -1,4 +1,6 @@
-import type { ClassReference } from '../../lib/parse/ClassIndex';
+import { ClassFinder } from '../../lib/parse/ClassFinder';
+import type { ClassLoaded, ClassReference } from '../../lib/parse/ClassIndex';
+import { ClassIndexer } from '../../lib/parse/ClassIndexer';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
 import { CommentLoader } from '../../lib/parse/CommentLoader';
 import { ConstructorLoader } from '../../lib/parse/ConstructorLoader';
@@ -18,6 +20,173 @@ describe('CommentLoader', () => {
     logger = {
       debug: jest.fn(),
     };
+  });
+
+  describe('getCommentDataFromConstructor', () => {
+    async function createLoader() {
+      const loader = new CommentLoader();
+      const classLoader = new ClassLoader({ resolutionContext, logger, commentLoader: loader });
+      const classLoaded = <ClassLoaded> await new ClassIndexer({
+        classLoader,
+        classFinder: new ClassFinder({ classLoader }),
+        ignoreClasses: {},
+        logger,
+      }).loadClassChain(clazz);
+      const constructorLoader = new ConstructorLoader({ commentLoader: loader });
+      const constructorChain = constructorLoader.getConstructorChain(classLoaded);
+      return { loader, constructorChain, classLoaded };
+    }
+
+    it('should handle a single class without superclass', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export class A{
+  /**
+    * @param fieldA This is a field
+    * @param fieldB This is another field
+   */
+  constructor(fieldA: boolean) {}
+}`,
+      };
+      const { loader, constructorChain } = await createLoader();
+      expect(loader.getCommentDataFromConstructor(constructorChain)).toEqual({
+        fieldA: {
+          description: 'This is a field',
+        },
+        fieldB: {
+          description: 'This is another field',
+        },
+      });
+    });
+
+    it('should handle a single class with one superclass', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export class A extends B{
+  /**
+    * @param fieldA This is a field
+    * @param fieldB This is another field
+   */
+  constructor(fieldA: boolean) {}
+}
+
+export class B{
+  /**
+    * @param fieldA This comment is ignored - @default {ABC}
+    * @param fieldC This if field c
+   */
+  constructor(fieldA: boolean) {}
+}`,
+      };
+      const { loader, constructorChain } = await createLoader();
+      expect(loader.getCommentDataFromConstructor(constructorChain)).toEqual({
+        fieldA: {
+          description: 'This is a field',
+          default: { type: 'raw', value: 'ABC' },
+          defaultNested: [],
+          params: {},
+        },
+        fieldB: {
+          description: 'This is another field',
+        },
+        fieldC: {
+          description: 'This if field c',
+        },
+      });
+    });
+
+    it('should handle a single class with two superclasses', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export class A extends B{
+  /**
+    * @param fieldA
+    * @param fieldB This is another field
+   */
+  constructor(fieldA: boolean) {}
+}
+
+export class B extends C{
+  /**
+    * @param fieldA This comment is not ignored @default {ABC}
+    * @param fieldC This if field c @defaultNested {XYZ} subparam1
+   */
+  constructor(fieldA: boolean) {}
+}
+
+export class C{
+  /**
+    * @param fieldC This if field c with nested defaults @defaultNested {ABC} subparam2
+   */
+  constructor(fieldA: boolean) {}
+}`,
+      };
+      const { loader, constructorChain } = await createLoader();
+      expect(loader.getCommentDataFromConstructor(constructorChain)).toEqual({
+        fieldA: {
+          description: 'This comment is not ignored',
+          default: { type: 'raw', value: 'ABC' },
+          defaultNested: [],
+          params: {},
+        },
+        fieldB: {
+          description: 'This is another field',
+        },
+        fieldC: {
+          description: 'This if field c',
+          defaultNested: [
+            {
+              paramPath: [ 'fieldC', 'subparam1' ],
+              value: { type: 'raw', value: 'XYZ' },
+            },
+            {
+              paramPath: [ 'fieldC', 'subparam2' ],
+              value: { type: 'raw', value: 'ABC' },
+            },
+          ],
+          params: {},
+        },
+      });
+    });
+  });
+
+  describe('getCommentDataFromConstructorSingle', () => {
+    async function createLoader() {
+      const loader = new CommentLoader();
+      const classLoader = new ClassLoader({ resolutionContext, logger, commentLoader: loader });
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
+      const constructorLoader = new ConstructorLoader({ commentLoader: loader });
+      const constructor = constructorLoader.getConstructor(classLoaded)!.constructor;
+      return { loader, constructor, classLoaded };
+    }
+
+    it('should return data for simple params in the comment', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export class A{
+  /**
+    * @param fieldA This is a field
+    * @param fieldB This is another field
+   */
+  constructor(fieldA: boolean) {}
+}`,
+      };
+      const { loader, constructor, classLoaded } = await createLoader();
+      expect(loader.getCommentDataFromConstructorSingle(classLoaded, constructor)).toEqual({
+        fieldA: {
+          description: 'This is a field',
+        },
+        fieldB: {
+          description: 'This is another field',
+        },
+      });
+    });
+
+    it('should return empty data for no comment', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export class A{
+  constructor(fieldA: boolean) {}
+}`,
+      };
+      const { loader, constructor, classLoaded } = await createLoader();
+      expect(loader.getCommentDataFromConstructorSingle(classLoaded, constructor)).toEqual({});
+    });
   });
 
   describe('getCommentDataFromField', () => {
@@ -99,6 +268,41 @@ describe('CommentLoader', () => {
     });
   });
 
+  describe('getCommentDataFromClassOrInterface', () => {
+    async function createLoader() {
+      const loader = new CommentLoader();
+      const classLoader = new ClassLoader({ resolutionContext, logger, commentLoader: loader });
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
+      return { loader, classLoaded };
+    }
+
+    it('should return data for simple params in the comment', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+/**
+ * @param fieldA This is a field
+ * @param fieldB This is another field
+*/
+export class A{}`,
+      };
+      const { loader, classLoaded } = await createLoader();
+      expect(loader.getCommentDataFromClassOrInterface(classLoaded)).toEqual({
+        params: {
+          fieldA: 'This is a field',
+          fieldB: 'This is another field',
+        },
+      });
+    });
+
+    it('should return empty data for no comment', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export class A{}`,
+      };
+      const { loader, classLoaded } = await createLoader();
+      expect(loader.getCommentDataFromClassOrInterface(classLoaded)).toEqual({});
+    });
+  });
+
   describe('getCommentDataFromConstructorComment', () => {
     it('should be empty for an empty comment', () => {
       expect(CommentLoader.getCommentDataFromConstructorComment(
@@ -155,6 +359,7 @@ describe('CommentLoader', () => {
                 type: 'iri',
                 value: '#bus',
                 typeIri: 'cc:lib/Bus#Bus',
+                baseComponent: clazz,
               },
             },
           ],
@@ -226,6 +431,7 @@ describe('CommentLoader', () => {
         default: {
           type: 'iri',
           value: 'ex:abc',
+          baseComponent: clazz,
         },
       });
     });
@@ -239,6 +445,7 @@ describe('CommentLoader', () => {
           type: 'iri',
           value: 'ex:abc',
           typeIri: 'ex:Type',
+          baseComponent: clazz,
         },
       });
     });
@@ -251,6 +458,7 @@ describe('CommentLoader', () => {
         default: {
           type: 'iri',
           typeIri: 'ex:abc',
+          baseComponent: clazz,
         },
       });
     });
@@ -310,6 +518,7 @@ describe('CommentLoader', () => {
               type: 'iri',
               value: '#bus',
               typeIri: 'cc:lib/Bus#Bus',
+              baseComponent: clazz,
             },
           },
         ],
@@ -327,6 +536,7 @@ describe('CommentLoader', () => {
             value: {
               type: 'iri',
               value: '#bus',
+              baseComponent: clazz,
             },
           },
         ],
@@ -344,6 +554,7 @@ describe('CommentLoader', () => {
             value: {
               type: 'iri',
               typeIri: 'cc:lib/Bus#Bus',
+              baseComponent: clazz,
             },
           },
         ],
@@ -362,6 +573,7 @@ describe('CommentLoader', () => {
               type: 'iri',
               value: '#bus',
               typeIri: 'cc:lib/Bus#Bus',
+              baseComponent: clazz,
             },
           },
           {
@@ -370,6 +582,7 @@ describe('CommentLoader', () => {
               type: 'iri',
               value: '#bus2',
               typeIri: 'cc:lib/Bus#Bus',
+              baseComponent: clazz,
             },
           },
         ],

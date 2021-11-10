@@ -168,7 +168,6 @@ export class ComponentConstructor {
         classReference,
         constructorData,
         parameters,
-        scopedId,
       ) :
       [];
 
@@ -278,7 +277,6 @@ export class ComponentConstructor {
    * @param classReference Class reference of the class component owning this constructor.
    * @param constructorData Constructor data of the owning class.
    * @param parameters The array of parameters of the owning class, which will be appended to.
-   * @param componentIri IRI of the component these parameters are part of.
    */
   public async constructParameters(
     context: JsonLdContextNormalized,
@@ -286,10 +284,8 @@ export class ComponentConstructor {
     classReference: ClassLoaded,
     constructorData: ConstructorData<ParameterRangeResolved>,
     parameters: ParameterDefinition[],
-    componentIri: string,
   ): Promise<ConstructorArgumentDefinition[]> {
     const scope: FieldScope = {
-      componentIri,
       parentFieldNames: [],
       fieldIdsHash: {},
       defaultNested: [],
@@ -375,7 +371,7 @@ export class ComponentConstructor {
       '@id': fieldId,
       range: await this.constructParameterRange(parameterData.range, context, externalContextsCallback, fieldId),
       ...defaultValue !== undefined ?
-        { default: this.constructDefaultValueDefinition(defaultValue, scope.componentIri) } :
+        { default: await this.constructDefaultValueDefinition(context, externalContextsCallback, defaultValue) } :
         {},
     };
 
@@ -386,7 +382,11 @@ export class ComponentConstructor {
     return { '@id': fieldId };
   }
 
-  public constructDefaultValueDefinition(defaultValue: DefaultValue, baseIRI: string): DefaultValueDefinition {
+  public async constructDefaultValueDefinition(
+    context: JsonLdContextNormalized,
+    externalContextsCallback: ExternalContextCallback,
+    defaultValue: DefaultValue,
+  ): Promise<DefaultValueDefinition> {
     if (defaultValue.type === 'raw') {
       return defaultValue.value;
     }
@@ -394,6 +394,7 @@ export class ComponentConstructor {
     // Resolve relative IRI
     let iri = defaultValue.value;
     if (iri && !iri.includes(':')) {
+      const baseIRI = await this.classNameToId(context, externalContextsCallback, defaultValue.baseComponent);
       iri = `${baseIRI}_${iri}`;
     }
 
@@ -596,10 +597,6 @@ export interface PathDestinationDefinition {
 }
 
 export interface FieldScope {
-  /**
-   * IRI of the component.
-   */
-  componentIri: string;
   /**
    * All parent field names for the current scope.
    */

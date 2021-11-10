@@ -2,6 +2,8 @@ import type { MethodDefinition, TSPropertySignature,
   TSIndexSignature, BaseNode } from '@typescript-eslint/types/dist/ts-estree';
 import * as commentParse from 'comment-parser';
 import type { ClassReference, ClassReferenceLoaded } from './ClassIndex';
+import type { ConstructorHolder } from './ConstructorLoader';
+
 import type { DefaultNested, DefaultValue, ParameterRangeUnresolved } from './ParameterLoader';
 
 /**
@@ -9,11 +11,42 @@ import type { DefaultNested, DefaultValue, ParameterRangeUnresolved } from './Pa
  */
 export class CommentLoader {
   /**
+   * Extract comment data from the given constructor inheritance chain.
+   * @param constructorChain An array of constructors within the class inheritance chain.
+   */
+  public getCommentDataFromConstructor(constructorChain: ConstructorHolder[]): ConstructorCommentData {
+    // Merge comment data about each field so that the closest classes in the inheritance chain have
+    // the highest priority in setting comment data.
+    return constructorChain
+      .map(constructorHolder => this.getCommentDataFromConstructorSingle(
+        constructorHolder.classLoaded,
+        constructorHolder.constructor,
+      ))
+      .reduce<ConstructorCommentData>((acc, commentData) => {
+      for (const [ key, value ] of Object.entries(commentData)) {
+        if (key in acc) {
+          acc[key] = {
+            range: acc[key].range || value.range,
+            default: acc[key].default || value.default,
+            ignored: acc[key].ignored || value.ignored,
+            description: acc[key].description || value.description,
+            params: { ...acc[key].params, ...value.params },
+            defaultNested: [ ...acc[key].defaultNested || [], ...value.defaultNested || [] ],
+          };
+        } else {
+          acc[key] = value;
+        }
+      }
+      return acc;
+    }, {});
+  }
+
+  /**
    * Extract comment data from the given constructor.
    * @param classLoaded The loaded class in which the constructor is defined.
    * @param constructor A constructor.
    */
-  public getCommentDataFromConstructor(
+  public getCommentDataFromConstructorSingle(
     classLoaded: ClassReferenceLoaded,
     constructor: MethodDefinition,
   ): ConstructorCommentData {
@@ -113,7 +146,7 @@ export class CommentLoader {
             if (tag.type.length === 0) {
               throw new Error(`Missing @default value {something} on a field in class ${clazz.localName} at ${clazz.fileName}`);
             }
-            data.default = CommentLoader.getDefaultValue(tag.type);
+            data.default = CommentLoader.getDefaultValue(tag.type, clazz);
             break;
           case 'ignored':
             data.ignored = true;
@@ -136,7 +169,7 @@ export class CommentLoader {
             }
             data.defaultNested.push({
               paramPath: tag.name.split('_'),
-              value: CommentLoader.getDefaultValue(tag.type),
+              value: CommentLoader.getDefaultValue(tag.type, clazz),
             });
             break;
         }
@@ -156,8 +189,9 @@ export class CommentLoader {
    * * iri and type value: "<ex:abc> a <ex:Type>"
    *
    * @param value A default value string.
+   * @param clazz The class reference this value is loaded in.
    */
-  public static getDefaultValue(value: string): DefaultValue {
+  public static getDefaultValue(value: string, clazz: ClassReference): DefaultValue {
     if (!value.startsWith('<') && !value.startsWith('a ')) {
       return {
         type: 'raw',
@@ -172,6 +206,7 @@ export class CommentLoader {
       type: 'iri',
       value: idRaw ? CommentLoader.getIriValue(idRaw) : undefined,
       typeIri: typeRaw ? CommentLoader.getIriValue(typeRaw) : undefined,
+      baseComponent: clazz,
     };
   }
 
@@ -199,6 +234,9 @@ export class CommentLoader {
   }
 }
 
+/**
+ * Maps field keys to comments.
+ */
 export type ConstructorCommentData = Record<string, CommentData>;
 
 export interface CommentData {

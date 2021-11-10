@@ -151,6 +151,67 @@ export class B{
         },
       });
     });
+
+    it('should return for a class with constructor extending another class with constructor', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `
+export class A extends B{
+  /**
+   * @param fieldA - This is a great field! @range {float}
+   * @param fieldB This is B @range {float}
+   * @param fieldC This is C @ignored
+   */
+  constructor(fieldA: string, fieldB?: number[], fieldC?: string[]) {}
+}
+
+export class B{
+  /**
+   * @param fieldA - This is a great field! @default {ABC}
+   */
+  constructor(fieldA: string) {}
+}
+`,
+      };
+      const A = await classIndexer.loadClassChain({
+        packageName: 'p',
+        localName: 'A',
+        fileName: 'A',
+        fileNameReferenced: 'fileReferenced',
+      });
+      expect(parser.getConstructors({
+        A,
+      })).toEqual({
+        A: {
+          parameters: [
+            {
+              type: 'field',
+              comment: 'This is a great field!',
+              name: 'fieldA',
+              range: {
+                type: 'override',
+                value: 'float',
+              },
+              default: { type: 'raw', value: 'ABC' },
+              defaultNested: [],
+              required: true,
+              unique: true,
+            },
+            {
+              type: 'field',
+              comment: 'This is B',
+              name: 'fieldB',
+              range: {
+                type: 'override',
+                value: 'float',
+              },
+              required: false,
+              unique: false,
+            },
+          ],
+          classLoaded: A,
+        },
+      });
+    });
   });
 
   describe('getConstructor', () => {

@@ -84,7 +84,6 @@ describe('ComponentConstructor', () => {
     externalContextsCallback = jest.fn();
 
     scope = {
-      componentIri: 'ex:component#c',
       parentFieldNames: [],
       fieldIdsHash: {},
       defaultNested: [],
@@ -852,7 +851,7 @@ describe('ComponentConstructor', () => {
       expect(await ctor.constructParameters(context, externalContextsCallback, <ClassLoaded> classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
-      }, parameters, scope.componentIri)).toEqual([]);
+      }, parameters)).toEqual([]);
       expect(parameters).toEqual([]);
     });
 
@@ -878,7 +877,7 @@ describe('ComponentConstructor', () => {
             comment: 'Hi2',
           },
         ],
-      }, parameters, scope.componentIri)).toEqual([
+      }, parameters)).toEqual([
         { '@id': 'mp:a/b/file-param#MyClass_fieldA' },
         { '@id': 'mp:a/b/file-param#MyClass_fieldB' },
       ]);
@@ -930,7 +929,7 @@ describe('ComponentConstructor', () => {
             comment: 'Hi3',
           },
         ],
-      }, parameters, scope.componentIri)).toEqual([
+      }, parameters)).toEqual([
         { '@id': 'mp:a/b/file-param#MyClass_field' },
         { '@id': 'mp:a/b/file-param#MyClass_field_1' },
         { '@id': 'mp:a/b/file-param#MyClass_field_2' },
@@ -994,7 +993,7 @@ describe('ComponentConstructor', () => {
             comment: 'Hi',
           },
         ],
-      }, parameters, scope.componentIri)).toEqual([
+      }, parameters)).toEqual([
         {
           '@id': 'mp:a/b/file-param#MyClass_field__constructorArgument',
           fields: [
@@ -1057,7 +1056,7 @@ describe('ComponentConstructor', () => {
             comment: 'Hi',
           },
         ],
-      }, parameters, scope.componentIri)).toEqual([
+      }, parameters)).toEqual([
         {
           '@id': 'mp:a/b/file-param#MyClass_field__constructorArgument',
           fields: [
@@ -1820,7 +1819,7 @@ describe('ComponentConstructor', () => {
           type: 'field',
           name: 'field',
           range: { type: 'raw', value: 'boolean' },
-          default: { type: 'iri', value: 'ex:abc' },
+          default: { type: 'iri', value: 'ex:abc', baseComponent: classReference },
           required: true,
           unique: true,
           comment: 'Hi',
@@ -1844,7 +1843,7 @@ describe('ComponentConstructor', () => {
           type: 'field',
           name: 'field',
           range: { type: 'raw', value: 'boolean' },
-          default: { type: 'iri', value: 'abc' },
+          default: { type: 'iri', value: 'abc', baseComponent: classReference },
           required: true,
           unique: true,
           comment: 'Hi',
@@ -1854,7 +1853,7 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:a/b/file-param#MyClass_field',
           comment: 'Hi',
           range: 'xsd:boolean',
-          default: { '@id': 'ex:component#c_abc' },
+          default: { '@id': 'mp:a/b/file-param#MyClass_abc' },
           required: true,
           unique: true,
         },

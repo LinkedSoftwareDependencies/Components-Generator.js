@@ -25,16 +25,38 @@ export class ConstructorLoader {
   ): ClassIndex<ConstructorData<ParameterRangeUnresolved>> {
     const constructorDataIndex: ClassIndex<ConstructorData<ParameterRangeUnresolved>> = {};
     for (const [ className, classLoadedRoot ] of Object.entries(classIndex)) {
-      const constructorData = classLoadedRoot.type === 'class' ? this.getConstructor(classLoadedRoot) : undefined;
-      if (constructorData) {
-        const { constructor, classLoaded } = constructorData;
-        const parameterLoader = new ParameterLoader({ classLoaded, commentLoader: this.commentLoader });
-        constructorDataIndex[className] = parameterLoader.loadConstructorFields(constructor, classLoaded);
-      } else {
-        constructorDataIndex[className] = { parameters: [], classLoaded: classLoadedRoot };
+      // Initialize default value
+      constructorDataIndex[className] = { parameters: [], classLoaded: classLoadedRoot };
+
+      // Fill in constructor data if we're loading a class, and we find a constructor in the inheritance chain.
+      if (classLoadedRoot.type === 'class') {
+        const parameterLoader = new ParameterLoader({
+          classLoaded: classLoadedRoot,
+          commentLoader: this.commentLoader,
+        });
+        const constructorChain = this.getConstructorChain(classLoadedRoot);
+        if (constructorChain.length > 0) {
+          constructorDataIndex[className] = parameterLoader.loadConstructorFields(constructorChain);
+        }
       }
     }
     return constructorDataIndex;
+  }
+
+  /**
+   * Load the superclass chain of constructor holders starting from the given class.
+   * @param classLoaded The class to start from.
+   */
+  public getConstructorChain(classLoaded: ClassLoaded): ConstructorHolder[] {
+    const constructorData = this.getConstructor(classLoaded);
+    const chain: ConstructorHolder[] = [];
+    if (constructorData) {
+      chain.push(constructorData);
+      if (constructorData.classLoaded.superClass) {
+        chain.push(...this.getConstructorChain(constructorData.classLoaded.superClass));
+      }
+    }
+    return chain;
   }
 
   /**
@@ -42,9 +64,7 @@ export class ConstructorLoader {
    * Can be undefined if no explicit constructor exists in this class or any of its super classes.
    * @param classLoaded A loaded class reference.
    */
-  public getConstructor(
-    classLoaded: ClassLoaded,
-  ): { constructor: MethodDefinition; classLoaded: ClassLoaded } | undefined {
+  public getConstructor(classLoaded: ClassLoaded): ConstructorHolder | undefined {
     // First look for the constructor in this class
     let constructor: MethodDefinition | undefined = this.getConstructorInClass(classLoaded.declaration);
 
@@ -112,4 +132,12 @@ export interface ConstructorLoaderArgs {
 export interface ConstructorData<R> {
   parameters: ParameterDataField<R>[];
   classLoaded: ClassReferenceLoaded;
+}
+
+/**
+ * Datastructure for holding a constructor and the class it is part of.
+ */
+export interface ConstructorHolder {
+  constructor: MethodDefinition;
+  classLoaded: ClassLoaded;
 }

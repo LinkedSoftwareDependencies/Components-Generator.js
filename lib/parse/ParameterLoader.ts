@@ -1,6 +1,5 @@
 import type {
   Identifier,
-  MethodDefinition,
   TSPropertySignature,
   TSTypeLiteral,
   TypeElement,
@@ -10,9 +9,9 @@ import type {
   Parameter,
 } from '@typescript-eslint/types/dist/ts-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import type { ClassReferenceLoaded, InterfaceLoaded, ClassLoaded } from './ClassIndex';
+import type { ClassReferenceLoaded, InterfaceLoaded, ClassReference } from './ClassIndex';
 import type { CommentData, ConstructorCommentData, CommentLoader } from './CommentLoader';
-import type { ConstructorData } from './ConstructorLoader';
+import type { ConstructorData, ConstructorHolder } from './ConstructorLoader';
 import type { TypeReferenceOverride } from './typereferenceoverride/TypeReferenceOverride';
 import { TypeReferenceOverrideAliasRecord } from './typereferenceoverride/TypeReferenceOverrideAliasRecord';
 
@@ -33,24 +32,22 @@ export class ParameterLoader {
   }
 
   /**
-   * Load all parameter data from all fields in the given constructor.
-   * @param constructor A constructor
-   * @param classLoaded The class in which the constructor is defined.
+   * Load all parameter data from all fields in the given constructor inheritance chain.
+   * @param constructorChain An array of constructors within the class inheritance chain.
    */
   public loadConstructorFields(
-    constructor: MethodDefinition,
-    classLoaded: ClassLoaded,
+    constructorChain: ConstructorHolder[],
   ): ConstructorData<ParameterRangeUnresolved> {
     // Load the constructor comment
-    const constructorCommentData = this.commentLoader.getCommentDataFromConstructor(classLoaded, constructor);
+    const constructorCommentData = this.commentLoader.getCommentDataFromConstructor(constructorChain);
 
     // Load all constructor parameters
     const parameters: ParameterDataField<ParameterRangeUnresolved>[] = [];
-    for (const field of constructor.value.params) {
+    for (const field of constructorChain[0].constructor.value.params) {
       this.loadConstructorField(parameters, constructorCommentData, field);
     }
 
-    return { parameters, classLoaded };
+    return { parameters, classLoaded: constructorChain[0].classLoaded };
   }
 
   /**
@@ -548,4 +545,8 @@ export type DefaultValue = {
   type: 'iri';
   value?: string;
   typeIri?: string;
+  /**
+   * The component reference for relative IRIs.
+   */
+  baseComponent: ClassReference;
 };
