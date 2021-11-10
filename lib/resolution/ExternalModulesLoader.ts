@@ -230,26 +230,27 @@ export class ExternalModulesLoader {
       components: {},
     };
     for (const componentResource of Object.values(componentResources)) {
-      const packageName = componentResource.property.module.property.requireName.value;
-
-      // Initialize metadata for a package if it doesn't exist yet
-      if (!externalComponents.components[packageName]) {
-        const packageJson = packageJsons[packageName];
-        if (!packageJson) {
-          this.logger.warn(`Could not find a package.json for '${packageName}'`);
-        } else {
-          const contexts = packageJson.contents['lsd:contexts'];
-          externalComponents.components[packageName] = {
-            contextIris: Object.keys(contexts),
-            componentNamesToIris: {},
-          };
+      const packageNames = componentResource.properties.module.map(module => module.property.requireName.value);
+      for (const packageName of packageNames) {
+        // Initialize metadata for a package if it doesn't exist yet
+        if (!externalComponents.components[packageName]) {
+          const packageJson = packageJsons[packageName];
+          if (!packageJson) {
+            this.logger.warn(`Could not find a package.json for '${packageName}'`);
+          } else {
+            const contexts = packageJson.contents['lsd:contexts'];
+            externalComponents.components[packageName] = {
+              contextIris: Object.keys(contexts),
+              componentNamesToIris: {},
+            };
+          }
         }
-      }
 
-      // Add component to package
-      if (externalComponents.components[packageName]) {
-        externalComponents.components[packageName]
-          .componentNamesToIris[componentResource.property.requireElement.value] = componentResource.value;
+        // Add component to package
+        if (externalComponents.components[packageName]) {
+          externalComponents.components[packageName]
+            .componentNamesToIris[componentResource.property.requireElement.value] = componentResource.value;
+        }
       }
     }
 

@@ -843,6 +843,44 @@ describe('ExternalModulesLoader', () => {
       expect(resolutionContext.contentsOverrides).toEqual({});
     });
 
+    it('should load handle components with multiple modules', async() => {
+      loadComponentResources = (componentResources, objectLoader) => {
+        componentResources.Component1 = objectLoader.createCompactedResource({
+          '@id': 'urn:Component1',
+          module: [
+            { requireName: '"package1"' },
+            { requireName: '"package2"' },
+          ],
+          requireElement: '"Component1"',
+        });
+      };
+
+      expect(await loader.loadExternalComponents(req, [ 'package1', 'package2' ]))
+        .toEqual({
+          components: {
+            package1: {
+              contextIris: [
+                'http://example.org/context1',
+              ],
+              componentNamesToIris: {
+                Component1: 'urn:Component1',
+              },
+            },
+            package2: {
+              contextIris: [
+                'http://example.org/context2',
+              ],
+              componentNamesToIris: {
+                Component1: 'urn:Component1',
+              },
+            },
+          },
+          moduleState: expect.anything(),
+        });
+      expect(logger.warn).not.toHaveBeenCalled();
+      expect(resolutionContext.contentsOverrides).toEqual({});
+    });
+
     it('should warn on components without a package.json', async() => {
       loadComponentResources = (componentResources, objectLoader) => {
         componentResources.Component1 = objectLoader.createCompactedResource({
