@@ -35,7 +35,9 @@ export interface ParameterDefinition {
   lazy?: boolean;
 }
 
-export type DefaultValueDefinition = string | { '@id'?: string; '@type'?: string };
+export type DefaultValueDefinition = string |
+{ '@id'?: string; '@type'?: string } |
+{ '@type': '@json'; '@value': any };
 
 export type ParameterDefinitionRange = string | { '@id': string; parameters: ParameterDefinition[] } | {
   '@type': 'ParameterRangeUnion' | 'ParameterRangeIntersection' | 'ParameterRangeTuple';

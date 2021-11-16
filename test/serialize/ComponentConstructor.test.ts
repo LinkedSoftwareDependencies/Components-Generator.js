@@ -1859,6 +1859,48 @@ describe('ComponentConstructor', () => {
         },
       ]);
     });
+
+    it('should handle a parameter with default json value', async() => {
+      const parameters: ParameterDefinition[] = [];
+      expect(await ctor
+        .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
+          type: 'field',
+          name: 'field',
+          range: { type: 'override', value: 'json' },
+          default: { type: 'raw', value: '{"a":true}' },
+          required: true,
+          unique: true,
+          comment: 'Hi',
+        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
+      expect(parameters).toEqual([
+        {
+          '@id': 'mp:a/b/file-param#MyClass_field',
+          comment: 'Hi',
+          range: 'rdf:JSON',
+          default: {
+            '@type': '@json',
+            '@value': { a: true },
+          },
+          required: true,
+          unique: true,
+        },
+      ]);
+    });
+
+    it('should throw on a parameter with an invalid default json value', async() => {
+      const parameters: ParameterDefinition[] = [];
+      await expect(ctor
+        .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
+          type: 'field',
+          name: 'field',
+          range: { type: 'override', value: 'json' },
+          default: { type: 'raw', value: '{"a":invalid}' },
+          required: true,
+          unique: true,
+          comment: 'Hi',
+        }, parameters, 'mp:a/b/file-param#MyClass_field', scope))
+        .rejects.toThrow(`JSON parsing error in default value of mp:a/b/file-param#MyClass_field: Unexpected token i in JSON at position 5`);
+    });
   });
 
   describe('constructFieldDefinitionNested', () => {

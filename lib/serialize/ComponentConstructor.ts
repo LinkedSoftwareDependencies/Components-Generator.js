@@ -371,7 +371,15 @@ export class ComponentConstructor {
       '@id': fieldId,
       range: await this.constructParameterRange(parameterData.range, context, externalContextsCallback, fieldId),
       ...defaultValue !== undefined ?
-        { default: await this.constructDefaultValueDefinition(context, externalContextsCallback, defaultValue) } :
+        {
+          default: await this.constructDefaultValueDefinition(
+            fieldId,
+            context,
+            externalContextsCallback,
+            defaultValue,
+            parameterData.range,
+          ),
+        } :
         {},
     };
 
@@ -383,11 +391,23 @@ export class ComponentConstructor {
   }
 
   public async constructDefaultValueDefinition(
+    fieldId: string,
     context: JsonLdContextNormalized,
     externalContextsCallback: ExternalContextCallback,
     defaultValue: DefaultValue,
+    range: ParameterRangeResolved,
   ): Promise<DefaultValueDefinition> {
     if (defaultValue.type === 'raw') {
+      if (range.type === 'override' && range.value === 'json') {
+        try {
+          return {
+            '@type': '@json',
+            '@value': JSON.parse(defaultValue.value),
+          };
+        } catch (error: unknown) {
+          throw new Error(`JSON parsing error in default value of ${fieldId}: ${(<Error> error).message}`);
+        }
+      }
       return defaultValue.value;
     }
 
