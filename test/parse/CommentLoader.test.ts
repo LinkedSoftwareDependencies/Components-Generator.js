@@ -366,6 +366,29 @@ export class A{}`,
         },
       });
     });
+
+    it('should return data for a param with defaultNested with @', async() => {
+      expect(CommentLoader.getCommentDataFromConstructorComment(
+        `/**
+ * @param fieldA - @defaultNested {<#bus@abc> a <cc:lib/Bus#Bus>} args_bus
+*/`,
+        clazz,
+      )).toEqual({
+        fieldA: {
+          defaultNested: [
+            {
+              paramPath: [ 'fieldA', 'args', 'bus' ],
+              value: {
+                type: 'iri',
+                value: '#bus@abc',
+                typeIri: 'cc:lib/Bus#Bus',
+                baseComponent: clazz,
+              },
+            },
+          ],
+        },
+      });
+    });
   });
 
   describe('getCommentDataFromComment', () => {

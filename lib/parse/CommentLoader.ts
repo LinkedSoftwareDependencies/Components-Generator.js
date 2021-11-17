@@ -71,7 +71,7 @@ export class CommentLoader {
     const commentData = CommentLoader.getCommentDataFromComment(comment, clazz);
     if (commentData.params) {
       for (const [ key, value ] of Object.entries(commentData.params)) {
-        const subCommentData = CommentLoader.getCommentDataFromComment(`/**${value.replace(/@/gu, '\n * @')}*/`, clazz);
+        const subCommentData = CommentLoader.getCommentDataFromComment(`/**${value.replace(/ @/gu, '\n * @')}*/`, clazz);
 
         // Since we're in the scope of a param (key), prepend the defaultNested paramPath array with the current param.
         if (subCommentData.defaultNested) {
