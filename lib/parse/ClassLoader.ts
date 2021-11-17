@@ -178,7 +178,7 @@ export class ClassLoader {
         return await this.loadClassDeclaration({
           localName: classReference.localName,
           ...subFile,
-          fileNameReferenced: classReference.fileName,
+          fileNameReferenced: classReference.fileNameReferenced,
         }, considerInterfaces);
       } catch {
         // Ignore class not found errors

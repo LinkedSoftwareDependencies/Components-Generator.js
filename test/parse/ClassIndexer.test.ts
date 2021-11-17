@@ -93,7 +93,7 @@ Could not find mocked path for unknown.d.ts`));
         A: {
           localName: 'X',
           fileName: 'y',
-          fileNameReferenced: 'x',
+          fileNameReferenced: 'xR',
           declaration: {
             id: { name: 'X' },
             type: 'ClassDeclaration',
@@ -188,7 +188,7 @@ export class Y{}
           packageName: 'package',
           localName: 'X',
           fileName: 'y',
-          fileNameReferenced: 'x',
+          fileNameReferenced: 'xR',
           declaration: {
             id: { name: 'X' },
             type: 'ClassDeclaration',
@@ -198,7 +198,7 @@ export class Y{}
           packageName: 'package',
           localName: 'Y',
           fileName: 'y',
-          fileNameReferenced: 'x',
+          fileNameReferenced: 'xR',
           declaration: {
             id: { name: 'Y' },
             type: 'ClassDeclaration',

@@ -298,6 +298,7 @@ declare interface A{};
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
+            fileNameReferenced: 'fileReferenced',
             declaration: {
               id: { name: 'B' },
               type: 'ClassDeclaration',
