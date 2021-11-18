@@ -1326,6 +1326,11 @@ declare interface A{}
         });
     });
 
+    it('for a single import from an unknown package', () => {
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`import {A as B} from 'unknown-package'`)).importedElements)
+        .toEqual({});
+    });
+
     it('for export all', () => {
       expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export * from './lib/A'`)))
         .toMatchObject({

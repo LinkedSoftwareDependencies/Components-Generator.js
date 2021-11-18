@@ -349,10 +349,14 @@ export class ClassLoader {
         // Form: `import {A} from './lib/A'`
         for (const specifier of statement.specifiers) {
           if (specifier.type === AST_NODE_TYPES.ImportSpecifier) {
-            importedElements[specifier.local.name] = {
-              localName: specifier.imported.name,
-              ...this.importTargetToAbsolutePath(packageName, fileName, statement.source.value),
-            };
+            try {
+              importedElements[specifier.local.name] = {
+                localName: specifier.imported.name,
+                ...this.importTargetToAbsolutePath(packageName, fileName, statement.source.value),
+              };
+            } catch {
+              // Omit imports that throw an error
+            }
           }
         }
       }
