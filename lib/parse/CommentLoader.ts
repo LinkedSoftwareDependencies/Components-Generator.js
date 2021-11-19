@@ -27,7 +27,7 @@ export class CommentLoader {
         if (key in acc) {
           acc[key] = {
             range: acc[key].range || value.range,
-            default: acc[key].default || value.default,
+            defaults: [ ...acc[key].defaults || [], ...value.defaults || [] ],
             ignored: acc[key].ignored || value.ignored,
             description: acc[key].description || value.description,
             params: { ...acc[key].params, ...value.params },
@@ -146,7 +146,10 @@ export class CommentLoader {
             if (tag.type.length === 0) {
               throw new Error(`Missing @default value {something} on a field in class ${clazz.localName} at ${clazz.fileName}`);
             }
-            data.default = CommentLoader.getDefaultValue(tag.type, clazz);
+            if (!data.defaults) {
+              data.defaults = [];
+            }
+            data.defaults.push(CommentLoader.getDefaultValue(tag.type, clazz));
             break;
           case 'ignored':
             data.ignored = true;
@@ -245,9 +248,9 @@ export interface CommentData {
    */
   range?: ParameterRangeUnresolved;
   /**
-   * The default value.
+   * The default values.
    */
-  default?: DefaultValue;
+  defaults?: DefaultValue[];
   /**
    * If the field referenced by this comment should be ignored.
    */

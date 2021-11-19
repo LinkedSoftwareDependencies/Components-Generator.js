@@ -149,7 +149,7 @@ export class ParameterLoader {
       unique: this.isFieldUnique(field),
       required: this.isFieldRequired(field),
       range: this.getFieldRange(classLoaded, field, commentData),
-      default: commentData.default,
+      defaults: commentData.defaults,
       defaultNested: commentData.defaultNested,
     };
 
@@ -356,7 +356,7 @@ export class ParameterLoader {
     };
 
     // Optional data
-    parameterData.default = commentData.default;
+    parameterData.defaults = commentData.defaults;
 
     const comment = this.getFieldComment(commentData);
     if (comment) {
@@ -460,9 +460,9 @@ export interface ParameterDataField<R> {
    */
   range: R;
   /**
-   * The default value.
+   * The default values.
    */
-  default?: DefaultValue;
+  defaults?: DefaultValue[];
   /**
    * The human-readable description of this parameter.
    */
@@ -487,9 +487,9 @@ export interface ParameterDataIndex<R> {
    */
   range: R;
   /**
-   * The default value.
+   * The default values.
    */
-  default?: DefaultValue;
+  defaults?: DefaultValue[];
   /**
    * The human-readable description of this parameter.
    */

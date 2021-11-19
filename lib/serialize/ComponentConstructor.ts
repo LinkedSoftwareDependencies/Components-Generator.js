@@ -356,13 +356,10 @@ export class ComponentConstructor {
     }
 
     // Check if we have a defaultNested value that applies on this field
-    let defaultValue: DefaultValue | undefined = parameterData.default;
+    const defaultValues: DefaultValue[] = parameterData.defaults || [];
     for (const defaultNested of scope.defaultNested) {
       if (defaultNested.paramPath.join('_') === scope.parentFieldNames.join('_')) {
-        if (defaultValue) {
-          throw new Error(`Detected conflicting default values on field '${fieldId}'`);
-        }
-        defaultValue = defaultNested.value;
+        defaultValues.push(defaultNested.value);
       }
     }
 
@@ -370,15 +367,15 @@ export class ComponentConstructor {
     const param: ParameterDefinition = {
       '@id': fieldId,
       range: await this.constructParameterRange(parameterData.range, context, externalContextsCallback, fieldId),
-      ...defaultValue !== undefined ?
+      ...defaultValues.length > 0 ?
         {
-          default: await this.constructDefaultValueDefinition(
+          default: await Promise.all(defaultValues.map(defaultValue => this.constructDefaultValueDefinition(
             fieldId,
             context,
             externalContextsCallback,
             defaultValue,
             parameterData.range,
-          ),
+          ))),
         } :
         {},
     };

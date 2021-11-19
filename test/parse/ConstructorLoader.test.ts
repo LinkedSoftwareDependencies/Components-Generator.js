@@ -191,7 +191,7 @@ export class B{
                 type: 'override',
                 value: 'float',
               },
-              default: { type: 'raw', value: 'ABC' },
+              defaults: [{ type: 'raw', value: 'ABC' }],
               defaultNested: [],
               required: true,
               unique: true,

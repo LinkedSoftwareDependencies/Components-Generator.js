@@ -80,7 +80,7 @@ export class B{
       expect(loader.getCommentDataFromConstructor(constructorChain)).toEqual({
         fieldA: {
           description: 'This is a field',
-          default: { type: 'raw', value: 'ABC' },
+          defaults: [{ type: 'raw', value: 'ABC' }],
           defaultNested: [],
           params: {},
         },
@@ -122,7 +122,7 @@ export class C{
       expect(loader.getCommentDataFromConstructor(constructorChain)).toEqual({
         fieldA: {
           description: 'This comment is not ignored',
-          default: { type: 'raw', value: 'ABC' },
+          defaults: [{ type: 'raw', value: 'ABC' }],
           defaultNested: [],
           params: {},
         },
@@ -131,6 +131,7 @@ export class C{
         },
         fieldC: {
           description: 'This if field c',
+          defaults: [],
           defaultNested: [
             {
               paramPath: [ 'fieldC', 'subparam1' ],
@@ -254,10 +255,10 @@ export class C{
       };
       const { loader, field, iface } = await createLoader();
       expect(loader.getCommentDataFromField(iface, field)).toEqual({
-        default: {
+        defaults: [{
           type: 'raw',
           value: 'true',
-        },
+        }],
         description: 'This is a field!',
         ignored: true,
         range: {
@@ -432,10 +433,28 @@ export class A{}`,
         '/**\n   * @default {true}\n   */',
         clazz,
       )).toEqual({
-        default: {
+        defaults: [{
           type: 'raw',
           value: 'true',
-        },
+        }],
+      });
+    });
+
+    it('should retrieve multiple default tags', async() => {
+      expect(CommentLoader.getCommentDataFromComment(
+        '/**\n   * @default {true} \n @default {false}\n   */',
+        clazz,
+      )).toEqual({
+        defaults: [
+          {
+            type: 'raw',
+            value: 'true',
+          },
+          {
+            type: 'raw',
+            value: 'false',
+          },
+        ],
       });
     });
 
@@ -451,11 +470,11 @@ export class A{}`,
         '/**\n   * @default {<ex:abc>}\n   */',
         clazz,
       )).toEqual({
-        default: {
+        defaults: [{
           type: 'iri',
           value: 'ex:abc',
           baseComponent: clazz,
-        },
+        }],
       });
     });
 
@@ -464,12 +483,12 @@ export class A{}`,
         '/**\n   * @default {<ex:abc> a <ex:Type>}\n   */',
         clazz,
       )).toEqual({
-        default: {
+        defaults: [{
           type: 'iri',
           value: 'ex:abc',
           typeIri: 'ex:Type',
           baseComponent: clazz,
-        },
+        }],
       });
     });
 
@@ -478,11 +497,11 @@ export class A{}`,
         '/**\n   * @default {a <ex:abc>}\n   */',
         clazz,
       )).toEqual({
-        default: {
+        defaults: [{
           type: 'iri',
           typeIri: 'ex:abc',
           baseComponent: clazz,
-        },
+        }],
       });
     });
 

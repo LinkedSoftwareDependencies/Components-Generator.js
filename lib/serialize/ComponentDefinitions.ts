@@ -31,7 +31,7 @@ export interface ParameterDefinition {
   unique?: boolean;
   required?: boolean;
   range?: ParameterDefinitionRange;
-  default?: DefaultValueDefinition;
+  default?: DefaultValueDefinition[];
   lazy?: boolean;
 }
 

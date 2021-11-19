@@ -438,7 +438,7 @@ export interface A{
           name: 'fieldA',
           comment: 'Hi',
           range: { type: 'override', value: 'number' },
-          default: { type: 'raw', value: '3' },
+          defaults: [{ type: 'raw', value: '3' }],
           required: false,
           unique: false,
         },
@@ -633,7 +633,7 @@ export interface A{
           type: 'field',
           name: 'fieldA',
           comment: 'Hi',
-          default: { type: 'raw', value: '3' },
+          defaults: [{ type: 'raw', value: '3' }],
           range: { type: 'override', value: 'number' },
           required: false,
           unique: false,
@@ -790,7 +790,7 @@ export interface A{
           type: 'override',
           value: 'float',
         },
-        default: { type: 'raw', value: '1.0' },
+        defaults: [{ type: 'raw', value: '1.0' }],
         defaultNested: [
           {
             paramPath: [ 'a', 'b' ],
@@ -811,7 +811,7 @@ export interface A{
           type: 'override',
           value: 'float',
         },
-        default: { type: 'raw', value: '1.0' },
+        defaults: [{ type: 'raw', value: '1.0' }],
         defaultNested: [
           {
             paramPath: [ 'a', 'b' ],
@@ -905,7 +905,7 @@ export interface A{
           type: 'override',
           value: 'string',
         },
-        default: { type: 'raw', value: '1.0' },
+        defaults: [{ type: 'raw', value: '1.0' }],
         description: 'Hi',
       })).toEqual({
         type: 'index',
@@ -914,7 +914,7 @@ export interface A{
           type: 'override',
           value: 'string',
         },
-        default: { type: 'raw', value: '1.0' },
+        defaults: [{ type: 'raw', value: '1.0' }],
         comment: 'Hi',
       });
     });

@@ -1355,7 +1355,7 @@ describe('ComponentConstructor', () => {
         {
           '@id': 'mp:a/b/file-param#MyClass_field_fieldA',
           comment: 'Hi1',
-          default: 'VALUE',
+          default: [ 'VALUE' ],
           range: 'xsd:boolean',
           required: true,
           unique: true,
@@ -1446,7 +1446,7 @@ describe('ComponentConstructor', () => {
         {
           '@id': 'mp:a/b/file-param#MyClass_field_fieldA_field1',
           comment: 'Hi1',
-          default: 'VALUE',
+          default: [ 'VALUE' ],
           range: 'xsd:boolean',
           required: true,
           unique: true,
@@ -1468,9 +1468,9 @@ describe('ComponentConstructor', () => {
       ]);
     });
 
-    it('should throw if a default and nested default both apply', async() => {
+    it('should handle a default and nested default', async() => {
       const parameters: ParameterDefinition[] = [];
-      await expect(ctor
+      expect(await ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'field',
@@ -1487,7 +1487,7 @@ describe('ComponentConstructor', () => {
                 type: 'field',
                 name: 'fieldA',
                 range: { type: 'raw', value: 'boolean' },
-                default: { type: 'raw', value: 'VALUEOTHER' },
+                defaults: [{ type: 'raw', value: 'VALUEOTHER' }],
                 required: true,
                 unique: true,
                 comment: 'Hi1',
@@ -1505,8 +1505,35 @@ describe('ComponentConstructor', () => {
           required: true,
           unique: true,
           comment: 'Hi',
-        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).rejects
-        .toThrow(`Detected conflicting default values on field 'mp:a/b/file-param#MyClass_field_fieldA'`);
+        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({
+        '@id': 'mp:a/b/file-param#MyClass_field__constructorArgument',
+        fields: [
+          {
+            keyRaw: 'fieldA',
+            value: {
+              '@id': 'mp:a/b/file-param#MyClass_field_fieldA',
+            },
+          },
+          { keyRaw: 'fieldB', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldB' }},
+        ],
+      });
+      expect(parameters).toEqual([
+        {
+          '@id': 'mp:a/b/file-param#MyClass_field_fieldA',
+          comment: 'Hi1',
+          default: [ 'VALUEOTHER', 'VALUE' ],
+          range: 'xsd:boolean',
+          required: true,
+          unique: true,
+        },
+        {
+          '@id': 'mp:a/b/file-param#MyClass_field_fieldB',
+          comment: 'Hi2',
+          range: 'xsd:string',
+          required: true,
+          unique: true,
+        },
+      ]);
     });
 
     it('should handle a recursive nested parameter definition', async() => {
@@ -1795,7 +1822,7 @@ describe('ComponentConstructor', () => {
           type: 'field',
           name: 'field',
           range: { type: 'raw', value: 'boolean' },
-          default: { type: 'raw', value: 'abc' },
+          defaults: [{ type: 'raw', value: 'abc' }],
           required: true,
           unique: true,
           comment: 'Hi',
@@ -1805,7 +1832,7 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:a/b/file-param#MyClass_field',
           comment: 'Hi',
           range: 'xsd:boolean',
-          default: 'abc',
+          default: [ 'abc' ],
           required: true,
           unique: true,
         },
@@ -1819,7 +1846,7 @@ describe('ComponentConstructor', () => {
           type: 'field',
           name: 'field',
           range: { type: 'raw', value: 'boolean' },
-          default: { type: 'iri', value: 'ex:abc', baseComponent: classReference },
+          defaults: [{ type: 'iri', value: 'ex:abc', baseComponent: classReference }],
           required: true,
           unique: true,
           comment: 'Hi',
@@ -1829,7 +1856,7 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:a/b/file-param#MyClass_field',
           comment: 'Hi',
           range: 'xsd:boolean',
-          default: { '@id': 'ex:abc' },
+          default: [{ '@id': 'ex:abc' }],
           required: true,
           unique: true,
         },
@@ -1843,7 +1870,7 @@ describe('ComponentConstructor', () => {
           type: 'field',
           name: 'field',
           range: { type: 'raw', value: 'boolean' },
-          default: { type: 'iri', value: 'abc', baseComponent: classReference },
+          defaults: [{ type: 'iri', value: 'abc', baseComponent: classReference }],
           required: true,
           unique: true,
           comment: 'Hi',
@@ -1853,7 +1880,7 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:a/b/file-param#MyClass_field',
           comment: 'Hi',
           range: 'xsd:boolean',
-          default: { '@id': 'mp:a/b/file-param#MyClass_abc' },
+          default: [{ '@id': 'mp:a/b/file-param#MyClass_abc' }],
           required: true,
           unique: true,
         },
@@ -1867,7 +1894,7 @@ describe('ComponentConstructor', () => {
           type: 'field',
           name: 'field',
           range: { type: 'override', value: 'json' },
-          default: { type: 'raw', value: '{"a":true}' },
+          defaults: [{ type: 'raw', value: '{"a":true}' }],
           required: true,
           unique: true,
           comment: 'Hi',
@@ -1877,10 +1904,10 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:a/b/file-param#MyClass_field',
           comment: 'Hi',
           range: 'rdf:JSON',
-          default: {
+          default: [{
             '@type': '@json',
             '@value': { a: true },
-          },
+          }],
           required: true,
           unique: true,
         },
@@ -1894,7 +1921,7 @@ describe('ComponentConstructor', () => {
           type: 'field',
           name: 'field',
           range: { type: 'override', value: 'json' },
-          default: { type: 'raw', value: '{"a":invalid}' },
+          defaults: [{ type: 'raw', value: '{"a":invalid}' }],
           required: true,
           unique: true,
           comment: 'Hi',
