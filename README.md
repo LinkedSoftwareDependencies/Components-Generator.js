@@ -111,6 +111,28 @@ Usage:
 **Note:** This generator will read `.d.ts` files,
 so it is important that you invoke the TypeScript compiler (`tsc`) _before_ using this tool.
 
+### Configuration files
+
+While options passed to the CLI tool will always take precedence,
+it is possible to add a `.componentsjs-generator-config.json` file to your project to define your configuration.
+
+The following shows an example of the possible options:
+```json
+{
+  "source": "lib",
+  "destination": "components",
+  "extension": "jsonld",
+  "ignoreComponents": [ "Class1", "Class2" ],
+  "logLevel": "info",
+  "modulePrefix": "myprefix",
+  "debugState": "true",
+  "typeScopedContexts": true
+}
+```
+
+When invoking `componentsjs-generator`, the tool will look for `.componentsjs-generator-config.json` in the current working directory.
+If it can not find one, it will recursively go look into the parent directories until it either finds one or is at the root.
+
 ### Ignoring classes
 
 If you don't want components to be generated for certain classes,

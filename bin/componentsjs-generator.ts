@@ -1,8 +1,7 @@
 #!/usr/bin/env node
-import * as fs from 'fs';
 import * as Path from 'path';
 import * as minimist from 'minimist';
-import { Generator } from '../lib/generate/Generator';
+import { GeneratorFactory } from '../lib/config/GeneratorFactory';
 import { ResolutionContext } from '../lib/resolution/ResolutionContext';
 
 function showHelp(): void {
@@ -31,28 +30,9 @@ if (args.help) {
   showHelp();
 } else {
   const packageRootDirectory = Path.posix.join(process.cwd(), args.p || '');
-  const generator = new Generator({
-    resolutionContext: new ResolutionContext(),
-    pathDestination: {
-      packageRootDirectory,
-      originalPath: Path.posix.join(packageRootDirectory, args.s || 'lib'),
-      replacementPath: Path.posix.join(packageRootDirectory, args.c || 'components'),
-    },
-    fileExtension: args.e || 'jsonld',
-    typeScopedContexts: args.typeScopedContexts,
-    logLevel: args.l || 'info',
-    debugState: args.debugState,
-    prefix: args.r,
-    ignoreClasses: args.i ?
-      // eslint-disable-next-line no-sync
-      JSON.parse(fs.readFileSync(args.i, 'utf8')).reduce((acc: Record<string, boolean>, entry: string) => {
-        acc[entry] = true;
-        return acc;
-      }, {}) :
-      [],
-  });
-  generator
-    .generateComponents()
+  new GeneratorFactory({ resolutionContext: new ResolutionContext() })
+    .createGenerator(packageRootDirectory, args)
+    .then(generator => generator.generateComponents())
     .catch((error: Error) => {
       process.stderr.write(`${error.message}\n`);
       process.exit(1);
