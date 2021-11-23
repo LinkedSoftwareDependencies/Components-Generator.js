@@ -442,8 +442,8 @@ export class ComponentConstructor {
     const parameter: ParameterDefinition = {
       '@id': idCollectEntries,
       range: {
-        '@id': this.fieldNameToId(context, classReference, `${parameterData.name}_range`, scope),
-        parameters: subParameters,
+        '@type': 'ParameterRangeCollectEntries',
+        parameterRangeCollectEntriesParameters: subParameters,
       },
     };
     this.populateOptionalParameterFields(parameter, parameterData);
