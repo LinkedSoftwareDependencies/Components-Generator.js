@@ -33,7 +33,7 @@ export interface ParameterDefinition {
   lazy?: boolean;
 }
 
-export type ParameterDefinitionRange = string | { '@id': string; parameters: ParameterDefinition[] } | {
+export type ParameterDefinitionRange = string | {
   '@type': 'ParameterRangeUnion' | 'ParameterRangeIntersection' | 'ParameterRangeTuple';
   parameterRangeElements: ParameterDefinitionRange[];
 } | {
@@ -41,6 +41,9 @@ export type ParameterDefinitionRange = string | { '@id': string; parameters: Par
   parameterRangeValue: ParameterDefinitionRange;
 } | {
   '@type': 'ParameterRangeUndefined';
+} | {
+  '@type': 'ParameterRangeCollectEntries';
+  'parameterRangeCollectEntriesParameters': ParameterDefinition[];
 };
 
 export type ConstructorArgumentDefinition = string | { '@id': string } | {

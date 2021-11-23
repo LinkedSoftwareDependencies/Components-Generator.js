@@ -995,8 +995,8 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:a/b/file-param#MyClass_field_fieldA',
           comment: 'Hi1',
           range: {
-            '@id': 'mp:a/b/file-param#MyClass_field_fieldA_range',
-            parameters: [
+            '@type': 'ParameterRangeCollectEntries',
+            parameterRangeCollectEntriesParameters: [
               {
                 '@id': 'mp:a/b/file-param#MyClass_field_fieldA_key',
               },
@@ -1344,8 +1344,8 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:a/b/file-param#MyClass_fieldA',
           comment: 'Hi',
           range: {
-            '@id': 'mp:a/b/file-param#MyClass_fieldA_range',
-            parameters: [
+            '@type': 'ParameterRangeCollectEntries',
+            parameterRangeCollectEntriesParameters: [
               {
                 '@id': 'mp:a/b/file-param#MyClass_fieldA_key',
               },
@@ -1403,8 +1403,8 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:a/b/file-param#MyClass_fieldA',
           comment: 'Hi',
           range: {
-            '@id': 'mp:a/b/file-param#MyClass_fieldA_range',
-            parameters: [
+            '@type': 'ParameterRangeCollectEntries',
+            parameterRangeCollectEntriesParameters: [
               {
                 '@id': 'mp:a/b/file-param#MyClass_fieldA_key',
               },
@@ -1608,8 +1608,8 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:a/b/file-param#MyClass_fieldA',
           comment: 'Hi',
           range: {
-            '@id': 'mp:a/b/file-param#MyClass_fieldA_range',
-            parameters: [
+            '@type': 'ParameterRangeCollectEntries',
+            parameterRangeCollectEntriesParameters: [
               {
                 '@id': 'mp:a/b/file-param#MyClass_fieldA_key',
               },
