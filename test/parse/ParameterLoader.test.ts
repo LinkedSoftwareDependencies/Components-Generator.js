@@ -75,8 +75,6 @@ export class A{
               type: 'raw',
               value: 'string',
             },
-            required: true,
-            unique: true,
           },
         ],
       });
@@ -101,8 +99,6 @@ export class A{
               type: 'override',
               value: 'float',
             },
-            required: true,
-            unique: true,
           },
         ],
       });
@@ -143,19 +139,26 @@ export class A{
               type: 'override',
               value: 'float',
             },
-            required: true,
-            unique: true,
           },
           {
             type: 'field',
             comment: 'This is B',
             name: 'fieldB',
             range: {
-              type: 'override',
-              value: 'float',
+              type: 'union',
+              elements: [
+                {
+                  type: 'array',
+                  value: {
+                    type: 'override',
+                    value: 'float',
+                  },
+                },
+                {
+                  type: 'undefined',
+                },
+              ],
             },
-            required: false,
-            unique: false,
           },
         ],
       });
@@ -194,9 +197,7 @@ export class A{
                 type: 'TSTypeLiteral',
               },
             },
-            required: true,
             type: 'field',
-            unique: true,
           },
         ],
       });
@@ -218,9 +219,7 @@ export class A{
                 type: 'TSTypeLiteral',
               },
             },
-            required: false,
             type: 'field',
-            unique: false,
           },
         ],
       });
@@ -241,8 +240,6 @@ export class A{
               type: 'raw',
               value: 'string',
             },
-            required: true,
-            unique: true,
           },
         ],
       });
@@ -263,8 +260,6 @@ export class A{
               type: 'raw',
               value: 'string',
             },
-            required: true,
-            unique: true,
           },
         ],
       });
@@ -285,8 +280,6 @@ export class A{
               type: 'raw',
               value: 'string',
             },
-            required: true,
-            unique: true,
           },
         ],
       });
@@ -304,11 +297,128 @@ export class A{
             type: 'field',
             name: 'fieldA',
             range: {
-              type: 'raw',
-              value: 'string',
+              type: 'array',
+              value: {
+                type: 'raw',
+                value: 'string',
+              },
             },
-            required: true,
-            unique: false,
+          },
+        ],
+      });
+    });
+
+    it('should handle a public optional field', async() => {
+      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
+export class A{
+  constructor(public fieldA?: string) {}
+}`);
+      expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
+        classLoaded,
+        parameters: [
+          {
+            type: 'field',
+            name: 'fieldA',
+            range: {
+              type: 'union',
+              elements: [
+                {
+                  type: 'raw',
+                  value: 'string',
+                },
+                {
+                  type: 'undefined',
+                },
+              ],
+            },
+          },
+        ],
+      });
+    });
+
+    it('should handle a public optional union field', async() => {
+      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
+export class A{
+  constructor(public fieldA?: string | number) {}
+}`);
+      expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
+        classLoaded,
+        parameters: [
+          {
+            type: 'field',
+            name: 'fieldA',
+            range: {
+              type: 'union',
+              elements: [
+                {
+                  type: 'raw',
+                  value: 'string',
+                },
+                {
+                  type: 'raw',
+                  value: 'number',
+                },
+                {
+                  type: 'undefined',
+                },
+              ],
+            },
+          },
+        ],
+      });
+    });
+
+    it('should handle a public optional field as union type', async() => {
+      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
+export class A{
+  constructor(public fieldA?: string | undefined) {}
+}`);
+      expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
+        classLoaded,
+        parameters: [
+          {
+            type: 'field',
+            name: 'fieldA',
+            range: {
+              type: 'union',
+              elements: [
+                {
+                  type: 'raw',
+                  value: 'string',
+                },
+                {
+                  type: 'undefined',
+                },
+              ],
+            },
+          },
+        ],
+      });
+    });
+
+    it('should handle a public required field as union type', async() => {
+      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
+export class A{
+  constructor(public fieldA: string | undefined) {}
+}`);
+      expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
+        classLoaded,
+        parameters: [
+          {
+            type: 'field',
+            name: 'fieldA',
+            range: {
+              type: 'union',
+              elements: [
+                {
+                  type: 'raw',
+                  value: 'string',
+                },
+                {
+                  type: 'undefined',
+                },
+              ],
+            },
           },
         ],
       });
@@ -326,11 +436,20 @@ export class A{
             type: 'field',
             name: 'fieldA',
             range: {
-              type: 'raw',
-              value: 'string',
+              type: 'union',
+              elements: [
+                {
+                  type: 'array',
+                  value: {
+                    type: 'raw',
+                    value: 'string',
+                  },
+                },
+                {
+                  type: 'undefined',
+                },
+              ],
             },
-            required: false,
-            unique: false,
           },
         ],
       });
@@ -348,11 +467,51 @@ export class A{
             type: 'field',
             name: 'fieldA',
             range: {
-              type: 'raw',
-              value: 'string',
+              type: 'union',
+              elements: [
+                {
+                  type: 'array',
+                  value: {
+                    type: 'raw',
+                    value: 'string',
+                  },
+                },
+                {
+                  type: 'undefined',
+                },
+              ],
             },
-            required: false,
-            unique: false,
+          },
+        ],
+      });
+    });
+
+    it('should handle a public required array field as union type', async() => {
+      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
+export class A{
+  constructor(public fieldA: string[] | undefined) {}
+}`);
+      expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
+        classLoaded,
+        parameters: [
+          {
+            type: 'field',
+            name: 'fieldA',
+            range: {
+              type: 'union',
+              elements: [
+                {
+                  type: 'array',
+                  value: {
+                    type: 'raw',
+                    value: 'string',
+                  },
+                },
+                {
+                  type: 'undefined',
+                },
+              ],
+            },
           },
         ],
       });
@@ -405,8 +564,6 @@ export interface A{
           type: 'field',
           name: 'fieldA',
           range: { type: 'raw', value: 'boolean' },
-          required: true,
-          unique: true,
         },
       ]);
     });
@@ -437,10 +594,20 @@ export interface A{
           type: 'field',
           name: 'fieldA',
           comment: 'Hi',
-          range: { type: 'override', value: 'number' },
+          range: {
+            type: 'union',
+            elements: [
+              {
+                type: 'array',
+                value: {
+                  type: 'override',
+                  value: 'number',
+                },
+              },
+              { type: 'undefined' },
+            ],
+          },
           defaults: [{ type: 'raw', value: '3' }],
-          required: false,
-          unique: false,
         },
       ]);
     });
@@ -455,8 +622,6 @@ export interface A{
           type: 'field',
           name: 'fieldA',
           range: { type: 'interface', value: 'MyClass', origin: iface },
-          required: true,
-          unique: true,
         },
       ]);
     });
@@ -478,15 +643,11 @@ export interface A{
           type: 'field',
           name: 'fieldA',
           range: { type: 'interface', value: 'MyClass1', origin: iface },
-          required: true,
-          unique: true,
         },
         {
           type: 'field',
           name: 'fieldB',
           range: { type: 'interface', value: 'MyClass2', origin: ifaceSuper },
-          required: true,
-          unique: true,
         },
       ]);
     });
@@ -514,29 +675,21 @@ export interface A{
           type: 'field',
           name: 'fieldA',
           range: { type: 'interface', value: 'MyClass1', origin: iface },
-          required: true,
-          unique: true,
         },
         {
           type: 'field',
           name: 'fieldB',
           range: { type: 'interface', value: 'MyClass2', origin: ifaceSuper1 },
-          required: true,
-          unique: true,
         },
         {
           type: 'field',
           name: 'fieldC',
           range: { type: 'interface', value: 'MyClass3', origin: ifaceSuper2 },
-          required: true,
-          unique: true,
         },
         {
           type: 'field',
           name: 'fieldD',
           range: { type: 'interface', value: 'MyClass4', origin: ifaceSuper2 },
-          required: true,
-          unique: true,
         },
       ]);
     });
@@ -590,8 +743,6 @@ export interface A{
           type: 'field',
           name: 'fieldA',
           range: { type: 'raw', value: 'boolean' },
-          required: true,
-          unique: true,
         },
       ]);
     });
@@ -634,9 +785,19 @@ export interface A{
           name: 'fieldA',
           comment: 'Hi',
           defaults: [{ type: 'raw', value: '3' }],
-          range: { type: 'override', value: 'number' },
-          required: false,
-          unique: false,
+          range: {
+            type: 'union',
+            elements: [
+              {
+                type: 'array',
+                value: {
+                  type: 'override',
+                  value: 'number',
+                },
+              },
+              { type: 'undefined' },
+            ],
+          },
         },
       ]);
     });
@@ -651,8 +812,6 @@ export interface A{
           type: 'field',
           name: 'fieldA',
           range: { type: 'interface', value: 'MyClass', origin: classLoaded },
-          required: true,
-          unique: true,
         },
       ]);
     });
@@ -715,8 +874,6 @@ export interface A{
           type: 'field',
           name: 'something',
           range: { type: 'raw', value: 'string' },
-          required: true,
-          unique: true,
         },
       ]);
     });
@@ -760,16 +917,47 @@ export interface A{
       }, {})).toEqual({
         type: 'field',
         name: 'fieldA',
-        unique: false,
-        required: false,
         range: {
-          type: 'raw',
-          value: 'boolean',
+          type: 'union',
+          elements: [
+            {
+              type: 'array',
+              value: { type: 'raw', value: 'boolean' },
+            },
+            {
+              type: 'undefined',
+            },
+          ],
         },
       });
     });
 
-    it('should also get optional data', () => {
+    it('should get optional data', () => {
+      expect(loader.loadField(classLoadedDummy, <any> {
+        name: 'fieldA',
+        typeAnnotation: {
+          typeAnnotation: {
+            type: AST_NODE_TYPES.TSArrayType,
+            elementType: {
+              type: AST_NODE_TYPES.TSTypeReference,
+              typeName: {
+                type: AST_NODE_TYPES.Identifier,
+                name: 'Boolean',
+              },
+            },
+          },
+        },
+      }, {})).toEqual({
+        type: 'field',
+        name: 'fieldA',
+        range: {
+          type: 'array',
+          value: { type: 'raw', value: 'boolean' },
+        },
+      });
+    });
+
+    it('should get optional data with override', () => {
       expect(loader.loadField(classLoadedDummy, <any> {
         name: 'fieldA',
         typeAnnotation: {
@@ -805,11 +993,20 @@ export interface A{
       })).toEqual({
         type: 'field',
         name: 'fieldA',
-        unique: false,
-        required: false,
         range: {
-          type: 'override',
-          value: 'float',
+          type: 'union',
+          elements: [
+            {
+              type: 'array',
+              value: {
+                type: 'override',
+                value: 'float',
+              },
+            },
+            {
+              type: 'undefined',
+            },
+          ],
         },
         defaults: [{ type: 'raw', value: '1.0' }],
         defaultNested: [
@@ -836,13 +1033,10 @@ export interface A{
           name: 'key',
           typeAnnotation: {
             typeAnnotation: {
-              type: AST_NODE_TYPES.TSArrayType,
-              elementType: {
-                type: AST_NODE_TYPES.TSTypeReference,
-                typeName: {
-                  type: AST_NODE_TYPES.Identifier,
-                  name: 'String',
-                },
+              type: AST_NODE_TYPES.TSTypeReference,
+              typeName: {
+                type: AST_NODE_TYPES.Identifier,
+                name: 'String',
               },
             },
           },
@@ -863,8 +1057,11 @@ export interface A{
         type: 'index',
         domain: 'string',
         range: {
-          type: 'raw',
-          value: 'boolean',
+          type: 'array',
+          value: {
+            type: 'raw',
+            value: 'boolean',
+          },
         },
       });
     });
@@ -877,13 +1074,10 @@ export interface A{
           name: 'key',
           typeAnnotation: {
             typeAnnotation: {
-              type: AST_NODE_TYPES.TSArrayType,
-              elementType: {
-                type: AST_NODE_TYPES.TSTypeReference,
-                typeName: {
-                  type: AST_NODE_TYPES.Identifier,
-                  name: 'String',
-                },
+              type: AST_NODE_TYPES.TSTypeReference,
+              typeName: {
+                type: AST_NODE_TYPES.Identifier,
+                name: 'String',
               },
             },
           },
@@ -943,145 +1137,6 @@ export interface A{
           name: 'fieldA',
         },
       })).toThrow(new Error('Unsupported field key type unknown in interface A in file'));
-    });
-  });
-
-  describe('isFieldUnique', () => {
-    it('should return true when there is no type annotation', () => {
-      expect(loader.isFieldUnique(<any> {})).toEqual(true);
-    });
-
-    it('should return true when the type annotation is not array', () => {
-      expect(loader.isFieldUnique(<any> {
-        typeAnnotation: {
-          typeAnnotation: {
-            type: AST_NODE_TYPES.TSAnyKeyword,
-          },
-        },
-      })).toEqual(true);
-    });
-
-    it('should return false when the type annotation is array', () => {
-      expect(loader.isFieldUnique(<any> {
-        name: 'fieldA',
-        typeAnnotation: {
-          typeAnnotation: {
-            type: AST_NODE_TYPES.TSArrayType,
-          },
-        },
-      })).toEqual(false);
-    });
-
-    it('should return false when the type annotation is an array with union undefined', () => {
-      expect(loader.isFieldUnique(<any> {
-        name: 'fieldA',
-        typeAnnotation: {
-          typeAnnotation: {
-            type: AST_NODE_TYPES.TSUnionType,
-            types: [
-              {
-                type: AST_NODE_TYPES.TSArrayType,
-              },
-              {
-                type: AST_NODE_TYPES.TSUndefinedKeyword,
-              },
-            ],
-          },
-        },
-      })).toEqual(false);
-    });
-
-    it('should return true when the type annotation is a not array with union undefined', () => {
-      expect(loader.isFieldUnique(<any> {
-        name: 'fieldA',
-        typeAnnotation: {
-          typeAnnotation: {
-            type: AST_NODE_TYPES.TSUnionType,
-            types: [
-              {
-                type: AST_NODE_TYPES.TSAnyKeyword,
-              },
-              {
-                type: AST_NODE_TYPES.TSUndefinedKeyword,
-              },
-            ],
-          },
-        },
-      })).toEqual(true);
-    });
-
-    it('should return false when the type annotation is an indexed hash', () => {
-      expect(loader.isFieldUnique(<any> {
-        name: 'fieldA',
-        typeAnnotation: {
-          typeAnnotation: {
-            type: AST_NODE_TYPES.TSTypeLiteral,
-            members: [
-              { type: AST_NODE_TYPES.TSIndexSignature },
-            ],
-          },
-        },
-      })).toEqual(false);
-    });
-
-    it('should return true when the type annotation is a hash without index', () => {
-      expect(loader.isFieldUnique(<any> {
-        name: 'fieldA',
-        typeAnnotation: {
-          typeAnnotation: {
-            type: AST_NODE_TYPES.TSTypeLiteral,
-            members: [
-              { type: 'bla' },
-            ],
-          },
-        },
-      })).toEqual(true);
-    });
-  });
-
-  describe('isFieldRequired', () => {
-    it('should be true without optional field', () => {
-      expect(loader.isFieldRequired(<any> {})).toEqual(true);
-    });
-
-    it('should be true with a falsy optional field', () => {
-      expect(loader.isFieldRequired(<any> {
-        optional: false,
-      })).toEqual(true);
-    });
-
-    it('should be false with a truthy optional field', () => {
-      expect(loader.isFieldRequired(<any> {
-        optional: true,
-      })).toEqual(false);
-    });
-
-    it('should return false when the type annotation is an indexed hash', () => {
-      expect(loader.isFieldRequired(<any> {
-        name: 'fieldA',
-        typeAnnotation: {
-          typeAnnotation: {
-            type: AST_NODE_TYPES.TSTypeLiteral,
-            members: [
-              { type: AST_NODE_TYPES.TSIndexSignature },
-            ],
-          },
-        },
-      })).toEqual(false);
-    });
-
-    it('should return true when the type annotation is a hash without index', () => {
-      expect(loader.isFieldRequired(<any> {
-        name: 'fieldA',
-        typeAnnotation: {
-          typeAnnotation: {
-            type: AST_NODE_TYPES.TSTypeLiteral,
-            members: [
-              { type: 'bla' },
-            ],
-          },
-        },
-      })).toEqual(true);
     });
   });
 
@@ -1153,17 +1208,17 @@ export interface A{
 
     it('should get the range of a string array field type', async() => {
       expect(await getFieldRange('fieldA: string[]', {}))
-        .toEqual({ type: 'raw', value: 'string' });
+        .toEqual({ type: 'array', value: { type: 'raw', value: 'string' }});
     });
 
     it('should get the range of a String array field type', async() => {
       expect(await getFieldRange('fieldA: String[]', {}))
-        .toEqual({ type: 'raw', value: 'string' });
+        .toEqual({ type: 'array', value: { type: 'raw', value: 'string' }});
     });
 
     it('should get the range of a string Array field type', async() => {
       expect(await getFieldRange('fieldA: Array<string>', {}))
-        .toEqual({ type: 'raw', value: 'string' });
+        .toEqual({ type: 'array', value: { type: 'raw', value: 'string' }});
     });
 
     it('should error on an Array field type with no params', async() => {
@@ -1176,14 +1231,14 @@ export interface A{
         .rejects.toThrow(new Error('Found invalid Array field type at field fieldA in A at file'));
     });
 
-    it('should error on a nested array', async() => {
-      await expect(async() => await getFieldRange('fieldA: string[][]', {}))
-        .rejects.toThrow(new Error('Detected illegal nested array type for field fieldA in A at file'));
+    it('should handle a nested array', async() => {
+      expect(await getFieldRange('fieldA: string[][]', {}))
+        .toEqual({ type: 'array', value: { type: 'array', value: { type: 'raw', value: 'string' }}});
     });
 
-    it('should error on a nested Array', async() => {
-      await expect(async() => await getFieldRange('fieldA: Array<Array<string>>', {}))
-        .rejects.toThrow(new Error('Detected illegal nested array type for field fieldA in A at file'));
+    it('should handle a nested Array', async() => {
+      expect(await getFieldRange('fieldA: Array<Array<string>>', {}))
+        .toEqual({ type: 'array', value: { type: 'array', value: { type: 'raw', value: 'string' }}});
     });
 
     it('should get the range of a class', async() => {
@@ -1348,7 +1403,13 @@ export interface A{
 
     it('should get the range of a union type of a raw type and undefined', async() => {
       expect(await getFieldRange('fieldA: number | undefined', {}))
-        .toEqual({ type: 'raw', value: 'number' });
+        .toEqual({
+          type: 'union',
+          elements: [
+            { type: 'raw', value: 'number' },
+            { type: 'undefined' },
+          ],
+        });
     });
 
     it('should get the range of a union type of two raw types and undefined', async() => {
@@ -1358,6 +1419,7 @@ export interface A{
           elements: [
             { type: 'raw', value: 'number' },
             { type: 'raw', value: 'string' },
+            { type: 'undefined' },
           ],
         });
     });
@@ -1445,6 +1507,234 @@ export interface A{
             },
           ],
         });
+    });
+  });
+
+  describe('overrideRawRange', () => {
+    it('should override a raw range', () => {
+      expect(loader.overrideRawRange(
+        {
+          type: 'raw',
+          value: 'string',
+        },
+        {
+          type: 'raw',
+          value: 'boolean',
+        },
+      )).toEqual({
+        type: 'raw',
+        value: 'boolean',
+      });
+    });
+
+    it('should not override an undefined range', () => {
+      expect(loader.overrideRawRange(
+        {
+          type: 'undefined',
+        },
+        {
+          type: 'raw',
+          value: 'boolean',
+        },
+      )).toEqual({
+        type: 'undefined',
+      });
+    });
+
+    it('should not override an override range', () => {
+      expect(loader.overrideRawRange(
+        {
+          type: 'override',
+          value: 'bla',
+        },
+        {
+          type: 'raw',
+          value: 'boolean',
+        },
+      )).toEqual({
+        type: 'override',
+        value: 'bla',
+      });
+    });
+
+    it('should not override an interface range', () => {
+      expect(loader.overrideRawRange(
+        {
+          type: 'interface',
+          value: 'bla',
+          origin: classLoadedDummy,
+        },
+        {
+          type: 'raw',
+          value: 'boolean',
+        },
+      )).toEqual({
+        type: 'interface',
+        value: 'bla',
+        origin: classLoadedDummy,
+      });
+    });
+
+    it('should not override a hash range', () => {
+      expect(loader.overrideRawRange(
+        {
+          type: 'hash',
+          value: <any> 'bla',
+        },
+        {
+          type: 'raw',
+          value: 'boolean',
+        },
+      )).toEqual({
+        type: 'hash',
+        value: 'bla',
+      });
+    });
+
+    it('should recursively override a union range', () => {
+      expect(loader.overrideRawRange(
+        {
+          type: 'union',
+          elements: [
+            {
+              type: 'raw',
+              value: 'string',
+            },
+            {
+              type: 'undefined',
+              value: 'string',
+            },
+          ],
+        },
+        {
+          type: 'raw',
+          value: 'boolean',
+        },
+      )).toEqual({
+        type: 'union',
+        elements: [
+          {
+            type: 'raw',
+            value: 'boolean',
+          },
+          {
+            type: 'undefined',
+            value: 'string',
+          },
+        ],
+      });
+    });
+
+    it('should recursively override an intersection range', () => {
+      expect(loader.overrideRawRange(
+        {
+          type: 'intersection',
+          elements: [
+            {
+              type: 'raw',
+              value: 'string',
+            },
+            {
+              type: 'undefined',
+              value: 'string',
+            },
+          ],
+        },
+        {
+          type: 'raw',
+          value: 'boolean',
+        },
+      )).toEqual({
+        type: 'intersection',
+        elements: [
+          {
+            type: 'raw',
+            value: 'boolean',
+          },
+          {
+            type: 'undefined',
+            value: 'string',
+          },
+        ],
+      });
+    });
+
+    it('should recursively override a tuple range', () => {
+      expect(loader.overrideRawRange(
+        {
+          type: 'tuple',
+          elements: [
+            {
+              type: 'raw',
+              value: 'string',
+            },
+            {
+              type: 'undefined',
+              value: 'string',
+            },
+          ],
+        },
+        {
+          type: 'raw',
+          value: 'boolean',
+        },
+      )).toEqual({
+        type: 'tuple',
+        elements: [
+          {
+            type: 'raw',
+            value: 'boolean',
+          },
+          {
+            type: 'undefined',
+            value: 'string',
+          },
+        ],
+      });
+    });
+
+    it('should recursively override a rest range', () => {
+      expect(loader.overrideRawRange(
+        {
+          type: 'rest',
+          value: {
+            type: 'raw',
+            value: 'string',
+          },
+        },
+        {
+          type: 'raw',
+          value: 'boolean',
+        },
+      )).toEqual({
+        type: 'rest',
+        value: {
+          type: 'raw',
+          value: 'boolean',
+        },
+      });
+    });
+
+    it('should recursively override an array range', () => {
+      expect(loader.overrideRawRange(
+        {
+          type: 'array',
+          value: {
+            type: 'raw',
+            value: 'string',
+          },
+        },
+        {
+          type: 'raw',
+          value: 'boolean',
+        },
+      )).toEqual({
+        type: 'array',
+        value: {
+          type: 'raw',
+          value: 'boolean',
+        },
+      });
     });
   });
 

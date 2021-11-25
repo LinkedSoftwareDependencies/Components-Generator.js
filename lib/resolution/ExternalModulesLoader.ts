@@ -112,6 +112,7 @@ export class ExternalModulesLoader {
         }
         break;
       case 'rest':
+      case 'array':
         this.indexParameterRangeInExternalPackage(parameterRange.value, externalPackages);
         break;
     }

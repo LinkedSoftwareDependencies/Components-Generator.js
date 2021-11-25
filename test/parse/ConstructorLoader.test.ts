@@ -116,19 +116,26 @@ export class B{
                 type: 'override',
                 value: 'float',
               },
-              required: true,
-              unique: true,
             },
             {
               type: 'field',
               comment: 'This is B',
               name: 'fieldB',
               range: {
-                type: 'override',
-                value: 'float',
+                type: 'union',
+                elements: [
+                  {
+                    type: 'array',
+                    value: {
+                      type: 'override',
+                      value: 'float',
+                    },
+                  },
+                  {
+                    type: 'undefined',
+                  },
+                ],
               },
-              required: false,
-              unique: false,
             },
           ],
           classLoaded: A,
@@ -143,8 +150,6 @@ export class B{
                 type: 'raw',
                 value: 'string',
               },
-              required: true,
-              unique: true,
             },
           ],
           classLoaded: B,
@@ -193,19 +198,23 @@ export class B{
               },
               defaults: [{ type: 'raw', value: 'ABC' }],
               defaultNested: [],
-              required: true,
-              unique: true,
             },
             {
               type: 'field',
               comment: 'This is B',
               name: 'fieldB',
               range: {
-                type: 'override',
-                value: 'float',
+                type: 'union',
+                elements: [
+                  {
+                    type: 'array',
+                    value: { type: 'override', value: 'float' },
+                  },
+                  {
+                    type: 'undefined',
+                  },
+                ],
               },
-              required: false,
-              unique: false,
             },
           ],
           classLoaded: A,

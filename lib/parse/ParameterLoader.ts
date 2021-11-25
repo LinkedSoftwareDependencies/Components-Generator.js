@@ -146,8 +146,6 @@ export class ParameterLoader {
     const parameterData: ParameterDataField<ParameterRangeUnresolved> = {
       type: 'field',
       name: this.getFieldName(classLoaded, field),
-      unique: this.isFieldUnique(field),
-      required: this.isFieldRequired(field),
       range: this.getFieldRange(classLoaded, field, commentData),
       defaults: commentData.defaults,
       defaultNested: commentData.defaultNested,
@@ -173,27 +171,6 @@ export class ParameterLoader {
     throw new Error(`Unsupported field key type ${field.key.type} in interface ${classLoaded.localName} in ${classLoaded.fileName}`);
   }
 
-  public isFieldIndexedHash(field: Identifier | TSPropertySignature): boolean {
-    return Boolean(field.typeAnnotation &&
-      field.typeAnnotation.typeAnnotation.type === AST_NODE_TYPES.TSTypeLiteral &&
-      field.typeAnnotation.typeAnnotation.members.some(member => member.type === AST_NODE_TYPES.TSIndexSignature));
-  }
-
-  public isFieldUnique(field: Identifier | TSPropertySignature): boolean {
-    return !this.isFieldIndexedHash(field) &&
-      (!field.typeAnnotation || this.isFieldTypeUnique(field.typeAnnotation.typeAnnotation));
-  }
-
-  public isFieldTypeUnique(fieldType: TypeNode): boolean {
-    return !(fieldType.type === AST_NODE_TYPES.TSArrayType) &&
-      !(fieldType.type === AST_NODE_TYPES.TSUnionType && fieldType.types.length === 2 &&
-        fieldType.types[1].type === AST_NODE_TYPES.TSUndefinedKeyword && !this.isFieldTypeUnique(fieldType.types[0]));
-  }
-
-  public isFieldRequired(field: Identifier | TSPropertySignature): boolean {
-    return !field.optional && !this.isFieldIndexedHash(field);
-  }
-
   public getErrorIdentifierField(classLoaded: ClassReferenceLoaded, field: Identifier | TSPropertySignature): string {
     return `field ${this.getFieldName(classLoaded, field)}`;
   }
@@ -206,14 +183,7 @@ export class ParameterLoader {
     classLoaded: ClassReferenceLoaded,
     typeNode: TypeNode,
     errorIdentifier: string,
-    nestedArrays = 0,
   ): ParameterRangeUnresolved {
-    // Don't allow arrays to be nested
-    if (nestedArrays > 1) {
-      throw new Error(`Detected illegal nested array type for ${errorIdentifier
-      } in ${classLoaded.localName} at ${classLoaded.fileName}`);
-    }
-
     let typeAliasOverride: ParameterRangeUnresolved | undefined;
     // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
     switch (typeNode.type) {
@@ -229,12 +199,10 @@ export class ParameterLoader {
               return { type: 'raw', value: 'string' };
             case 'Array':
               if (typeNode.typeParameters && typeNode.typeParameters.params.length === 1) {
-                return this.getRangeFromTypeNode(
-                  classLoaded,
-                  typeNode.typeParameters.params[0],
-                  errorIdentifier,
-                  nestedArrays + 1,
-                );
+                return {
+                  type: 'array',
+                  value: this.getRangeFromTypeNode(classLoaded, typeNode.typeParameters.params[0], errorIdentifier),
+                };
               }
               throw new Error(`Found invalid Array field type at ${errorIdentifier
               } in ${classLoaded.localName} at ${classLoaded.fileName}`);
@@ -246,7 +214,7 @@ export class ParameterLoader {
                   throw new Error(`Found untyped generic field type at ${errorIdentifier
                   } in ${classLoaded.localName} at ${classLoaded.fileName}`);
                 }
-                return this.getRangeFromTypeNode(classLoaded, genericProperties.type, errorIdentifier, nestedArrays);
+                return this.getRangeFromTypeNode(classLoaded, genericProperties.type, errorIdentifier);
               }
 
               // Check if this node is a predefined type alias
@@ -260,8 +228,6 @@ export class ParameterLoader {
           }
         }
         break;
-      case AST_NODE_TYPES.TSArrayType:
-        return this.getRangeFromTypeNode(classLoaded, typeNode.elementType, errorIdentifier, nestedArrays + 1);
       case AST_NODE_TYPES.TSBooleanKeyword:
         return { type: 'raw', value: 'boolean' };
       case AST_NODE_TYPES.TSNumberKeyword:
@@ -271,26 +237,14 @@ export class ParameterLoader {
       case AST_NODE_TYPES.TSTypeLiteral:
         return { type: 'hash', value: typeNode };
       case AST_NODE_TYPES.TSUnionType:
-        // Remove undefined types in the union, as they imply an optional field.
-        // eslint-disable-next-line no-case-declarations
-        const children = typeNode.types
-          .filter(type => type.type !== AST_NODE_TYPES.TSUndefinedKeyword)
-          .map(type => this.getRangeFromTypeNode(classLoaded, type, errorIdentifier, nestedArrays));
-        if (children.length === 1) {
-          return children[0];
-        }
-        return {
-          type: 'union',
-          elements: children,
-        };
       case AST_NODE_TYPES.TSIntersectionType:
         return {
-          type: 'intersection',
+          type: typeNode.type === AST_NODE_TYPES.TSUnionType ? 'union' : 'intersection',
           elements: typeNode.types
-            .map(type => this.getRangeFromTypeNode(classLoaded, type, errorIdentifier, nestedArrays)),
+            .map(type => this.getRangeFromTypeNode(classLoaded, type, errorIdentifier)),
         };
       case AST_NODE_TYPES.TSParenthesizedType:
-        return this.getRangeFromTypeNode(classLoaded, typeNode.typeAnnotation, errorIdentifier, nestedArrays);
+        return this.getRangeFromTypeNode(classLoaded, typeNode.typeAnnotation, errorIdentifier);
       case AST_NODE_TYPES.TSUnknownKeyword:
       case AST_NODE_TYPES.TSUndefinedKeyword:
       case AST_NODE_TYPES.TSVoidKeyword:
@@ -301,12 +255,17 @@ export class ParameterLoader {
         return {
           type: 'tuple',
           elements: typeNode.elementTypes
-            .map(type => this.getRangeFromTypeNode(classLoaded, type, errorIdentifier, nestedArrays)),
+            .map(type => this.getRangeFromTypeNode(classLoaded, type, errorIdentifier)),
+        };
+      case AST_NODE_TYPES.TSArrayType:
+        return {
+          type: 'array',
+          value: this.getRangeFromTypeNode(classLoaded, typeNode.elementType, errorIdentifier),
         };
       case AST_NODE_TYPES.TSRestType:
         return {
           type: 'rest',
-          value: this.getRangeFromTypeNode(classLoaded, typeNode.typeAnnotation, errorIdentifier, nestedArrays),
+          value: this.getRangeFromTypeNode(classLoaded, typeNode.typeAnnotation, errorIdentifier),
         };
     }
     throw new Error(`Could not understand parameter type ${typeNode.type} of ${errorIdentifier
@@ -318,22 +277,84 @@ export class ParameterLoader {
     field: Identifier | TSPropertySignature,
     commentData: CommentData,
   ): ParameterRangeUnresolved {
-    // Check comment data
-    if (commentData.range) {
-      return commentData.range;
-    }
+    let range: ParameterRangeUnresolved | undefined;
 
     // Check the typescript raw field type
     if (field.typeAnnotation) {
-      return this.getRangeFromTypeNode(
+      range = this.getRangeFromTypeNode(
         classLoaded,
         field.typeAnnotation.typeAnnotation,
         this.getErrorIdentifierField(classLoaded, field),
       );
     }
 
-    throw new Error(`Missing field type on ${this.getFieldName(classLoaded, field)
-    } in ${classLoaded.localName} at ${classLoaded.fileName}`);
+    // Throw if no range was found
+    if (!range) {
+      throw new Error(`Missing field type on ${this.getFieldName(classLoaded, field)
+      } in ${classLoaded.localName} at ${classLoaded.fileName}`);
+    }
+
+    // If the field has the '?' annotation, explicitly allow undefined as value to make it be considered optional.
+    if (field.optional) {
+      if (range.type === 'union') {
+        // Don't add undefined element if it is already present
+        if (!range.elements.some(element => element.type === 'undefined')) {
+          range.elements.push({ type: 'undefined' });
+        }
+      } else {
+        range = {
+          type: 'union',
+          elements: [
+            range,
+            { type: 'undefined' },
+          ],
+        };
+      }
+    }
+
+    // Check comment data
+    if (commentData.range) {
+      range = this.overrideRawRange(range, commentData.range);
+    }
+
+    return range;
+  }
+
+  /**
+   * Apply a range override on the given range
+   * @param range The range to override in.
+   * @param override The range set set.
+   */
+  public overrideRawRange(
+    range: ParameterRangeUnresolved,
+    override: ParameterRangeUnresolved,
+  ): ParameterRangeUnresolved {
+    switch (range.type) {
+      case 'raw':
+        // Only raw types are replaced
+        return override;
+      case 'undefined':
+      case 'override':
+      case 'interface':
+      case 'hash':
+        // Override has no effect here
+        return range;
+      case 'union':
+      case 'intersection':
+      case 'tuple':
+        // Recursively apply override operation on elements
+        return {
+          type: range.type,
+          elements: range.elements.map(element => this.overrideRawRange(element, override)),
+        };
+      case 'rest':
+      case 'array':
+        // Recursively apply override operation on value
+        return {
+          type: range.type,
+          value: this.overrideRawRange(range.value, override),
+        };
+    }
   }
 
   public getFieldComment(commentData: CommentData): string | undefined {
@@ -447,15 +468,6 @@ export interface ParameterDataField<R> {
    */
   name: string;
   /**
-   * If only one value for the given parameter can exist.
-   * This is always false for an array.
-   */
-  unique: boolean;
-  /**
-   * If the parameter MUST have a value.
-   */
-  required: boolean;
-  /**
    * The range of the parameter values.
    */
   range: R;
@@ -526,6 +538,9 @@ export type ParameterRangeUnresolved = {
 } | {
   type: 'rest';
   value: ParameterRangeUnresolved;
+} | {
+  type: 'array';
+  value: ParameterRangeUnresolved;
 };
 
 export type ParameterRangeResolved = {
@@ -553,6 +568,9 @@ export type ParameterRangeResolved = {
   elements: ParameterRangeResolved[];
 } | {
   type: 'rest';
+  value: ParameterRangeResolved;
+} | {
+  type: 'array';
   value: ParameterRangeResolved;
 };
 

@@ -106,9 +106,10 @@ export class ParameterResolver {
           type: range.type,
           elements: await Promise.all(range.elements.map(child => this.resolveRange(child, owningClass))),
         };
+      case 'array':
       case 'rest':
         return {
-          type: 'rest',
+          type: range.type,
           value: await this.resolveRange(range.value, owningClass),
         };
     }

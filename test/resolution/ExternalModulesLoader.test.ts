@@ -480,7 +480,7 @@ describe('ExternalModulesLoader', () => {
     });
 
     it('should ignore components in packages that are being generated', () => {
-      const classIndex: ClassIndex<ClassLoaded> = <any> {
+      const classIndex: ClassIndex<ClassLoaded> = <any>{
         Class1: {
           type: 'class',
           localName: 'Class1',
@@ -502,12 +502,36 @@ describe('ExternalModulesLoader', () => {
           packageName: 'my-package',
         },
       };
-      packagesBeingGenerated.package1 = <any> true;
-      packagesBeingGenerated.package3 = <any> true;
+      packagesBeingGenerated.package1 = <any>true;
+      packagesBeingGenerated.package3 = <any>true;
       expect(loader.findExternalPackages(classIndex, {}))
         .toEqual([
           'package2',
         ]);
+    });
+
+    it('should handle array constructor parameters', () => {
+      const constructors: ClassIndex<ConstructorData<ParameterRangeResolved>> = <any> {
+        Class1: {
+          parameters: [
+            {
+              range: {
+                type: 'array',
+                value: {
+                  type: 'class',
+                  value: {
+                    type: 'class',
+                    localName: 'Class1',
+                    packageName: 'package1',
+                  },
+                },
+              },
+            },
+          ],
+        },
+      };
+      expect(loader.findExternalPackages({}, constructors))
+        .toEqual([ 'package1' ]);
     });
   });
 

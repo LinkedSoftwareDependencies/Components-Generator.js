@@ -522,11 +522,7 @@ export class ComponentConstructor {
 
     // Create sub parameters for key and value
     const subParameters: ParameterDefinition[] = [];
-    subParameters.push({
-      '@id': idKey,
-      required: true,
-      unique: true,
-    });
+    subParameters.push({ '@id': idKey });
     const value = await this.parameterDataToConstructorArgument(
       context,
       externalContextsCallback,
@@ -536,20 +532,15 @@ export class ComponentConstructor {
       idValue,
       scope,
     );
-    subParameters[subParameters.length - 1].required = true;
-    subParameters[subParameters.length - 1].unique = true;
 
     // Construct parameter, which has key and value as sub-parameters
     const parameter: ParameterDefinition = {
       '@id': idCollectEntries,
       range: {
-        '@id': this.fieldNameToId(context, classReference, `${parameterData.name}_range`, scope),
-        parameters: subParameters,
+        '@type': 'ParameterRangeCollectEntries',
+        parameterRangeCollectEntriesParameters: subParameters,
       },
     };
-    // Params for collected entries are never required, and can have more than one entry.
-    parameterData.unique = false;
-    parameterData.required = false;
     this.populateOptionalParameterFields(parameter, parameterData);
     parameters.push(parameter);
 
@@ -584,7 +575,9 @@ export class ComponentConstructor {
       case 'nested':
         throw new Error('Composition of nested fields is unsupported');
       case 'undefined':
-        return;
+        return {
+          '@type': 'ParameterRangeUndefined',
+        };
       case 'union':
       case 'intersection':
       case 'tuple':
@@ -605,8 +598,9 @@ export class ComponentConstructor {
             .map(child => this.constructParameterRange(child, context, externalContextsCallback, fieldId))),
         };
       case 'rest':
+      case 'array':
         return {
-          '@type': 'ParameterRangeRest',
+          '@type': range.type === 'rest' ? 'ParameterRangeRest' : 'ParameterRangeArray',
           parameterRangeValue: await this
             .constructParameterRange(range.value, context, externalContextsCallback, fieldId),
         };
@@ -624,12 +618,6 @@ export class ComponentConstructor {
   ): void {
     if (parameterData.comment) {
       parameterDefinition.comment = parameterData.comment;
-    }
-    if ('unique' in parameterData && parameterData.unique) {
-      parameterDefinition.unique = parameterData.unique;
-    }
-    if ('required' in parameterData && parameterData.required) {
-      parameterDefinition.required = parameterData.required;
     }
   }
 }

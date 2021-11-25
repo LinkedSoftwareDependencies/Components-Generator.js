@@ -28,8 +28,6 @@ export interface ComponentDefinition {
 export interface ParameterDefinition {
   '@id': string;
   comment?: string;
-  unique?: boolean;
-  required?: boolean;
   range?: ParameterDefinitionRange;
   default?: DefaultValueDefinition[];
   lazy?: boolean;
@@ -43,9 +41,14 @@ export type ParameterDefinitionRange = string | { '@id': string; parameters: Par
   '@type': 'ParameterRangeUnion' | 'ParameterRangeIntersection' | 'ParameterRangeTuple';
   parameterRangeElements: ParameterDefinitionRange[];
 } | {
-  '@type': 'ParameterRangeRest';
+  '@type': 'ParameterRangeRest' | 'ParameterRangeArray';
   parameterRangeValue: ParameterDefinitionRange;
-} | undefined;
+} | {
+  '@type': 'ParameterRangeUndefined';
+} | {
+  '@type': 'ParameterRangeCollectEntries';
+  'parameterRangeCollectEntriesParameters': ParameterDefinition[];
+};
 
 export type ConstructorArgumentDefinition = string | { '@id': string } | {
   '@id': string;

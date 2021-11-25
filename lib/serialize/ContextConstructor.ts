@@ -1,7 +1,7 @@
 import { PrefetchedDocumentLoader } from 'componentsjs';
 import semverMajor = require('semver/functions/major');
 import type { PackageMetadata } from '../parse/PackageMetadataLoader';
-import type { ComponentDefinitions } from './ComponentDefinitions';
+import type { ComponentDefinitions, ParameterDefinitionRange } from './ComponentDefinitions';
 
 /**
  * Constructs a JSON-LD context for a given package..
@@ -71,13 +71,35 @@ export class ContextConstructor {
           typeScopedContext[parameter['@id'].slice(Math.max(0, component['@id'].length + 1))] = {
             '@id': parameter['@id'],
             ...parameter.range === 'rdf:JSON' ? { '@type': '@json' } : {},
-            ...parameter.unique || parameter.range === 'rdf:JSON' ? {} : { '@container': '@list' },
+            // Mark as list container if range is array
+            ...this.isParameterRangeList(parameter.range) ?
+              { '@container': '@list' } :
+              {},
           };
         }
         (<any> shortcuts[match[0]])['@context'] = typeScopedContext;
       }
     }
     return shortcuts;
+  }
+
+  protected isParameterRangeList(range: ParameterDefinitionRange | undefined): boolean {
+    if (range && typeof range !== 'string' && '@type' in range) {
+      if (range['@type'] === 'ParameterRangeArray' || range['@type'] === 'ParameterRangeCollectEntries') {
+        return true;
+      }
+      if (range['@type'] === 'ParameterRangeUnion' && range.parameterRangeElements.length === 2) {
+        const elementLeft = range.parameterRangeElements[0];
+        const elementRight = range.parameterRangeElements[1];
+        return (this.isParameterRangeUndefined(elementLeft) && this.isParameterRangeList(elementRight)) ||
+          (this.isParameterRangeUndefined(elementRight) && this.isParameterRangeList(elementLeft));
+      }
+    }
+    return false;
+  }
+
+  protected isParameterRangeUndefined(range: ParameterDefinitionRange): boolean {
+    return typeof range !== 'string' && '@type' in range && range['@type'] === 'ParameterRangeUndefined';
   }
 }
 
