@@ -60,6 +60,8 @@ export class Generator {
       typeScopedContexts: this.typeScopedContexts,
     }).load(this.pathDestinations);
 
+    logger.info(`Generating components for ${Object.keys(packageMetadatas).length} package${Object.keys(packageMetadatas).length > 1 ? 's' : ''}`);
+
     // Generate components for all provided paths
     for (const pathDestination of this.pathDestinations) {
       // Load package metadata

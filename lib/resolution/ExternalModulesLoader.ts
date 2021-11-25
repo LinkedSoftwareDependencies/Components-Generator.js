@@ -222,7 +222,8 @@ export class ExternalModulesLoader {
     await componentRegistry.registerAvailableModules();
     const componentFinalizer = new ComponentRegistryFinalizer({
       objectLoader,
-      logger: this.logger,
+      // We pass another logger, because there's no valuable information being logged here related to generation
+      logger: ComponentsManagerBuilder.createLogger('error'),
       componentResources,
       componentRegistry,
     });
