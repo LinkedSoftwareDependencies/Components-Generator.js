@@ -8,11 +8,9 @@ import type { ComponentDefinitions } from './ComponentDefinitions';
  */
 export class ContextConstructor {
   private readonly packageMetadata: PackageMetadata;
-  private readonly typeScopedContexts: boolean;
 
   public constructor(args: ContextConstructorArgs) {
     this.packageMetadata = args.packageMetadata;
-    this.typeScopedContexts = args.typeScopedContexts;
   }
 
   /**
@@ -67,18 +65,16 @@ export class ContextConstructor {
           '@prefix': true,
         };
 
-        // Generate type-scoped context when enabled
-        if (this.typeScopedContexts) {
-          const typeScopedContext: Record<string, Record<string, string>> = {};
-          for (const parameter of component.parameters) {
-            typeScopedContext[parameter['@id'].slice(Math.max(0, component['@id'].length + 1))] = {
-              '@id': parameter['@id'],
-              ...parameter.range === 'rdf:JSON' ? { '@type': '@json' } : {},
-              ...parameter.unique || parameter.range === 'rdf:JSON' ? {} : { '@container': '@list' },
-            };
-          }
-          (<any> shortcuts[match[0]])['@context'] = typeScopedContext;
+        // Generate type-scoped context
+        const typeScopedContext: Record<string, Record<string, string>> = {};
+        for (const parameter of component.parameters) {
+          typeScopedContext[parameter['@id'].slice(Math.max(0, component['@id'].length + 1))] = {
+            '@id': parameter['@id'],
+            ...parameter.range === 'rdf:JSON' ? { '@type': '@json' } : {},
+            ...parameter.unique || parameter.range === 'rdf:JSON' ? {} : { '@container': '@list' },
+          };
         }
+        (<any> shortcuts[match[0]])['@context'] = typeScopedContext;
       }
     }
     return shortcuts;
@@ -87,7 +83,6 @@ export class ContextConstructor {
 
 export interface ContextConstructorArgs {
   packageMetadata: PackageMetadata;
-  typeScopedContexts: boolean;
 }
 
 export interface ContextRaw {

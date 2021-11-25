@@ -37,7 +37,6 @@ export class GeneratorFactory {
           replacementPath: Path.posix.join(packageRootDirectory, config.destination),
         })),
       fileExtension: config.extension,
-      typeScopedContexts: config.typeScopedContexts,
       logLevel: <LogLevel> config.logLevel,
       debugState: config.debugState,
       prefixes: config.modulePrefix,
@@ -70,7 +69,6 @@ export class GeneratorFactory {
       logLevel: 'info',
       modulePrefix: undefined,
       debugState: false,
-      typeScopedContexts: false,
     };
   }
 
@@ -96,9 +94,6 @@ export class GeneratorFactory {
     }
     if (cliArgs.debugState) {
       config.debugState = cliArgs.debugState;
-    }
-    if (cliArgs.typeScopedContexts) {
-      config.typeScopedContexts = cliArgs.typeScopedContexts;
     }
     return config;
   }

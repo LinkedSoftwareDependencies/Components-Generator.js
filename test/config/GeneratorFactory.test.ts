@@ -48,7 +48,6 @@ describe('GeneratorFactory', () => {
         logLevel: 'info',
         modulePrefix: undefined,
         debugState: false,
-        typeScopedContexts: false,
       });
     });
 
@@ -63,7 +62,6 @@ describe('GeneratorFactory', () => {
         logLevel: 'info',
         modulePrefix: undefined,
         debugState: true,
-        typeScopedContexts: false,
       });
     });
 
@@ -82,7 +80,6 @@ describe('GeneratorFactory', () => {
         logLevel: 'info',
         modulePrefix: 'PRE',
         debugState: false,
-        typeScopedContexts: false,
       });
     });
 
@@ -101,7 +98,6 @@ describe('GeneratorFactory', () => {
         logLevel: 'info',
         modulePrefix: 'PRE',
         debugState: true,
-        typeScopedContexts: false,
       });
     });
   });
@@ -117,7 +113,6 @@ describe('GeneratorFactory', () => {
         logLevel: 'info',
         modulePrefix: undefined,
         debugState: false,
-        typeScopedContexts: false,
       });
     });
   });
@@ -137,7 +132,6 @@ describe('GeneratorFactory', () => {
         l: 'info',
         r: 'pre',
         debugState: true,
-        typeScopedContexts: true,
       })).toEqual({
         source: 'lib/',
         destination: 'components/',
@@ -146,7 +140,6 @@ describe('GeneratorFactory', () => {
         logLevel: 'info',
         modulePrefix: 'pre',
         debugState: true,
-        typeScopedContexts: true,
       });
     });
   });

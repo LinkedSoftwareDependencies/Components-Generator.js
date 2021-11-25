@@ -19,14 +19,18 @@ Usage:
        -r prefix               Optional custom JSON-LD module prefix
        --debugState            If a 'componentsjs-generator-debug-state.json' file should be created with debug information
        --help                  Show information about this command
-
-  Experimental options:
-       --typeScopedContexts    If a type-scoped context for each component is to be generated with parameter name aliases
 `);
   process.exit(1);
 }
 
 const args = minimist(process.argv.slice(2));
+
+// TODO: remove in next major version
+if (args.typeScopedContexts) {
+  process.stderr.write(`The flag '--typeScopedContexts' must not be used anymore, as this is default behaviour as of version 3.x\n`);
+  process.exit(1);
+}
+
 if (args.help) {
   showHelp();
 } else {

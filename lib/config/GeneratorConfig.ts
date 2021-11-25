@@ -36,8 +36,4 @@ export interface GeneratorConfig {
    * If a 'componentsjs-generator-debug-state.json' file should be created with debug information.
    */
   debugState: boolean;
-  /**
-   * If a type-scoped context for each component is to be generated with parameter name aliases.
-   */
-  typeScopedContexts: boolean;
 }

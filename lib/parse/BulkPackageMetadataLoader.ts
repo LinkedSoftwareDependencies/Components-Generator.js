@@ -12,12 +12,10 @@ import type { PackageMetadata, PackageMetadataLoader } from './PackageMetadataLo
 export class BulkPackageMetadataLoader {
   private readonly packageMetadataLoader: PackageMetadataLoader;
   private readonly logger: Logger;
-  private readonly typeScopedContexts: boolean;
 
   public constructor(args: BulkPackageMetadataLoaderArgs) {
     this.packageMetadataLoader = args.packageMetadataLoader;
     this.logger = args.logger;
-    this.typeScopedContexts = args.typeScopedContexts;
   }
 
   /**
@@ -40,10 +38,7 @@ export class BulkPackageMetadataLoader {
       try {
         // Load package metadata
         packageMetadata = await this.packageMetadataLoader.load(pathDestination.packageRootDirectory);
-        const contextConstructor = new ContextConstructor({
-          packageMetadata,
-          typeScopedContexts: this.typeScopedContexts,
-        });
+        const contextConstructor = new ContextConstructor({ packageMetadata });
 
         // Save the metadata for later use
         packageMetadatas[packageMetadata.name] = {
@@ -65,7 +60,6 @@ export class BulkPackageMetadataLoader {
 export interface BulkPackageMetadataLoaderArgs {
   packageMetadataLoader: PackageMetadataLoader;
   logger: Logger;
-  typeScopedContexts: boolean;
 }
 
 export interface BulkPackageMetadataOutput {

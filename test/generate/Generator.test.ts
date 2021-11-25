@@ -24,7 +24,6 @@ describe('Generator', () => {
       ],
       fileExtension: 'jsonld',
       ignoreClasses: {},
-      typeScopedContexts: true,
       logLevel: 'info',
       debugState: false,
       prefixes: 'pre',

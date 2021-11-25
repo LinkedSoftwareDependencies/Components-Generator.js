@@ -18,7 +18,6 @@ describe('BulkPackageMetadataLoader', () => {
     loader = new BulkPackageMetadataLoader({
       packageMetadataLoader,
       logger,
-      typeScopedContexts: true,
     });
   });
 

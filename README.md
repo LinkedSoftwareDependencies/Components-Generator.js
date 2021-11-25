@@ -107,9 +107,6 @@ Usage:
        -r prefix               Optional custom JSON-LD module prefix
        --debugState            If a 'componentsjs-generator-debug-state.json' file should be created with debug information
        --help                  Show information about this command
-
-  Experimental options:
-       --typeScopedContexts    If a type-scoped context for each component is to be generated with parameter name aliases
 ```
 
 **Note:** This generator will read `.d.ts` files,
@@ -130,8 +127,7 @@ The following shows an example of the possible options:
   "ignoreComponents": [ "Class1", "Class2" ],
   "logLevel": "info",
   "modulePrefix": "myprefix",
-  "debugState": "true",
-  "typeScopedContexts": true
+  "debugState": "true"
 }
 ```
 

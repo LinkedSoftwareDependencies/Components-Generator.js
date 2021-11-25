@@ -69,7 +69,7 @@ describe('ComponentConstructor', () => {
       },
       typesPath: '',
     };
-    const contextConstructor = new ContextConstructorMocked({ packageMetadata, typeScopedContexts: false });
+    const contextConstructor = new ContextConstructorMocked({ packageMetadata });
     pathDestination = {
       packageRootDirectory: Path.normalize('/docs/package'),
       originalPath: 'src',
@@ -787,7 +787,7 @@ describe('ComponentConstructor', () => {
             contexts: {},
           }),
           skipValidation: true,
-        }).parse(new ContextConstructorMocked({ packageMetadata, typeScopedContexts: false }).constructContext()),
+        }).parse(new ContextConstructorMocked({ packageMetadata }).constructContext()),
       };
       expect(await ctor.classNameToId(context, externalContextsCallback, {
         packageName: 'other-package',

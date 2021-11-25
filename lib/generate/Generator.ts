@@ -26,7 +26,6 @@ export class Generator {
   private readonly pathDestinations: PathDestinationDefinition[];
   private readonly fileExtension: string;
   private readonly ignoreClasses: Record<string, boolean>;
-  private readonly typeScopedContexts: boolean;
   private readonly logLevel: LogLevel;
   private readonly debugState: boolean;
   private readonly prefixes?: string | Record<string, string>;
@@ -36,7 +35,6 @@ export class Generator {
     this.pathDestinations = args.pathDestinations;
     this.fileExtension = args.fileExtension;
     this.ignoreClasses = args.ignoreClasses;
-    this.typeScopedContexts = args.typeScopedContexts;
     this.logLevel = args.logLevel;
     this.debugState = args.debugState;
     this.prefixes = args.prefixes;
@@ -57,7 +55,6 @@ export class Generator {
         prefixes: this.prefixes,
       }),
       logger,
-      typeScopedContexts: this.typeScopedContexts,
     }).load(this.pathDestinations);
 
     logger.info(`Generating components for ${Object.keys(packageMetadatas).length} package${Object.keys(packageMetadatas).length > 1 ? 's' : ''}`);
@@ -95,10 +92,7 @@ export class Generator {
       const externalComponents = await externalModulesLoader.loadExternalComponents(require, externalPackages);
 
       // Create components
-      const contextConstructor = new ContextConstructor({
-        packageMetadata,
-        typeScopedContexts: this.typeScopedContexts,
-      });
+      const contextConstructor = new ContextConstructor({ packageMetadata });
       const componentConstructor = new ComponentConstructor({
         packageMetadata,
         fileExtension: this.fileExtension,
@@ -140,7 +134,6 @@ export interface GeneratorArgs {
   pathDestinations: PathDestinationDefinition[];
   fileExtension: string;
   ignoreClasses: Record<string, boolean>;
-  typeScopedContexts: boolean;
   logLevel: LogLevel;
   debugState: boolean;
   prefixes?: string | Record<string, string>;
