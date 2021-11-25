@@ -1694,6 +1694,63 @@ describe('ComponentConstructor', () => {
       ]);
     });
 
+    it('should handle a nested field in a union with indexed parameter definition', async() => {
+      const parameters: ParameterDefinition[] = [];
+      expect(await ctor
+        .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
+          type: 'field',
+          name: 'fieldA',
+          range: {
+            type: 'union',
+            elements: [
+              {
+                type: 'nested',
+                value: [
+                  {
+                    type: 'index',
+                    domain: 'string',
+                    range: { type: 'raw', value: 'boolean' },
+                    comment: 'Hi1',
+                  },
+                ],
+              },
+              {
+                type: 'undefined',
+              },
+            ],
+          },
+          comment: 'Hi',
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_fieldA', scope)).toEqual({
+        '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA__constructorArgument',
+        fields: [
+          {
+            collectEntries: 'mp:components/a/b/file-param.jsonld#MyClass_fieldA',
+            key: 'mp:components/a/b/file-param.jsonld#MyClass_fieldA_key',
+            value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA_value' },
+          },
+        ],
+      });
+      expect(parameters).toEqual([
+        {
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA',
+          comment: 'Hi',
+          range: {
+            '@type': 'ParameterRangeCollectEntries',
+            parameterRangeCollectEntriesParameters: [
+              {
+                '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA_key',
+              },
+              {
+                '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA_value',
+                comment: 'Hi1',
+                range: 'xsd:boolean',
+              },
+            ],
+          },
+        },
+      ]);
+    });
+
     it('should handle a parameter with default raw value', async() => {
       const parameters: ParameterDefinition[] = [];
       expect(await ctor

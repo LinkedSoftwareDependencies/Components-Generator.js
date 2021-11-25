@@ -382,11 +382,17 @@ export class ComponentConstructor {
       }
     }
 
-    if (parameterData.range.type === 'nested') {
+    if (parameterData.range.type === 'nested' ||
+      (parameterData.range.type === 'union' &&
+        parameterData.range.elements.some(element => element.type === 'nested'))) {
+      // TODO: this union type check is not great, so solve this when refactoring nested fields
       // Create a hash object with `fields` entries.
       // Each entry's value is (indirectly) recursively handled by this method again.
       const fields: ConstructorFieldDefinition[] = [];
-      for (const subParamData of parameterData.range.value) {
+      const subParams: ParameterData<ParameterRangeResolved>[] = parameterData.range.type === 'nested' ?
+        parameterData.range.value :
+        (<any> parameterData.range.elements.find(element => element.type === 'nested')).value;
+      for (const subParamData of subParams) {
         fields.push(await this.constructFieldDefinitionNested(
           context,
           externalContextsCallback,
