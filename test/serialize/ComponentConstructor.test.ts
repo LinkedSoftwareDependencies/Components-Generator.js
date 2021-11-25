@@ -5,7 +5,7 @@ import { ContextParser } from 'jsonld-context-parser';
 import type {
   ClassIndex,
   ClassLoaded,
-  ClassReferenceLoaded,
+  ClassReferenceLoaded, ClassReferenceLoadedWithoutType,
   InterfaceLoaded,
 } from '../../lib/parse/ClassIndex';
 import type { ConstructorData } from '../../lib/parse/ConstructorLoader';
@@ -22,7 +22,7 @@ import { ContextConstructorMocked } from '../ContextConstructorMocked';
 
 describe('ComponentConstructor', () => {
   let ctor: ComponentConstructor;
-  let classReference: ClassReferenceLoaded;
+  let classReference: ClassReferenceLoadedWithoutType;
   let externalComponents: ExternalComponents;
   let context: JsonLdContextNormalized;
   let externalContextsCallback: ExternalContextCallback;
@@ -2063,6 +2063,15 @@ describe('ComponentConstructor', () => {
         externalContextsCallback,
         'mp:components/a/b/file-param.jsonld#MyClass_field',
       )).toEqual('rdf:JSON');
+    });
+
+    it('should construct a literal parameter range', async() => {
+      expect(await ctor.constructParameterRange(
+        { type: 'literal', value: 'abc' },
+        context,
+        externalContextsCallback,
+        'mp:components/a/b/file-param.jsonld#MyClass_field',
+      )).toEqual({ '@type': 'ParameterRangeLiteral', value: 'abc' });
     });
 
     it('should construct a class parameter range', async() => {

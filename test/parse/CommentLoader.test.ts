@@ -152,7 +152,7 @@ export class C{
     async function createLoader() {
       const loader = new CommentLoader();
       const classLoader = new ClassLoader({ resolutionContext, logger, commentLoader: loader });
-      const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
       const constructorLoader = new ConstructorLoader({ commentLoader: loader });
       const constructor = constructorLoader.getConstructor(classLoaded)!.constructor;
       return { loader, constructor, classLoaded };
@@ -194,7 +194,7 @@ export class C{
     async function createLoader() {
       const loader = new CommentLoader();
       const classLoader = new ClassLoader({ resolutionContext, logger, commentLoader: loader });
-      const iface = await classLoader.loadClassDeclaration(clazz, true);
+      const iface = await classLoader.loadClassDeclaration(clazz, true, false);
       const field: any = iface.declaration.body.body[0];
       return { loader, field, iface };
     }
@@ -273,7 +273,7 @@ export class C{
     async function createLoader() {
       const loader = new CommentLoader();
       const classLoader = new ClassLoader({ resolutionContext, logger, commentLoader: loader });
-      const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
       return { loader, classLoaded };
     }
 
@@ -662,7 +662,7 @@ export class A{}`,
     async function createLoader() {
       const loader = new CommentLoader();
       const classLoader = new ClassLoader({ resolutionContext, logger, commentLoader: loader });
-      const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
       const constructorLoader = new ConstructorLoader({ commentLoader: loader });
       const field = <any> (constructorLoader.getConstructor(classLoaded)!.constructor).value.params[0];
       return { loader, field, classLoaded };

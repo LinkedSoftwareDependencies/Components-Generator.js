@@ -42,7 +42,7 @@ describe('ParameterLoader', () => {
       resolutionContext.contentsOverrides = {
         'file.d.ts': definition,
       };
-      const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
       const constructorChain = constructorLoader.getConstructorChain(classLoaded);
       const parameterLoader = new ParameterLoader({ commentLoader });
 
@@ -531,7 +531,7 @@ export class A{
       resolutionContext.contentsOverrides = {
         'file.d.ts': definition,
       };
-      const classLoaded = <InterfaceLoaded> await classLoader.loadClassDeclaration(clazz, true);
+      const classLoaded = <InterfaceLoaded> await classLoader.loadClassDeclaration(clazz, true, false);
       const parameterLoader = new ParameterLoader({ commentLoader });
 
       return { iface: classLoaded, parameterLoader };
@@ -710,7 +710,7 @@ export interface A{
   constructor(fieldA: ${definition}) {}
 }`,
       };
-      const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
       const hash: TSTypeLiteral = (<any> constructorLoader.getConstructor(classLoaded)!.constructor
         .value.params[0]).typeAnnotation.typeAnnotation;
       const parameterLoader = new ParameterLoader({ commentLoader });
@@ -1155,7 +1155,7 @@ export interface A{
   constructor(${fieldDeclaration}) {}
 }`,
       };
-      const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
       const field: Identifier = <any> (constructorLoader.getConstructor(classLoaded)!.constructor)
         .value.params[0];
       const parameterLoader = new ParameterLoader({ commentLoader });
@@ -1293,7 +1293,7 @@ export interface A{
   constructor(fieldA: T) {}
 }`,
       };
-      const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
       const field: Identifier = <any> (constructorLoader.getConstructor(classLoaded)!.constructor)
         .value.params[0];
       const parameterLoader = new ParameterLoader({ commentLoader });
@@ -1308,7 +1308,7 @@ export interface A{
   constructor(fieldA: T) {}
 }`,
       };
-      const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
       const field: Identifier = <any> (constructorLoader.getConstructor(classLoaded)!.constructor)
         .value.params[0];
       const parameterLoader = new ParameterLoader({ commentLoader });
@@ -1323,7 +1323,7 @@ export interface A{
   constructor(fieldA: T) {}
 }`,
       };
-      const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
       const field: Identifier = <any> (constructorLoader.getConstructor(classLoaded)!.constructor)
         .value.params[0];
       const parameterLoader = new ParameterLoader({ commentLoader });
@@ -1507,6 +1507,26 @@ export interface A{
             },
           ],
         });
+    });
+
+    it('should get the range of a literal number field type', async() => {
+      expect(await getFieldRange('fieldA: 123', {}))
+        .toEqual({ type: 'literal', value: 123 });
+    });
+
+    it('should get the range of a literal string field type', async() => {
+      expect(await getFieldRange('fieldA: "abc"', {}))
+        .toEqual({ type: 'literal', value: 'abc' });
+    });
+
+    it('should get the range of a literal boolean field type', async() => {
+      expect(await getFieldRange('fieldA: true', {}))
+        .toEqual({ type: 'literal', value: true });
+    });
+
+    it('should error on a literal of unsupported type', async() => {
+      await expect(async() => await getFieldRange('fieldA: 100n', {}))
+        .rejects.toThrow(new Error(`Could not understand parameter type TSLiteralType of field fieldA in A at file`));
     });
   });
 
@@ -1764,7 +1784,7 @@ export interface A{
   constructor(field: ${fieldDeclaration}) {}
 }`,
       };
-      const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
       const field: any = <any>(constructorLoader.getConstructor(classLoaded)!.constructor)
         .value.params[0];
       const indexSignature: TSIndexSignature = field.typeAnnotation.typeAnnotation.members[0];
@@ -1824,7 +1844,7 @@ export interface A{
   constructor(field: ${fieldDeclaration}) {}
 }`,
       };
-      const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
       const field: any = <any>(constructorLoader.getConstructor(classLoaded)!.constructor)
         .value.params[0];
       const indexSignature: TSIndexSignature = field.typeAnnotation.typeAnnotation.members[0];
@@ -1866,7 +1886,7 @@ export interface A{
   constructor(a: ${type}) {}
 }`,
       };
-      const classLoaded = await classLoader.loadClassDeclaration(clazz, false);
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
       const field: Identifier = <any> (constructorLoader.getConstructor(classLoaded)!.constructor)
         .value.params[0];
       const parameterLoader = new ParameterLoader({ commentLoader });

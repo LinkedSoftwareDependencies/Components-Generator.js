@@ -1,7 +1,8 @@
 import * as Path from 'path';
 import type { ContextParser, JsonLdContextNormalized } from 'jsonld-context-parser';
 import semverMajor = require('semver/functions/major');
-import type { ClassIndex, ClassLoaded, ClassReference, ClassReferenceLoaded } from '../parse/ClassIndex';
+import type { ClassIndex, ClassLoaded, ClassReference, ClassReferenceLoadedWithoutType } from '../parse/ClassIndex';
+
 import type { ConstructorData } from '../parse/ConstructorLoader';
 import type { PackageMetadata } from '../parse/PackageMetadataLoader';
 import type { DefaultNested, DefaultValue, ParameterData, ParameterRangeResolved } from '../parse/ParameterLoader';
@@ -22,7 +23,7 @@ export class ComponentConstructor {
   private readonly fileExtension: string;
   private readonly contextConstructor: ContextConstructor;
   private readonly pathDestination: PathDestinationDefinition;
-  private readonly classAndInterfaceIndex: ClassIndex<ClassReferenceLoaded>;
+  private readonly classAndInterfaceIndex: ClassIndex<ClassReferenceLoadedWithoutType>;
   private readonly classConstructors: ClassIndex<ConstructorData<ParameterRangeResolved>>;
   private readonly externalComponents: ExternalComponents;
   private readonly contextParser: ContextParser;
@@ -158,7 +159,7 @@ export class ComponentConstructor {
   public async constructComponent(
     context: JsonLdContextNormalized,
     externalContextsCallback: ExternalContextCallback,
-    classReference: ClassReferenceLoaded,
+    classReference: ClassReferenceLoadedWithoutType,
     constructorData: ConstructorData<ParameterRangeResolved>,
   ): Promise<ComponentDefinition> {
     // Fill in parameters and constructor arguments
@@ -576,6 +577,11 @@ export class ComponentConstructor {
       case 'raw':
       case 'override':
         return range.value === 'json' ? 'rdf:JSON' : `xsd:${range.value}`;
+      case 'literal':
+        return {
+          '@type': 'ParameterRangeLiteral',
+          value: range.value,
+        };
       case 'class':
         return await this.classNameToId(context, externalContextsCallback, range.value);
       case 'nested':
@@ -633,7 +639,7 @@ export interface ComponentConstructorArgs {
   fileExtension: string;
   contextConstructor: ContextConstructor;
   pathDestination: PathDestinationDefinition;
-  classAndInterfaceIndex: ClassIndex<ClassReferenceLoaded>;
+  classAndInterfaceIndex: ClassIndex<ClassReferenceLoadedWithoutType>;
   classConstructors: ClassIndex<ConstructorData<ParameterRangeResolved>>;
   externalComponents: ExternalComponents;
   contextParser: ContextParser;

@@ -1,4 +1,9 @@
-import type { ClassDeclaration, TSInterfaceDeclaration, TypeNode } from '@typescript-eslint/types/dist/ts-estree';
+import type {
+  ClassDeclaration,
+  TSInterfaceDeclaration,
+  TSTypeAliasDeclaration,
+  TypeNode,
+} from '@typescript-eslint/types/dist/ts-estree';
 import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
 
 /**
@@ -23,7 +28,12 @@ export interface ClassReference {
 /**
  * A loaded reference.
  */
-export type ClassReferenceLoaded = ClassLoaded | InterfaceLoaded;
+export type ClassReferenceLoaded = ClassLoaded | InterfaceLoaded | TypeLoaded;
+
+/**
+ * A loaded reference without type aliases.
+ */
+export type ClassReferenceLoadedWithoutType = ClassLoaded | InterfaceLoaded;
 
 /**
  * A loaded class with a full class declaration.
@@ -74,4 +84,21 @@ export interface InterfaceLoaded extends ClassReference {
   comment?: string;
   // The generic types of this class
   generics: GenericTypes;
+}
+
+/**
+ * A loaded type aliases with a full type declaration.
+ */
+export interface TypeLoaded extends ClassReference {
+  type: 'type';
+  // The name of the interface within the file.
+  localName: string;
+  // The name of the file the interface is defined in.
+  fileName: string;
+  // The loaded type declaration.
+  declaration: TSTypeAliasDeclaration;
+  // The full AST the interface was present in.
+  ast: AST<TSESTreeOptions>;
+  // The tsdoc comment of this class
+  comment?: string;
 }

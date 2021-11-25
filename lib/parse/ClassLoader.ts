@@ -1,10 +1,21 @@
 import * as Path from 'path';
-import type { ClassDeclaration, TSInterfaceDeclaration } from '@typescript-eslint/types/dist/ts-estree';
+import type {
+  ClassDeclaration,
+  TSInterfaceDeclaration,
+  TSTypeAliasDeclaration,
+} from '@typescript-eslint/types/dist/ts-estree';
 import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import type { Logger } from 'winston';
 import type { ResolutionContext } from '../resolution/ResolutionContext';
-import type { ClassLoaded, ClassReference, ClassReferenceLoaded, GenericTypes, InterfaceLoaded } from './ClassIndex';
+import type {
+  ClassLoaded,
+  ClassReference,
+  ClassReferenceLoaded,
+  GenericTypes,
+  InterfaceLoaded,
+  TypeLoaded,
+} from './ClassIndex';
 import type { CommentLoader } from './CommentLoader';
 
 /**
@@ -88,22 +99,38 @@ export class ClassLoader {
    * Classes can either be defined in this file (exported or not), or imported from another file.
    * @param classReference The reference to a class.
    * @param considerInterfaces If the class reference is allows to refer to an interface, as well as a class.
+   * @param considerTypes If the class reference is allows to refer to a type alias, as well as a class.
    */
-  public async loadClassDeclaration<CI extends boolean>(classReference: ClassReference, considerInterfaces: CI):
-  Promise<CI extends true ? (ClassLoaded | InterfaceLoaded) : ClassLoaded> {
+  public async loadClassDeclaration<CI extends boolean, CT extends boolean>(
+    classReference: ClassReference,
+    considerInterfaces: CI,
+    considerTypes: CT,
+  ): Promise<CI extends true ?
+      (CT extends true ? (ClassLoaded | InterfaceLoaded | TypeLoaded) : (ClassLoaded | InterfaceLoaded)) :
+      (CT extends true ? (ClassLoaded | TypeLoaded) : (ClassLoaded))> {
+    let targetString = 'class';
+    if (considerInterfaces) {
+      targetString += ' or interface';
+    }
+    if (considerTypes) {
+      targetString += ' or type';
+    }
+
     // Load the class as an AST
     let ast;
     try {
       ast = await this.resolutionContext.parseTypescriptFile(classReference.fileName);
     } catch (error: unknown) {
-      throw new Error(`Could not load ${considerInterfaces ? 'class or interface' : 'class'} ${classReference.localName} from ${classReference.fileName}:\n${(<Error> error).message}`);
+      throw new Error(`Could not load ${targetString} ${classReference.localName} from ${classReference.fileName}:\n${(<Error> error).message}`);
     }
 
     const {
       exportedClasses,
       exportedInterfaces,
+      exportedTypes,
       declaredClasses,
       declaredInterfaces,
+      declaredTypes,
       importedElements,
       exportedImportedAll,
       exportedImportedElements,
@@ -162,14 +189,44 @@ export class ClassLoader {
       }
     }
 
+    // Only consider types if explicitly enabled
+    if (considerTypes) {
+      if (classReference.localName in exportedTypes) {
+        const declaration = exportedTypes[classReference.localName];
+        return <any> this.enhanceLoadedWithComment(<TypeLoaded> {
+          type: 'type',
+          ...classReference,
+          declaration,
+          ast,
+        });
+      }
+      if (classReference.localName in declaredTypes) {
+        const declaration = declaredTypes[classReference.localName];
+        return <any> this.enhanceLoadedWithComment(<TypeLoaded> {
+          type: 'type',
+          ...classReference,
+          declaration,
+          ast,
+        });
+      }
+    }
+
     // If the class is available via an import, follow that import link
     if (classReference.localName in importedElements) {
-      return this.loadClassDeclaration(importedElements[classReference.localName], considerInterfaces);
+      return this.loadClassDeclaration(
+        importedElements[classReference.localName],
+        considerInterfaces,
+        considerTypes,
+      );
     }
 
     // If the class is available via an exported import, follow that import link
     if (classReference.localName in exportedImportedElements) {
-      return this.loadClassDeclaration(exportedImportedElements[classReference.localName], considerInterfaces);
+      return this.loadClassDeclaration(
+        exportedImportedElements[classReference.localName],
+        considerInterfaces,
+        considerTypes,
+      );
     }
 
     // If we still haven't found the class, iterate over all export all's
@@ -179,13 +236,13 @@ export class ClassLoader {
           localName: classReference.localName,
           ...subFile,
           fileNameReferenced: classReference.fileNameReferenced,
-        }, considerInterfaces);
+        }, considerInterfaces, considerTypes);
       } catch {
         // Ignore class not found errors
       }
     }
 
-    throw new Error(`Could not load ${considerInterfaces ? 'class or interface' : 'class'} ${classReference.localName} from ${classReference.fileName}`);
+    throw new Error(`Could not load ${targetString} ${classReference.localName} from ${classReference.fileName}`);
   }
 
   /**
@@ -294,11 +351,13 @@ export class ClassLoader {
   public getClassElements(packageName: string, fileName: string, ast: AST<TSESTreeOptions>): ClassElements {
     const exportedClasses: Record<string, ClassDeclaration> = {};
     const exportedInterfaces: Record<string, TSInterfaceDeclaration> = {};
+    const exportedTypes: Record<string, TSTypeAliasDeclaration> = {};
     const exportedImportedElements: Record<string, ClassReference> = {};
     const exportedImportedAll: { packageName: string; fileName: string; fileNameReferenced: string }[] = [];
     const exportedUnknowns: Record<string, string> = {};
     const declaredClasses: Record<string, ClassDeclaration> = {};
     const declaredInterfaces: Record<string, TSInterfaceDeclaration> = {};
+    const declaredTypes: Record<string, TSTypeAliasDeclaration> = {};
     const importedElements: Record<string, ClassReference> = {};
 
     for (const statement of ast.body) {
@@ -314,6 +373,9 @@ export class ClassLoader {
           statement.declaration.type === AST_NODE_TYPES.TSInterfaceDeclaration) {
           // Form: `export interface A{}`
           exportedInterfaces[statement.declaration.id.name] = statement.declaration;
+        } else if (statement.declaration && statement.declaration.type === AST_NODE_TYPES.TSTypeAliasDeclaration) {
+          // Form: `export type A = ...`
+          exportedTypes[statement.declaration.id.name] = statement.declaration;
         } else if (statement.source &&
           statement.source.type === AST_NODE_TYPES.Literal &&
           typeof statement.source.value === 'string') {
@@ -343,6 +405,9 @@ export class ClassLoader {
       } else if (statement.type === AST_NODE_TYPES.TSInterfaceDeclaration && statement.id) {
         // Form: `declare interface A {}`
         declaredInterfaces[statement.id.name] = statement;
+      } else if (statement.type === AST_NODE_TYPES.TSTypeAliasDeclaration && statement.id) {
+        // Form: `declare type A = ...`
+        declaredTypes[statement.id.name] = statement;
       } else if (statement.type === AST_NODE_TYPES.ImportDeclaration &&
         statement.source.type === AST_NODE_TYPES.Literal &&
         typeof statement.source.value === 'string') {
@@ -365,11 +430,13 @@ export class ClassLoader {
     return {
       exportedClasses,
       exportedInterfaces,
+      exportedTypes,
       exportedImportedElements,
       exportedImportedAll,
       exportedUnknowns,
       declaredClasses,
       declaredInterfaces,
+      declaredTypes,
       importedElements,
     };
   }
@@ -389,6 +456,8 @@ export interface ClassElements {
   exportedClasses: Record<string, ClassDeclaration>;
   // Interfaces that have been declared in a file via `export interface A`
   exportedInterfaces: Record<string, TSInterfaceDeclaration>;
+  // Types that have been declared in a file via `export type A = ...`
+  exportedTypes: Record<string, TSTypeAliasDeclaration>;
   // Elements that have been exported via `export { A as B } from "b"`
   exportedImportedElements: Record<string, ClassReference>;
   // Exports via `export * from "b"`
@@ -399,6 +468,8 @@ export interface ClassElements {
   declaredClasses: Record<string, ClassDeclaration>;
   // Interfaces that have been declared in a file via `declare interface A`
   declaredInterfaces: Record<string, TSInterfaceDeclaration>;
+  // Types that have been declared in a file via `declare type A = ...`
+  declaredTypes: Record<string, TSTypeAliasDeclaration>;
   // Elements that are imported from elsewhere via `import {A} from ''`
   importedElements: Record<string, ClassReference>;
 }

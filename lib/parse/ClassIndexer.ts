@@ -3,7 +3,13 @@
  */
 import type { Logger } from 'winston';
 import type { ClassFinder } from './ClassFinder';
-import type { ClassIndex, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
+import type {
+  ClassIndex,
+  ClassReference,
+  ClassReferenceLoaded,
+  ClassReferenceLoadedWithoutType,
+  InterfaceLoaded,
+} from './ClassIndex';
 import type { ClassLoader } from './ClassLoader';
 
 export class ClassIndexer {
@@ -23,8 +29,10 @@ export class ClassIndexer {
    * Load all class references in the given class index.
    * @param classReferences An index of class references.
    */
-  public async createIndex(classReferences: ClassIndex<ClassReference>): Promise<ClassIndex<ClassReferenceLoaded>> {
-    const classIndex: ClassIndex<ClassReferenceLoaded> = {};
+  public async createIndex(
+    classReferences: ClassIndex<ClassReference>,
+  ): Promise<ClassIndex<ClassReferenceLoadedWithoutType>> {
+    const classIndex: ClassIndex<ClassReferenceLoadedWithoutType> = {};
 
     for (const [ className, classReference ] of Object.entries(classReferences)) {
       if (!(className in this.ignoreClasses)) {
@@ -40,10 +48,10 @@ export class ClassIndexer {
    * such as its declaration and loaded super class referenced.
    * @param classReference The reference to a class or interface.
    */
-  public async loadClassChain(classReference: ClassReference): Promise<ClassReferenceLoaded> {
+  public async loadClassChain(classReference: ClassReference): Promise<ClassReferenceLoadedWithoutType> {
     // Load the class declaration
     const classReferenceLoaded: ClassReferenceLoaded = await this.classLoader
-      .loadClassDeclaration(classReference, true);
+      .loadClassDeclaration(classReference, true, false);
 
     if (classReferenceLoaded.type === 'class') {
       // If the class has a super class, load it recursively
@@ -80,7 +88,7 @@ export class ClassIndexer {
               localName: interfaceName,
               fileName: classReferenceLoaded.fileName,
               fileNameReferenced: classReferenceLoaded.fileNameReferenced,
-            }, true);
+            }, true, false);
           } catch (error: unknown) {
             // Ignore interfaces that we don't understand
             this.logger.debug(`Ignored interface ${interfaceName} implemented by ${classReference.localName} in ${classReference.fileName}:\n${(<Error> error).message}`);

@@ -93,6 +93,7 @@ export class ExternalModulesLoader {
   ): void {
     switch (parameterRange.type) {
       case 'raw':
+      case 'literal':
       case 'override':
       case 'undefined':
         break;

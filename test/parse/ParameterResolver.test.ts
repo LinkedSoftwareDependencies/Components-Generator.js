@@ -264,6 +264,16 @@ describe('ParameterResolver', () => {
       });
     });
 
+    it('should not modify a literal range', async() => {
+      expect(await loader.resolveRange({
+        type: 'literal',
+        value: 'abc',
+      }, classReference)).toEqual({
+        type: 'literal',
+        value: 'abc',
+      });
+    });
+
     it('should handle an interface range pointing to a class', async() => {
       resolutionContext.contentsOverrides = {
         'A.d.ts': `export * from './MyClass'`,
@@ -577,7 +587,7 @@ export interface MyInterface extends IgnoredInterface{};
         'A.d.ts': ``,
       };
       await expect(loader.resolveRangeInterface('IFaceA', classReference))
-        .rejects.toThrow(new Error('Could not load class or interface IFaceA from A'));
+        .rejects.toThrow(new Error('Could not load class or interface or type IFaceA from A'));
     });
 
     it('should resolve an empty interface', async() => {
@@ -689,6 +699,28 @@ interface IFaceB {
           ],
         });
     });
+
+    it('should resolve a type alias', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `
+type Type = string | boolean;
+`,
+      };
+      expect(await loader.resolveRangeInterface('Type', classReference))
+        .toEqual({
+          type: 'union',
+          elements: [
+            {
+              type: 'raw',
+              value: 'string',
+            },
+            {
+              type: 'raw',
+              value: 'boolean',
+            },
+          ],
+        });
+    });
   });
 
   describe('isInterfaceImplicitClass', () => {
@@ -772,7 +804,7 @@ export interface A{
         'A.d.ts': ``,
       };
       await expect(loader.loadClassOrInterfacesChain(classReference))
-        .rejects.toThrow(new Error('Could not load class or interface A from A'));
+        .rejects.toThrow(new Error('Could not load class or interface or type A from A'));
     });
 
     it('should load a class', async() => {
@@ -1028,7 +1060,7 @@ export interface A{
       };
       const iface = <InterfaceLoaded> await loader.loadClassOrInterfacesChain(classReference);
       await expect(loader.getNestedFieldsFromInterface(iface))
-        .rejects.toThrow(new Error('Could not load class or interface B from A'));
+        .rejects.toThrow(new Error('Could not load class or interface or type B from A'));
     });
 
     it('should error on an interface with a non-existing class field', async() => {
@@ -1043,7 +1075,7 @@ export interface A{
       };
       const iface = <InterfaceLoaded> await loader.loadClassOrInterfacesChain(classReference);
       await expect(loader.getNestedFieldsFromInterface(iface))
-        .rejects.toThrow(new Error('Could not load class or interface B from B'));
+        .rejects.toThrow(new Error('Could not load class or interface or type B from B'));
     });
 
     it('should handle an interface with an empty interface field', async() => {
@@ -1216,7 +1248,7 @@ ${prefix}
 export class A{
   constructor(fieldA: ${definition}) {}
 }`;
-      const classLoaded = await classLoader.loadClassDeclaration(classReference, false);
+      const classLoaded = await classLoader.loadClassDeclaration(classReference, false, false);
       const hash: TSTypeLiteral = (<any> (new ConstructorLoader({ commentLoader })
         .getConstructor(classLoaded)!.constructor)
         .value.params[0]).typeAnnotation.typeAnnotation;
@@ -1292,7 +1324,7 @@ export class A{
   fieldA: B;
 }`);
       await expect(loader.getNestedFieldsFromHash(hash, owningClass))
-        .rejects.toThrow(new Error('Could not load class or interface B from file'));
+        .rejects.toThrow(new Error('Could not load class or interface or type B from file'));
     });
 
     it('should error on a hash with a non-existing class field', async() => {
@@ -1303,7 +1335,7 @@ export class A{
   fieldA: B;
 }`, `import {B} from './B';`);
       await expect(loader.getNestedFieldsFromHash(hash, owningClass))
-        .rejects.toThrow(new Error('Could not load class or interface B from B'));
+        .rejects.toThrow(new Error('Could not load class or interface or type B from B'));
     });
 
     it('should handle a hash with an empty interface field', async() => {

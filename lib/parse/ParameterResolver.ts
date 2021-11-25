@@ -1,6 +1,6 @@
 import type { TSTypeLiteral } from '@typescript-eslint/types/dist/ts-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import type { ClassIndex, ClassLoaded, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
+import type { ClassIndex, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
 import type { ClassLoader } from './ClassLoader';
 import type { CommentLoader } from './CommentLoader';
 import type { ConstructorData } from './ConstructorLoader';
@@ -81,6 +81,7 @@ export class ParameterResolver {
   Promise<ParameterRangeResolved> {
     switch (range.type) {
       case 'raw':
+      case 'literal':
       case 'override':
         return range;
       case 'interface':
@@ -140,6 +141,17 @@ export class ParameterResolver {
       };
     }
 
+    // If we find a type alias, just interpret the type directly
+    if (classOrInterface.type === 'type') {
+      const parameterLoader = new ParameterLoader({ commentLoader: this.commentLoader });
+      const unresolvedFields = parameterLoader.getRangeFromTypeNode(
+        classOrInterface,
+        classOrInterface.declaration.typeAnnotation,
+        `type alias ${classOrInterface.localName} in ${classOrInterface.fileName}`,
+      );
+      return this.resolveRange(unresolvedFields, classOrInterface);
+    }
+
     // If we find an interface, load it as a hash with nested fields
     return {
       type: 'nested',
@@ -174,8 +186,8 @@ export class ParameterResolver {
    *
    * @param classReference A class reference.
    */
-  public async loadClassOrInterfacesChain(classReference: ClassReference): Promise<ClassLoaded | InterfaceLoaded> {
-    const classOrInterface = await this.classLoader.loadClassDeclaration(classReference, true);
+  public async loadClassOrInterfacesChain(classReference: ClassReference): Promise<ClassReferenceLoaded> {
+    const classOrInterface = await this.classLoader.loadClassDeclaration(classReference, true, true);
 
     // If the result is an interface, load all its super interfaces recursively
     if (classOrInterface.type === 'interface') {

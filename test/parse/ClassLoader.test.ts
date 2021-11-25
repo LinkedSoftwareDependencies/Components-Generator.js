@@ -136,7 +136,7 @@ describe('ClassLoader', () => {
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false))
+        }, false, false))
           .rejects.toThrow(new Error('Could not load class A from file'));
       });
 
@@ -159,7 +159,7 @@ export * from './lib/D';
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false))
+        }, false, false))
           .rejects.toThrow(new Error('Could not load class A from file'));
       });
 
@@ -178,7 +178,7 @@ declare interface A{};
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false))
+        }, false, false))
           .rejects.toThrow(new Error('Could not load class A from file'));
       });
 
@@ -195,7 +195,7 @@ declare interface A{};
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false))
+        }, false, false))
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -219,7 +219,7 @@ declare interface A{};
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false))
+        }, false, false))
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -244,7 +244,7 @@ declare interface A{};
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false))
+        }, false, false))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -269,7 +269,7 @@ declare interface A{};
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false))
+        }, false, false))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -294,7 +294,7 @@ declare interface A{};
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false))
+        }, false, false))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -324,7 +324,7 @@ export * from './file3'
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false))
+        }, false, false))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -351,7 +351,7 @@ export * from './file3'
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false))
+        }, false, false))
           .toMatchObject({
             localName: 'B',
             fileName: 'file4',
@@ -377,7 +377,7 @@ export * from './file3'
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true))
+        }, true, false))
           .rejects.toThrow(new Error('Could not load class or interface A from file'));
       });
 
@@ -400,7 +400,7 @@ export * from './lib/D';
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true))
+        }, true, false))
           .rejects.toThrow(new Error('Could not load class or interface A from file'));
       });
 
@@ -417,7 +417,7 @@ export * from './lib/D';
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true))
+        }, true, false))
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -441,7 +441,7 @@ export * from './lib/D';
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true))
+        }, true, false))
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -466,7 +466,7 @@ export * from './lib/D';
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true))
+        }, true, false))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -491,7 +491,7 @@ export * from './lib/D';
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true))
+        }, true, false))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -516,7 +516,7 @@ export * from './lib/D';
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true))
+        }, true, false))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -545,7 +545,7 @@ export * from './file3'
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true))
+        }, true, false))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -572,7 +572,7 @@ export * from './file3'
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true))
+        }, true, false))
           .toMatchObject({
             localName: 'B',
             fileName: 'file4',
@@ -596,7 +596,7 @@ export * from './file3'
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true))
+        }, true, false))
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -620,7 +620,7 @@ export * from './file3'
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true))
+        }, true, false))
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -645,7 +645,7 @@ export * from './file3'
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true))
+        }, true, false))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -670,7 +670,7 @@ export * from './file3'
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true))
+        }, true, false))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -695,7 +695,7 @@ export * from './file3'
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true))
+        }, true, false))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -724,7 +724,7 @@ export * from './file3'
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true))
+        }, true, false))
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -751,7 +751,7 @@ export * from './file3'
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true))
+        }, true, false))
           .toMatchObject({
             localName: 'B',
             fileName: 'file4',
@@ -780,7 +780,7 @@ export class A{}
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false))
+        }, false, false))
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -810,7 +810,7 @@ declare class A{}
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false))
+        }, false, false))
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -840,7 +840,7 @@ export interface A{}
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true))
+        }, true, false))
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -870,13 +870,533 @@ declare interface A{}
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true))
+        }, true, false))
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
             declaration: {
               id: { name: 'A' },
               type: 'TSInterfaceDeclaration',
+            },
+            comment: 'Hello world!',
+          });
+      });
+    });
+
+    describe('when considering types', () => {
+      it('for an empty file should throw', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': ``,
+          }),
+          logger,
+          commentLoader,
+        });
+        await expect(loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .rejects.toThrow(new Error('Could not load class or type A from file'));
+      });
+
+      it('for a file without the file type should throw', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `
+const A = "a";
+declare type B = number;
+export type C = number;
+export { B as X };
+export * from './lib/D';
+`,
+          }),
+          logger,
+          commentLoader,
+        });
+        await expect(loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .rejects.toThrow(new Error('Could not load class or type A from file'));
+      });
+
+      it('for an exported class', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `export class A{}`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'A',
+            fileName: 'file',
+            declaration: {
+              id: { name: 'A' },
+              type: 'ClassDeclaration',
+            },
+          });
+      });
+
+      it('for a declared class', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `declare class A{}`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'A',
+            fileName: 'file',
+            declaration: {
+              id: { name: 'A' },
+              type: 'ClassDeclaration',
+            },
+          });
+      });
+
+      it('for an imported class', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `import { B as A } from './file2'`,
+            'file2.d.ts': `export class B{}`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'B',
+            fileName: 'file2',
+            declaration: {
+              id: { name: 'B' },
+              type: 'ClassDeclaration',
+            },
+          });
+      });
+
+      it('for a class linked via export import', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `export { B as A } from './file2'`,
+            'file2.d.ts': `export class B{}`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'B',
+            fileName: 'file2',
+            declaration: {
+              id: { name: 'B' },
+              type: 'ClassDeclaration',
+            },
+          });
+      });
+
+      it('for a class linked via export *', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `export * from './file2'`,
+            'file2.d.ts': `export class B{}`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'B',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'B',
+            fileName: 'file2',
+            declaration: {
+              id: { name: 'B' },
+              type: 'ClassDeclaration',
+            },
+          });
+      });
+
+      it('for a class linked on of the multiple export *', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `
+export * from './file1'
+export * from './file2'
+export * from './file3'
+`,
+            'file2.d.ts': `export class B{}`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'B',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'B',
+            fileName: 'file2',
+            declaration: {
+              id: { name: 'B' },
+              type: 'ClassDeclaration',
+            },
+          });
+      });
+
+      it('for a class linked via nested export *', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `export * from './file2'`,
+            'file2.d.ts': `export * from './file3'`,
+            'file3.d.ts': `export * from './file4'`,
+            'file4.d.ts': `export class B{}`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'B',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'B',
+            fileName: 'file4',
+            declaration: {
+              id: { name: 'B' },
+              type: 'ClassDeclaration',
+            },
+          });
+      });
+
+      it('for an exported type', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `export type A = number;`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'A',
+            fileName: 'file',
+            declaration: {
+              id: { name: 'A' },
+              type: 'TSTypeAliasDeclaration',
+            },
+          });
+      });
+
+      it('for a declared type', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `declare type A = number;`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'A',
+            fileName: 'file',
+            declaration: {
+              id: { name: 'A' },
+              type: 'TSTypeAliasDeclaration',
+            },
+          });
+      });
+
+      it('for an imported type', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `import { B as A } from './file2'`,
+            'file2.d.ts': `export type B = number;`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'B',
+            fileName: 'file2',
+            declaration: {
+              id: { name: 'B' },
+              type: 'TSTypeAliasDeclaration',
+            },
+          });
+      });
+
+      it('for a type linked via export import', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `export { B as A } from './file2'`,
+            'file2.d.ts': `export type B = number;`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'B',
+            fileName: 'file2',
+            declaration: {
+              id: { name: 'B' },
+              type: 'TSTypeAliasDeclaration',
+            },
+          });
+      });
+
+      it('for a type linked via export *', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `export * from './file2'`,
+            'file2.d.ts': `export type B = number;`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'B',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'B',
+            fileName: 'file2',
+            declaration: {
+              id: { name: 'B' },
+              type: 'TSTypeAliasDeclaration',
+            },
+          });
+      });
+
+      it('for a type linked on of the multiple export *', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `
+export * from './file1'
+export * from './file2'
+export * from './file3'
+`,
+            'file2.d.ts': `export type B = number;`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'B',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'B',
+            fileName: 'file2',
+            declaration: {
+              id: { name: 'B' },
+              type: 'TSTypeAliasDeclaration',
+            },
+          });
+      });
+
+      it('for a type linked via nested export *', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `export * from './file2'`,
+            'file2.d.ts': `export * from './file3'`,
+            'file3.d.ts': `export * from './file4'`,
+            'file4.d.ts': `export type B = number;`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'B',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'B',
+            fileName: 'file4',
+            declaration: {
+              id: { name: 'B' },
+              type: 'TSTypeAliasDeclaration',
+            },
+          });
+      });
+
+      it('for an exported class with comment', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `
+/**
+ * Hello world!
+ */
+export class A{}
+`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'A',
+            fileName: 'file',
+            declaration: {
+              id: { name: 'A' },
+              type: 'ClassDeclaration',
+            },
+            comment: 'Hello world!',
+          });
+      });
+
+      it('for a declared class with comment', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `
+/**
+ * Hello world!
+ */
+declare class A{}
+`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'A',
+            fileName: 'file',
+            declaration: {
+              id: { name: 'A' },
+              type: 'ClassDeclaration',
+            },
+            comment: 'Hello world!',
+          });
+      });
+
+      it('for an exported type with comment', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `
+/**
+ * Hello world!
+ */
+export type A = number;
+`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'A',
+            fileName: 'file',
+            declaration: {
+              id: { name: 'A' },
+              type: 'TSTypeAliasDeclaration',
+            },
+            comment: 'Hello world!',
+          });
+      });
+
+      it('for a declared type with comment', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `
+/**
+ * Hello world!
+ */
+declare type A = number;
+`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'A',
+            fileName: 'file',
+            declaration: {
+              id: { name: 'A' },
+              type: 'TSTypeAliasDeclaration',
             },
             comment: 'Hello world!',
           });
@@ -896,7 +1416,7 @@ declare interface A{}
         localName: 'A',
         fileName: 'file',
         fileNameReferenced: 'fileReferenced',
-      }, true))
+      }, true, false))
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -921,7 +1441,7 @@ declare interface A{}
         localName: 'A',
         fileName: 'file',
         fileNameReferenced: 'fileReferenced',
-      }, true))
+      }, true, false))
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -946,7 +1466,7 @@ declare interface A{}
         localName: 'A',
         fileName: 'file',
         fileNameReferenced: 'fileReferenced',
-      }, true))
+      }, true, false))
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -973,7 +1493,7 @@ declare interface A{}
         localName: 'A',
         fileName: 'file',
         fileNameReferenced: 'fileReferenced',
-      }, true))
+      }, true, false))
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -1000,7 +1520,7 @@ declare interface A{}
         localName: 'A',
         fileName: 'file',
         fileNameReferenced: 'fileReferenced',
-      }, true))
+      }, true, false))
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -1027,7 +1547,7 @@ declare interface A{}
         localName: 'A',
         fileName: 'file',
         fileNameReferenced: 'fileReferenced',
-      }, true))
+      }, true, false))
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -1054,7 +1574,7 @@ declare interface A{}
         localName: 'A',
         fileName: 'file',
         fileNameReferenced: 'fileReferenced',
-      }, true))
+      }, true, false))
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -1081,7 +1601,7 @@ declare interface A{}
         localName: 'A',
         fileName: 'file',
         fileNameReferenced: 'fileReferenced',
-      }, true))
+      }, true, false))
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -1108,7 +1628,7 @@ declare interface A{}
         localName: 'A',
         fileName: 'file',
         fileNameReferenced: 'fileReferenced',
-      }, true))
+      }, true, false))
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -1429,6 +1949,28 @@ declare interface A{}
             X: {
               localName: 'X',
               fileName: Path.normalize('dir/lib/A'),
+            },
+          },
+        });
+    });
+
+    it('for an exported type', () => {
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export type A = string`)))
+        .toMatchObject({
+          exportedTypes: {
+            A: {
+              type: 'TSTypeAliasDeclaration',
+            },
+          },
+        });
+    });
+
+    it('for a declared type', () => {
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`declare type A = string`)))
+        .toMatchObject({
+          declaredTypes: {
+            A: {
+              type: 'TSTypeAliasDeclaration',
             },
           },
         });

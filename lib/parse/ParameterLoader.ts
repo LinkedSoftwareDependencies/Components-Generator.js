@@ -208,7 +208,7 @@ export class ParameterLoader {
               } in ${classLoaded.localName} at ${classLoaded.fileName}`);
             default:
               // First check if the type is be a generic type
-              if (typeNode.typeName.name in classLoaded.generics) {
+              if (classLoaded.type !== 'type' && typeNode.typeName.name in classLoaded.generics) {
                 const genericProperties = classLoaded.generics[typeNode.typeName.name];
                 if (!genericProperties.type) {
                   throw new Error(`Found untyped generic field type at ${errorIdentifier
@@ -234,6 +234,16 @@ export class ParameterLoader {
         return { type: 'raw', value: 'number' };
       case AST_NODE_TYPES.TSStringKeyword:
         return { type: 'raw', value: 'string' };
+      case AST_NODE_TYPES.TSLiteralType:
+        if (typeNode.literal.type !== AST_NODE_TYPES.UnaryExpression &&
+          typeNode.literal.type !== AST_NODE_TYPES.UpdateExpression &&
+          'value' in typeNode.literal &&
+          (typeof typeNode.literal.value === 'number' ||
+            typeof typeNode.literal.value === 'string' ||
+            typeof typeNode.literal.value === 'boolean')) {
+          return { type: 'literal', value: typeNode.literal.value };
+        }
+        break;
       case AST_NODE_TYPES.TSTypeLiteral:
         return { type: 'hash', value: typeNode };
       case AST_NODE_TYPES.TSUnionType:
@@ -331,6 +341,7 @@ export class ParameterLoader {
   ): ParameterRangeUnresolved {
     switch (range.type) {
       case 'raw':
+      case 'literal':
         // Only raw types are replaced
         return override;
       case 'undefined':
@@ -512,6 +523,9 @@ export type ParameterRangeUnresolved = {
   type: 'raw';
   value: 'boolean' | 'number' | 'string';
 } | {
+  type: 'literal';
+  value: boolean | number | string;
+} | {
   type: 'override';
   value: string;
 } | {
@@ -546,6 +560,9 @@ export type ParameterRangeUnresolved = {
 export type ParameterRangeResolved = {
   type: 'raw';
   value: 'boolean' | 'number' | 'string';
+} | {
+  type: 'literal';
+  value: boolean | number | string;
 } | {
   type: 'override';
   value: string;
