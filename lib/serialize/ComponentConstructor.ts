@@ -1,5 +1,6 @@
 import * as Path from 'path';
 import type { ContextParser, JsonLdContextNormalized } from 'jsonld-context-parser';
+import semverMajor = require('semver/functions/major');
 import type { ClassIndex, ClassLoaded, ClassReference, ClassReferenceLoaded } from '../parse/ClassIndex';
 import type { ConstructorData } from '../parse/ConstructorLoader';
 import type { PackageMetadata } from '../parse/PackageMetadataLoader';
@@ -18,6 +19,7 @@ import type { ContextConstructor } from './ContextConstructor';
  */
 export class ComponentConstructor {
   private readonly packageMetadata: PackageMetadata;
+  private readonly fileExtension: string;
   private readonly contextConstructor: ContextConstructor;
   private readonly pathDestination: PathDestinationDefinition;
   private readonly classAndInterfaceIndex: ClassIndex<ClassReferenceLoaded>;
@@ -27,6 +29,7 @@ export class ComponentConstructor {
 
   public constructor(args: ComponentConstructorArgs) {
     this.packageMetadata = args.packageMetadata;
+    this.fileExtension = args.fileExtension;
     this.contextConstructor = args.contextConstructor;
     this.pathDestination = args.pathDestination;
     this.classAndInterfaceIndex = args.classAndInterfaceIndex;
@@ -49,7 +52,7 @@ export class ComponentConstructor {
       const sourcePath = classReference.packageName !== this.packageMetadata.name ?
         classReference.fileNameReferenced :
         classReference.fileName;
-      const path = this.getPathDestination(sourcePath);
+      const path = ComponentConstructor.getPathDestination(this.pathDestination, sourcePath);
       if (!(path in definitions)) {
         definitions[path] = {
           '@context': Object.keys(this.packageMetadata.contexts),
@@ -79,11 +82,9 @@ export class ComponentConstructor {
   /**
    * Construct a component definitions index.
    * @param definitions The component definitions for which the index should be constructed.
-   * @param fileExtension The file extension to apply on files.
    */
   public async constructComponentsIndex(
     definitions: ComponentDefinitions,
-    fileExtension: string,
   ): Promise<ComponentDefinitionsIndex> {
     // Construct a minimal context
     const context: JsonLdContextNormalized = await this.contextParser.parse(this.contextConstructor.constructContext());
@@ -94,7 +95,7 @@ export class ComponentConstructor {
       '@type': 'Module',
       requireName: this.packageMetadata.name,
       import: Object.keys(definitions)
-        .map(pathAbsolute => ComponentConstructor.getPathRelative(this.pathDestination, `${pathAbsolute}.${fileExtension}`))
+        .map(pathAbsolute => ComponentConstructor.getPathRelative(this.pathDestination, `${pathAbsolute}.${this.fileExtension}`))
         .map(pathRelative => this.getImportPathIri(pathRelative))
         .map(iri => context.compactIri(iri)),
     };
@@ -120,14 +121,15 @@ export class ComponentConstructor {
 
   /**
    * Determine the path a component file should exist at based on a class source file path.
+   * @param pathDestination The path destination.
    * @param sourcePath The absolute path to a class file.
    */
-  public getPathDestination(sourcePath: string): string {
-    if (!sourcePath.startsWith(this.pathDestination.packageRootDirectory)) {
+  public static getPathDestination(pathDestination: PathDestinationDefinition, sourcePath: string): string {
+    if (!sourcePath.startsWith(pathDestination.packageRootDirectory)) {
       throw new Error(`Tried to reference a file outside the current package: ${sourcePath}`);
     }
 
-    return sourcePath.replace(this.pathDestination.originalPath, this.pathDestination.replacementPath);
+    return sourcePath.replace(pathDestination.originalPath, pathDestination.replacementPath);
   }
 
   /**
@@ -232,6 +234,7 @@ export class ComponentConstructor {
         this.packageMetadata,
         this.pathDestination,
         classReference,
+        this.fileExtension,
       );
     }
 
@@ -244,6 +247,7 @@ export class ComponentConstructor {
         otherPackageMetadata.packageMetadata,
         otherPackageMetadata.pathDestination,
         classReference,
+        this.fileExtension,
       );
     }
 
@@ -266,9 +270,23 @@ export class ComponentConstructor {
     packageMetadata: PackageMetadata,
     pathDestination: PathDestinationDefinition,
     classReference: ClassReference,
+    fileExtension: string,
   ): Promise<string> {
-    return context.compactIri(`${packageMetadata.moduleIri}/${ComponentConstructor
-      .getPathRelative(pathDestination, classReference.fileName)}#${classReference.localName}`);
+    return context.compactIri(ComponentConstructor
+      .classNameToIriForPackage(packageMetadata, pathDestination, classReference, fileExtension));
+  }
+
+  public static classNameToIriForPackage(
+    packageMetadata: PackageMetadata,
+    pathDestination: PathDestinationDefinition,
+    classReference: ClassReference,
+    fileExtension: string,
+  ): string {
+    const filePath = ComponentConstructor.getPathRelative(
+      pathDestination,
+      ComponentConstructor.getPathDestination(pathDestination, classReference.fileName),
+    );
+    return `${packageMetadata.moduleIri}/^${semverMajor(packageMetadata.version)}.0.0/${filePath}.${fileExtension}#${classReference.localName}`;
   }
 
   /**
@@ -287,8 +305,7 @@ export class ComponentConstructor {
     if (scope.parentFieldNames.length > 0) {
       fieldName = `${scope.parentFieldNames.join('_')}_${fieldName}`;
     }
-    let id = context.compactIri(`${this.packageMetadata.moduleIri}/${ComponentConstructor
-      .getPathRelative(this.pathDestination, classReference.fileName)}#${classReference.localName}_${fieldName}`);
+    let id = context.compactIri(`${ComponentConstructor.classNameToIriForPackage(this.packageMetadata, this.pathDestination, classReference, this.fileExtension)}_${fieldName}`);
     if (id in scope.fieldIdsHash) {
       id += `_${scope.fieldIdsHash[id]++}`;
     } else {
@@ -619,6 +636,7 @@ export class ComponentConstructor {
 
 export interface ComponentConstructorArgs {
   packageMetadata: PackageMetadata;
+  fileExtension: string;
   contextConstructor: ContextConstructor;
   pathDestination: PathDestinationDefinition;
   classAndInterfaceIndex: ClassIndex<ClassReferenceLoaded>;

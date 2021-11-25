@@ -44,8 +44,7 @@ export class ContextConstructor {
         PrefetchedDocumentLoader.CONTEXT_URL,
         {
           npmd: 'https://linkedsoftwaredependencies.org/bundles/npm/',
-          [prefix]: `npmd:${this.packageMetadata.name}/`,
-          [`files-${prefix}`]: `${prefix}:^${semverMajor(this.packageMetadata.version)}.0.0/`,
+          [prefix]: `npmd:${this.packageMetadata.name}/^${semverMajor(this.packageMetadata.version)}.0.0/`,
           ...componentShortcuts,
         },
       ],

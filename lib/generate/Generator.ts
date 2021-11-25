@@ -101,6 +101,7 @@ export class Generator {
       });
       const componentConstructor = new ComponentConstructor({
         packageMetadata,
+        fileExtension: this.fileExtension,
         contextConstructor,
         pathDestination,
         classAndInterfaceIndex,
@@ -115,7 +116,7 @@ export class Generator {
         }),
       });
       const components = await componentConstructor.constructComponents();
-      const componentsIndex = await componentConstructor.constructComponentsIndex(components, this.fileExtension);
+      const componentsIndex = await componentConstructor.constructComponentsIndex(components);
 
       // Serialize components
       const componentSerializer = new ComponentSerializer({

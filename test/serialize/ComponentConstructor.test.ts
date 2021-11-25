@@ -77,6 +77,7 @@ describe('ComponentConstructor', () => {
     };
     ctor = new ComponentConstructor({
       packageMetadata,
+      fileExtension: 'jsonld',
       contextConstructor,
       pathDestination,
       classAndInterfaceIndex: {},
@@ -153,30 +154,30 @@ describe('ComponentConstructor', () => {
           '@id': 'npmd:my-package',
           components: [
             {
-              '@id': 'mp:b/file#MyClass1',
+              '@id': 'mp:components/b/file.jsonld#MyClass1',
               '@type': 'Class',
               constructorArguments: [],
               parameters: [],
               requireElement: 'MyClass1',
             },
             {
-              '@id': 'mp:b/file#MyClass2',
+              '@id': 'mp:components/b/file.jsonld#MyClass2',
               '@type': 'Class',
               requireElement: 'MyClass2',
               constructorArguments: [
-                { '@id': 'mp:b/file#MyClass2_fieldA' },
-                { '@id': 'mp:b/file#MyClass2_fieldB' },
+                { '@id': 'mp:components/b/file.jsonld#MyClass2_fieldA' },
+                { '@id': 'mp:components/b/file.jsonld#MyClass2_fieldB' },
               ],
               parameters: [
                 {
-                  '@id': 'mp:b/file#MyClass2_fieldA',
+                  '@id': 'mp:components/b/file.jsonld#MyClass2_fieldA',
                   comment: 'Hi1',
                   range: 'xsd:boolean',
                   required: true,
                   unique: true,
                 },
                 {
-                  '@id': 'mp:b/file#MyClass2_fieldB',
+                  '@id': 'mp:components/b/file.jsonld#MyClass2_fieldB',
                   comment: 'Hi2',
                   range: 'xsd:string',
                   required: true,
@@ -239,7 +240,7 @@ describe('ComponentConstructor', () => {
           '@id': 'npmd:my-package',
           components: [
             {
-              '@id': 'mp:file1#MyClass1',
+              '@id': 'mp:components/file1.jsonld#MyClass1',
               '@type': 'Class',
               constructorArguments: [],
               parameters: [],
@@ -254,23 +255,23 @@ describe('ComponentConstructor', () => {
           '@id': 'npmd:my-package',
           components: [
             {
-              '@id': 'mp:b/file2#MyClass2',
+              '@id': 'mp:components/b/file2.jsonld#MyClass2',
               '@type': 'Class',
               requireElement: 'MyClass2',
               constructorArguments: [
-                { '@id': 'mp:b/file2#MyClass2_fieldA' },
-                { '@id': 'mp:b/file2#MyClass2_fieldB' },
+                { '@id': 'mp:components/b/file2.jsonld#MyClass2_fieldA' },
+                { '@id': 'mp:components/b/file2.jsonld#MyClass2_fieldB' },
               ],
               parameters: [
                 {
-                  '@id': 'mp:b/file2#MyClass2_fieldA',
+                  '@id': 'mp:components/b/file2.jsonld#MyClass2_fieldA',
                   comment: 'Hi1',
                   range: 'xsd:boolean',
                   required: true,
                   unique: true,
                 },
                 {
-                  '@id': 'mp:b/file2#MyClass2_fieldB',
+                  '@id': 'mp:components/b/file2.jsonld#MyClass2_fieldB',
                   comment: 'Hi2',
                   range: 'xsd:string',
                   required: true,
@@ -350,7 +351,7 @@ describe('ComponentConstructor', () => {
           '@id': 'npmd:my-package',
           components: [
             {
-              '@id': 'mp:b/file#MyClass1',
+              '@id': 'mp:components/b/file.jsonld#MyClass1',
               '@type': 'Class',
               constructorArguments: [],
               extends: [ 'op:MyClass' ],
@@ -358,24 +359,24 @@ describe('ComponentConstructor', () => {
               requireElement: 'MyClass1',
             },
             {
-              '@id': 'mp:b/file#MyClass2',
+              '@id': 'mp:components/b/file.jsonld#MyClass2',
               '@type': 'Class',
               requireElement: 'MyClass2',
               constructorArguments: [
-                { '@id': 'mp:b/file#MyClass2_fieldA' },
-                { '@id': 'mp:b/file#MyClass2_fieldB' },
+                { '@id': 'mp:components/b/file.jsonld#MyClass2_fieldA' },
+                { '@id': 'mp:components/b/file.jsonld#MyClass2_fieldB' },
               ],
               extends: [ 'op:MyClass' ],
               parameters: [
                 {
-                  '@id': 'mp:b/file#MyClass2_fieldA',
+                  '@id': 'mp:components/b/file.jsonld#MyClass2_fieldA',
                   comment: 'Hi1',
                   range: 'xsd:boolean',
                   required: true,
                   unique: true,
                 },
                 {
-                  '@id': 'mp:b/file#MyClass2_fieldB',
+                  '@id': 'mp:components/b/file.jsonld#MyClass2_fieldB',
                   comment: 'Hi2',
                   range: 'xsd:string',
                   required: true,
@@ -434,7 +435,7 @@ describe('ComponentConstructor', () => {
 
   describe('constructComponentsIndex', () => {
     it('should handle an empty index', async() => {
-      expect(await ctor.constructComponentsIndex({}, 'jsonld')).toEqual({
+      expect(await ctor.constructComponentsIndex({})).toEqual({
         '@context': [
           'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
         ],
@@ -450,7 +451,7 @@ describe('ComponentConstructor', () => {
         [Path.normalize('/docs/package/components/file1')]: true,
         [Path.normalize('/docs/package/components/file2')]: true,
         [Path.normalize('/docs/package/components/file/a/b/c')]: true,
-      }, 'jsonld')).toEqual({
+      })).toEqual({
         '@context': [
           'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
         ],
@@ -458,9 +459,9 @@ describe('ComponentConstructor', () => {
         '@type': 'Module',
         requireName: 'my-package',
         import: [
-          'files-mp:components/file1.jsonld',
-          'files-mp:components/file2.jsonld',
-          'files-mp:components/file/a/b/c.jsonld',
+          'mp:components/file1.jsonld',
+          'mp:components/file2.jsonld',
+          'mp:components/file/a/b/c.jsonld',
         ],
       });
     });
@@ -519,12 +520,12 @@ describe('ComponentConstructor', () => {
 
   describe('getPathDestination', () => {
     it('should error when source is outside package', () => {
-      expect(() => ctor.getPathDestination('not-in-package'))
+      expect(() => ComponentConstructor.getPathDestination(pathDestination, 'not-in-package'))
         .toThrow(new Error('Tried to reference a file outside the current package: not-in-package'));
     });
 
     it('should handle a valid path', () => {
-      expect(ctor.getPathDestination(Path.normalize('/docs/package/src/myFile')))
+      expect(ComponentConstructor.getPathDestination(pathDestination, Path.normalize('/docs/package/src/myFile')))
         .toEqual(Path.normalize('/docs/package/components/myFile'));
     });
   });
@@ -535,7 +536,7 @@ describe('ComponentConstructor', () => {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
       })).toEqual({
-        '@id': 'mp:a/b/file-param#MyClass',
+        '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [],
         parameters: [],
@@ -565,22 +566,22 @@ describe('ComponentConstructor', () => {
           },
         ],
       })).toEqual({
-        '@id': 'mp:a/b/file-param#MyClass',
+        '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [
-          { '@id': 'mp:a/b/file-param#MyClass_fieldA' },
-          { '@id': 'mp:a/b/file-param#MyClass_fieldB' },
+          { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA' },
+          { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldB' },
         ],
         parameters: [
           {
-            '@id': 'mp:a/b/file-param#MyClass_fieldA',
+            '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA',
             comment: 'Hi1',
             range: 'xsd:boolean',
             required: true,
             unique: true,
           },
           {
-            '@id': 'mp:a/b/file-param#MyClass_fieldB',
+            '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldB',
             comment: 'Hi2',
             range: 'xsd:string',
             required: true,
@@ -597,7 +598,7 @@ describe('ComponentConstructor', () => {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
       })).toEqual({
-        '@id': 'mp:a/b/file-param#MyClass',
+        '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'AbstractClass',
         constructorArguments: [],
         parameters: [],
@@ -615,12 +616,12 @@ describe('ComponentConstructor', () => {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
       })).toEqual({
-        '@id': 'mp:a/b/file-param#MyClass',
+        '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [],
         parameters: [],
         requireElement: 'MyClass',
-        extends: [ 'mp:a/b/SuperFile#SuperClass' ],
+        extends: [ 'mp:components/a/b/SuperFile.jsonld#SuperClass' ],
       });
     });
 
@@ -641,14 +642,14 @@ describe('ComponentConstructor', () => {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
       })).toEqual({
-        '@id': 'mp:a/b/file-param#MyClass',
+        '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [],
         parameters: [],
         requireElement: 'MyClass',
         extends: [
-          'mp:a/b/SuperFile1#SuperInterface1',
-          'mp:a/b/SuperFile2#SuperInterface2',
+          'mp:components/a/b/SuperFile1.jsonld#SuperInterface1',
+          'mp:components/a/b/SuperFile2.jsonld#SuperInterface2',
         ],
       });
     });
@@ -675,15 +676,15 @@ describe('ComponentConstructor', () => {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
       })).toEqual({
-        '@id': 'mp:a/b/file-param#MyClass',
+        '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [],
         parameters: [],
         requireElement: 'MyClass',
         extends: [
-          'mp:a/b/SuperFile#SuperClass',
-          'mp:a/b/SuperFile1#SuperInterface1',
-          'mp:a/b/SuperFile2#SuperInterface2',
+          'mp:components/a/b/SuperFile.jsonld#SuperClass',
+          'mp:components/a/b/SuperFile1.jsonld#SuperInterface1',
+          'mp:components/a/b/SuperFile2.jsonld#SuperInterface2',
         ],
       });
     });
@@ -694,7 +695,7 @@ describe('ComponentConstructor', () => {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
       })).toEqual({
-        '@id': 'mp:a/b/file-param#MyClass',
+        '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [],
         parameters: [],
@@ -709,7 +710,7 @@ describe('ComponentConstructor', () => {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
       })).toEqual({
-        '@id': 'mp:a/b/file-param#MyClass',
+        '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'AbstractClass',
         constructorArguments: [],
         parameters: [],
@@ -735,14 +736,14 @@ describe('ComponentConstructor', () => {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
       })).toEqual({
-        '@id': 'mp:a/b/file-param#MyClass',
+        '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'AbstractClass',
         constructorArguments: [],
         parameters: [],
         requireElement: 'MyClass',
         extends: [
-          'mp:a/b/SuperFile1#SuperInterface1',
-          'mp:a/b/SuperFile2#SuperInterface2',
+          'mp:components/a/b/SuperFile1.jsonld#SuperInterface1',
+          'mp:components/a/b/SuperFile2.jsonld#SuperInterface2',
         ],
       });
     });
@@ -762,7 +763,7 @@ describe('ComponentConstructor', () => {
         localName: 'MyClass',
         fileName: Path.normalize('/docs/package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
-      })).toEqual('mp:a/b/MyOwnClass#MyClass');
+      })).toEqual('mp:components/a/b/MyOwnClass.jsonld#MyClass');
     });
 
     it('should return an existing IRI in another package that is being generated', async() => {
@@ -793,7 +794,7 @@ describe('ComponentConstructor', () => {
         localName: 'MyClass',
         fileName: Path.normalize('/docs/other-package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
-      })).toEqual('op:a/b/MyOwnClass#MyClass');
+      })).toEqual('op:components/a/b/MyOwnClass.jsonld#MyClass');
       expect(externalContextsCallback).toHaveBeenCalledWith('http://example.org/context-other-package.jsonld');
     });
 
@@ -851,7 +852,7 @@ describe('ComponentConstructor', () => {
         localName: 'MyClass',
         fileName: Path.normalize('/docs/package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
-      }, 'field', scope)).toEqual('mp:a/b/MyOwnClass#MyClass_field');
+      }, 'field', scope)).toEqual('mp:components/a/b/MyOwnClass.jsonld#MyClass_field');
     });
 
     it('should return a compacted field IRI for parent field names', () => {
@@ -862,7 +863,7 @@ describe('ComponentConstructor', () => {
         localName: 'MyClass',
         fileName: Path.normalize('/docs/package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
-      }, 'field', scope)).toEqual('mp:a/b/MyOwnClass#MyClass_a_b_field');
+      }, 'field', scope)).toEqual('mp:components/a/b/MyOwnClass.jsonld#MyClass_a_b_field');
     });
 
     it('should return unique compacted field IRIs', () => {
@@ -871,19 +872,19 @@ describe('ComponentConstructor', () => {
         localName: 'MyClass',
         fileName: Path.normalize('/docs/package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
-      }, 'field', scope)).toEqual('mp:a/b/MyOwnClass#MyClass_field');
+      }, 'field', scope)).toEqual('mp:components/a/b/MyOwnClass.jsonld#MyClass_field');
       expect(ctor.fieldNameToId(context, {
         packageName: 'my-package',
         localName: 'MyClass',
         fileName: Path.normalize('/docs/package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
-      }, 'field', scope)).toEqual('mp:a/b/MyOwnClass#MyClass_field_1');
+      }, 'field', scope)).toEqual('mp:components/a/b/MyOwnClass.jsonld#MyClass_field_1');
       expect(ctor.fieldNameToId(context, {
         packageName: 'my-package',
         localName: 'MyClass',
         fileName: Path.normalize('/docs/package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
-      }, 'field', scope)).toEqual('mp:a/b/MyOwnClass#MyClass_field_2');
+      }, 'field', scope)).toEqual('mp:components/a/b/MyOwnClass.jsonld#MyClass_field_2');
     });
   });
 
@@ -920,19 +921,19 @@ describe('ComponentConstructor', () => {
           },
         ],
       }, parameters)).toEqual([
-        { '@id': 'mp:a/b/file-param#MyClass_fieldA' },
-        { '@id': 'mp:a/b/file-param#MyClass_fieldB' },
+        { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA' },
+        { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldB' },
       ]);
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_fieldA',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA',
           comment: 'Hi1',
           range: 'xsd:boolean',
           required: true,
           unique: true,
         },
         {
-          '@id': 'mp:a/b/file-param#MyClass_fieldB',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldB',
           comment: 'Hi2',
           range: 'xsd:string',
           required: true,
@@ -972,27 +973,27 @@ describe('ComponentConstructor', () => {
           },
         ],
       }, parameters)).toEqual([
-        { '@id': 'mp:a/b/file-param#MyClass_field' },
-        { '@id': 'mp:a/b/file-param#MyClass_field_1' },
-        { '@id': 'mp:a/b/file-param#MyClass_field_2' },
+        { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field' },
+        { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_1' },
+        { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_2' },
       ]);
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_field',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field',
           comment: 'Hi1',
           range: 'xsd:boolean',
           required: true,
           unique: true,
         },
         {
-          '@id': 'mp:a/b/file-param#MyClass_field_1',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_1',
           comment: 'Hi2',
           range: 'xsd:string',
           required: true,
           unique: true,
         },
         {
-          '@id': 'mp:a/b/file-param#MyClass_field_2',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_2',
           comment: 'Hi3',
           range: 'xsd:string',
           required: true,
@@ -1037,23 +1038,23 @@ describe('ComponentConstructor', () => {
         ],
       }, parameters)).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_field__constructorArgument',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field__constructorArgument',
           fields: [
-            { keyRaw: 'fieldA', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldA' }},
-            { keyRaw: 'fieldB', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldB' }},
+            { keyRaw: 'fieldA', value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA' }},
+            { keyRaw: 'fieldB', value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldB' }},
           ],
         },
       ]);
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_field_fieldA',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA',
           comment: 'Hi1',
           range: 'xsd:boolean',
           required: true,
           unique: true,
         },
         {
-          '@id': 'mp:a/b/file-param#MyClass_field_fieldB',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldB',
           comment: 'Hi2',
           range: 'xsd:string',
           required: true,
@@ -1100,18 +1101,18 @@ describe('ComponentConstructor', () => {
         ],
       }, parameters)).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_field__constructorArgument',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field__constructorArgument',
           fields: [
             {
               keyRaw: 'fieldA',
               value: {
-                '@id': 'mp:a/b/file-param#MyClass_field_fieldA__constructorArgument',
+                '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA__constructorArgument',
                 fields: [
                   {
-                    collectEntries: 'mp:a/b/file-param#MyClass_field_fieldA',
-                    key: 'mp:a/b/file-param#MyClass_field_fieldA_key',
+                    collectEntries: 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA',
+                    key: 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA_key',
                     value: {
-                      '@id': 'mp:a/b/file-param#MyClass_field_fieldA_value',
+                      '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA_value',
                     },
                   },
                 ],
@@ -1122,18 +1123,18 @@ describe('ComponentConstructor', () => {
       ]);
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_field_fieldA',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA',
           comment: 'Hi1',
           range: {
-            '@id': 'mp:a/b/file-param#MyClass_field_fieldA_range',
+            '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA_range',
             parameters: [
               {
-                '@id': 'mp:a/b/file-param#MyClass_field_fieldA_key',
+                '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA_key',
                 required: true,
                 unique: true,
               },
               {
-                '@id': 'mp:a/b/file-param#MyClass_field_fieldA_value',
+                '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA_value',
                 comment: 'Hi1',
                 range: 'xsd:boolean',
                 required: true,
@@ -1157,10 +1158,11 @@ describe('ComponentConstructor', () => {
           required: true,
           unique: true,
           comment: 'Hi',
-        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope))
+        .toEqual({ '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field' });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_field',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field',
           comment: 'Hi',
           range: 'xsd:boolean',
           required: true,
@@ -1179,10 +1181,11 @@ describe('ComponentConstructor', () => {
           required: true,
           unique: true,
           comment: 'Hi',
-        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope))
+        .toEqual({ '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field' });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_field',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field',
           comment: 'Hi',
           range: 'xsd:boolean',
           required: true,
@@ -1206,12 +1209,13 @@ describe('ComponentConstructor', () => {
           required: true,
           unique: true,
           comment: 'Hi',
-        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope))
+        .toEqual({ '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field' });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_field',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field',
           comment: 'Hi',
-          range: 'mp:a/b/file-param#ClassParam',
+          range: 'mp:components/a/b/file-param.jsonld#ClassParam',
           required: true,
           unique: true,
         },
@@ -1228,10 +1232,11 @@ describe('ComponentConstructor', () => {
           required: true,
           unique: true,
           comment: 'Hi',
-        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope))
+        .toEqual({ '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field' });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_field',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field',
           comment: 'Hi',
           required: true,
           unique: true,
@@ -1249,8 +1254,8 @@ describe('ComponentConstructor', () => {
           required: true,
           unique: true,
           comment: 'Hi',
-        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({
-        '@id': 'mp:a/b/file-param#MyClass_field__constructorArgument',
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).toEqual({
+        '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field__constructorArgument',
         fields: [],
       });
       expect(parameters).toEqual([]);
@@ -1278,15 +1283,15 @@ describe('ComponentConstructor', () => {
           required: true,
           unique: true,
           comment: 'Hi',
-        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({
-        '@id': 'mp:a/b/file-param#MyClass_field__constructorArgument',
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).toEqual({
+        '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field__constructorArgument',
         fields: [
-          { keyRaw: 'field', value: { '@id': 'mp:a/b/file-param#MyClass_field_field' }},
+          { keyRaw: 'field', value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_field' }},
         ],
       });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_field_field',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_field',
           comment: 'Hi',
           range: 'xsd:boolean',
           required: true,
@@ -1325,23 +1330,23 @@ describe('ComponentConstructor', () => {
           required: true,
           unique: true,
           comment: 'Hi',
-        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({
-        '@id': 'mp:a/b/file-param#MyClass_field__constructorArgument',
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).toEqual({
+        '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field__constructorArgument',
         fields: [
-          { keyRaw: 'fieldA', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldA' }},
-          { keyRaw: 'fieldB', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldB' }},
+          { keyRaw: 'fieldA', value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA' }},
+          { keyRaw: 'fieldB', value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldB' }},
         ],
       });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_field_fieldA',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA',
           comment: 'Hi1',
           range: 'xsd:boolean',
           required: true,
           unique: true,
         },
         {
-          '@id': 'mp:a/b/file-param#MyClass_field_fieldB',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldB',
           comment: 'Hi2',
           range: 'xsd:string',
           required: true,
@@ -1386,16 +1391,16 @@ describe('ComponentConstructor', () => {
           required: true,
           unique: true,
           comment: 'Hi',
-        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({
-        '@id': 'mp:a/b/file-param#MyClass_field__constructorArgument',
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).toEqual({
+        '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field__constructorArgument',
         fields: [
-          { keyRaw: 'fieldA', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldA' }},
-          { keyRaw: 'fieldB', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldB' }},
+          { keyRaw: 'fieldA', value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA' }},
+          { keyRaw: 'fieldB', value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldB' }},
         ],
       });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_field_fieldA',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA',
           comment: 'Hi1',
           default: [ 'VALUE' ],
           range: 'xsd:boolean',
@@ -1403,7 +1408,7 @@ describe('ComponentConstructor', () => {
           unique: true,
         },
         {
-          '@id': 'mp:a/b/file-param#MyClass_field_fieldB',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldB',
           comment: 'Hi2',
           range: 'xsd:string',
           required: true,
@@ -1468,25 +1473,31 @@ describe('ComponentConstructor', () => {
           required: true,
           unique: true,
           comment: 'Hi',
-        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({
-        '@id': 'mp:a/b/file-param#MyClass_field__constructorArgument',
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).toEqual({
+        '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field__constructorArgument',
         fields: [
           {
             keyRaw: 'fieldA',
             value: {
-              '@id': 'mp:a/b/file-param#MyClass_field_fieldA__constructorArgument',
+              '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA__constructorArgument',
               fields: [
-                { keyRaw: 'field1', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldA_field1' }},
-                { keyRaw: 'field2', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldA_field2' }},
+                {
+                  keyRaw: 'field1',
+                  value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA_field1' },
+                },
+                {
+                  keyRaw: 'field2',
+                  value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA_field2' },
+                },
               ],
             },
           },
-          { keyRaw: 'fieldB', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldB' }},
+          { keyRaw: 'fieldB', value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldB' }},
         ],
       });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_field_fieldA_field1',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA_field1',
           comment: 'Hi1',
           default: [ 'VALUE' ],
           range: 'xsd:boolean',
@@ -1494,14 +1505,14 @@ describe('ComponentConstructor', () => {
           unique: true,
         },
         {
-          '@id': 'mp:a/b/file-param#MyClass_field_fieldA_field2',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA_field2',
           comment: 'Hi2',
           range: 'xsd:string',
           required: true,
           unique: true,
         },
         {
-          '@id': 'mp:a/b/file-param#MyClass_field_fieldB',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldB',
           comment: 'Hi2',
           range: 'xsd:string',
           required: true,
@@ -1547,21 +1558,21 @@ describe('ComponentConstructor', () => {
           required: true,
           unique: true,
           comment: 'Hi',
-        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({
-        '@id': 'mp:a/b/file-param#MyClass_field__constructorArgument',
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).toEqual({
+        '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field__constructorArgument',
         fields: [
           {
             keyRaw: 'fieldA',
             value: {
-              '@id': 'mp:a/b/file-param#MyClass_field_fieldA',
+              '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA',
             },
           },
-          { keyRaw: 'fieldB', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldB' }},
+          { keyRaw: 'fieldB', value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldB' }},
         ],
       });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_field_fieldA',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA',
           comment: 'Hi1',
           default: [ 'VALUEOTHER', 'VALUE' ],
           range: 'xsd:boolean',
@@ -1569,7 +1580,7 @@ describe('ComponentConstructor', () => {
           unique: true,
         },
         {
-          '@id': 'mp:a/b/file-param#MyClass_field_fieldB',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldB',
           comment: 'Hi2',
           range: 'xsd:string',
           required: true,
@@ -1620,16 +1631,19 @@ describe('ComponentConstructor', () => {
           required: true,
           unique: true,
           comment: 'Hi',
-        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({
-        '@id': 'mp:a/b/file-param#MyClass_field__constructorArgument',
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).toEqual({
+        '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field__constructorArgument',
         fields: [
-          { keyRaw: 'fieldA', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldA' }},
+          { keyRaw: 'fieldA', value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA' }},
           {
             keyRaw: 'fieldSub',
             value: {
-              '@id': 'mp:a/b/file-param#MyClass_field_fieldSub__constructorArgument',
+              '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldSub__constructorArgument',
               fields: [
-                { keyRaw: 'fieldB', value: { '@id': 'mp:a/b/file-param#MyClass_field_fieldSub_fieldB' }},
+                {
+                  keyRaw: 'fieldB',
+                  value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldSub_fieldB' },
+                },
               ],
             },
           },
@@ -1637,14 +1651,14 @@ describe('ComponentConstructor', () => {
       });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_field_fieldA',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA',
           comment: 'Hi1',
           range: 'xsd:boolean',
           required: true,
           unique: true,
         },
         {
-          '@id': 'mp:a/b/file-param#MyClass_field_fieldSub_fieldB',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldSub_fieldB',
           comment: 'Hi2',
           range: 'xsd:string',
           required: true,
@@ -1695,16 +1709,16 @@ describe('ComponentConstructor', () => {
           required: true,
           unique: true,
           comment: 'Hi',
-        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({
-        '@id': 'mp:a/b/file-param#MyClass_field__constructorArgument',
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).toEqual({
+        '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field__constructorArgument',
         fields: [
-          { keyRaw: 'field', value: { '@id': 'mp:a/b/file-param#MyClass_field_field' }},
+          { keyRaw: 'field', value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_field' }},
           {
             keyRaw: 'value',
             value: {
-              '@id': 'mp:a/b/file-param#MyClass_field_value__constructorArgument',
+              '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_value__constructorArgument',
               fields: [
-                { keyRaw: 'field', value: { '@id': 'mp:a/b/file-param#MyClass_field_value_field' }},
+                { keyRaw: 'field', value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_value_field' }},
               ],
             },
           },
@@ -1712,14 +1726,14 @@ describe('ComponentConstructor', () => {
       });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_field_field',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_field',
           comment: 'Hi1',
           range: 'xsd:boolean',
           required: true,
           unique: true,
         },
         {
-          '@id': 'mp:a/b/file-param#MyClass_field_value_field',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_value_field',
           comment: 'Hi2',
           range: 'xsd:string',
           required: true,
@@ -1748,30 +1762,30 @@ describe('ComponentConstructor', () => {
           required: true,
           unique: true,
           comment: 'Hi',
-        }, parameters, 'mp:a/b/file-param#MyClass_fieldA', scope)).toEqual({
-        '@id': 'mp:a/b/file-param#MyClass_fieldA__constructorArgument',
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_fieldA', scope)).toEqual({
+        '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA__constructorArgument',
         fields: [
           {
-            collectEntries: 'mp:a/b/file-param#MyClass_fieldA',
-            key: 'mp:a/b/file-param#MyClass_fieldA_key',
-            value: { '@id': 'mp:a/b/file-param#MyClass_fieldA_value' },
+            collectEntries: 'mp:components/a/b/file-param.jsonld#MyClass_fieldA',
+            key: 'mp:components/a/b/file-param.jsonld#MyClass_fieldA_key',
+            value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA_value' },
           },
         ],
       });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_fieldA',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA',
           comment: 'Hi',
           range: {
-            '@id': 'mp:a/b/file-param#MyClass_fieldA_range',
+            '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA_range',
             parameters: [
               {
-                '@id': 'mp:a/b/file-param#MyClass_fieldA_key',
+                '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA_key',
                 required: true,
                 unique: true,
               },
               {
-                '@id': 'mp:a/b/file-param#MyClass_fieldA_value',
+                '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA_value',
                 comment: 'Hi1',
                 range: 'xsd:boolean',
                 required: true,
@@ -1811,34 +1825,34 @@ describe('ComponentConstructor', () => {
           required: true,
           unique: true,
           comment: 'Hi',
-        }, parameters, 'mp:a/b/file-param#MyClass_fieldA', scope)).toEqual({
-        '@id': 'mp:a/b/file-param#MyClass_fieldA__constructorArgument',
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_fieldA', scope)).toEqual({
+        '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA__constructorArgument',
         fields: [
           {
-            collectEntries: 'mp:a/b/file-param#MyClass_fieldA',
-            key: 'mp:a/b/file-param#MyClass_fieldA_key',
-            value: { '@id': 'mp:a/b/file-param#MyClass_fieldA_value' },
+            collectEntries: 'mp:components/a/b/file-param.jsonld#MyClass_fieldA',
+            key: 'mp:components/a/b/file-param.jsonld#MyClass_fieldA_key',
+            value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA_value' },
           },
           {
             keyRaw: 'fieldB',
-            value: { '@id': 'mp:a/b/file-param#MyClass_fieldA_fieldB' },
+            value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA_fieldB' },
           },
         ],
       });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_fieldA',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA',
           comment: 'Hi',
           range: {
-            '@id': 'mp:a/b/file-param#MyClass_fieldA_range',
+            '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA_range',
             parameters: [
               {
-                '@id': 'mp:a/b/file-param#MyClass_fieldA_key',
+                '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA_key',
                 required: true,
                 unique: true,
               },
               {
-                '@id': 'mp:a/b/file-param#MyClass_fieldA_value',
+                '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA_value',
                 comment: 'Hi1',
                 range: 'xsd:boolean',
                 required: true,
@@ -1848,7 +1862,7 @@ describe('ComponentConstructor', () => {
           },
         },
         {
-          '@id': 'mp:a/b/file-param#MyClass_fieldA_fieldB',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA_fieldB',
           comment: 'Hi1',
           range: 'xsd:boolean',
           required: true,
@@ -1868,10 +1882,11 @@ describe('ComponentConstructor', () => {
           required: true,
           unique: true,
           comment: 'Hi',
-        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope))
+        .toEqual({ '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field' });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_field',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field',
           comment: 'Hi',
           range: 'xsd:boolean',
           default: [ 'abc' ],
@@ -1892,10 +1907,11 @@ describe('ComponentConstructor', () => {
           required: true,
           unique: true,
           comment: 'Hi',
-        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope))
+        .toEqual({ '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field' });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_field',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field',
           comment: 'Hi',
           range: 'xsd:boolean',
           default: [{ '@id': 'ex:abc' }],
@@ -1916,13 +1932,14 @@ describe('ComponentConstructor', () => {
           required: true,
           unique: true,
           comment: 'Hi',
-        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope))
+        .toEqual({ '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field' });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_field',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field',
           comment: 'Hi',
           range: 'xsd:boolean',
-          default: [{ '@id': 'mp:a/b/file-param#MyClass_abc' }],
+          default: [{ '@id': 'mp:components/a/b/file-param.jsonld#MyClass_abc' }],
           required: true,
           unique: true,
         },
@@ -1940,10 +1957,11 @@ describe('ComponentConstructor', () => {
           required: true,
           unique: true,
           comment: 'Hi',
-        }, parameters, 'mp:a/b/file-param#MyClass_field', scope)).toEqual({ '@id': 'mp:a/b/file-param#MyClass_field' });
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope))
+        .toEqual({ '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field' });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_field',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field',
           comment: 'Hi',
           range: 'rdf:JSON',
           default: [{
@@ -1967,8 +1985,8 @@ describe('ComponentConstructor', () => {
           required: true,
           unique: true,
           comment: 'Hi',
-        }, parameters, 'mp:a/b/file-param#MyClass_field', scope))
-        .rejects.toThrow(`JSON parsing error in default value of mp:a/b/file-param#MyClass_field: Unexpected token i in JSON at position 5`);
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope))
+        .rejects.toThrow(`JSON parsing error in default value of mp:components/a/b/file-param.jsonld#MyClass_field: Unexpected token i in JSON at position 5`);
     });
   });
 
@@ -2010,10 +2028,10 @@ describe('ComponentConstructor', () => {
         '',
         scope,
       ))
-        .toEqual({ keyRaw: 'fieldA', value: { '@id': 'mp:a/b/file-param#MyClass_fieldA' }});
+        .toEqual({ keyRaw: 'fieldA', value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA' }});
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_fieldA',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA',
           comment: 'Hi',
           range: 'xsd:boolean',
           required: true,
@@ -2069,12 +2087,12 @@ describe('ComponentConstructor', () => {
         .toEqual({
           keyRaw: 'field',
           value: {
-            '@id': 'mp:a/b/file-param#MyClass_field__constructorArgument',
+            '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field__constructorArgument',
             fields: [
               {
                 keyRaw: 'field',
                 value: {
-                  '@id': 'mp:a/b/file-param#MyClass_field_field',
+                  '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_field',
                 },
               },
             ],
@@ -2082,7 +2100,7 @@ describe('ComponentConstructor', () => {
         });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_field_field',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_field',
           comment: 'Hi',
           range: 'xsd:boolean',
           required: true,
@@ -2118,28 +2136,28 @@ describe('ComponentConstructor', () => {
         parameterData,
         parameters,
         subParamData,
-        'mp:a/b/file-param#MyClass_fieldA',
+        'mp:components/a/b/file-param.jsonld#MyClass_fieldA',
         scope,
       ))
         .toEqual({
-          collectEntries: 'mp:a/b/file-param#MyClass_fieldA',
-          key: 'mp:a/b/file-param#MyClass_fieldA_key',
-          value: { '@id': 'mp:a/b/file-param#MyClass_fieldA_value' },
+          collectEntries: 'mp:components/a/b/file-param.jsonld#MyClass_fieldA',
+          key: 'mp:components/a/b/file-param.jsonld#MyClass_fieldA_key',
+          value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA_value' },
         });
       expect(parameters).toEqual([
         {
-          '@id': 'mp:a/b/file-param#MyClass_fieldA',
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA',
           comment: 'Hi',
           range: {
-            '@id': 'mp:a/b/file-param#MyClass_fieldA_range',
+            '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA_range',
             parameters: [
               {
-                '@id': 'mp:a/b/file-param#MyClass_fieldA_key',
+                '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA_key',
                 required: true,
                 unique: true,
               },
               {
-                '@id': 'mp:a/b/file-param#MyClass_fieldA_value',
+                '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA_value',
                 comment: 'Hi',
                 range: 'xsd:boolean',
                 required: true,
@@ -2191,7 +2209,7 @@ describe('ComponentConstructor', () => {
         { type: 'raw', value: rangeValue },
         context,
         externalContextsCallback,
-        'mp:a/b/file-param#MyClass_field',
+        'mp:components/a/b/file-param.jsonld#MyClass_field',
       )).toEqual('xsd:boolean');
     });
 
@@ -2201,7 +2219,7 @@ describe('ComponentConstructor', () => {
         { type: 'override', value: rangeValue },
         context,
         externalContextsCallback,
-        'mp:a/b/file-param#MyClass_field',
+        'mp:components/a/b/file-param.jsonld#MyClass_field',
       )).toEqual('rdf:JSON');
     });
 
@@ -2215,8 +2233,8 @@ describe('ComponentConstructor', () => {
         { type: 'class', value: rangeValue },
         context,
         externalContextsCallback,
-        'mp:a/b/file-param#MyClass_field',
-      )).toEqual('mp:a/b/file-param#ClassParam');
+        'mp:components/a/b/file-param.jsonld#MyClass_field',
+      )).toEqual('mp:components/a/b/file-param.jsonld#ClassParam');
     });
 
     it('should throw on a nested parameter range', async() => {
@@ -2225,7 +2243,7 @@ describe('ComponentConstructor', () => {
         { type: 'nested', value: rangeValue },
         context,
         externalContextsCallback,
-        'mp:a/b/file-param#MyClass_field',
+        'mp:components/a/b/file-param.jsonld#MyClass_field',
       )).rejects.toThrow('Composition of nested fields is unsupported');
     });
 
@@ -2234,7 +2252,7 @@ describe('ComponentConstructor', () => {
         { type: 'undefined' },
         context,
         externalContextsCallback,
-        'mp:a/b/file-param#MyClass_field',
+        'mp:components/a/b/file-param.jsonld#MyClass_field',
       )).toBeUndefined();
     });
 
@@ -2252,12 +2270,12 @@ describe('ComponentConstructor', () => {
         { type: 'union', elements: children },
         context,
         externalContextsCallback,
-        'mp:a/b/file-param#MyClass_field',
+        'mp:components/a/b/file-param.jsonld#MyClass_field',
       )).toEqual({
         '@type': 'ParameterRangeUnion',
         parameterRangeElements: [
           'xsd:boolean',
-          'mp:a/b/file-param#ClassParam',
+          'mp:components/a/b/file-param.jsonld#ClassParam',
         ],
       });
     });
@@ -2276,12 +2294,12 @@ describe('ComponentConstructor', () => {
         { type: 'intersection', elements: children },
         context,
         externalContextsCallback,
-        'mp:a/b/file-param#MyClass_field',
+        'mp:components/a/b/file-param.jsonld#MyClass_field',
       )).toEqual({
         '@type': 'ParameterRangeIntersection',
         parameterRangeElements: [
           'xsd:boolean',
-          'mp:a/b/file-param#ClassParam',
+          'mp:components/a/b/file-param.jsonld#ClassParam',
         ],
       });
     });
@@ -2300,12 +2318,12 @@ describe('ComponentConstructor', () => {
         { type: 'tuple', elements },
         context,
         externalContextsCallback,
-        'mp:a/b/file-param#MyClass_field',
+        'mp:components/a/b/file-param.jsonld#MyClass_field',
       )).toEqual({
         '@type': 'ParameterRangeTuple',
         parameterRangeElements: [
           'xsd:boolean',
-          'mp:a/b/file-param#ClassParam',
+          'mp:components/a/b/file-param.jsonld#ClassParam',
         ],
       });
     });
@@ -2324,7 +2342,7 @@ describe('ComponentConstructor', () => {
         { type: 'tuple', elements },
         context,
         externalContextsCallback,
-        'mp:a/b/file-param#MyClass_field',
+        'mp:components/a/b/file-param.jsonld#MyClass_field',
       )).toEqual({
         '@type': 'ParameterRangeTuple',
         parameterRangeElements: [
@@ -2332,7 +2350,7 @@ describe('ComponentConstructor', () => {
             '@type': 'ParameterRangeRest',
             parameterRangeValue: 'xsd:boolean',
           },
-          'mp:a/b/file-param#ClassParam',
+          'mp:components/a/b/file-param.jsonld#ClassParam',
         ],
       });
     });
