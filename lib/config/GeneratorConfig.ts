@@ -15,6 +15,11 @@ export interface GeneratorConfig {
    */
   extension: string;
   /**
+   * Paths to packages that should be excluded from generation.
+   * This can be used in monorepos where not all packages require component generation.
+   */
+  ignorePackagePaths: string[];
+  /**
    * Relative path to an optional file with class names to ignore.
    */
   ignoreComponents: string[];

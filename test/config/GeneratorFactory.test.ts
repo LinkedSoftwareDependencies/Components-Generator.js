@@ -26,6 +26,15 @@ describe('GeneratorFactory', () => {
         i: '/root/.componentsignore',
       }, [ '/root' ])).toBeInstanceOf(Generator);
     });
+
+    it('should create a new generator when ignoring certain packages', async() => {
+      resolutionContext.contentsOverrides['/root/.componentsjs-generator-config.json'] = `{ "ignorePackagePaths": [ "ignored1/", "ignored2/" ] }`;
+      expect(await factory.createGenerator('/root', {
+        c: 'COMPONENTS/',
+        e: 'EXT',
+        r: 'PRE',
+      }, [ '/root', '/ignored1', '/ignored2' ])).toBeInstanceOf(Generator);
+    });
   });
 
   describe('getConfig', () => {
@@ -34,6 +43,7 @@ describe('GeneratorFactory', () => {
         source: 'lib',
         destination: 'components',
         extension: 'jsonld',
+        ignorePackagePaths: [],
         ignoreComponents: [],
         logLevel: 'info',
         modulePrefix: undefined,
@@ -48,6 +58,7 @@ describe('GeneratorFactory', () => {
         source: 'FILESRC/',
         destination: 'components',
         extension: 'FILEEXT',
+        ignorePackagePaths: [],
         ignoreComponents: [],
         logLevel: 'info',
         modulePrefix: undefined,
@@ -66,6 +77,7 @@ describe('GeneratorFactory', () => {
         source: 'SOURCE/',
         destination: 'COMPONENTS/',
         extension: 'EXT',
+        ignorePackagePaths: [],
         ignoreComponents: [],
         logLevel: 'info',
         modulePrefix: 'PRE',
@@ -84,6 +96,7 @@ describe('GeneratorFactory', () => {
         source: 'FILESRC/',
         destination: 'COMPONENTS/',
         extension: 'EXT',
+        ignorePackagePaths: [],
         ignoreComponents: [],
         logLevel: 'info',
         modulePrefix: 'PRE',
@@ -99,6 +112,7 @@ describe('GeneratorFactory', () => {
         source: 'lib',
         destination: 'components',
         extension: 'jsonld',
+        ignorePackagePaths: [],
         ignoreComponents: [],
         logLevel: 'info',
         modulePrefix: undefined,

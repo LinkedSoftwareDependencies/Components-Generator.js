@@ -28,11 +28,14 @@ export class GeneratorFactory {
     const config = await this.getConfig(cwd, cliArgs);
     return new Generator({
       resolutionContext: this.resolutionContext,
-      pathDestinations: packageRootDirectories.map(packageRootDirectory => ({
-        packageRootDirectory,
-        originalPath: Path.posix.join(packageRootDirectory, config.source),
-        replacementPath: Path.posix.join(packageRootDirectory, config.destination),
-      })),
+      pathDestinations: packageRootDirectories
+        .filter(packageRootDirectory => !config.ignorePackagePaths
+          .some(ignorePackagePath => packageRootDirectory.startsWith(Path.join(cwd, ignorePackagePath))))
+        .map(packageRootDirectory => ({
+          packageRootDirectory,
+          originalPath: Path.posix.join(packageRootDirectory, config.source),
+          replacementPath: Path.posix.join(packageRootDirectory, config.destination),
+        })),
       fileExtension: config.extension,
       typeScopedContexts: config.typeScopedContexts,
       logLevel: <LogLevel> config.logLevel,
@@ -62,6 +65,7 @@ export class GeneratorFactory {
       source: 'lib',
       destination: 'components',
       extension: 'jsonld',
+      ignorePackagePaths: [],
       ignoreComponents: [],
       logLevel: 'info',
       modulePrefix: undefined,

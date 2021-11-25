@@ -126,6 +126,7 @@ The following shows an example of the possible options:
   "source": "lib",
   "destination": "components",
   "extension": "jsonld",
+  "ignorePackagePaths": [ "path/to/package-ignored1", "path/to/package-ignored2" ],
   "ignoreComponents": [ "Class1", "Class2" ],
   "logLevel": "info",
   "modulePrefix": "myprefix",
