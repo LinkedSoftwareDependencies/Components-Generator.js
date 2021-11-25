@@ -258,5 +258,93 @@ describe('PackageMetadataLoader', () => {
       await expect(loader.load('/')).rejects
         .toThrow(new Error(`Invalid package: Missing 'types' or 'typings' in ${Path.normalize('/package.json')}`));
     });
+
+    describe('for a given prefix', () => {
+      beforeEach(() => {
+        loader = new PackageMetadataLoader({ resolutionContext, prefixes: 'PRE' });
+      });
+
+      it('should return with all required entries', async() => {
+        resolutionContext.contentsOverrides = {
+          [Path.normalize('/package.json')]: `{
+  "name": "@solid/community-server",
+  "version": "1.2.3",
+  "lsd:module": "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server",
+  "lsd:components": "components/components.jsonld",
+  "lsd:contexts": {
+    "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/components/context.jsonld": "components/context.jsonld"
+  },
+  "lsd:importPaths": {
+    "https://example.org/bundles/npm/@solid/community-server/^1.0.0/components/": "components/",
+    "https://example.org/bundles/npm/@solid/community-server/^1.0.0/config/": "config/"
+  },
+  "types": "./index.d.ts"
+}`,
+        };
+        expect(await loader.load('/')).toEqual({
+          componentsPath: Path.normalize('/components/components.jsonld'),
+          contexts: {
+            [`https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/components/context.jsonld`]:
+              'components/context.jsonld',
+          },
+          importPaths: {
+            'https://example.org/bundles/npm/@solid/community-server/^1.0.0/components/': 'components/',
+            'https://example.org/bundles/npm/@solid/community-server/^1.0.0/config/': 'config/',
+          },
+          moduleIri: 'https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server',
+          name: '@solid/community-server',
+          version: '1.2.3',
+          typesPath: Path.normalize('/index'),
+          prefix: 'PRE',
+        });
+      });
+    });
+
+    describe('for a given prefixes', () => {
+      beforeEach(() => {
+        loader = new PackageMetadataLoader({
+          resolutionContext,
+          prefixes: {
+            '@solid/community-server': 'css',
+            '@comunica/actor-init-sparql': 'cais',
+          },
+        });
+      });
+
+      it('should return with all required entries', async() => {
+        resolutionContext.contentsOverrides = {
+          [Path.normalize('/package.json')]: `{
+  "name": "@solid/community-server",
+  "version": "1.2.3",
+  "lsd:module": "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server",
+  "lsd:components": "components/components.jsonld",
+  "lsd:contexts": {
+    "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/components/context.jsonld": "components/context.jsonld"
+  },
+  "lsd:importPaths": {
+    "https://example.org/bundles/npm/@solid/community-server/^1.0.0/components/": "components/",
+    "https://example.org/bundles/npm/@solid/community-server/^1.0.0/config/": "config/"
+  },
+  "types": "./index.d.ts"
+}`,
+        };
+        expect(await loader.load('/')).toEqual({
+          componentsPath: Path.normalize('/components/components.jsonld'),
+          contexts: {
+            [`https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/components/context.jsonld`]:
+              'components/context.jsonld',
+          },
+          importPaths: {
+            'https://example.org/bundles/npm/@solid/community-server/^1.0.0/components/': 'components/',
+            'https://example.org/bundles/npm/@solid/community-server/^1.0.0/config/': 'config/',
+          },
+          moduleIri: 'https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server',
+          name: '@solid/community-server',
+          version: '1.2.3',
+          typesPath: Path.normalize('/index'),
+          prefix: 'css',
+        });
+      });
+    });
   });
 });

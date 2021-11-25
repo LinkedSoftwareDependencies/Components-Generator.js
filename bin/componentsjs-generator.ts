@@ -8,8 +8,9 @@ function showHelp(): void {
   process.stderr.write(`Generates components files for TypeScript files in a package
 Usage:
   componentsjs-generator
+  Arguments:
+       path/to/package         The directories of the packages to look in, defaults to working directory
   Options:
-       -p path/to/package      The directory of the package to look in, defaults to working directory
        -s lib                  Relative path to directory containing source files, defaults to 'lib'
        -c components           Relative path to directory that will contain components files, defaults to 'components'
        -e jsonld               Extension for components files (without .), defaults to 'jsonld'
@@ -29,9 +30,10 @@ const args = minimist(process.argv.slice(2));
 if (args.help) {
   showHelp();
 } else {
-  const packageRootDirectory = Path.posix.join(process.cwd(), args.p || '');
+  const packageRootDirectories = (args._.length > 0 ? args._ : [ '' ])
+    .map(path => Path.posix.join(process.cwd(), path));
   new GeneratorFactory({ resolutionContext: new ResolutionContext() })
-    .createGenerator(packageRootDirectory, args)
+    .createGenerator(process.cwd(), args, packageRootDirectories)
     .then(generator => generator.generateComponents())
     .catch((error: Error) => {
       process.stderr.write(`${error.message}\n`);

@@ -5,14 +5,17 @@ import { ContextParser } from 'jsonld-context-parser';
 import type {
   ClassIndex,
   ClassLoaded,
-
   ClassReferenceLoaded,
   InterfaceLoaded,
 } from '../../lib/parse/ClassIndex';
 import type { ConstructorData } from '../../lib/parse/ConstructorLoader';
 import type { ParameterData, ParameterRangeResolved } from '../../lib/parse/ParameterLoader';
 import type { ExternalComponents } from '../../lib/resolution/ExternalModulesLoader';
-import type { FieldScope, ExternalContextCallback } from '../../lib/serialize/ComponentConstructor';
+import type {
+  FieldScope,
+  ExternalContextCallback,
+  PathDestinationDefinition,
+} from '../../lib/serialize/ComponentConstructor';
 import { ComponentConstructor } from '../../lib/serialize/ComponentConstructor';
 import type { ParameterDefinition } from '../../lib/serialize/ComponentDefinitions';
 import { ContextConstructorMocked } from '../ContextConstructorMocked';
@@ -24,6 +27,7 @@ describe('ComponentConstructor', () => {
   let context: JsonLdContextNormalized;
   let externalContextsCallback: ExternalContextCallback;
   let scope: FieldScope;
+  let pathDestination: PathDestinationDefinition;
 
   beforeEach(async() => {
     classReference = <any> {
@@ -36,6 +40,7 @@ describe('ComponentConstructor', () => {
     externalComponents = {
       moduleState: <any> {},
       components: {},
+      packagesBeingGenerated: {},
     };
 
     const contextParser = new ContextParser({
@@ -65,14 +70,15 @@ describe('ComponentConstructor', () => {
       typesPath: '',
     };
     const contextConstructor = new ContextConstructorMocked({ packageMetadata, typeScopedContexts: false });
+    pathDestination = {
+      packageRootDirectory: Path.normalize('/docs/package'),
+      originalPath: 'src',
+      replacementPath: 'components',
+    };
     ctor = new ComponentConstructor({
       packageMetadata,
       contextConstructor,
-      pathDestination: {
-        packageRootDirectory: Path.normalize('/docs/package'),
-        originalPath: 'src',
-        replacementPath: 'components',
-      },
+      pathDestination,
       classAndInterfaceIndex: {},
       classConstructors: {},
       externalComponents,
@@ -479,12 +485,12 @@ describe('ComponentConstructor', () => {
 
   describe('getPathRelative', () => {
     it('should error when source is outside package', () => {
-      expect(() => ctor.getPathRelative('not-in-package'))
+      expect(() => ComponentConstructor.getPathRelative(pathDestination, 'not-in-package'))
         .toThrow(new Error('Tried to reference a file outside the current package: not-in-package'));
     });
 
     it('should handle a valid path', () => {
-      expect(ctor.getPathRelative(Path.normalize('/docs/package/src/a/b/myFile')))
+      expect(ComponentConstructor.getPathRelative(pathDestination, Path.normalize('/docs/package/src/a/b/myFile')))
         .toEqual('a/b/myFile');
     });
 
@@ -492,8 +498,10 @@ describe('ComponentConstructor', () => {
       const sep = Path.sep;
       (<any> Path).sep = Path.posix.sep;
       (<any> ctor).pathDestination.packageRootDirectory = Path.posix.normalize('/docs/package');
-      expect(ctor.getPathRelative(Path.posix.normalize('/docs/package/src/a/b/myFile')))
-        .toEqual('a/b/myFile');
+      expect(ComponentConstructor.getPathRelative(
+        pathDestination,
+        Path.posix.normalize('/docs/package/src/a/b/myFile'),
+      )).toEqual('a/b/myFile');
       (<any> Path).sep = sep;
     });
 
@@ -501,8 +509,10 @@ describe('ComponentConstructor', () => {
       const sep = Path.sep;
       (<any> Path).sep = Path.win32.sep;
       (<any> ctor).pathDestination.packageRootDirectory = Path.win32.normalize('/docs/package');
-      expect(ctor.getPathRelative(Path.win32.normalize('/docs/package/src/a/b/myFile')))
-        .toEqual('a/b/myFile');
+      expect(ComponentConstructor.getPathRelative(
+        pathDestination,
+        Path.win32.normalize('/docs/package/src/a/b/myFile'),
+      )).toEqual('a/b/myFile');
       (<any> Path).sep = sep;
     });
   });
@@ -753,6 +763,38 @@ describe('ComponentConstructor', () => {
         fileName: Path.normalize('/docs/package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
       })).toEqual('mp:a/b/MyOwnClass#MyClass');
+    });
+
+    it('should return an existing IRI in another package that is being generated', async() => {
+      const packageMetadata = <any> {
+        name: 'other-package',
+        version: '3.2.1',
+        moduleIri: 'https://linkedsoftwaredependencies.org/bundles/npm/other-package',
+        contexts: {
+          'http://example.org/context-other-package.jsonld': true,
+        },
+      };
+      externalComponents.packagesBeingGenerated['other-package'] = {
+        packageMetadata,
+        pathDestination: {
+          packageRootDirectory: Path.normalize('/docs/other-package'),
+          originalPath: 'src',
+          replacementPath: 'components',
+        },
+        minimalContext: await new ContextParser({
+          documentLoader: new PrefetchedDocumentLoader({
+            contexts: {},
+          }),
+          skipValidation: true,
+        }).parse(new ContextConstructorMocked({ packageMetadata, typeScopedContexts: false }).constructContext()),
+      };
+      expect(await ctor.classNameToId(context, externalContextsCallback, {
+        packageName: 'other-package',
+        localName: 'MyClass',
+        fileName: Path.normalize('/docs/other-package/src/a/b/MyOwnClass'),
+        fileNameReferenced: 'unused',
+      })).toEqual('op:a/b/MyOwnClass#MyClass');
+      expect(externalContextsCallback).toHaveBeenCalledWith('http://example.org/context-other-package.jsonld');
     });
 
     it('should return an existing IRI in an external package', async() => {

@@ -13,7 +13,7 @@ describe('GeneratorFactory', () => {
 
   describe('createGenerator', () => {
     it('should create a new generator without custom options', async() => {
-      expect(await factory.createGenerator('/root', {})).toBeInstanceOf(Generator);
+      expect(await factory.createGenerator('/root', {}, [ '/root' ])).toBeInstanceOf(Generator);
     });
 
     it('should create a new generator with custom options', async() => {
@@ -24,7 +24,7 @@ describe('GeneratorFactory', () => {
         e: 'EXT',
         r: 'PRE',
         i: '/root/.componentsignore',
-      })).toBeInstanceOf(Generator);
+      }, [ '/root' ])).toBeInstanceOf(Generator);
     });
   });
 

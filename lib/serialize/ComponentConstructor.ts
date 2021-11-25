@@ -94,7 +94,7 @@ export class ComponentConstructor {
       '@type': 'Module',
       requireName: this.packageMetadata.name,
       import: Object.keys(definitions)
-        .map(pathAbsolute => this.getPathRelative(`${pathAbsolute}.${fileExtension}`))
+        .map(pathAbsolute => ComponentConstructor.getPathRelative(this.pathDestination, `${pathAbsolute}.${fileExtension}`))
         .map(pathRelative => this.getImportPathIri(pathRelative))
         .map(iri => context.compactIri(iri)),
     };
@@ -102,19 +102,20 @@ export class ComponentConstructor {
 
   /**
    * Determine the relative path of a component file within a package.
+   * @param pathDestination The path destination.
    * @param sourcePath The absolute path to a class file.
    */
-  public getPathRelative(sourcePath: string): string {
-    if (!sourcePath.startsWith(this.pathDestination.packageRootDirectory)) {
+  public static getPathRelative(pathDestination: PathDestinationDefinition, sourcePath: string): string {
+    if (!sourcePath.startsWith(pathDestination.packageRootDirectory)) {
       throw new Error(`Tried to reference a file outside the current package: ${sourcePath}`);
     }
 
-    let strippedPath = sourcePath.slice(this.pathDestination.packageRootDirectory.length + 1);
+    let strippedPath = sourcePath.slice(pathDestination.packageRootDirectory.length + 1);
     if (Path.sep !== '/') {
       strippedPath = strippedPath.split(Path.sep).join('/');
     }
 
-    return strippedPath.replace(`${this.pathDestination.originalPath}/`, '');
+    return strippedPath.replace(`${pathDestination.originalPath}/`, '');
   }
 
   /**
@@ -226,10 +227,27 @@ export class ComponentConstructor {
   ): Promise<string> {
     // Mint a new IRI if class is in the current package
     if (classReference.packageName === this.packageMetadata.name) {
-      return context.compactIri(`${this.packageMetadata.moduleIri}/${this.getPathRelative(classReference.fileName)}#${classReference.localName}`);
+      return ComponentConstructor.classNameToIdForPackage(
+        context,
+        this.packageMetadata,
+        this.pathDestination,
+        classReference,
+      );
     }
 
-    // Use existing IRI if class is in another package
+    // Use existing IRI if class is in another package (that is also being built currently)
+    const otherPackageMetadata = this.externalComponents.packagesBeingGenerated[classReference.packageName];
+    if (otherPackageMetadata) {
+      Object.keys(otherPackageMetadata.packageMetadata.contexts).forEach(iri => externalContextsCallback(iri));
+      return await ComponentConstructor.classNameToIdForPackage(
+        otherPackageMetadata.minimalContext,
+        otherPackageMetadata.packageMetadata,
+        otherPackageMetadata.pathDestination,
+        classReference,
+      );
+    }
+
+    // Use existing IRI if class is in another package (pre-built)
     const moduleComponents = this.externalComponents.components[classReference.packageName];
     if (!moduleComponents) {
       throw new Error(`Tried to reference a class '${classReference.localName}' from an external module '${classReference.packageName}' that is not a dependency`);
@@ -241,6 +259,16 @@ export class ComponentConstructor {
     }
     const contextExternal = await this.contextParser.parse(moduleComponents.contextIris);
     return contextExternal.compactIri(componentIri);
+  }
+
+  public static async classNameToIdForPackage(
+    context: JsonLdContextNormalized,
+    packageMetadata: PackageMetadata,
+    pathDestination: PathDestinationDefinition,
+    classReference: ClassReference,
+  ): Promise<string> {
+    return context.compactIri(`${packageMetadata.moduleIri}/${ComponentConstructor
+      .getPathRelative(pathDestination, classReference.fileName)}#${classReference.localName}`);
   }
 
   /**
@@ -259,7 +287,8 @@ export class ComponentConstructor {
     if (scope.parentFieldNames.length > 0) {
       fieldName = `${scope.parentFieldNames.join('_')}_${fieldName}`;
     }
-    let id = context.compactIri(`${this.packageMetadata.moduleIri}/${this.getPathRelative(classReference.fileName)}#${classReference.localName}_${fieldName}`);
+    let id = context.compactIri(`${this.packageMetadata.moduleIri}/${ComponentConstructor
+      .getPathRelative(this.pathDestination, classReference.fileName)}#${classReference.localName}_${fieldName}`);
     if (id in scope.fieldIdsHash) {
       id += `_${scope.fieldIdsHash[id]++}`;
     } else {

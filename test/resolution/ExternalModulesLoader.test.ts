@@ -1,8 +1,8 @@
 import type { RdfObjectLoader, Resource } from 'rdf-object';
-
 import type { ClassIndex, ClassLoaded } from '../../lib/parse/ClassIndex';
 import type { ConstructorData } from '../../lib/parse/ConstructorLoader';
 import type { ParameterRangeResolved } from '../../lib/parse/ParameterLoader';
+import type { PackageMetadataScope } from '../../lib/resolution/ExternalModulesLoader';
 import { ExternalModulesLoader } from '../../lib/resolution/ExternalModulesLoader';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
@@ -41,6 +41,7 @@ jest.mock('componentsjs', () => ({
 describe('ExternalModulesLoader', () => {
   let logger: any;
   let resolutionContext: ResolutionContextMocked;
+  let packagesBeingGenerated: Record<string, PackageMetadataScope>;
   let loader: ExternalModulesLoader;
   let req: any;
 
@@ -68,6 +69,7 @@ describe('ExternalModulesLoader', () => {
       warn: jest.fn(),
     };
     resolutionContext = new ResolutionContextMocked({});
+    packagesBeingGenerated = {};
     loader = new ExternalModulesLoader({
       pathDestination: {
         packageRootDirectory: '/',
@@ -83,6 +85,7 @@ describe('ExternalModulesLoader', () => {
         importPaths: {},
         typesPath: '',
       },
+      packagesBeingGenerated,
       resolutionContext,
       debugState: false,
       logger,
@@ -475,6 +478,37 @@ describe('ExternalModulesLoader', () => {
       expect(loader.findExternalPackages({}, constructors))
         .toEqual([ 'package1', 'package2' ]);
     });
+
+    it('should ignore components in packages that are being generated', () => {
+      const classIndex: ClassIndex<ClassLoaded> = <any> {
+        Class1: {
+          type: 'class',
+          localName: 'Class1',
+          packageName: 'package1',
+        },
+        Class2: {
+          type: 'class',
+          localName: 'Class2',
+          packageName: 'package2',
+        },
+        Class3: {
+          type: 'class',
+          localName: 'Class3',
+          packageName: 'package3',
+        },
+        Class4: {
+          type: 'class',
+          localName: 'Class4',
+          packageName: 'my-package',
+        },
+      };
+      packagesBeingGenerated.package1 = <any> true;
+      packagesBeingGenerated.package3 = <any> true;
+      expect(loader.findExternalPackages(classIndex, {}))
+        .toEqual([
+          'package2',
+        ]);
+    });
   });
 
   describe('buildModuleStateSelective', () => {
@@ -838,6 +872,7 @@ describe('ExternalModulesLoader', () => {
             },
           },
           moduleState: expect.anything(),
+          packagesBeingGenerated,
         });
       expect(logger.warn).not.toHaveBeenCalled();
       expect(resolutionContext.contentsOverrides).toEqual({});
@@ -876,6 +911,7 @@ describe('ExternalModulesLoader', () => {
             },
           },
           moduleState: expect.anything(),
+          packagesBeingGenerated,
         });
       expect(logger.warn).not.toHaveBeenCalled();
       expect(resolutionContext.contentsOverrides).toEqual({});
@@ -895,6 +931,7 @@ describe('ExternalModulesLoader', () => {
         .toEqual({
           components: {},
           moduleState: expect.anything(),
+          packagesBeingGenerated,
         });
       expect(logger.warn).toHaveBeenCalledWith('Could not find a package.json for \'package3\'');
       expect(resolutionContext.contentsOverrides).toEqual({});
@@ -916,6 +953,7 @@ describe('ExternalModulesLoader', () => {
           importPaths: {},
           typesPath: '',
         },
+        packagesBeingGenerated,
         resolutionContext,
         debugState: true,
         logger,
@@ -943,6 +981,7 @@ describe('ExternalModulesLoader', () => {
             },
           },
           moduleState: expect.anything(),
+          packagesBeingGenerated,
         });
       expect(logger.warn).not.toHaveBeenCalled();
       expect(resolutionContext.contentsOverrides).toEqual({

@@ -90,10 +90,14 @@ When invoking `componentsjs-generator`,
 this tool will automatically generate `.jsonld` components files for all TypeScript files
 that are exported by the current package.
 
+For monorepos, multiple package paths may be provided.
+
 ```bash
 Generates component file for a package
 Usage:
   componentsjs-generator
+  Arguments:
+       path/to/package         The directories of the packages to look in, defaults to working directory
   Options:
        -p path/to/package      The directory of the package to look in, defaults to working directory
        -s lib                  Relative path to directory containing source files, defaults to 'lib'

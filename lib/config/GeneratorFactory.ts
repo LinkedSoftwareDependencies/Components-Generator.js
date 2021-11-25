@@ -20,20 +20,24 @@ export class GeneratorFactory {
     this.resolutionContext = args.resolutionContext;
   }
 
-  public async createGenerator(packageRootDirectory: string, cliArgs: Record<string, any>): Promise<Generator> {
-    const config = await this.getConfig(packageRootDirectory, cliArgs);
+  public async createGenerator(
+    cwd: string,
+    cliArgs: Record<string, any>,
+    packageRootDirectories: string[],
+  ): Promise<Generator> {
+    const config = await this.getConfig(cwd, cliArgs);
     return new Generator({
       resolutionContext: this.resolutionContext,
-      pathDestination: {
+      pathDestinations: packageRootDirectories.map(packageRootDirectory => ({
         packageRootDirectory,
         originalPath: Path.posix.join(packageRootDirectory, config.source),
         replacementPath: Path.posix.join(packageRootDirectory, config.destination),
-      },
+      })),
       fileExtension: config.extension,
       typeScopedContexts: config.typeScopedContexts,
       logLevel: <LogLevel> config.logLevel,
       debugState: config.debugState,
-      prefix: config.modulePrefix,
+      prefixes: config.modulePrefix,
       ignoreClasses: config.ignoreComponents.reduce((acc: Record<string, boolean>, entry: string) => {
         acc[entry] = true;
         return acc;
@@ -41,10 +45,10 @@ export class GeneratorFactory {
     });
   }
 
-  public async getConfig(packageRootDirectory: string, cliArgs: Record<string, any>): Promise<GeneratorConfig> {
+  public async getConfig(cwd: string, cliArgs: Record<string, any>): Promise<GeneratorConfig> {
     const defaultConfig = this.getDefaultConfig();
     const fileConfig = await new FileConfigLoader({ resolutionContext: this.resolutionContext })
-      .getClosestConfigFile(packageRootDirectory);
+      .getClosestConfigFile(cwd);
     const cliConfig = await this.getCliConfig(cliArgs);
     return {
       ...defaultConfig,

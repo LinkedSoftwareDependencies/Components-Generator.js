@@ -3,15 +3,15 @@ import semverMajor = require('semver/functions/major');
 import type { ResolutionContext } from '../resolution/ResolutionContext';
 
 /**
- * Load metadata from packages.
+ * Load metadata from a package.
  */
 export class PackageMetadataLoader {
   private readonly resolutionContext: ResolutionContext;
-  private readonly prefix?: string;
+  private readonly prefixes?: string | Record<string, string>;
 
   public constructor(args: PackageMetadataLoaderArgs) {
     this.resolutionContext = args.resolutionContext;
-    this.prefix = args.prefix;
+    this.prefixes = args.prefixes;
   }
 
   /**
@@ -71,6 +71,9 @@ export class PackageMetadataLoader {
       typesPath = typesPath.slice(0, -5);
     }
 
+    // Determine prefixes
+    const prefix = !this.prefixes || typeof this.prefixes === 'string' ? this.prefixes : this.prefixes[name];
+
     // Construct metadata hash
     return {
       name,
@@ -80,14 +83,14 @@ export class PackageMetadataLoader {
       contexts,
       importPaths,
       typesPath,
-      prefix: this.prefix,
+      prefix,
     };
   }
 }
 
 export interface PackageMetadataLoaderArgs {
   resolutionContext: ResolutionContext;
-  prefix?: string;
+  prefixes?: string | Record<string, string>;
 }
 
 export interface PackageMetadata {

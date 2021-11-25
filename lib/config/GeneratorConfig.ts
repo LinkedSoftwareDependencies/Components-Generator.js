@@ -24,8 +24,9 @@ export interface GeneratorConfig {
   logLevel: string;
   /**
    * Optional custom JSON-LD module prefix, defaults to an auto-generated value.
+   * May also be a mapping from package name to prefix.
    */
-  modulePrefix: string | undefined;
+  modulePrefix: string | undefined | Record<string, string>;
   /**
    * If a 'componentsjs-generator-debug-state.json' file should be created with debug information.
    */

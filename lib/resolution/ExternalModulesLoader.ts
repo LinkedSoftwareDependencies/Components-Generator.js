@@ -5,6 +5,7 @@ import {
   ComponentRegistryFinalizer,
   ComponentRegistry,
 } from 'componentsjs';
+import type { JsonLdContextNormalized } from 'jsonld-context-parser';
 import type { Resource } from 'rdf-object';
 import type { Logger } from 'winston';
 import type { ClassIndex, ClassReferenceLoaded } from '../parse/ClassIndex';
@@ -20,6 +21,7 @@ import type { ResolutionContext } from './ResolutionContext';
 export class ExternalModulesLoader {
   private readonly pathDestination: PathDestinationDefinition;
   private readonly packageMetadata: PackageMetadata;
+  private readonly packagesBeingGenerated: Record<string, PackageMetadataScope>;
   private readonly resolutionContext: ResolutionContext;
   private readonly debugState: boolean;
   private readonly logger: Logger;
@@ -27,6 +29,7 @@ export class ExternalModulesLoader {
   public constructor(args: ExternalModulesLoaderArgs) {
     this.pathDestination = args.pathDestination;
     this.packageMetadata = args.packageMetadata;
+    this.packagesBeingGenerated = args.packagesBeingGenerated;
     this.resolutionContext = args.resolutionContext;
     this.debugState = args.debugState;
     this.logger = args.logger;
@@ -52,6 +55,13 @@ export class ExternalModulesLoader {
     for (const ctor of Object.values(constructors)) {
       for (const parameter of ctor.parameters) {
         this.indexParameterRangeInExternalPackage(parameter.range, externalPackages);
+      }
+    }
+
+    // Exclude packages that are being generated
+    for (const key of Object.keys(externalPackages)) {
+      if (key in this.packagesBeingGenerated) {
+        delete externalPackages[key];
       }
     }
 
@@ -228,6 +238,7 @@ export class ExternalModulesLoader {
     const externalComponents: ExternalComponents = {
       moduleState,
       components: {},
+      packagesBeingGenerated: this.packagesBeingGenerated,
     };
     for (const componentResource of Object.values(componentResources)) {
       const packageNames = componentResource.properties.module.map(module => module.property.requireName.value);
@@ -293,12 +304,26 @@ export interface ExternalComponents {
     contextIris: string[];
     componentNamesToIris: Record<string, string>;
   }>;
+  /**
+   * Maps package name to package metadata.
+   */
+  packagesBeingGenerated: Record<string, PackageMetadataScope>;
 }
 
 export interface ExternalModulesLoaderArgs {
   pathDestination: PathDestinationDefinition;
   packageMetadata: PackageMetadata;
+  /**
+   * Maps package name to package metadata.
+   */
+  packagesBeingGenerated: Record<string, PackageMetadataScope>;
   resolutionContext: ResolutionContext;
   debugState: boolean;
   logger: Logger;
+}
+
+export interface PackageMetadataScope {
+  packageMetadata: PackageMetadata;
+  pathDestination: PathDestinationDefinition;
+  minimalContext: JsonLdContextNormalized;
 }
