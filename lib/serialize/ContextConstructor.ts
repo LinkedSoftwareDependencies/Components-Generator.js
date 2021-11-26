@@ -72,7 +72,7 @@ export class ContextConstructor {
             '@id': parameter['@id'],
             ...parameter.range === 'rdf:JSON' ? { '@type': '@json' } : {},
             // Mark as list container if range is array
-            ...this.isParameterRangeList(parameter.range) ?
+            ...ContextConstructor.isParameterRangeList(parameter.range) ?
               { '@container': '@list' } :
               {},
           };
@@ -83,7 +83,7 @@ export class ContextConstructor {
     return shortcuts;
   }
 
-  protected isParameterRangeList(range: ParameterDefinitionRange | undefined): boolean {
+  public static isParameterRangeList(range: ParameterDefinitionRange | undefined): boolean {
     if (range && typeof range !== 'string' && '@type' in range) {
       if (range['@type'] === 'ParameterRangeArray' || range['@type'] === 'ParameterRangeCollectEntries') {
         return true;
@@ -98,7 +98,7 @@ export class ContextConstructor {
     return false;
   }
 
-  protected isParameterRangeUndefined(range: ParameterDefinitionRange): boolean {
+  public static isParameterRangeUndefined(range: ParameterDefinitionRange): boolean {
     return typeof range !== 'string' && '@type' in range && range['@type'] === 'ParameterRangeUndefined';
   }
 }

@@ -1295,7 +1295,7 @@ describe('ComponentConstructor', () => {
         {
           '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA',
           comment: 'Hi1',
-          default: [ 'VALUE' ],
+          default: 'VALUE',
           range: 'xsd:boolean',
         },
         {
@@ -1378,7 +1378,7 @@ describe('ComponentConstructor', () => {
         {
           '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA_field1',
           comment: 'Hi1',
-          default: [ 'VALUE' ],
+          default: 'VALUE',
           range: 'xsd:boolean',
         },
         {
@@ -1441,7 +1441,9 @@ describe('ComponentConstructor', () => {
         {
           '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA',
           comment: 'Hi1',
-          default: [ 'VALUEOTHER', 'VALUE' ],
+          default: {
+            '@list': [ 'VALUEOTHER', 'VALUE' ],
+          },
           range: 'xsd:boolean',
         },
         {
@@ -1767,7 +1769,35 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field',
           comment: 'Hi',
           range: 'xsd:boolean',
-          default: [ 'abc' ],
+          default: 'abc',
+        },
+      ]);
+    });
+
+    it('should handle a parameter with default raw value with array range', async() => {
+      const parameters: ParameterDefinition[] = [];
+      expect(await ctor
+        .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
+          type: 'field',
+          name: 'field',
+          range: { type: 'array', value: { type: 'raw', value: 'boolean' }},
+          defaults: [{ type: 'raw', value: 'abc' }],
+          comment: 'Hi',
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope))
+        .toEqual({ '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field' });
+      expect(parameters).toEqual([
+        {
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field',
+          comment: 'Hi',
+          range: {
+            '@type': 'ParameterRangeArray',
+            parameterRangeValue: 'xsd:boolean',
+          },
+          default: {
+            '@list': [
+              'abc',
+            ],
+          },
         },
       ]);
     });
@@ -1788,7 +1818,7 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field',
           comment: 'Hi',
           range: 'xsd:boolean',
-          default: [{ '@id': 'ex:abc' }],
+          default: { '@id': 'ex:abc' },
         },
       ]);
     });
@@ -1809,7 +1839,7 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field',
           comment: 'Hi',
           range: 'xsd:boolean',
-          default: [{ '@id': 'mp:components/a/b/file-param.jsonld#MyClass_abc' }],
+          default: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_abc' },
         },
       ]);
     });
@@ -1830,10 +1860,10 @@ describe('ComponentConstructor', () => {
           '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field',
           comment: 'Hi',
           range: 'rdf:JSON',
-          default: [{
+          default: {
             '@type': '@json',
             '@value': { a: true },
-          }],
+          },
         },
       ]);
     });

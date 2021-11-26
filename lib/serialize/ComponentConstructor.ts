@@ -2,7 +2,6 @@ import * as Path from 'path';
 import type { ContextParser, JsonLdContextNormalized } from 'jsonld-context-parser';
 import semverMajor = require('semver/functions/major');
 import type { ClassIndex, ClassLoaded, ClassReference, ClassReferenceLoadedWithoutType } from '../parse/ClassIndex';
-
 import type { ConstructorData } from '../parse/ConstructorLoader';
 import type { PackageMetadata } from '../parse/PackageMetadataLoader';
 import type { DefaultNested, DefaultValue, ParameterData, ParameterRangeResolved } from '../parse/ParameterLoader';
@@ -13,7 +12,7 @@ import type {
   ConstructorArgumentDefinition, ConstructorFieldDefinition, DefaultValueDefinition,
   ParameterDefinition, ParameterDefinitionRange,
 } from './ComponentDefinitions';
-import type { ContextConstructor } from './ContextConstructor';
+import { ContextConstructor } from './ContextConstructor';
 
 /**
  * Creates declarative JSON components for the given classes.
@@ -416,19 +415,25 @@ export class ComponentConstructor {
       }
     }
 
+    const defaultValuesConstructed = await Promise.all(defaultValues
+      .map(defaultValue => this.constructDefaultValueDefinition(
+        fieldId,
+        context,
+        externalContextsCallback,
+        defaultValue,
+        parameterData.range,
+      )));
+
     // For all other range types, create a parameter and return its parameter id.
+    const range = await this.constructParameterRange(parameterData.range, context, externalContextsCallback, fieldId);
     const param: ParameterDefinition = {
       '@id': fieldId,
-      range: await this.constructParameterRange(parameterData.range, context, externalContextsCallback, fieldId),
-      ...defaultValues.length > 0 ?
+      range,
+      ...defaultValuesConstructed.length > 0 ?
         {
-          default: await Promise.all(defaultValues.map(defaultValue => this.constructDefaultValueDefinition(
-            fieldId,
-            context,
-            externalContextsCallback,
-            defaultValue,
-            parameterData.range,
-          ))),
+          default: defaultValuesConstructed.length > 1 || ContextConstructor.isParameterRangeList(range) ?
+            { '@list': defaultValuesConstructed } :
+            defaultValuesConstructed[0],
         } :
         {},
     };

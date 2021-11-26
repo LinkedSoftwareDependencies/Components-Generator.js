@@ -29,7 +29,7 @@ export interface ParameterDefinition {
   '@id': string;
   comment?: string;
   range?: ParameterDefinitionRange;
-  default?: DefaultValueDefinition[];
+  default?: DefaultValueDefinition | { '@list': DefaultValueDefinition[] };
   lazy?: boolean;
 }
 
