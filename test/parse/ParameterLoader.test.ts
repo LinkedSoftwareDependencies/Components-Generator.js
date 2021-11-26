@@ -1595,7 +1595,7 @@ export interface A{
       });
     });
 
-    it('should not override a hash range', () => {
+    it('should override a hash range', () => {
       expect(loader.overrideRawRange(
         {
           type: 'hash',
@@ -1606,8 +1606,8 @@ export interface A{
           value: 'boolean',
         },
       )).toEqual({
-        type: 'hash',
-        value: 'bla',
+        type: 'raw',
+        value: 'boolean',
       });
     });
 

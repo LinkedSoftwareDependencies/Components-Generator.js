@@ -342,12 +342,12 @@ export class ParameterLoader {
     switch (range.type) {
       case 'raw':
       case 'literal':
+      case 'hash':
         // Only raw types are replaced
         return override;
       case 'undefined':
       case 'override':
       case 'interface':
-      case 'hash':
         // Override has no effect here
         return range;
       case 'union':
