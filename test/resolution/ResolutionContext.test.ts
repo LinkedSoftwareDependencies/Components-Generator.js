@@ -110,9 +110,14 @@ describe('ResolutionContext', () => {
   });
 
   describe('resolvePackageIndex', () => {
-    it('Should resolve from the currentFilePath', async() => {
+    it('Should resolve from the currentFilePath for a package without separate typings', async() => {
+      expect(resolutionContext.resolvePackageIndex('asynciterator', Path.join(__dirname, '../../')))
+        .toEqual(Path.join(__dirname, '../../node_modules/asynciterator/dist/asynciterator.cjs'));
+    });
+
+    it('Should resolve from the currentFilePath for a package with separate typings', async() => {
       expect(resolutionContext.resolvePackageIndex('lru-cache', Path.join(__dirname, '../../')))
-        .toEqual(Path.join(__dirname, '../../node_modules/lru-cache/index.js'));
+        .toEqual(Path.join(__dirname, '../../node_modules/@types/lru-cache/index'));
     });
   });
 });

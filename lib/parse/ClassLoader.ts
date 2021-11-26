@@ -334,7 +334,7 @@ export class ClassLoader {
     const packageRoot = this.resolutionContext.resolvePackageIndex(packageName, currentFilePath);
     const remoteFilePath = packagePath ?
       Path.join(Path.dirname(packageRoot), packagePath) :
-      packageRoot.slice(0, packageRoot.lastIndexOf('.'));
+      packageRoot.slice(0, packageRoot.indexOf('.', packageRoot.lastIndexOf('/')));
     return {
       packageName,
       fileName: remoteFilePath,

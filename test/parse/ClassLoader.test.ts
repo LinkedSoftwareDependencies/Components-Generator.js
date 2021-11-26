@@ -1677,6 +1677,12 @@ declare type A = number;
         .toEqual({ packageName: 'other-package', fileName: '/some-dir/index', fileNameReferenced: 'dir/lib/fileA' });
     });
 
+    it('for a package with a .d.ts index', () => {
+      resolutionContext.packageNameIndexOverrides['other-package'] = '/some-dir/index.d.ts';
+      expect(loader.importTargetToAbsolutePath('package', 'dir/lib/fileA', 'other-package'))
+        .toEqual({ packageName: 'other-package', fileName: '/some-dir/index', fileNameReferenced: 'dir/lib/fileA' });
+    });
+
     it('for a package that does not exist', () => {
       expect(() => loader.importTargetToAbsolutePath('package', 'dir/lib/fileA', 'other-package'))
         .toThrow(`Could not resolve 'other-package' from path 'dir/lib/fileA'`);

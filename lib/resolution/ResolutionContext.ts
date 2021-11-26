@@ -107,6 +107,16 @@ export class ResolutionContext {
    *                        The requested package has to be a dependency of this file's package.
    */
   public resolvePackageIndex(packageName: string, currentFilePath: string): string {
-    return require.resolve(packageName, { paths: [ currentFilePath ]});
+    try {
+      // First check if we have an @types package
+      const packageJsonPath = require.resolve(
+        `@types/${packageName}/package.json`,
+        { paths: [ currentFilePath ]},
+      );
+      return Path.join(Path.dirname(packageJsonPath), require(packageJsonPath).types);
+    } catch {
+      // Otherwise, fallback to the actual package
+      return require.resolve(packageName, { paths: [ currentFilePath ]});
+    }
   }
 }
