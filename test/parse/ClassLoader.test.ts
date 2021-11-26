@@ -361,6 +361,51 @@ export * from './file3'
             },
           });
       });
+
+      it('for an export assignment to namespace declaration with class', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `namespace NS {
+  class A{}
+}
+export = NS`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, false))
+          .toMatchObject({
+            localName: 'A',
+            fileName: 'file',
+            declaration: {
+              id: { name: 'A' },
+              type: 'ClassDeclaration',
+            },
+          });
+      });
+
+      it('for an export assignment to empty namespace declaration', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `namespace NS{};
+export = NS;`,
+          }),
+          logger,
+          commentLoader,
+        });
+        await expect(loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, false)).rejects
+          .toThrow(`Could not load class A from file`);
+      });
     });
 
     describe('when considering interfaces', () => {
@@ -881,6 +926,33 @@ declare interface A{}
             comment: 'Hello world!',
           });
       });
+
+      it('for an export assignment to namespace declaration with interface', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `namespace NS {
+  interface A{}
+}
+export = NS`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, true, false))
+          .toMatchObject({
+            localName: 'A',
+            fileName: 'file',
+            declaration: {
+              id: { name: 'A' },
+              type: 'TSInterfaceDeclaration',
+            },
+          });
+      });
     });
 
     describe('when considering types', () => {
@@ -1399,6 +1471,33 @@ declare type A = number;
               type: 'TSTypeAliasDeclaration',
             },
             comment: 'Hello world!',
+          });
+      });
+
+      it('for an export assignment to namespace declaration with type', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `namespace NS {
+  type A = number
+}
+export = NS`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'A',
+            fileName: 'file',
+            declaration: {
+              id: { name: 'A' },
+              type: 'TSTypeAliasDeclaration',
+            },
           });
       });
     });
@@ -1940,6 +2039,27 @@ declare type A = number;
         });
     });
 
+    it('for a single export object as reference', () => {
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export = A`)))
+        .toMatchObject({
+          exportAssignment: 'A',
+        });
+    });
+
+    it('for a single export object as class', () => {
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export = class A{}`)))
+        .toMatchObject({
+          exportAssignment: { type: 'ClassDeclaration' },
+        });
+    });
+
+    it('for a single export object as function', () => {
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export = a => true`)))
+        .toMatchObject({
+          exportAssignment: undefined,
+        });
+    });
+
     it('for multiple exports from file', () => {
       expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export { A as B, C as D, X } from './lib/A'`)))
         .toMatchObject({
@@ -1977,6 +2097,28 @@ declare type A = number;
           declaredTypes: {
             A: {
               type: 'TSTypeAliasDeclaration',
+            },
+          },
+        });
+    });
+
+    it('for an exported namespace', () => {
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export namespace A {}`)))
+        .toMatchObject({
+          exportedNamespaces: {
+            A: {
+              type: 'TSModuleDeclaration',
+            },
+          },
+        });
+    });
+
+    it('for a declared namespace', () => {
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`declare namespace A {}`)))
+        .toMatchObject({
+          declaredNamespaces: {
+            A: {
+              type: 'TSModuleDeclaration',
             },
           },
         });

@@ -1,9 +1,9 @@
 import * as Path from 'path';
-import type {
-  ClassDeclaration,
+import type { ClassDeclaration,
   TSInterfaceDeclaration,
   TSTypeAliasDeclaration,
-} from '@typescript-eslint/types/dist/ts-estree';
+  TSModuleDeclaration,
+  TSModuleBlock } from '@typescript-eslint/types/dist/ts-estree';
 import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import type { Logger } from 'winston';
@@ -124,6 +124,27 @@ export class ClassLoader {
       throw new Error(`Could not load ${targetString} ${classReference.localName} from ${classReference.fileName}:\n${(<Error> error).message}`);
     }
 
+    return this.loadClassDeclarationFromAst(ast, targetString, classReference, considerInterfaces, considerTypes);
+  }
+
+  /**
+   * Load the referenced class, and obtain its full class declaration.
+   * Classes can either be defined in this file (exported or not), or imported from another file.
+   * @param ast An abstract syntax tree.
+   * @param targetString A string for error reporting on the considered scope.
+   * @param classReference The reference to a class.
+   * @param considerInterfaces If the class reference is allows to refer to an interface, as well as a class.
+   * @param considerTypes If the class reference is allows to refer to a type alias, as well as a class.
+   */
+  public async loadClassDeclarationFromAst<CI extends boolean, CT extends boolean>(
+    ast: AST<TSESTreeOptions> | TSModuleBlock,
+    targetString: string,
+    classReference: ClassReference,
+    considerInterfaces: CI,
+    considerTypes: CT,
+  ): Promise<CI extends true ?
+      (CT extends true ? (ClassLoaded | InterfaceLoaded | TypeLoaded) : (ClassLoaded | InterfaceLoaded)) :
+      (CT extends true ? (ClassLoaded | TypeLoaded) : (ClassLoaded))> {
     const {
       exportedClasses,
       exportedInterfaces,
@@ -131,9 +152,11 @@ export class ClassLoader {
       declaredClasses,
       declaredInterfaces,
       declaredTypes,
+      declaredNamespaces,
       importedElements,
       exportedImportedAll,
       exportedImportedElements,
+      exportAssignment,
     } = this.getClassElements(classReference.packageName, classReference.fileName, ast);
 
     // If the class has been exported in this file, return directly
@@ -242,6 +265,18 @@ export class ClassLoader {
       }
     }
 
+    // Check if the export assignment refers to a namespace
+    if (exportAssignment && typeof exportAssignment === 'string' && exportAssignment in declaredNamespaces) {
+      const namespace: TSModuleDeclaration = declaredNamespaces[exportAssignment];
+      return this.loadClassDeclarationFromAst(
+        <TSModuleBlock> namespace.body,
+        targetString,
+        classReference,
+        considerInterfaces,
+        considerTypes,
+      );
+    }
+
     throw new Error(`Could not load ${targetString} ${classReference.localName} from ${classReference.fileName}`);
   }
 
@@ -348,17 +383,24 @@ export class ClassLoader {
    * @param fileName A file path.
    * @param ast The parsed file.
    */
-  public getClassElements(packageName: string, fileName: string, ast: AST<TSESTreeOptions>): ClassElements {
+  public getClassElements(
+    packageName: string,
+    fileName: string,
+    ast: AST<TSESTreeOptions> | TSModuleBlock,
+  ): ClassElements {
     const exportedClasses: Record<string, ClassDeclaration> = {};
     const exportedInterfaces: Record<string, TSInterfaceDeclaration> = {};
     const exportedTypes: Record<string, TSTypeAliasDeclaration> = {};
+    const exportedNamespaces: Record<string, TSModuleDeclaration> = {};
     const exportedImportedElements: Record<string, ClassReference> = {};
     const exportedImportedAll: { packageName: string; fileName: string; fileNameReferenced: string }[] = [];
     const exportedUnknowns: Record<string, string> = {};
     const declaredClasses: Record<string, ClassDeclaration> = {};
     const declaredInterfaces: Record<string, TSInterfaceDeclaration> = {};
     const declaredTypes: Record<string, TSTypeAliasDeclaration> = {};
+    const declaredNamespaces: Record<string, TSModuleDeclaration> = {};
     const importedElements: Record<string, ClassReference> = {};
+    let exportAssignment: string | ClassDeclaration | undefined;
 
     for (const statement of ast.body) {
       if (statement.type === AST_NODE_TYPES.ExportNamedDeclaration) {
@@ -376,6 +418,10 @@ export class ClassLoader {
         } else if (statement.declaration && statement.declaration.type === AST_NODE_TYPES.TSTypeAliasDeclaration) {
           // Form: `export type A = ...`
           exportedTypes[statement.declaration.id.name] = statement.declaration;
+        } else if (statement.declaration && statement.declaration.type === AST_NODE_TYPES.TSModuleDeclaration &&
+          'name' in statement.declaration.id) {
+          // Form: `export namespace A { ... }`
+          exportedNamespaces[statement.declaration.id.name] = statement.declaration;
         } else if (statement.source &&
           statement.source.type === AST_NODE_TYPES.Literal &&
           typeof statement.source.value === 'string') {
@@ -399,6 +445,16 @@ export class ClassLoader {
           typeof statement.source.value === 'string') {
           exportedImportedAll.push(this.importTargetToAbsolutePath(packageName, fileName, statement.source.value));
         }
+      } else if (statement.type === AST_NODE_TYPES.TSExportAssignment) {
+        // Form: `export = ...`
+        if (statement.expression.type === AST_NODE_TYPES.Identifier) {
+          exportAssignment = statement.expression.name;
+        } else if (statement.expression.type === AST_NODE_TYPES.ClassExpression) {
+          exportAssignment = {
+            ...statement.expression,
+            type: AST_NODE_TYPES.ClassDeclaration,
+          };
+        }
       } else if (statement.type === AST_NODE_TYPES.ClassDeclaration && statement.id) {
         // Form: `declare class A {}`
         declaredClasses[statement.id.name] = statement;
@@ -408,6 +464,9 @@ export class ClassLoader {
       } else if (statement.type === AST_NODE_TYPES.TSTypeAliasDeclaration && statement.id) {
         // Form: `declare type A = ...`
         declaredTypes[statement.id.name] = statement;
+      } else if (statement.type === AST_NODE_TYPES.TSModuleDeclaration && statement.id && 'name' in statement.id) {
+        // Form `declare namespace A { ... }
+        declaredNamespaces[statement.id.name] = statement;
       } else if (statement.type === AST_NODE_TYPES.ImportDeclaration &&
         statement.source.type === AST_NODE_TYPES.Literal &&
         typeof statement.source.value === 'string') {
@@ -431,13 +490,16 @@ export class ClassLoader {
       exportedClasses,
       exportedInterfaces,
       exportedTypes,
+      exportedNamespaces,
       exportedImportedElements,
       exportedImportedAll,
       exportedUnknowns,
       declaredClasses,
       declaredInterfaces,
       declaredTypes,
+      declaredNamespaces,
       importedElements,
+      exportAssignment,
     };
   }
 }
@@ -458,6 +520,8 @@ export interface ClassElements {
   exportedInterfaces: Record<string, TSInterfaceDeclaration>;
   // Types that have been declared in a file via `export type A = ...`
   exportedTypes: Record<string, TSTypeAliasDeclaration>;
+  // Namespaces that have been declared in a file via `export namespace A { ... }`
+  exportedNamespaces: Record<string, TSModuleDeclaration>;
   // Elements that have been exported via `export { A as B } from "b"`
   exportedImportedElements: Record<string, ClassReference>;
   // Exports via `export * from "b"`
@@ -470,6 +534,10 @@ export interface ClassElements {
   declaredInterfaces: Record<string, TSInterfaceDeclaration>;
   // Types that have been declared in a file via `declare type A = ...`
   declaredTypes: Record<string, TSTypeAliasDeclaration>;
+  // Namespaces that have been declared in a file via `declare namespace A { ... }`
+  declaredNamespaces: Record<string, TSModuleDeclaration>;
   // Elements that are imported from elsewhere via `import {A} from ''`
   importedElements: Record<string, ClassReference>;
+  // Element exported via `export = ...`
+  exportAssignment: string | ClassDeclaration | undefined;
 }

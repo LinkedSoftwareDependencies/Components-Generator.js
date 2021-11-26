@@ -81,7 +81,7 @@ export class ResolutionContext {
    * Parse a given typescript file into an abstract syntax tree.
    * This method has a built-in cache, so repeated calls for the same file are safe.
    * @param filePath A typescript file path, without extension.
-   * @return An abstract syntax tree.
+   * @return - An abstract syntax tree.
    */
   public async parseTypescriptFile(filePath: string): Promise<AST<TSESTreeOptions>> {
     // First check cache
