@@ -50,7 +50,7 @@ export type ParameterDefinitionRange = string | { '@id': string; parameters: Par
   'parameterRangeCollectEntriesParameters': ParameterDefinition[];
 } | {
   '@type': 'ParameterRangeLiteral';
-  parameterRangeValue: number | string | boolean;
+  parameterRangeValueLiteral: number | string | boolean;
 };
 
 export type ConstructorArgumentDefinition = string | { '@id': string } | {

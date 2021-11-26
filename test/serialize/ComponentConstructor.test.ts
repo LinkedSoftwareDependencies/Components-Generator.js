@@ -2071,7 +2071,7 @@ describe('ComponentConstructor', () => {
         context,
         externalContextsCallback,
         'mp:components/a/b/file-param.jsonld#MyClass_field',
-      )).toEqual({ '@type': 'ParameterRangeLiteral', parameterRangeValue: 'abc' });
+      )).toEqual({ '@type': 'ParameterRangeLiteral', parameterRangeValueLiteral: 'abc' });
     });
 
     it('should construct a class parameter range', async() => {

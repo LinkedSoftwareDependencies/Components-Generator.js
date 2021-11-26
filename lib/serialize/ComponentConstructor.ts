@@ -580,7 +580,7 @@ export class ComponentConstructor {
       case 'literal':
         return {
           '@type': 'ParameterRangeLiteral',
-          parameterRangeValue: range.value,
+          parameterRangeValueLiteral: range.value,
         };
       case 'class':
         return await this.classNameToId(context, externalContextsCallback, range.value);
