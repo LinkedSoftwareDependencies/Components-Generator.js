@@ -453,7 +453,9 @@ export class ComponentConstructor {
     range: ParameterRangeResolved,
   ): Promise<DefaultValueDefinition> {
     if (defaultValue.type === 'raw') {
-      if (range.type === 'override' && range.value === 'json') {
+      if ((range.type === 'override' && range.value === 'json') ||
+        (range.type === 'union' &&
+          range.elements.some(subRange => subRange.type === 'override' && subRange.value === 'json'))) {
         try {
           return {
             '@type': '@json',

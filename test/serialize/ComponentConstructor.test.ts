@@ -1868,6 +1868,42 @@ describe('ComponentConstructor', () => {
       ]);
     });
 
+    it('should handle a parameter with default optional json value', async() => {
+      const parameters: ParameterDefinition[] = [];
+      expect(await ctor
+        .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
+          type: 'field',
+          name: 'field',
+          range: {
+            type: 'union',
+            elements: [
+              { type: 'override', value: 'json' },
+              { type: 'undefined' },
+            ],
+          },
+          defaults: [{ type: 'raw', value: '{"a":true}' }],
+          comment: 'Hi',
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope))
+        .toEqual({ '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field' });
+      expect(parameters).toEqual([
+        {
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field',
+          comment: 'Hi',
+          range: {
+            '@type': 'ParameterRangeUnion',
+            parameterRangeElements: [
+              'rdf:JSON',
+              { '@type': 'ParameterRangeUndefined' },
+            ],
+          },
+          default: {
+            '@type': '@json',
+            '@value': { a: true },
+          },
+        },
+      ]);
+    });
+
     it('should throw on a parameter with an invalid default json value', async() => {
       const parameters: ParameterDefinition[] = [];
       await expect(ctor
