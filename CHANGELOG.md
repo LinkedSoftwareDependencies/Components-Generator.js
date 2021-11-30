@@ -1,6 +1,56 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.0.0-beta.0"></a>
+## [v3.0.0-beta.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v2.6.0...v3.0.0-beta.0) - 2021-11-30
+
+_Requires Components.js >= 5.0.0_
+
+### BREAKING CHANGES
+* [Enable type scoped context functionality by default](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/40bcc44c99674e467b7c3b0c9b9d6b0c563f283b): This means that the `--typeScopedContexts` CLI option should not be passed anymore.
+* [Make component URLs dereferenceable](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/783670cc6ff91b5d33bb5431b7f817e73acd9548): This improves the URL strategy for components, and results in different component URLs.
+* Align with Components.js range changes:
+  * [Remove 'unique' field option in favor of array param type](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/8d60dcd0479b960857f87758bf02ddf6fdf44b47)
+  * [Remove 'required' field option in favor of union with undefined](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/e65f0e8bc8f1ea0b05472e630cebb784fe2ea525)
+  * [Explicitly serialize undefined parameter ranges](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/cb37fb5e82292e46eab76e96d364db25e2d21f67)
+* [Set minimum Node version to 12](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/23bf2634dba4ec95955293f4e91545e340cea1eb)
+
+### Added
+* [Allow configuration using config file](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/bbdd36b0dd38a49151c467f46d3bd2014933b820)
+    * [Allow package paths to be ignored](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/a6d47ce00ab8c3c5b0e70bcdc8cdf8f07e6c34d4)
+* Improve TypeScript language support:
+  * [Support components defined within namespaces via export assignment](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/d5582d2126138643f88cf0398218e1eb9883a227)
+  * [Support imports for packages that have external @types packages](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/12996b70c2b2a3b82dbfe99dbceb943ea1294cf4)
+  * [Support type literals and type aliases](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/ff2fdc103cb6a658ac1741322686832e8cc88d96)
+  * [Generate param ranges with tuples and rest types](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/348b80dcbb47d5888cd1ac8a724bc848209e16c1)
+  * [Generate param ranges with union and intersection types](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/7796c816295886a4702e8037f441fac9559891a6)
+* Improve tag support:
+  * [Allow multiple @default values to be defined](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/6b0177210f7608b0d284da87cf40d432c5c4132b)
+  * [Fix @ symbols not being allowed in comment data](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/26e2f405db6d0cf6de5d3fd1e7d46681205e9e07)
+  * [Allow setting default JSON values](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/61e0b13bfaced9e9c8b2c36f3c89d588cf76f9b2)
+  * [Allow default IRI values to be relative](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/d400e1fc56aca4c52f194213a1090651604e8941)
+  * [Allow defaultNested tags to be added with typed values](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/0ec8fa9d6cf470965c0ce6ce148f65cbf751916c)
+  * [Keep structural param type information on overrides](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/b05cb60473ec839718c9a1fa3ac42ee670a21224)
+  * [Allow default values to be IRIs when wrapped in <>](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/7275824082cb180c9abe5f4f8084b48c4ee5e98f)
+* [Add shorter param entries in type-scoped context when possible.](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/3b21fb75448cac9288045ca12f330040cefa2a08)
+* [Enable generation of multiple packages in bulk](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/86467d2b43dd1006aff937644afa51f7cdcb522d): This allows this generator to be used in monorepos
+* [Add option to dump debug state](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/ae0b5278bb9d93f513f70fb5731d727817b46d97)
+* [Allow constructor comment data inheritance from supers](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/3527ceb4d8f8e0d259dffba0dacc393b011cd4c1)
+* [Allow interface args to extend from other interfaces, Closes #73](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/b5724be7b30fb3d6a57f25bbe4e3fc534c9db4f5)
+* [Also consider recursive deps when loading external modules](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/a6596e0b87600359be7b6daa04adda25066fc062)
+* [Allow components from other packages to be re-exported](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/1ddb44afbf594973971829efcdcae7d1855950c8)
+
+### Fixed
+* [Fix default values not being in an RDF list when needed](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/e9761232748ea7bb1d2a6e58664011a6092ec092)
+* [Fix @list not being applied on optional arrays](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/078f78c9ed2bc33e27344d28307df4fd776eca57)
+* [Fix crash when loading fields from super interface chains](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/3de032af5adef3a2a2c1bfcf1a350d4306be38b7)
+
+### Changed
+* [Reduce unneeded logging](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/75ff04cb1f040e7e25bc1d3486bb946e0c37d364)
+* [Ignore imports that fail](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/f73798f6b9bcd8d9d2ba35d9963d2869a783e8b0)
+* [Allow components to be part of multiple modules](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/32350fa72830892adf27304619fad1b64e8b2eae)
+* [Fix param range resources using @type instead of @id](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/1fbad2f8f91c91ce0528b85df690a1356fbd6ed0)
+
 <a name="v2.6.1"></a>
 ## [v2.6.1](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v2.6.0...v2.6.1) - 2021-09-29
 
