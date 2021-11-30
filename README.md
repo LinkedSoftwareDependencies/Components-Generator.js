@@ -137,7 +137,8 @@ If it can not find one, it will recursively go look into the parent directories 
 ### Ignoring classes
 
 If you don't want components to be generated for certain classes,
-then you can pass a JSON file to the `-i` option containing an array of class names to skip.
+then you can either add it to the `ignoreComponents` array of the `.componentsjs-generator-config.json` file (as explained above),
+or you can pass a JSON file to the `-i` option containing an array of class names to skip.
 
 For example, invoking `componentsjs-generator -i ignore-classes.json` will skip `BadClass` if the contents of `ignore-classes.json` are:
 ```json
@@ -258,8 +259,18 @@ Using comment tags, arguments can be customized.
 | Tag | Action
 |---|---
 | `@ignored` | This field will be ignored.
-| `@default {value | <value>}` | The `default` attribute of the parameter will be set to `value`. If the value is wrapped in `<>`, then the value is considered an IRI. 
+| `@default {value}` | The `default` attribute of the parameter will be set to `value`. See section below for acceptable values.
+| `@defaultNested {value} path_to_args` | When the given parameter accepts a nested object (child links delimited by `_`), the `default` attribute of this nested field will be set to `value`. See section below for acceptable values.
 | `@range {type}` | The `range` attribute of the parameter will be set to `type`. You can only use values that fit the type of field. Options: `json, boolean, int, integer, number, byte, long, float, decimal, double, string`. For example, if your field has the type `number`, you could explicitly mark it as a `float` by using `@range {float}`. See [the documentation](https://componentsjs.readthedocs.io/en/latest/configuration/components/parameters/).
+
+##### Default values
+
+Default values accept a microsyntax, in which several types of values may be provided:
+
+* Literal values: `@default {abc}`
+* IRI values: `@default {<http://example.org/abc>}`
+* Blank-node-based instantiation: `@default {a <http://example.org/MyType>}`
+* IRI-based instantiation: `@default {<http://example.org/myInstance> a <http://example.org/MyType>}`
 
 #### Examples
 
