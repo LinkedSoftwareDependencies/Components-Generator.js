@@ -1,3 +1,4 @@
+import * as Path from 'path';
 import { GeneratorFactory } from '../../lib/config/GeneratorFactory';
 import { Generator } from '../../lib/generate/Generator';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
@@ -13,27 +14,32 @@ describe('GeneratorFactory', () => {
 
   describe('createGenerator', () => {
     it('should create a new generator without custom options', async() => {
-      expect(await factory.createGenerator('/root', {}, [ '/root' ])).toBeInstanceOf(Generator);
+      expect(await factory.createGenerator(
+        Path.normalize('/root'),
+        {},
+        [ Path.normalize('/root') ],
+      )).toBeInstanceOf(Generator);
     });
 
     it('should create a new generator with custom options', async() => {
-      resolutionContext.contentsOverrides['/root/.componentsjs-generator-config.json'] = `{ "source": "FILESRC/", "extension": "FILEEXT", "debugState": true }`;
-      resolutionContext.contentsOverrides['/root/.componentsignore'] = '[ "a", "b" ]';
+      resolutionContext.contentsOverrides[Path.normalize('/root/.componentsjs-generator-config.json')] = `{ "source": "FILESRC/", "extension": "FILEEXT", "debugState": true }`;
+      resolutionContext.contentsOverrides[Path.normalize('/root/.componentsignore')] = '[ "a", "b" ]';
       expect(await factory.createGenerator('/root', {
         c: 'COMPONENTS/',
         e: 'EXT',
         r: 'PRE',
-        i: '/root/.componentsignore',
-      }, [ '/root' ])).toBeInstanceOf(Generator);
+        i: Path.normalize('/root/.componentsignore'),
+      }, [ Path.normalize('/root') ])).toBeInstanceOf(Generator);
     });
 
     it('should create a new generator when ignoring certain packages', async() => {
-      resolutionContext.contentsOverrides['/root/.componentsjs-generator-config.json'] = `{ "ignorePackagePaths": [ "ignored1/", "ignored2/" ] }`;
-      expect(await factory.createGenerator('/root', {
+      resolutionContext.contentsOverrides[Path.normalize('/root/.componentsjs-generator-config.json')] = `{ "ignorePackagePaths": [ "ignored1/", "ignored2/" ] }`;
+      expect(await factory.createGenerator(Path.normalize('/root'), {
         c: 'COMPONENTS/',
         e: 'EXT',
         r: 'PRE',
-      }, [ '/root', '/ignored1', '/ignored2' ])).toBeInstanceOf(Generator);
+      }, [ Path.normalize('/root'), Path.normalize('/ignored1'), Path.normalize('/ignored2') ]))
+        .toBeInstanceOf(Generator);
     });
   });
 
@@ -52,8 +58,8 @@ describe('GeneratorFactory', () => {
     });
 
     it('should handle no cli args and config file', async() => {
-      resolutionContext.contentsOverrides['/root/.componentsjs-generator-config.json'] = `{ "source": "FILESRC/", "extension": "FILEEXT", "debugState": true }`;
-      expect(await factory.getConfig('/root', {})).toEqual({
+      resolutionContext.contentsOverrides[Path.normalize('/root/.componentsjs-generator-config.json')] = `{ "source": "FILESRC/", "extension": "FILEEXT", "debugState": true }`;
+      expect(await factory.getConfig(Path.normalize('/root'), {})).toEqual({
         source: 'FILESRC/',
         destination: 'components',
         extension: 'FILEEXT',
@@ -84,8 +90,8 @@ describe('GeneratorFactory', () => {
     });
 
     it('should handle cli args and config file', async() => {
-      resolutionContext.contentsOverrides['/root/.componentsjs-generator-config.json'] = `{ "source": "FILESRC/", "extension": "FILEEXT", "debugState": true }`;
-      expect(await factory.getConfig('/root', {
+      resolutionContext.contentsOverrides[Path.normalize('/root/.componentsjs-generator-config.json')] = `{ "source": "FILESRC/", "extension": "FILEEXT", "debugState": true }`;
+      expect(await factory.getConfig(Path.normalize('/root'), {
         c: 'COMPONENTS/',
         e: 'EXT',
         r: 'PRE',

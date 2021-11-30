@@ -40,7 +40,7 @@ describe('BulkPackageMetadataLoader', () => {
         packageMetadatas: {},
         pathMetadatas: {},
       });
-      expect(logger.warn).toHaveBeenCalledWith(`Skipped generating invalid package at "/": Could not find mocked path for /package.json`);
+      expect(logger.warn).toHaveBeenCalledWith(`Skipped generating invalid package at "/": Could not find mocked path for ${Path.normalize('/package.json')}`);
     });
 
     it('should skip an invalid package that does not exist', async() => {
@@ -61,7 +61,7 @@ describe('BulkPackageMetadataLoader', () => {
         packageMetadatas: {},
         pathMetadatas: {},
       });
-      expect(logger.warn).toHaveBeenCalledWith(`Skipped generating invalid package at "/": Invalid package: Missing 'lsd:module' IRI in /package.json`);
+      expect(logger.warn).toHaveBeenCalledWith(`Skipped generating invalid package at "/": Invalid package: Missing 'lsd:module' IRI in ${Path.normalize('/package.json')}`);
     });
 
     it('should a single valid paths', async() => {
@@ -85,7 +85,7 @@ describe('BulkPackageMetadataLoader', () => {
           pckg1: {
             minimalContext: expect.any(JsonLdContextNormalized),
             packageMetadata: {
-              componentsPath: '/packages/pckg1/components/components.jsonld',
+              componentsPath: Path.normalize('/packages/pckg1/components/components.jsonld'),
               contexts: {
                 'https://linkedsoftwaredependencies.org/bundles/npm/pckg1/^1.0.0/components/context.jsonld':
                   'components/context.jsonld',
@@ -97,7 +97,7 @@ describe('BulkPackageMetadataLoader', () => {
               moduleIri: 'https://linkedsoftwaredependencies.org/bundles/npm/pckg1',
               name: 'pckg1',
               prefix: undefined,
-              typesPath: '/packages/pckg1/index',
+              typesPath: Path.normalize('/packages/pckg1/index'),
               version: '1.2.3',
             },
             pathDestination: {
@@ -109,7 +109,7 @@ describe('BulkPackageMetadataLoader', () => {
         },
         pathMetadatas: {
           '/packages/pckg1': {
-            componentsPath: '/packages/pckg1/components/components.jsonld',
+            componentsPath: Path.normalize('/packages/pckg1/components/components.jsonld'),
             contexts: {
               'https://linkedsoftwaredependencies.org/bundles/npm/pckg1/^1.0.0/components/context.jsonld':
                 'components/context.jsonld',
@@ -121,7 +121,7 @@ describe('BulkPackageMetadataLoader', () => {
             moduleIri: 'https://linkedsoftwaredependencies.org/bundles/npm/pckg1',
             name: 'pckg1',
             prefix: undefined,
-            typesPath: '/packages/pckg1/index',
+            typesPath: Path.normalize('/packages/pckg1/index'),
             version: '1.2.3',
           },
         },
