@@ -67,8 +67,10 @@ export class ContextConstructor {
 
         // Generate type-scoped context
         const typeScopedContext: Record<string, Record<string, string>> = {};
+        const shortcutAliases: string[] = [];
         for (const parameter of component.parameters) {
-          typeScopedContext[parameter['@id'].slice(Math.max(0, component['@id'].length + 1))] = {
+          const shortcut = parameter['@id'].slice(Math.max(0, component['@id'].length + 1));
+          typeScopedContext[shortcut] = {
             '@id': parameter['@id'],
             ...parameter.range === 'rdf:JSON' ? { '@type': '@json' } : {},
             // Mark as list container if range is array
@@ -76,7 +78,35 @@ export class ContextConstructor {
               { '@container': '@list' } :
               {},
           };
+          shortcutAliases.push(shortcut);
         }
+
+        // If all shortcuts share the same prefix, add shorter variants for them
+        let longestCommonPrefix: string | undefined;
+        const prefixDelimiter = '_';
+        for (const shortcut of shortcutAliases) {
+          if (!longestCommonPrefix) {
+            longestCommonPrefix = shortcut;
+          } else if (!shortcut.startsWith(longestCommonPrefix)) {
+            const longestCommonPrefixNew: string[] = [];
+            const shortcutSplit = shortcut.split(prefixDelimiter);
+            const longestCommonPrefixSplit = longestCommonPrefix.split(prefixDelimiter);
+            for (let i = 0; i < Math.min(longestCommonPrefixSplit.length, shortcutSplit.length); i++) {
+              if (shortcutSplit[i] === longestCommonPrefixSplit[i]) {
+                longestCommonPrefixNew.push(shortcutSplit[i]);
+              } else {
+                break;
+              }
+            }
+            longestCommonPrefix = longestCommonPrefixNew.join(prefixDelimiter);
+          }
+        }
+        if (longestCommonPrefix) {
+          for (const shortcut of shortcutAliases) {
+            typeScopedContext[shortcut.slice(longestCommonPrefix.length + 1)] = typeScopedContext[shortcut];
+          }
+        }
+
         (<any> shortcuts[match[0]])['@context'] = typeScopedContext;
       }
     }

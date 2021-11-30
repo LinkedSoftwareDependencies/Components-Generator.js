@@ -176,6 +176,320 @@ describe('ContextConstructor', () => {
         });
       });
 
+      it('should handle non-empty component definitions with two prefixes', () => {
+        expect(ctor.constructComponentShortcuts({
+          '/docs/package/components/file1': {
+            '@context': [
+              'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
+            ],
+            '@id': 'npmd:my-package',
+            components: [
+              {
+                '@id': 'mp:file1#MyClass1',
+                '@type': 'Class',
+                constructorArguments: [],
+                parameters: [
+                  {
+                    '@id': 'mp:file1#MyClass1_args_param1',
+                    range: {
+                      '@type': 'ParameterRangeArray',
+                      parameterRangeValue: 'xsd:float',
+                    },
+                  },
+                  {
+                    '@id': 'mp:file1#MyClass1_args_param2',
+                  },
+                ],
+                requireElement: 'MyClass1',
+              },
+            ],
+          },
+          '/docs/package/components/b/file2': {
+            '@context': [
+              'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
+            ],
+            '@id': 'npmd:my-package',
+            components: [
+              {
+                '@id': 'mp:b/file2#MyClass2',
+                '@type': 'Class',
+                requireElement: 'MyClass2',
+                constructorArguments: [],
+                parameters: [],
+              },
+            ],
+          },
+        })).toEqual({
+          MyClass1: {
+            '@id': 'mp:file1#MyClass1',
+            '@prefix': true,
+            '@context': {
+              args_param1: {
+                '@id': 'mp:file1#MyClass1_args_param1',
+                '@container': '@list',
+              },
+              args_param2: {
+                '@id': 'mp:file1#MyClass1_args_param2',
+              },
+              param1: {
+                '@id': 'mp:file1#MyClass1_args_param1',
+                '@container': '@list',
+              },
+              param2: {
+                '@id': 'mp:file1#MyClass1_args_param2',
+              },
+            },
+          },
+          MyClass2: {
+            '@id': 'mp:b/file2#MyClass2',
+            '@prefix': true,
+            '@context': {},
+          },
+        });
+      });
+
+      it('should handle non-empty component definitions with three shared prefixes', () => {
+        expect(ctor.constructComponentShortcuts({
+          '/docs/package/components/file1': {
+            '@context': [
+              'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
+            ],
+            '@id': 'npmd:my-package',
+            components: [
+              {
+                '@id': 'mp:file1#MyClass1',
+                '@type': 'Class',
+                constructorArguments: [],
+                parameters: [
+                  {
+                    '@id': 'mp:file1#MyClass1_args_param1',
+                    range: {
+                      '@type': 'ParameterRangeArray',
+                      parameterRangeValue: 'xsd:float',
+                    },
+                  },
+                  {
+                    '@id': 'mp:file1#MyClass1_args_param2',
+                  },
+                  {
+                    '@id': 'mp:file1#MyClass1_args_param3',
+                  },
+                ],
+                requireElement: 'MyClass1',
+              },
+            ],
+          },
+          '/docs/package/components/b/file2': {
+            '@context': [
+              'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
+            ],
+            '@id': 'npmd:my-package',
+            components: [
+              {
+                '@id': 'mp:b/file2#MyClass2',
+                '@type': 'Class',
+                requireElement: 'MyClass2',
+                constructorArguments: [],
+                parameters: [],
+              },
+            ],
+          },
+        })).toEqual({
+          MyClass1: {
+            '@id': 'mp:file1#MyClass1',
+            '@prefix': true,
+            '@context': {
+              args_param1: {
+                '@id': 'mp:file1#MyClass1_args_param1',
+                '@container': '@list',
+              },
+              args_param2: {
+                '@id': 'mp:file1#MyClass1_args_param2',
+              },
+              args_param3: {
+                '@id': 'mp:file1#MyClass1_args_param3',
+              },
+              param1: {
+                '@id': 'mp:file1#MyClass1_args_param1',
+                '@container': '@list',
+              },
+              param2: {
+                '@id': 'mp:file1#MyClass1_args_param2',
+              },
+              param3: {
+                '@id': 'mp:file1#MyClass1_args_param3',
+              },
+            },
+          },
+          MyClass2: {
+            '@id': 'mp:b/file2#MyClass2',
+            '@prefix': true,
+            '@context': {},
+          },
+        });
+      });
+
+      it('should handle non-empty component definitions with complex shared prefixes', () => {
+        expect(ctor.constructComponentShortcuts({
+          '/docs/package/components/file1': {
+            '@context': [
+              'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
+            ],
+            '@id': 'npmd:my-package',
+            components: [
+              {
+                '@id': 'mp:file1#MyClass1',
+                '@type': 'Class',
+                constructorArguments: [],
+                parameters: [
+                  {
+                    '@id': 'mp:file1#MyClass1_args_param1',
+                    range: {
+                      '@type': 'ParameterRangeArray',
+                      parameterRangeValue: 'xsd:float',
+                    },
+                  },
+                  {
+                    '@id': 'mp:file1#MyClass1_args_x_param2',
+                  },
+                  {
+                    '@id': 'mp:file1#MyClass1_args_x_param3',
+                  },
+                  {
+                    '@id': 'mp:file1#MyClass1_args_param4',
+                  },
+                ],
+                requireElement: 'MyClass1',
+              },
+            ],
+          },
+          '/docs/package/components/b/file2': {
+            '@context': [
+              'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
+            ],
+            '@id': 'npmd:my-package',
+            components: [
+              {
+                '@id': 'mp:b/file2#MyClass2',
+                '@type': 'Class',
+                requireElement: 'MyClass2',
+                constructorArguments: [],
+                parameters: [],
+              },
+            ],
+          },
+        })).toEqual({
+          MyClass1: {
+            '@id': 'mp:file1#MyClass1',
+            '@prefix': true,
+            '@context': {
+              args_param1: {
+                '@id': 'mp:file1#MyClass1_args_param1',
+                '@container': '@list',
+              },
+              args_x_param2: {
+                '@id': 'mp:file1#MyClass1_args_x_param2',
+              },
+              args_x_param3: {
+                '@id': 'mp:file1#MyClass1_args_x_param3',
+              },
+              args_param4: {
+                '@id': 'mp:file1#MyClass1_args_param4',
+              },
+              param1: {
+                '@id': 'mp:file1#MyClass1_args_param1',
+                '@container': '@list',
+              },
+              x_param2: {
+                '@id': 'mp:file1#MyClass1_args_x_param2',
+              },
+              x_param3: {
+                '@id': 'mp:file1#MyClass1_args_x_param3',
+              },
+              param4: {
+                '@id': 'mp:file1#MyClass1_args_param4',
+              },
+            },
+          },
+          MyClass2: {
+            '@id': 'mp:b/file2#MyClass2',
+            '@prefix': true,
+            '@context': {},
+          },
+        });
+      });
+
+      it('should handle non-empty component definitions with nearly shared prefixes', () => {
+        expect(ctor.constructComponentShortcuts({
+          '/docs/package/components/file1': {
+            '@context': [
+              'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
+            ],
+            '@id': 'npmd:my-package',
+            components: [
+              {
+                '@id': 'mp:file1#MyClass1',
+                '@type': 'Class',
+                constructorArguments: [],
+                parameters: [
+                  {
+                    '@id': 'mp:file1#MyClass1_args_param1',
+                    range: {
+                      '@type': 'ParameterRangeArray',
+                      parameterRangeValue: 'xsd:float',
+                    },
+                  },
+                  {
+                    '@id': 'mp:file1#MyClass1_args_param2',
+                  },
+                  {
+                    '@id': 'mp:file1#MyClass1_param3',
+                  },
+                ],
+                requireElement: 'MyClass1',
+              },
+            ],
+          },
+          '/docs/package/components/b/file2': {
+            '@context': [
+              'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
+            ],
+            '@id': 'npmd:my-package',
+            components: [
+              {
+                '@id': 'mp:b/file2#MyClass2',
+                '@type': 'Class',
+                requireElement: 'MyClass2',
+                constructorArguments: [],
+                parameters: [],
+              },
+            ],
+          },
+        })).toEqual({
+          MyClass1: {
+            '@id': 'mp:file1#MyClass1',
+            '@prefix': true,
+            '@context': {
+              args_param1: {
+                '@id': 'mp:file1#MyClass1_args_param1',
+                '@container': '@list',
+              },
+              args_param2: {
+                '@id': 'mp:file1#MyClass1_args_param2',
+              },
+              param3: {
+                '@id': 'mp:file1#MyClass1_param3',
+              },
+            },
+          },
+          MyClass2: {
+            '@id': 'mp:b/file2#MyClass2',
+            '@prefix': true,
+            '@context': {},
+          },
+        });
+      });
+
       it('should handle non-empty component definitions for JSON ranges', () => {
         expect(ctor.constructComponentShortcuts({
           '/docs/package/components/file1': {
