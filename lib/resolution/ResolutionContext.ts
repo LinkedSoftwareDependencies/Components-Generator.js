@@ -39,7 +39,7 @@ export class ResolutionContext {
    * @param content The content of the file.
    */
   public async writeFileContent(filePath: string, content: string): Promise<void> {
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       fs.mkdir(Path.dirname(filePath), { recursive: true }, error => {
         if (error) {
           reject(error);
@@ -48,7 +48,7 @@ export class ResolutionContext {
         }
       });
     });
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       fs.writeFile(filePath, content, 'utf8', error => {
         if (error) {
           reject(error);

@@ -1622,7 +1622,6 @@ export interface A{
             },
             {
               type: 'undefined',
-              value: 'string',
             },
           ],
         },
@@ -1639,7 +1638,6 @@ export interface A{
           },
           {
             type: 'undefined',
-            value: 'string',
           },
         ],
       });
@@ -1656,7 +1654,6 @@ export interface A{
             },
             {
               type: 'undefined',
-              value: 'string',
             },
           ],
         },
@@ -1673,7 +1670,6 @@ export interface A{
           },
           {
             type: 'undefined',
-            value: 'string',
           },
         ],
       });
@@ -1690,7 +1686,6 @@ export interface A{
             },
             {
               type: 'undefined',
-              value: 'string',
             },
           ],
         },
@@ -1707,7 +1702,6 @@ export interface A{
           },
           {
             type: 'undefined',
-            value: 'string',
           },
         ],
       });

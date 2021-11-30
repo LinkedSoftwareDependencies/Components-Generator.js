@@ -51,10 +51,10 @@ export class ParameterResolver {
     unresolvedConstructorData: ConstructorData<ParameterRangeUnresolved>,
   ): Promise<ConstructorData<ParameterRangeResolved>> {
     return {
-      parameters: await this.resolveParameterData(
+      parameters: <ParameterDataField<ParameterRangeResolved>[]> (await this.resolveParameterData(
         unresolvedConstructorData.parameters,
         unresolvedConstructorData.classLoaded,
-      ),
+      )).filter(parameter => parameter.type === 'field'),
       classLoaded: unresolvedConstructorData.classLoaded,
     };
   }
@@ -67,7 +67,7 @@ export class ParameterResolver {
   public async resolveParameterData(
     parameters: ParameterData<ParameterRangeUnresolved>[],
     owningClass: ClassReferenceLoaded,
-  ): Promise<ParameterDataField<ParameterRangeResolved>[]> {
+  ): Promise<ParameterData<ParameterRangeResolved>[]> {
     return await Promise.all(parameters
       .map(async parameter => ({ ...parameter, range: await this.resolveRange(parameter.range, owningClass) })));
   }

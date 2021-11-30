@@ -1,6 +1,6 @@
+import { PrefetchedDocumentLoader } from 'componentsjs';
 import { ContextParser } from 'jsonld-context-parser';
 import type { Logger } from 'winston';
-import { PrefetchedDocumentLoader } from '../../../components';
 import type { PackageMetadataScope } from '../resolution/ExternalModulesLoader';
 import type { PathDestinationDefinition } from '../serialize/ComponentConstructor';
 import { ContextConstructor } from '../serialize/ContextConstructor';

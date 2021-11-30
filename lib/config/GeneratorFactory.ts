@@ -1,5 +1,5 @@
 import * as Path from 'path';
-import type { LogLevel } from '../../../components';
+import type { LogLevel } from 'componentsjs';
 import { Generator } from '../generate/Generator';
 import type { ResolutionContext } from '../resolution/ResolutionContext';
 import { FileConfigLoader } from './FileConfigLoader';
