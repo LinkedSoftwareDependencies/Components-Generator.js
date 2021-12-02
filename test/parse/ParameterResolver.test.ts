@@ -956,7 +956,48 @@ export class B{}
 `,
       };
       await expect(loader.loadClassOrInterfacesChain(classReference))
-        .rejects.toThrow(new Error('Detected interface A extending from a class B in A'));
+        .rejects.toThrow(new Error('Detected interface A extending from a non-interface B in A'));
+    });
+
+    it('should load an interface with supers via a type alias', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `
+export interface A extends B_A, C_A{}
+export type B_A = B;
+export type C_A = C;
+export interface B{}
+declare interface C{}
+`,
+      };
+      expect(await loader.loadClassOrInterfacesChain(classReference))
+        .toMatchObject({
+          fileName: 'A',
+          localName: 'A',
+          type: 'interface',
+          superInterfaces: [
+            {
+              fileName: 'A',
+              localName: 'B',
+              type: 'interface',
+            },
+            {
+              fileName: 'A',
+              localName: 'C',
+              type: 'interface',
+            },
+          ],
+        });
+    });
+
+    it('should error on an interface extending from a type alias that does not refer to an interface', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `
+export interface A extends B{}
+export type B = number;
+`,
+      };
+      await expect(loader.loadClassOrInterfacesChain(classReference))
+        .rejects.toThrow(new Error('Detected interface A extending from a non-interface B in A'));
     });
   });
 

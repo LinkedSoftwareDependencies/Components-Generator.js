@@ -202,11 +202,25 @@ export class ParameterResolver {
             fileNameReferenced: classOrInterface.fileNameReferenced,
           });
           if (superInterface.type !== 'interface') {
-            throw new Error(`Detected interface ${classOrInterface.localName} extending from a class ${interfaceName} in ${classReference.fileName}`);
+            throw new Error(`Detected interface ${classOrInterface.localName} extending from a non-interface ${interfaceName} in ${classReference.fileName}`);
           }
           return superInterface;
         }));
     }
+
+    // If the result is a type, check if it is an alias for another interface, and load that
+    if (classOrInterface.type === 'type') {
+      if (classOrInterface.declaration.typeAnnotation.type === AST_NODE_TYPES.TSTypeReference &&
+        classOrInterface.declaration.typeAnnotation.typeName.type === AST_NODE_TYPES.Identifier) {
+        return await this.loadClassOrInterfacesChain({
+          packageName: classOrInterface.packageName,
+          localName: classOrInterface.declaration.typeAnnotation.typeName.name,
+          fileName: classOrInterface.fileName,
+          fileNameReferenced: classOrInterface.fileNameReferenced,
+        });
+      }
+    }
+
     return classOrInterface;
   }
 
