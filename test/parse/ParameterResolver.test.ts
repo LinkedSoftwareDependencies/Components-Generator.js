@@ -1,4 +1,5 @@
 import type { TSTypeLiteral } from '@typescript-eslint/types/dist/ts-estree';
+
 import type { ClassLoaded, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from '../../lib/parse/ClassIndex';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
 import { CommentLoader } from '../../lib/parse/CommentLoader';
@@ -34,6 +35,7 @@ describe('ParameterResolver', () => {
       expect(await loader.resolveAllConstructorParameters({
         A: {
           classLoaded: <any> { type: 'class', localName: 'A', fileName: 'A' },
+          genericTypeParameters: [],
           parameters: [
             {
               type: 'field',
@@ -48,6 +50,7 @@ describe('ParameterResolver', () => {
       })).toEqual({
         A: {
           classLoaded: <any> { type: 'class', localName: 'A', fileName: 'A' },
+          genericTypeParameters: [],
           parameters: [
             {
               type: 'field',
@@ -66,6 +69,7 @@ describe('ParameterResolver', () => {
       expect(await loader.resolveAllConstructorParameters({
         A: {
           classLoaded: <any> { type: 'interface', localName: 'A', fileName: 'A' },
+          genericTypeParameters: [],
           parameters: [
             {
               type: 'field',
@@ -85,13 +89,14 @@ describe('ParameterResolver', () => {
     const classLoaded: ClassLoaded = <any>{ localName: 'A', fileName: 'A' };
 
     it('should handle an empty array', async() => {
-      expect(await loader.resolveConstructorParameters({ classLoaded, parameters: []}))
-        .toEqual({ classLoaded, parameters: []});
+      expect(await loader.resolveConstructorParameters({ classLoaded, genericTypeParameters: [], parameters: []}))
+        .toEqual({ classLoaded, genericTypeParameters: [], parameters: []});
     });
 
     it('should handle a raw parameter', async() => {
       expect(await loader.resolveConstructorParameters({
         classLoaded,
+        genericTypeParameters: [],
         parameters: [
           {
             type: 'field',
@@ -105,6 +110,7 @@ describe('ParameterResolver', () => {
       }))
         .toEqual({
           classLoaded,
+          genericTypeParameters: [],
           parameters: [
             {
               type: 'field',
@@ -117,6 +123,122 @@ describe('ParameterResolver', () => {
           ],
         });
     });
+  });
+
+  describe('resolveGenericTypeParameterData', () => {
+    const classReference: ClassReferenceLoaded = <any>{ localName: 'A', fileName: 'A' };
+
+    it('should handle an empty array', async() => {
+      expect(await loader.resolveGenericTypeParameterData([], classReference)).toEqual([]);
+    });
+
+    it('should handle raw generic type parameters', async() => {
+      expect(await loader.resolveGenericTypeParameterData([
+        {
+          name: 'A',
+        },
+        {
+          name: 'B',
+          range: {
+            type: 'raw',
+            value: 'number',
+          },
+        },
+      ], classReference)).toEqual([
+        {
+          name: 'A',
+        },
+        {
+          name: 'B',
+          range: {
+            type: 'raw',
+            value: 'number',
+          },
+        },
+      ]);
+    });
+
+    it('should handle a generic type parameter with class value', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `export * from './MyClass'`,
+        'MyClass.d.ts': `export class MyClass{}`,
+      };
+      expect(await loader.resolveGenericTypeParameterData([
+        {
+          name: 'A',
+          range: {
+            type: 'interface',
+            value: 'MyClass',
+            genericTypeParameterInstantiations: [],
+            origin: classReference,
+          },
+        },
+      ], classReference)).toMatchObject([
+        {
+          name: 'A',
+          range: {
+            type: 'class',
+            value: { localName: 'MyClass', fileName: 'MyClass' },
+          },
+        },
+      ]);
+    });
+
+    it('should handle a generic type parameter with class value with sub-generics', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `export * from './MyClass'`,
+        'MyClass.d.ts': `export class MyClass<T, U>{}`,
+      };
+      expect(await loader.resolveGenericTypeParameterData([
+        {
+          name: 'A',
+          range: {
+            type: 'interface',
+            value: 'MyClass',
+            genericTypeParameterInstantiations: [
+              {
+                type: 'genericTypeReference',
+                value: 'B',
+              },
+              {
+                type: 'raw',
+                value: 'number',
+              },
+            ],
+            origin: classReference,
+          },
+        },
+        {
+          name: 'B',
+        },
+      ], classReference)).toMatchObject([
+        {
+          name: 'A',
+          range: {
+            type: 'class',
+            value: {
+              type: 'class',
+              localName: 'MyClass',
+            },
+            genericTypeParameterInstances: [
+              {
+                type: 'genericTypeReference',
+                value: 'B',
+              },
+              {
+                type: 'raw',
+                value: 'number',
+              },
+            ],
+          },
+        },
+        {
+          name: 'B',
+        },
+      ]);
+    });
+
+    // TODO: also test with generic type instantiation of raw number
   });
 
   describe('resolveParameterData', () => {
@@ -198,6 +320,7 @@ describe('ParameterResolver', () => {
           range: {
             type: 'interface',
             value: 'MyClass',
+            genericTypeParameterInstantiations: [],
             origin: classReference,
           },
         },
@@ -225,6 +348,7 @@ describe('ParameterResolver', () => {
           range: {
             type: 'interface',
             value: 'MyClass',
+            genericTypeParameterInstantiations: [],
             origin: classReference,
           },
         },
@@ -282,6 +406,7 @@ describe('ParameterResolver', () => {
       expect(await loader.resolveRange({
         type: 'interface',
         value: 'MyClass',
+        genericTypeParameterInstantiations: [],
         origin: classReference,
       }, classReference)).toMatchObject({
         type: 'class',
@@ -298,6 +423,7 @@ describe('ParameterResolver', () => {
       expect(await loader.resolveRange({
         type: 'interface',
         value: 'OtherClass',
+        genericTypeParameterInstantiations: [],
         origin: <any> { localName: 'OtherClass', fileName: 'OtherClass' },
       }, classReference)).toMatchObject({
         type: 'class',
@@ -314,6 +440,7 @@ describe('ParameterResolver', () => {
       expect(await loader.resolveRange({
         type: 'interface',
         value: 'MyClass',
+        genericTypeParameterInstantiations: [],
         origin: classReference,
       }, classReference)).toMatchObject({
         type: 'undefined',
@@ -330,6 +457,7 @@ describe('ParameterResolver', () => {
       expect(await loader.resolveRange({
         type: 'interface',
         value: 'MyClass',
+        genericTypeParameterInstantiations: [],
         origin: classReference,
       }, classReference)).toMatchObject({
         type: 'class',
@@ -347,6 +475,7 @@ describe('ParameterResolver', () => {
       expect(await loader.resolveRange({
         type: 'interface',
         value: 'MyInterface',
+        genericTypeParameterInstantiations: [],
         origin: classReference,
       }, classReference)).toMatchObject({
         type: 'nested',
@@ -370,6 +499,7 @@ export interface MyInterface extends IgnoredInterface{};
       expect(await loader.resolveRange({
         type: 'interface',
         value: 'MyInterface',
+        genericTypeParameterInstantiations: [],
         origin: classReference,
       }, classReference)).toMatchObject({
         type: 'nested',
@@ -405,6 +535,7 @@ export interface MyInterface extends IgnoredInterface{};
           {
             type: 'interface',
             value: 'MyClass',
+            genericTypeParameterInstantiations: [],
             origin: classReference,
           },
         ],
@@ -447,6 +578,7 @@ export interface MyInterface extends IgnoredInterface{};
           {
             type: 'interface',
             value: 'MyClass',
+            genericTypeParameterInstantiations: [],
             origin: classReference,
           },
         ],
@@ -489,6 +621,7 @@ export interface MyInterface extends IgnoredInterface{};
           {
             type: 'interface',
             value: 'MyClass',
+            genericTypeParameterInstantiations: [],
             origin: classReference,
           },
         ],
@@ -529,6 +662,7 @@ export interface MyInterface extends IgnoredInterface{};
             value: {
               type: 'interface',
               value: 'MyClass',
+              genericTypeParameterInstantiations: [],
               origin: classReference,
             },
           },
@@ -562,6 +696,7 @@ export interface MyInterface extends IgnoredInterface{};
         value: {
           type: 'interface',
           value: 'MyClass',
+          genericTypeParameterInstantiations: [],
           origin: classReference,
         },
       }, classReference)).toMatchObject({
@@ -570,6 +705,17 @@ export interface MyInterface extends IgnoredInterface{};
           type: 'class',
           value: { localName: 'MyClass', fileName: 'MyClass' },
         },
+      });
+    });
+
+    it('should handle a genericTypeReference range', async() => {
+      expect(await loader.resolveRange({
+        type: 'genericTypeReference',
+        value: 'T',
+      }, classReference)).toEqual({
+        type: 'genericTypeReference',
+        value: 'T',
+        origin: classReference,
       });
     });
   });
@@ -586,7 +732,7 @@ export interface MyInterface extends IgnoredInterface{};
       resolutionContext.contentsOverrides = {
         'A.d.ts': ``,
       };
-      await expect(loader.resolveRangeInterface('IFaceA', classReference))
+      await expect(loader.resolveRangeInterface('IFaceA', undefined, classReference))
         .rejects.toThrow(new Error('Could not load class or interface or type IFaceA from A'));
     });
 
@@ -596,7 +742,7 @@ export interface MyInterface extends IgnoredInterface{};
 interface IFaceA {}
 `,
       };
-      expect(await loader.resolveRangeInterface('IFaceA', classReference))
+      expect(await loader.resolveRangeInterface('IFaceA', undefined, classReference))
         .toEqual({
           type: 'nested',
           value: [],
@@ -609,7 +755,7 @@ interface IFaceA {}
 class ClassA {}
 `,
       };
-      expect(await loader.resolveRangeInterface('ClassA', classReference))
+      expect(await loader.resolveRangeInterface('ClassA', undefined, classReference))
         .toMatchObject({
           type: 'class',
           value: { localName: 'ClassA', fileName: 'A' },
@@ -624,7 +770,7 @@ interface ClassA {
 }
 `,
       };
-      expect(await loader.resolveRangeInterface('ClassA', classReference))
+      expect(await loader.resolveRangeInterface('ClassA', undefined, classReference))
         .toMatchObject({
           type: 'class',
           value: { localName: 'ClassA', fileName: 'A' },
@@ -640,7 +786,7 @@ interface IFaceA {
 }
 `,
       };
-      expect(await loader.resolveRangeInterface('IFaceA', classReference))
+      expect(await loader.resolveRangeInterface('IFaceA', undefined, classReference))
         .toEqual({
           type: 'nested',
           value: [
@@ -675,7 +821,7 @@ interface IFaceB {
 }
 `,
       };
-      expect(await loader.resolveRangeInterface('IFaceA', classReference))
+      expect(await loader.resolveRangeInterface('IFaceA', undefined, classReference))
         .toEqual({
           type: 'nested',
           value: [
@@ -706,7 +852,7 @@ interface IFaceB {
 type Type = string | boolean;
 `,
       };
-      expect(await loader.resolveRangeInterface('Type', classReference))
+      expect(await loader.resolveRangeInterface('Type', undefined, classReference))
         .toEqual({
           type: 'union',
           elements: [

@@ -21,8 +21,14 @@ export interface ComponentDefinition {
   requireElement: string;
   extends?: string[];
   comment?: string;
+  genericTypeParameters?: GenericTypeParameterDefinition[];
   parameters: ParameterDefinition[];
   constructorArguments: ConstructorArgumentDefinition[];
+}
+
+export interface GenericTypeParameterDefinition {
+  '@id': string;
+  range?: ParameterDefinitionRange;
 }
 
 export interface ParameterDefinition {
@@ -51,6 +57,13 @@ export type ParameterDefinitionRange = string | { '@id': string; parameters: Par
 } | {
   '@type': 'ParameterRangeLiteral';
   parameterRangeValueLiteral: number | string | boolean;
+} | {
+  '@type': 'ParameterRangeGenericTypeReference';
+  parameterRangeGenericType: string;
+} | {
+  '@type': 'ParameterRangeGenericComponent';
+  component: string;
+  genericTypeInstances: ParameterDefinitionRange[];
 };
 
 export type ConstructorArgumentDefinition = string | { '@id': string } | {

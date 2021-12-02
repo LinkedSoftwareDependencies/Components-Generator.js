@@ -271,6 +271,23 @@ describe('ExternalModulesLoader', () => {
         .toEqual([]);
     });
 
+    it('should ignore genericTypeReference constructor parameters', () => {
+      const constructors: ClassIndex<ConstructorData<ParameterRangeResolved>> = <any> {
+        Class1: {
+          parameters: [
+            {
+              range: {
+                type: 'genericTypeReference',
+                value: 'T',
+              },
+            },
+          ],
+        },
+      };
+      expect(loader.findExternalPackages({}, constructors))
+        .toEqual([]);
+    });
+
     it('should handle class constructor parameters', () => {
       const constructors: ClassIndex<ConstructorData<ParameterRangeResolved>> = <any> {
         Class1: {

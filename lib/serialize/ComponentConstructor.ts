@@ -1,17 +1,28 @@
 import * as Path from 'path';
 import type { ContextParser, JsonLdContextNormalized } from 'jsonld-context-parser';
 import semverMajor = require('semver/functions/major');
-import type { ClassIndex, ClassLoaded, ClassReference, ClassReferenceLoadedWithoutType } from '../parse/ClassIndex';
+import type {
+  ClassIndex,
+  ClassLoaded,
+  ClassReference,
+  ClassReferenceLoadedWithoutType,
+} from '../parse/ClassIndex';
 import type { ConstructorData } from '../parse/ConstructorLoader';
 import type { PackageMetadata } from '../parse/PackageMetadataLoader';
-import type { DefaultNested, DefaultValue, ParameterData, ParameterRangeResolved } from '../parse/ParameterLoader';
-import type { ExternalComponents } from '../resolution/ExternalModulesLoader';
 import type {
-  ComponentDefinition,
+  DefaultNested,
+  DefaultValue,
+  GenericTypeParameterData,
+  ParameterData,
+  ParameterRangeResolved,
+} from '../parse/ParameterLoader';
+import type { ExternalComponents } from '../resolution/ExternalModulesLoader';
+import type { ComponentDefinition,
   ComponentDefinitions, ComponentDefinitionsIndex,
   ConstructorArgumentDefinition, ConstructorFieldDefinition, DefaultValueDefinition,
   ParameterDefinition, ParameterDefinitionRange,
-} from './ComponentDefinitions';
+  GenericTypeParameterDefinition } from './ComponentDefinitions';
+
 import { ContextConstructor } from './ContextConstructor';
 
 /**
@@ -161,6 +172,14 @@ export class ComponentConstructor {
     classReference: ClassReferenceLoadedWithoutType,
     constructorData: ConstructorData<ParameterRangeResolved>,
   ): Promise<ComponentDefinition> {
+    // Determine generic type parameters
+    const genericTypeParameters = await this.constructGenericTypeParameters(
+      context,
+      externalContextsCallback,
+      classReference,
+      constructorData.genericTypeParameters,
+    );
+
     // Fill in parameters and constructor arguments
     const parameters: ParameterDefinition[] = [];
     const scopedId = await this.classNameToId(context, externalContextsCallback, classReference);
@@ -203,6 +222,7 @@ export class ComponentConstructor {
       requireElement: classReference.localName,
       ...ext ? { extends: ext } : {},
       ...classReference.comment ? { comment: classReference.comment } : {},
+      ...genericTypeParameters.length > 0 ? { genericTypeParameters } : {},
       parameters,
       constructorArguments,
     };
@@ -312,6 +332,52 @@ export class ComponentConstructor {
       scope.fieldIdsHash[id] = 1;
     }
     return id;
+  }
+
+  /**
+   * Construct a compacted generic name IRI.
+   * @param context A parsed JSON-LD context.
+   * @param classReference The class reference.
+   * @param genericTypeName The name of the generic type.
+   */
+  public genericNameToId(
+    context: JsonLdContextNormalized,
+    classReference: ClassReference,
+    genericTypeName: string,
+  ): string {
+    return this.fieldNameToId(context, classReference, `_generic_${genericTypeName}`, {
+      parentFieldNames: [],
+      fieldIdsHash: {},
+      defaultNested: [],
+    });
+  }
+
+  /**
+   * Construct constructor arguments from the given constructor data.
+   * Additionally, parameters will be appended to the parameters array.
+   *
+   * @param context A parsed JSON-LD context.
+   * @param externalContextsCallback Callback for external contexts.
+   * @param classReference Class reference of the class component owning this constructor.
+   * @param genericTypes Generic types of the class.
+   */
+  public async constructGenericTypeParameters(
+    context: JsonLdContextNormalized,
+    externalContextsCallback: ExternalContextCallback,
+    classReference: ClassReferenceLoadedWithoutType,
+    genericTypes: GenericTypeParameterData<ParameterRangeResolved>[],
+  ): Promise<GenericTypeParameterDefinition[]> {
+    const definitions: GenericTypeParameterDefinition[] = [];
+    for (const genericType of genericTypes) {
+      const id = this.genericNameToId(context, classReference, genericType.name);
+      definitions.push({
+        '@id': id,
+        ...genericType.range ?
+          { range: await this.constructParameterRange(genericType.range, context, externalContextsCallback, id) } :
+          {},
+      });
+    }
+    return definitions;
   }
 
   /**
@@ -590,7 +656,22 @@ export class ComponentConstructor {
           parameterRangeValueLiteral: range.value,
         };
       case 'class':
-        return await this.classNameToId(context, externalContextsCallback, range.value);
+        // eslint-disable-next-line no-case-declarations
+        const componentId = await this.classNameToId(context, externalContextsCallback, range.value);
+        if (range.genericTypeParameterInstances) {
+          return {
+            '@type': 'ParameterRangeGenericComponent',
+            component: componentId,
+            genericTypeInstances: await Promise.all(range.genericTypeParameterInstances
+              .map(genericType => this.constructParameterRange(
+                genericType,
+                context,
+                externalContextsCallback,
+                fieldId,
+              ))),
+          };
+        }
+        return componentId;
       case 'nested':
         throw new Error('Composition of nested fields is unsupported');
       case 'undefined':
@@ -622,6 +703,11 @@ export class ComponentConstructor {
           '@type': range.type === 'rest' ? 'ParameterRangeRest' : 'ParameterRangeArray',
           parameterRangeValue: await this
             .constructParameterRange(range.value, context, externalContextsCallback, fieldId),
+        };
+      case 'genericTypeReference':
+        return {
+          '@type': 'ParameterRangeGenericTypeReference',
+          parameterRangeGenericType: this.genericNameToId(context, range.origin, range.value),
         };
     }
   }

@@ -96,6 +96,7 @@ export class ExternalModulesLoader {
       case 'literal':
       case 'override':
       case 'undefined':
+      case 'genericTypeReference':
         break;
       case 'class':
         this.indexClassInExternalPackage(parameterRange.value, externalPackages);

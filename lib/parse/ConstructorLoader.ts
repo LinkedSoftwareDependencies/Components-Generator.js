@@ -3,7 +3,7 @@ import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree'
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import type { ClassIndex, ClassLoaded, ClassReferenceLoaded } from './ClassIndex';
 import type { CommentLoader } from './CommentLoader';
-import type { ParameterDataField, ParameterRangeUnresolved } from './ParameterLoader';
+import type { GenericTypeParameterData, ParameterDataField, ParameterRangeUnresolved } from './ParameterLoader';
 import { ParameterLoader } from './ParameterLoader';
 
 /**
@@ -26,7 +26,7 @@ export class ConstructorLoader {
     const constructorDataIndex: ClassIndex<ConstructorData<ParameterRangeUnresolved>> = {};
     for (const [ className, classLoadedRoot ] of Object.entries(classIndex)) {
       // Initialize default value
-      constructorDataIndex[className] = { parameters: [], classLoaded: classLoadedRoot };
+      constructorDataIndex[className] = { genericTypeParameters: [], parameters: [], classLoaded: classLoadedRoot };
 
       // Fill in constructor data if we're loading a class, and we find a constructor in the inheritance chain.
       if (classLoadedRoot.type === 'class') {
@@ -127,6 +127,7 @@ export interface ConstructorLoaderArgs {
  * Constructor parameter information
  */
 export interface ConstructorData<R> {
+  genericTypeParameters: GenericTypeParameterData<R>[];
   parameters: ParameterDataField<R>[];
   classLoaded: ClassReferenceLoaded;
 }

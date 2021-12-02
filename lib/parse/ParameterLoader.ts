@@ -39,13 +39,52 @@ export class ParameterLoader {
     // Load the constructor comment
     const constructorCommentData = this.commentLoader.getCommentDataFromConstructor(constructorChain);
 
+    // Load all generic type parameters
+    const genericTypeParameters: GenericTypeParameterData<ParameterRangeUnresolved>[] = [];
+    for (const [ genericName, genericType ] of Object.entries(constructorChain[0].classLoaded.generics)) {
+      this.loadConstructorGeneric(
+        constructorChain[0].classLoaded,
+        genericTypeParameters,
+        constructorCommentData,
+        genericName,
+        genericType.type,
+      );
+    }
+
     // Load all constructor parameters
     const parameters: ParameterDataField<ParameterRangeUnresolved>[] = [];
     for (const field of constructorChain[0].constructor.value.params) {
       this.loadConstructorField(constructorChain[0].classLoaded, parameters, constructorCommentData, field);
     }
 
-    return { parameters, classLoaded: constructorChain[0].classLoaded };
+    return { genericTypeParameters, parameters, classLoaded: constructorChain[0].classLoaded };
+  }
+
+  /**
+   * Load the generic type parameter data from the given generic in a constructor.
+   * @param classLoaded The loaded class in which the field is defined.
+   * @param genericTypeParameters The array of generic type parameters that will be appended to.
+   * @param constructorCommentData Comment data from the constructor.
+   * @param genericName The generic type name.
+   * @param genericType The optional generic type range.
+   */
+  public loadConstructorGeneric(
+    classLoaded: ClassReferenceLoaded,
+    genericTypeParameters: GenericTypeParameterData<ParameterRangeUnresolved>[],
+    constructorCommentData: ConstructorCommentData,
+    genericName: string,
+    genericType: TypeNode | undefined,
+  ): void {
+    genericTypeParameters.push({
+      name: genericName,
+      ...genericType ?
+        { range: this.getRangeFromTypeNode(
+          classLoaded,
+          genericType,
+          this.getErrorIdentifierGeneric(classLoaded, genericName),
+        ) } :
+        {},
+    });
   }
 
   /**
@@ -171,6 +210,10 @@ export class ParameterLoader {
     throw new Error(`Unsupported field key type ${field.key.type} in interface ${classLoaded.localName} in ${classLoaded.fileName}`);
   }
 
+  public getErrorIdentifierGeneric(classLoaded: ClassReferenceLoaded, genericName: string): string {
+    return `generic type ${genericName}`;
+  }
+
   public getErrorIdentifierField(classLoaded: ClassReferenceLoaded, field: Identifier | TSPropertySignature): string {
     return `field ${this.getFieldName(classLoaded, field)}`;
   }
@@ -207,14 +250,12 @@ export class ParameterLoader {
               throw new Error(`Found invalid Array field type at ${errorIdentifier
               } in ${classLoaded.localName} at ${classLoaded.fileName}`);
             default:
-              // First check if the type is be a generic type
+              // First check if the type is a direct generic type
               if (classLoaded.type !== 'type' && typeNode.typeName.name in classLoaded.generics) {
-                const genericProperties = classLoaded.generics[typeNode.typeName.name];
-                if (!genericProperties.type) {
-                  throw new Error(`Found untyped generic field type at ${errorIdentifier
-                  } in ${classLoaded.localName} at ${classLoaded.fileName}`);
-                }
-                return this.getRangeFromTypeNode(classLoaded, genericProperties.type, errorIdentifier);
+                return {
+                  type: 'genericTypeReference',
+                  value: typeNode.typeName.name,
+                };
               }
 
               // Check if this node is a predefined type alias
@@ -223,8 +264,25 @@ export class ParameterLoader {
                 return typeAliasOverride;
               }
 
+              // If we have type parameters, determine the generic type param instantiations
+              // eslint-disable-next-line no-case-declarations
+              let genericTypeParameterInstantiations: ParameterRangeUnresolved[] | undefined;
+              if (typeNode.typeParameters) {
+                genericTypeParameterInstantiations = typeNode.typeParameters.params
+                  .map(genericTypeParameter => this.getRangeFromTypeNode(
+                    classLoaded,
+                    genericTypeParameter,
+                    `generic type instantiation on ${classLoaded.localName} in ${classLoaded.fileName}`,
+                  ));
+              }
+
               // Otherwise, assume we have an interface/class parameter
-              return { type: 'interface', value: typeNode.typeName.name, origin: classLoaded };
+              return {
+                type: 'interface',
+                value: typeNode.typeName.name,
+                genericTypeParameterInstantiations,
+                origin: classLoaded,
+              };
           }
         }
         break;
@@ -344,6 +402,7 @@ export class ParameterLoader {
       case 'literal':
       case 'hash':
       case 'interface':
+      case 'genericTypeReference':
         // Replace these types
         return override;
       case 'undefined':
@@ -519,6 +578,21 @@ export interface ParameterDataIndex<R> {
   comment?: string;
 }
 
+export interface GenericTypeParameterData<R> {
+  /**
+   * The generic type parameter name.
+   */
+  name: string;
+  /**
+   * The range of the generic type parameter.
+   */
+  range?: R;
+  /**
+   * The human-readable description of this parameter.
+   */
+  comment?: string;
+}
+
 export type ParameterRangeUnresolved = {
   type: 'raw';
   value: 'boolean' | 'number' | 'string';
@@ -531,6 +605,7 @@ export type ParameterRangeUnresolved = {
 } | {
   type: 'interface';
   value: string;
+  genericTypeParameterInstantiations: ParameterRangeUnresolved[] | undefined;
   /**
    * The place from which the interface was referenced.
    */
@@ -555,6 +630,9 @@ export type ParameterRangeUnresolved = {
 } | {
   type: 'array';
   value: ParameterRangeUnresolved;
+} | {
+  type: 'genericTypeReference';
+  value: string;
 };
 
 export type ParameterRangeResolved = {
@@ -569,6 +647,7 @@ export type ParameterRangeResolved = {
 } | {
   type: 'class';
   value: ClassReferenceLoaded;
+  genericTypeParameterInstances: ParameterRangeResolved[] | undefined;
 } | {
   type: 'nested';
   value: ParameterData<ParameterRangeResolved>[];
@@ -589,6 +668,13 @@ export type ParameterRangeResolved = {
 } | {
   type: 'array';
   value: ParameterRangeResolved;
+} | {
+  type: 'genericTypeReference';
+  value: string;
+  /**
+   * The place in which the generic type was defined.
+   */
+  origin: ClassReferenceLoaded;
 };
 
 /**

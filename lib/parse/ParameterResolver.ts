@@ -4,13 +4,13 @@ import type { ClassIndex, ClassReference, ClassReferenceLoaded, InterfaceLoaded 
 import type { ClassLoader } from './ClassLoader';
 import type { CommentLoader } from './CommentLoader';
 import type { ConstructorData } from './ConstructorLoader';
-import type { ParameterData,
+import type {
+  GenericTypeParameterData, ParameterData,
   ParameterDataField,
   ParameterRangeResolved,
-  ParameterRangeUnresolved } from './ParameterLoader';
-import {
-  ParameterLoader,
+  ParameterRangeUnresolved,
 } from './ParameterLoader';
+import { ParameterLoader } from './ParameterLoader';
 
 export class ParameterResolver {
   private readonly classLoader: ClassLoader;
@@ -51,12 +51,32 @@ export class ParameterResolver {
     unresolvedConstructorData: ConstructorData<ParameterRangeUnresolved>,
   ): Promise<ConstructorData<ParameterRangeResolved>> {
     return {
+      genericTypeParameters: await this.resolveGenericTypeParameterData(
+        unresolvedConstructorData.genericTypeParameters,
+        unresolvedConstructorData.classLoaded,
+      ),
       parameters: <ParameterDataField<ParameterRangeResolved>[]> (await this.resolveParameterData(
         unresolvedConstructorData.parameters,
         unresolvedConstructorData.classLoaded,
       )).filter(parameter => parameter.type === 'field'),
       classLoaded: unresolvedConstructorData.classLoaded,
     };
+  }
+
+  /**
+   * Resolve the given array of generic type parameter data in parallel.
+   * @param genericTypeParameters An array of unresolved generic type parameters.
+   * @param owningClass The class in which the given generic type parameters are declared.
+   */
+  public async resolveGenericTypeParameterData(
+    genericTypeParameters: GenericTypeParameterData<ParameterRangeUnresolved>[],
+    owningClass: ClassReferenceLoaded,
+  ): Promise<GenericTypeParameterData<ParameterRangeResolved>[]> {
+    return await Promise.all(genericTypeParameters
+      .map(async generic => ({
+        ...generic,
+        range: generic.range ? await this.resolveRange(generic.range, owningClass) : undefined,
+      })));
   }
 
   /**
@@ -90,7 +110,7 @@ export class ParameterResolver {
             type: 'undefined',
           };
         }
-        return await this.resolveRangeInterface(range.value, range.origin);
+        return await this.resolveRangeInterface(range.value, range.genericTypeParameterInstantiations, range.origin);
       case 'hash':
         return {
           type: 'nested',
@@ -113,16 +133,26 @@ export class ParameterResolver {
           type: range.type,
           value: await this.resolveRange(range.value, owningClass),
         };
+      case 'genericTypeReference':
+        return {
+          type: 'genericTypeReference',
+          value: range.value,
+          origin: owningClass,
+        };
     }
   }
 
   /**
    * Resolve a class or interface.
    * @param interfaceName A class or interface name.
+   * @param genericTypeParameterInstances Generic type parameters that were supplied for instantiation.
+   *                                      Note that these generics are NOT the same as the generics that may be defined
+   *                                      within the class itself.
    * @param owningClass The class this interface was used in.
    */
   public async resolveRangeInterface(
     interfaceName: string,
+    genericTypeParameterInstances: ParameterRangeUnresolved[] | undefined,
     owningClass: ClassReferenceLoaded,
   ): Promise<ParameterRangeResolved> {
     const classOrInterface = await this.loadClassOrInterfacesChain({
@@ -138,6 +168,10 @@ export class ParameterResolver {
       return {
         type: 'class',
         value: classOrInterface,
+        genericTypeParameterInstances: genericTypeParameterInstances ?
+          await Promise.all(genericTypeParameterInstances
+            .map(genericTypeParameter => this.resolveRange(genericTypeParameter, classOrInterface))) :
+          undefined,
       };
     }
 

@@ -35,6 +35,7 @@ describe('ComponentConstructor', () => {
       packageName: 'my-package',
       localName: 'MyClass',
       fileName: Path.normalize('/docs/package/src/a/b/file-param'),
+      generics: {},
     };
 
     externalComponents = {
@@ -109,23 +110,27 @@ describe('ComponentConstructor', () => {
           packageName: 'my-package',
           localName: 'MyClass1',
           fileName: Path.normalize('/docs/package/src/b/file'),
+          generics: {},
         },
         MyClass2: {
           type: 'class',
           packageName: 'my-package',
           localName: 'MyClass2',
           fileName: Path.normalize('/docs/package/src/b/file'),
+          generics: {},
         },
       };
       (<any> ctor).classConstructors = <ClassIndex<ConstructorData<ParameterRangeResolved>>> {
         MyClass1: {
           type: 'class',
           classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
+          genericTypeParameters: [],
           parameters: [],
         },
         MyClass2: {
           type: 'class',
           classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass2,
+          genericTypeParameters: [],
           parameters: [
             {
               type: 'field',
@@ -189,21 +194,25 @@ describe('ComponentConstructor', () => {
           packageName: 'my-package',
           localName: 'MyClass1',
           fileName: Path.normalize('/docs/package/src/file1'),
+          generics: {},
         },
         MyClass2: {
           type: 'class',
           packageName: 'my-package',
           localName: 'MyClass2',
           fileName: Path.normalize('/docs/package/src/b/file2'),
+          generics: {},
         },
       };
       (<any> ctor).classConstructors = <ClassIndex<ConstructorData<ParameterRangeResolved>>> {
         MyClass1: {
           classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
+          genericTypeParameters: [],
           parameters: [],
         },
         MyClass2: {
           classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass2,
+          genericTypeParameters: [],
           parameters: [
             {
               type: 'field',
@@ -280,6 +289,7 @@ describe('ComponentConstructor', () => {
             localName: 'MyClass',
             fileName: Path.normalize('/docs/package/src/b/file'),
           },
+          generics: {},
         },
         MyClass2: {
           type: 'class',
@@ -291,15 +301,18 @@ describe('ComponentConstructor', () => {
             localName: 'MyClass',
             fileName: Path.normalize('/docs/package/src/b/file'),
           },
+          generics: {},
         },
       };
       (<any> ctor).classConstructors = <ClassIndex<ConstructorData<ParameterRangeResolved>>> {
         MyClass1: {
           classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
+          genericTypeParameters: [],
           parameters: [],
         },
         MyClass2: {
           classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass2,
+          genericTypeParameters: [],
           parameters: [
             {
               type: 'field',
@@ -373,12 +386,14 @@ describe('ComponentConstructor', () => {
           localName: 'MyClass',
           fileName: Path.normalize('/docs/other-package/src/b/file'),
           fileNameReferenced: Path.normalize('/docs/package/src/b/file'),
+          generics: {},
         },
       };
       (<any> ctor).classConstructors = <ClassIndex<ConstructorData<ParameterRangeResolved>>> {
         MyClass1: {
           type: 'class',
           classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
+          genericTypeParameters: [],
           parameters: [],
         },
       };
@@ -510,6 +525,7 @@ describe('ComponentConstructor', () => {
     it('should handle a component with empty constructor', async() => {
       expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
+        genericTypeParameters: [],
         parameters: [],
       })).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
@@ -523,6 +539,7 @@ describe('ComponentConstructor', () => {
     it('should handle a component with non-empty constructor', async() => {
       expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
+        genericTypeParameters: [],
         parameters: [
           {
             type: 'field',
@@ -564,6 +581,7 @@ describe('ComponentConstructor', () => {
       (<ClassLoaded> classReference).abstract = true;
       expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
+        genericTypeParameters: [],
         parameters: [],
       })).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
@@ -582,6 +600,7 @@ describe('ComponentConstructor', () => {
       };
       expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
+        genericTypeParameters: [],
         parameters: [],
       })).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
@@ -608,6 +627,7 @@ describe('ComponentConstructor', () => {
       ];
       expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
+        genericTypeParameters: [],
         parameters: [],
       })).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
@@ -642,6 +662,7 @@ describe('ComponentConstructor', () => {
       ];
       expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
+        genericTypeParameters: [],
         parameters: [],
       })).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
@@ -661,6 +682,7 @@ describe('ComponentConstructor', () => {
       classReference.comment = 'Hi';
       expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
+        genericTypeParameters: [],
         parameters: [],
       })).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
@@ -676,6 +698,7 @@ describe('ComponentConstructor', () => {
       classReference.type = 'interface';
       expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
+        genericTypeParameters: [],
         parameters: [],
       })).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
@@ -702,6 +725,7 @@ describe('ComponentConstructor', () => {
       ];
       expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
+        genericTypeParameters: [],
         parameters: [],
       })).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
@@ -713,6 +737,113 @@ describe('ComponentConstructor', () => {
           'mp:components/a/b/SuperFile1.jsonld#SuperInterface1',
           'mp:components/a/b/SuperFile2.jsonld#SuperInterface2',
         ],
+      });
+    });
+
+    it('should handle a component with generic types', async() => {
+      expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
+        classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
+        genericTypeParameters: [
+          {
+            name: 'T',
+          },
+          {
+            name: 'U',
+            range: {
+              type: 'raw',
+              value: 'number',
+            },
+          },
+          {
+            name: 'V',
+            range: {
+              type: 'class',
+              value: classReference,
+              genericTypeParameterInstances: [
+                {
+                  type: 'genericTypeReference',
+                  value: 'U',
+                  origin: classReference,
+                },
+                {
+                  type: 'raw',
+                  value: 'string',
+                },
+              ],
+            },
+          },
+        ],
+        parameters: [
+          {
+            type: 'field',
+            name: 'fieldA',
+            range: {
+              type: 'genericTypeReference',
+              value: 'U',
+              origin: classReference,
+            },
+            comment: 'Hi1',
+          },
+          {
+            type: 'field',
+            name: 'fieldB',
+            range: {
+              type: 'genericTypeReference',
+              value: 'V',
+              origin: classReference,
+            },
+            comment: 'Hi2',
+          },
+        ],
+      })).toEqual({
+        '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
+        '@type': 'Class',
+        constructorArguments: [
+          { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA' },
+          { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldB' },
+        ],
+        genericTypeParameters: [
+          {
+            '@id': 'mp:components/a/b/file-param.jsonld#MyClass__generic_T',
+          },
+          {
+            '@id': 'mp:components/a/b/file-param.jsonld#MyClass__generic_U',
+            range: 'xsd:number',
+          },
+          {
+            '@id': 'mp:components/a/b/file-param.jsonld#MyClass__generic_V',
+            range: {
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'mp:components/a/b/file-param.jsonld#MyClass',
+              genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeGenericTypeReference',
+                  parameterRangeGenericType: 'mp:components/a/b/file-param.jsonld#MyClass__generic_U',
+                },
+                'xsd:string',
+              ],
+            },
+          },
+        ],
+        parameters: [
+          {
+            '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA',
+            comment: 'Hi1',
+            range: {
+              '@type': 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'mp:components/a/b/file-param.jsonld#MyClass__generic_U',
+            },
+          },
+          {
+            '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldB',
+            comment: 'Hi2',
+            range: {
+              '@type': 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'mp:components/a/b/file-param.jsonld#MyClass__generic_V',
+            },
+          },
+        ],
+        requireElement: 'MyClass',
       });
     });
   });
@@ -856,11 +987,71 @@ describe('ComponentConstructor', () => {
     });
   });
 
+  describe('constructGenericTypeParameters', () => {
+    it('should handle a constructor with no generics', async() => {
+      expect(await ctor.constructGenericTypeParameters(context, externalContextsCallback, classReference, []))
+        .toEqual([]);
+    });
+
+    it('should handle a constructor with a single untyped generic', async() => {
+      expect(await ctor.constructGenericTypeParameters(context, externalContextsCallback, classReference, [
+        {
+          name: 'T',
+        },
+      ])).toEqual([
+        {
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass__generic_T',
+        },
+      ]);
+    });
+
+    it('should handle a constructor with a single typed generic', async() => {
+      expect(await ctor.constructGenericTypeParameters(context, externalContextsCallback, classReference, [
+        {
+          name: 'T',
+          range: {
+            type: 'raw',
+            value: 'number',
+          },
+        },
+      ])).toEqual([
+        {
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass__generic_T',
+          range: 'xsd:number',
+        },
+      ]);
+    });
+
+    it('should handle a constructor with a multiple generics', async() => {
+      expect(await ctor.constructGenericTypeParameters(context, externalContextsCallback, classReference, [
+        {
+          name: 'T',
+        },
+        {
+          name: 'U',
+          range: {
+            type: 'raw',
+            value: 'number',
+          },
+        },
+      ])).toEqual([
+        {
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass__generic_T',
+        },
+        {
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass__generic_U',
+          range: 'xsd:number',
+        },
+      ]);
+    });
+  });
+
   describe('constructParameters', () => {
     it('should handle a constructor with no params', async() => {
       const parameters: ParameterDefinition[] = [];
       expect(await ctor.constructParameters(context, externalContextsCallback, <ClassLoaded> classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
+        genericTypeParameters: [],
         parameters: [],
       }, parameters)).toEqual([]);
       expect(parameters).toEqual([]);
@@ -870,6 +1061,7 @@ describe('ComponentConstructor', () => {
       const parameters: ParameterDefinition[] = [];
       expect(await ctor.constructParameters(context, externalContextsCallback, <ClassLoaded> classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
+        genericTypeParameters: [],
         parameters: [
           {
             type: 'field',
@@ -906,6 +1098,7 @@ describe('ComponentConstructor', () => {
       const parameters: ParameterDefinition[] = [];
       expect(await ctor.constructParameters(context, externalContextsCallback, <ClassLoaded> classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
+        genericTypeParameters: [],
         parameters: [
           {
             type: 'field',
@@ -954,6 +1147,7 @@ describe('ComponentConstructor', () => {
       const parameters: ParameterDefinition[] = [];
       expect(await ctor.constructParameters(context, externalContextsCallback, <ClassLoaded> classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
+        genericTypeParameters: [],
         parameters: [
           {
             type: 'field',
@@ -1005,6 +1199,7 @@ describe('ComponentConstructor', () => {
       const parameters: ParameterDefinition[] = [];
       expect(await ctor.constructParameters(context, externalContextsCallback, <ClassLoaded> classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
+        genericTypeParameters: [],
         parameters: [
           {
             type: 'field',
@@ -1122,12 +1317,15 @@ describe('ComponentConstructor', () => {
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'field',
-          range: { type: 'class',
+          range: {
+            type: 'class',
             value: <ClassReferenceLoaded> {
               packageName: 'my-package',
               localName: 'ClassParam',
               fileName: Path.normalize('/docs/package/src/a/b/file-param'),
-            }},
+            },
+            genericTypeParameterInstances: undefined,
+          },
           comment: 'Hi',
         }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope))
         .toEqual({ '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field' });
@@ -2147,11 +2345,49 @@ describe('ComponentConstructor', () => {
         fileName: Path.normalize('/docs/package/src/a/b/file-param'),
       };
       expect(await ctor.constructParameterRange(
-        { type: 'class', value: rangeValue },
+        { type: 'class', value: rangeValue, genericTypeParameterInstances: undefined },
         context,
         externalContextsCallback,
         'mp:components/a/b/file-param.jsonld#MyClass_field',
       )).toEqual('mp:components/a/b/file-param.jsonld#ClassParam');
+    });
+
+    it('should construct a class parameter range with generics', async() => {
+      const rangeValue: ClassReferenceLoaded = <any> {
+        packageName: 'my-package',
+        localName: 'ClassParam',
+        fileName: Path.normalize('/docs/package/src/a/b/file-param'),
+      };
+      expect(await ctor.constructParameterRange(
+        {
+          type: 'class',
+          value: rangeValue,
+          genericTypeParameterInstances: [
+            {
+              type: 'raw',
+              value: 'number',
+            },
+            {
+              type: 'genericTypeReference',
+              value: 'T',
+              origin: classReference,
+            },
+          ],
+        },
+        context,
+        externalContextsCallback,
+        'mp:components/a/b/file-param.jsonld#MyClass_field',
+      )).toEqual({
+        '@type': 'ParameterRangeGenericComponent',
+        component: 'mp:components/a/b/file-param.jsonld#ClassParam',
+        genericTypeInstances: [
+          'xsd:number',
+          {
+            '@type': 'ParameterRangeGenericTypeReference',
+            parameterRangeGenericType: 'mp:components/a/b/file-param.jsonld#MyClass__generic_T',
+          },
+        ],
+      });
     });
 
     it('should throw on a nested parameter range', async() => {
@@ -2183,7 +2419,7 @@ describe('ComponentConstructor', () => {
       };
       const children: ParameterRangeResolved[] = [
         { type: 'raw', value: 'boolean' },
-        { type: 'class', value: rangeValueClass },
+        { type: 'class', value: rangeValueClass, genericTypeParameterInstances: undefined },
       ];
       expect(await ctor.constructParameterRange(
         { type: 'union', elements: children },
@@ -2207,7 +2443,7 @@ describe('ComponentConstructor', () => {
       };
       const children: ParameterRangeResolved[] = [
         { type: 'raw', value: 'boolean' },
-        { type: 'class', value: rangeValueClass },
+        { type: 'class', value: rangeValueClass, genericTypeParameterInstances: undefined },
       ];
       expect(await ctor.constructParameterRange(
         { type: 'intersection', elements: children },
@@ -2231,7 +2467,7 @@ describe('ComponentConstructor', () => {
       };
       const elements: ParameterRangeResolved[] = [
         { type: 'raw', value: 'boolean' },
-        { type: 'class', value: rangeValueClass },
+        { type: 'class', value: rangeValueClass, genericTypeParameterInstances: undefined },
       ];
       expect(await ctor.constructParameterRange(
         { type: 'tuple', elements },
@@ -2255,7 +2491,7 @@ describe('ComponentConstructor', () => {
       };
       const elements: ParameterRangeResolved[] = [
         { type: 'rest', value: { type: 'raw', value: 'boolean' }},
-        { type: 'class', value: rangeValueClass },
+        { type: 'class', value: rangeValueClass, genericTypeParameterInstances: undefined },
       ];
       expect(await ctor.constructParameterRange(
         { type: 'tuple', elements },
@@ -2283,6 +2519,18 @@ describe('ComponentConstructor', () => {
       )).toEqual({
         '@type': 'ParameterRangeArray',
         parameterRangeValue: 'xsd:boolean',
+      });
+    });
+
+    it('should construct a generic type reference range', async() => {
+      expect(await ctor.constructParameterRange(
+        { type: 'genericTypeReference', value: 'T', origin: classReference },
+        context,
+        externalContextsCallback,
+        'mp:a/b/file-param#MyClass_field',
+      )).toEqual({
+        '@type': 'ParameterRangeGenericTypeReference',
+        parameterRangeGenericType: 'mp:components/a/b/file-param.jsonld#MyClass__generic_T',
       });
     });
   });
