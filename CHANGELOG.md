@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.0.0-beta.1"></a>
+## [v3.0.0-beta.1](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.0-beta.0...v3.0.0-beta.1) - 2021-12-02
+
+### Added
+* [Allow type aliases for interfaces and classes](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/c480f717ad35ec0e8c1cc67dbacf9e7eac69fd25)
+
 <a name="v3.0.0-beta.0"></a>
 ## [v3.0.0-beta.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v2.6.0...v3.0.0-beta.0) - 2021-11-30
 
