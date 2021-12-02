@@ -343,11 +343,11 @@ export class ParameterLoader {
       case 'raw':
       case 'literal':
       case 'hash':
-        // Only raw types are replaced
+      case 'interface':
+        // Replace these types
         return override;
       case 'undefined':
       case 'override':
-      case 'interface':
         // Override has no effect here
         return range;
       case 'union':

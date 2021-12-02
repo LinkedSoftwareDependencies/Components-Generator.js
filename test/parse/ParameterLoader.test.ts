@@ -1589,9 +1589,8 @@ export interface A{
           value: 'boolean',
         },
       )).toEqual({
-        type: 'interface',
-        value: 'bla',
-        origin: classLoadedDummy,
+        type: 'raw',
+        value: 'boolean',
       });
     });
 
