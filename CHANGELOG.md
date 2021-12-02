@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.0.0-beta.2"></a>
+## [v3.0.0-beta.2](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.0-beta.1...v3.0.0-beta.2) - 2021-12-02
+
+### Fixed
+* [Fix class types not being overridable, Closs #82](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/1be3a39ca317d6e64648566c716769da1c8c8826)
+
 <a name="v3.0.0-beta.1"></a>
 ## [v3.0.0-beta.1](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.0-beta.0...v3.0.0-beta.1) - 2021-12-02
 
