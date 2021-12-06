@@ -170,20 +170,22 @@ export class ComponentConstructor {
     context: JsonLdContextNormalized,
     externalContextsCallback: ExternalContextCallback,
     classReference: ClassReferenceLoadedWithoutType,
-    constructorData: ConstructorData<ParameterRangeResolved>,
+    constructorData: ConstructorData<ParameterRangeResolved> | undefined,
   ): Promise<ComponentDefinition> {
     // Determine generic type parameters
-    const genericTypeParameters = await this.constructGenericTypeParameters(
-      context,
-      externalContextsCallback,
-      classReference,
-      constructorData.genericTypeParameters,
-    );
+    const genericTypeParameters = constructorData ?
+      await this.constructGenericTypeParameters(
+        context,
+        externalContextsCallback,
+        classReference,
+        constructorData.genericTypeParameters,
+      ) :
+      undefined;
 
     // Fill in parameters and constructor arguments
     const parameters: ParameterDefinition[] = [];
     const scopedId = await this.classNameToId(context, externalContextsCallback, classReference);
-    const constructorArguments = classReference.type === 'class' ?
+    const constructorArguments = constructorData && classReference.type === 'class' ?
       await this.constructParameters(
         context,
         externalContextsCallback,
@@ -222,7 +224,7 @@ export class ComponentConstructor {
       requireElement: classReference.localName,
       ...ext ? { extends: ext } : {},
       ...classReference.comment ? { comment: classReference.comment } : {},
-      ...genericTypeParameters.length > 0 ? { genericTypeParameters } : {},
+      ...genericTypeParameters && genericTypeParameters.length > 0 ? { genericTypeParameters } : {},
       parameters,
       constructorArguments,
     };

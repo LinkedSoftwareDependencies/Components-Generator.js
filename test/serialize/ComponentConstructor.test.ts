@@ -422,6 +422,49 @@ describe('ComponentConstructor', () => {
         },
       });
     });
+
+    it('should handle components without constructors', async() => {
+      (<any> ctor).classAndInterfaceIndex = {
+        MyClass1: {
+          type: 'class',
+          packageName: 'my-package',
+          localName: 'MyClass1',
+          fileName: Path.normalize('/docs/package/src/b/file'),
+          generics: {},
+        },
+        MyClass2: {
+          type: 'class',
+          packageName: 'my-package',
+          localName: 'MyClass2',
+          fileName: Path.normalize('/docs/package/src/b/file'),
+          generics: {},
+        },
+      };
+      expect(await ctor.constructComponents()).toEqual({
+        [Path.normalize('/docs/package/components/b/file')]: {
+          '@context': [
+            'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
+          ],
+          '@id': 'npmd:my-package',
+          components: [
+            {
+              '@id': 'mp:components/b/file.jsonld#MyClass1',
+              '@type': 'Class',
+              constructorArguments: [],
+              parameters: [],
+              requireElement: 'MyClass1',
+            },
+            {
+              '@id': 'mp:components/b/file.jsonld#MyClass2',
+              '@type': 'Class',
+              requireElement: 'MyClass2',
+              constructorArguments: [],
+              parameters: [],
+            },
+          ],
+        },
+      });
+    });
   });
 
   describe('constructComponentsIndex', () => {
