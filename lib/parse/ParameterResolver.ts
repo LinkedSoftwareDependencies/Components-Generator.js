@@ -54,10 +54,12 @@ export class ParameterResolver {
       genericTypeParameters: await this.resolveGenericTypeParameterData(
         unresolvedConstructorData.genericTypeParameters,
         unresolvedConstructorData.classLoaded,
+        {},
       ),
       parameters: <ParameterDataField<ParameterRangeResolved>[]> (await this.resolveParameterData(
         unresolvedConstructorData.parameters,
         unresolvedConstructorData.classLoaded,
+        {},
       )).filter(parameter => parameter.type === 'field'),
       classLoaded: unresolvedConstructorData.classLoaded,
     };
@@ -67,15 +69,17 @@ export class ParameterResolver {
    * Resolve the given array of generic type parameter data in parallel.
    * @param genericTypeParameters An array of unresolved generic type parameters.
    * @param owningClass The class in which the given generic type parameters are declared.
+   * @param genericTypeRemappings A remapping of generic type names.
    */
   public async resolveGenericTypeParameterData(
     genericTypeParameters: GenericTypeParameterData<ParameterRangeUnresolved>[],
     owningClass: ClassReferenceLoaded,
+    genericTypeRemappings: Record<string, ParameterRangeUnresolved>,
   ): Promise<GenericTypeParameterData<ParameterRangeResolved>[]> {
     return await Promise.all(genericTypeParameters
       .map(async generic => ({
         ...generic,
-        range: generic.range ? await this.resolveRange(generic.range, owningClass) : undefined,
+        range: generic.range ? await this.resolveRange(generic.range, owningClass, genericTypeRemappings) : undefined,
       })));
   }
 
@@ -83,22 +87,31 @@ export class ParameterResolver {
    * Resolve the given array of parameter data in parallel.
    * @param parameters An array of unresolved parameters.
    * @param owningClass The class in which the given parameters are declared.
+   * @param genericTypeRemappings A remapping of generic type names.
    */
   public async resolveParameterData(
     parameters: ParameterData<ParameterRangeUnresolved>[],
     owningClass: ClassReferenceLoaded,
+    genericTypeRemappings: Record<string, ParameterRangeUnresolved>,
   ): Promise<ParameterData<ParameterRangeResolved>[]> {
     return await Promise.all(parameters
-      .map(async parameter => ({ ...parameter, range: await this.resolveRange(parameter.range, owningClass) })));
+      .map(async parameter => ({
+        ...parameter,
+        range: await this.resolveRange(parameter.range, owningClass, genericTypeRemappings),
+      })));
   }
 
   /**
    * Resolve the given parameter range.
    * @param range An unresolved parameter range.
    * @param owningClass The class this range was defined in.
+   * @param genericTypeRemappings A remapping of generic type names.
    */
-  public async resolveRange(range: ParameterRangeUnresolved, owningClass: ClassReferenceLoaded):
-  Promise<ParameterRangeResolved> {
+  public async resolveRange(
+    range: ParameterRangeUnresolved,
+    owningClass: ClassReferenceLoaded,
+    genericTypeRemappings: Record<string, ParameterRangeUnresolved>,
+  ): Promise<ParameterRangeResolved> {
     switch (range.type) {
       case 'raw':
       case 'literal':
@@ -110,11 +123,17 @@ export class ParameterResolver {
             type: 'undefined',
           };
         }
-        return await this.resolveRangeInterface(range.value, range.genericTypeParameterInstantiations, range.origin);
+        return await this.resolveRangeInterface(
+          range.value,
+          range.genericTypeParameterInstantiations,
+          range.origin,
+          owningClass,
+          genericTypeRemappings,
+        );
       case 'hash':
         return {
           type: 'nested',
-          value: await this.getNestedFieldsFromHash(range.value, owningClass),
+          value: await this.getNestedFieldsFromHash(range.value, owningClass, genericTypeRemappings),
         };
       case 'undefined':
         return {
@@ -125,15 +144,20 @@ export class ParameterResolver {
       case 'tuple':
         return {
           type: range.type,
-          elements: await Promise.all(range.elements.map(child => this.resolveRange(child, owningClass))),
+          elements: await Promise.all(range.elements
+            .map(child => this.resolveRange(child, owningClass, genericTypeRemappings))),
         };
       case 'array':
       case 'rest':
         return {
           type: range.type,
-          value: await this.resolveRange(range.value, owningClass),
+          value: await this.resolveRange(range.value, owningClass, genericTypeRemappings),
         };
       case 'genericTypeReference':
+        // If this generic type was remapped, return that remapped type
+        if (range.value in genericTypeRemappings) {
+          return this.resolveRange(genericTypeRemappings[range.value], owningClass, genericTypeRemappings);
+        }
         return {
           type: 'genericTypeReference',
           value: range.value,
@@ -149,11 +173,15 @@ export class ParameterResolver {
    *                                      Note that these generics are NOT the same as the generics that may be defined
    *                                      within the class itself.
    * @param owningClass The class this interface was used in.
+   * @param rootOwningClass The top-level class this interface was used in. Necessary for generic type resolution.
+   * @param genericTypeRemappings A remapping of generic type names.
    */
   public async resolveRangeInterface(
     interfaceName: string,
     genericTypeParameterInstances: ParameterRangeUnresolved[] | undefined,
     owningClass: ClassReferenceLoaded,
+    rootOwningClass: ClassReferenceLoaded,
+    genericTypeRemappings: Record<string, ParameterRangeUnresolved>,
   ): Promise<ParameterRangeResolved> {
     const classOrInterface = await this.loadClassOrInterfacesChain({
       packageName: owningClass.packageName,
@@ -170,7 +198,8 @@ export class ParameterResolver {
         value: classOrInterface,
         genericTypeParameterInstances: genericTypeParameterInstances ?
           await Promise.all(genericTypeParameterInstances
-            .map(genericTypeParameter => this.resolveRange(genericTypeParameter, classOrInterface))) :
+            .map(genericTypeParameter => this
+              .resolveRange(genericTypeParameter, classOrInterface, genericTypeRemappings))) :
           undefined,
       };
     }
@@ -183,13 +212,21 @@ export class ParameterResolver {
         classOrInterface.declaration.typeAnnotation,
         `type alias ${classOrInterface.localName} in ${classOrInterface.fileName}`,
       );
-      return this.resolveRange(unresolvedFields, classOrInterface);
+      return this.resolveRange(unresolvedFields, classOrInterface, genericTypeRemappings);
     }
 
     // If we find an interface, load it as a hash with nested fields
+    if (genericTypeParameterInstances) {
+      // If the interfaces has generic type instantiations,
+      // map the generic type declarations of the class on the generic types of the interface
+      const ifaceGenericTypes = Object.keys(classOrInterface.generics);
+      for (const [ i, genericTypeParameterInstance ] of genericTypeParameterInstances.entries()) {
+        genericTypeRemappings[ifaceGenericTypes[i]] = genericTypeParameterInstance;
+      }
+    }
     return {
       type: 'nested',
-      value: await this.getNestedFieldsFromInterface(classOrInterface),
+      value: await this.getNestedFieldsFromInterface(classOrInterface, rootOwningClass, genericTypeRemappings),
     };
   }
 
@@ -261,23 +298,33 @@ export class ParameterResolver {
   /**
    * Recursively get all fields from the given interface.
    * @param iface A loaded interface.
+   * @param owningClass The class this hash is declared in.
+   * @param genericTypeRemappings A remapping of generic type names.
    */
-  public async getNestedFieldsFromInterface(iface: InterfaceLoaded): Promise<ParameterData<ParameterRangeResolved>[]> {
+  public async getNestedFieldsFromInterface(
+    iface: InterfaceLoaded,
+    owningClass: ClassReferenceLoaded,
+    genericTypeRemappings: Record<string, ParameterRangeUnresolved>,
+  ): Promise<ParameterData<ParameterRangeResolved>[]> {
     const parameterLoader = new ParameterLoader({ commentLoader: this.commentLoader });
     const unresolvedFields = parameterLoader.loadInterfaceFields(iface);
-    return this.resolveParameterData(unresolvedFields, iface);
+    return this.resolveParameterData(unresolvedFields, owningClass, genericTypeRemappings);
   }
 
   /**
    * Recursively get all fields from the given hash.
    * @param hash A hash object.
    * @param owningClass The class this hash is declared in.
+   * @param genericTypeRemappings A remapping of generic type names.
    */
-  public async getNestedFieldsFromHash(hash: TSTypeLiteral, owningClass: ClassReferenceLoaded):
-  Promise<ParameterData<ParameterRangeResolved>[]> {
+  public async getNestedFieldsFromHash(
+    hash: TSTypeLiteral,
+    owningClass: ClassReferenceLoaded,
+    genericTypeRemappings: Record<string, ParameterRangeUnresolved>,
+  ): Promise<ParameterData<ParameterRangeResolved>[]> {
     const parameterLoader = new ParameterLoader({ commentLoader: this.commentLoader });
     const unresolvedFields = parameterLoader.loadHashFields(owningClass, hash);
-    return this.resolveParameterData(unresolvedFields, owningClass);
+    return this.resolveParameterData(unresolvedFields, owningClass, genericTypeRemappings);
   }
 }
 
