@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.0.0-beta.3"></a>
+## [v3.0.0-beta.3](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.0-beta.2...v3.0.0-beta.3) - 2021-12-07
+
+### Added
+* [Generate all relevant generic type data of classes and params](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/4245abd23b6b16363fa5cce47f72a61d351f9884)
+
 <a name="v3.0.0-beta.2"></a>
 ## [v3.0.0-beta.2](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.0-beta.1...v3.0.0-beta.2) - 2021-12-02
 
