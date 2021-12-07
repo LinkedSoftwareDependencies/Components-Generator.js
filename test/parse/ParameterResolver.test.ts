@@ -812,6 +812,46 @@ interface IFace2<AInner2> {
         ],
       });
     });
+
+    it('should handle a generic range within a class and remap generic types', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `
+class MyInnerClass<AInner, BInner> {
+  constructor(fieldA: AInner, fieldB: BInner){}
+}
+`,
+      };
+      expect(await loader.resolveRange({
+        type: 'interface',
+        value: 'MyInnerClass',
+        genericTypeParameterInstantiations: [
+          {
+            type: 'genericTypeReference',
+            value: 'AOuter',
+          },
+          {
+            type: 'genericTypeReference',
+            value: 'BOuter',
+          },
+        ],
+        origin: classReference,
+      }, classReference, {})).toMatchObject({
+        type: 'class',
+        value: { localName: 'MyInnerClass', fileName: 'A' },
+        genericTypeParameterInstances: [
+          {
+            type: 'genericTypeReference',
+            value: 'AOuter',
+            origin: classReference,
+          },
+          {
+            type: 'genericTypeReference',
+            value: 'BOuter',
+            origin: classReference,
+          },
+        ],
+      });
+    });
   });
 
   describe('resolveRangeInterface', () => {

@@ -199,7 +199,7 @@ export class ParameterResolver {
         genericTypeParameterInstances: genericTypeParameterInstances ?
           await Promise.all(genericTypeParameterInstances
             .map(genericTypeParameter => this
-              .resolveRange(genericTypeParameter, classOrInterface, genericTypeRemappings))) :
+              .resolveRange(genericTypeParameter, rootOwningClass, genericTypeRemappings))) :
           undefined,
       };
     }
