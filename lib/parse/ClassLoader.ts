@@ -1,9 +1,12 @@
 import * as Path from 'path';
-import type { ClassDeclaration,
+import type {
+  ClassDeclaration,
+  TSEnumDeclaration,
   TSInterfaceDeclaration,
-  TSTypeAliasDeclaration,
+  TSModuleBlock,
   TSModuleDeclaration,
-  TSModuleBlock } from '@typescript-eslint/types/dist/ts-estree';
+  TSTypeAliasDeclaration,
+} from '@typescript-eslint/types/dist/ts-estree';
 import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import type { Logger } from 'winston';
@@ -12,6 +15,7 @@ import type {
   ClassLoaded,
   ClassReference,
   ClassReferenceLoaded,
+  EnumLoaded,
   GenericTypes,
   InterfaceLoaded,
   TypeLoaded,
@@ -99,21 +103,22 @@ export class ClassLoader {
    * Classes can either be defined in this file (exported or not), or imported from another file.
    * @param classReference The reference to a class.
    * @param considerInterfaces If the class reference is allows to refer to an interface, as well as a class.
-   * @param considerTypes If the class reference is allows to refer to a type alias, as well as a class.
+   * @param considerOthers If the class reference is allows to refer to refer to other things,
+   *                       such as a type alias or enum.
    */
   public async loadClassDeclaration<CI extends boolean, CT extends boolean>(
     classReference: ClassReference,
     considerInterfaces: CI,
-    considerTypes: CT,
+    considerOthers: CT,
   ): Promise<CI extends true ?
-      (CT extends true ? (ClassLoaded | InterfaceLoaded | TypeLoaded) : (ClassLoaded | InterfaceLoaded)) :
-      (CT extends true ? (ClassLoaded | TypeLoaded) : (ClassLoaded))> {
+      (CT extends true ? (ClassLoaded | InterfaceLoaded | TypeLoaded | EnumLoaded) : (ClassLoaded | InterfaceLoaded)) :
+      (CT extends true ? (ClassLoaded | TypeLoaded | EnumLoaded) : (ClassLoaded))> {
     let targetString = 'class';
     if (considerInterfaces) {
       targetString += ' or interface';
     }
-    if (considerTypes) {
-      targetString += ' or type';
+    if (considerOthers) {
+      targetString += ' or other type';
     }
 
     // Load the class as an AST
@@ -125,7 +130,7 @@ export class ClassLoader {
       throw new Error(`Could not load ${targetString} ${name} from ${classReference.fileName}:\n${(<Error> error).message}`);
     }
 
-    return this.loadClassDeclarationFromAst(ast, targetString, classReference, considerInterfaces, considerTypes);
+    return this.loadClassDeclarationFromAst(ast, targetString, classReference, considerInterfaces, considerOthers);
   }
 
   /**
@@ -135,25 +140,28 @@ export class ClassLoader {
    * @param targetString A string for error reporting on the considered scope.
    * @param classReference The reference to a class.
    * @param considerInterfaces If the class reference is allows to refer to an interface, as well as a class.
-   * @param considerTypes If the class reference is allows to refer to a type alias, as well as a class.
+   * @param considerOthers If the class reference is allows to refer to refer to other things,
+   *                       such as a type alias or enum.
    */
   public async loadClassDeclarationFromAst<CI extends boolean, CT extends boolean>(
     ast: AST<TSESTreeOptions> | TSModuleBlock,
     targetString: string,
     classReference: ClassReference,
     considerInterfaces: CI,
-    considerTypes: CT,
+    considerOthers: CT,
   ): Promise<CI extends true ?
-      (CT extends true ? (ClassLoaded | InterfaceLoaded | TypeLoaded) : (ClassLoaded | InterfaceLoaded)) :
-      (CT extends true ? (ClassLoaded | TypeLoaded) : (ClassLoaded))> {
+      (CT extends true ? (ClassLoaded | InterfaceLoaded | TypeLoaded | EnumLoaded) : (ClassLoaded | InterfaceLoaded)) :
+      (CT extends true ? (ClassLoaded | TypeLoaded | EnumLoaded) : (ClassLoaded))> {
     const {
       exportedClasses,
       exportedInterfaces,
       exportedTypes,
+      exportedEnums,
       exportedImportedAllNamed,
       declaredClasses,
       declaredInterfaces,
       declaredTypes,
+      declaredEnums,
       declaredNamespaces,
       importedElements,
       importedElementsAllNamed,
@@ -227,8 +235,9 @@ export class ClassLoader {
         }
       }
 
-      // Only consider types if explicitly enabled
-      if (considerTypes) {
+      // Only consider other types if explicitly enabled
+      if (considerOthers) {
+        // Check types
         if (componentName in exportedTypes) {
           const declaration = exportedTypes[componentName];
           return <any> this.enhanceLoadedWithComment(<TypeLoaded>{
@@ -242,6 +251,26 @@ export class ClassLoader {
           const declaration = declaredTypes[componentName];
           return <any> this.enhanceLoadedWithComment(<TypeLoaded>{
             type: 'type',
+            ...classReference,
+            declaration,
+            ast,
+          });
+        }
+
+        // Check enums
+        if (componentName in exportedEnums) {
+          const declaration = exportedEnums[componentName];
+          return <any> this.enhanceLoadedWithComment(<EnumLoaded>{
+            type: 'enum',
+            ...classReference,
+            declaration,
+            ast,
+          });
+        }
+        if (componentName in declaredEnums) {
+          const declaration = declaredEnums[componentName];
+          return <any> this.enhanceLoadedWithComment(<EnumLoaded>{
+            type: 'enum',
             ...classReference,
             declaration,
             ast,
@@ -270,7 +299,7 @@ export class ClassLoader {
           fileNameReferenced: classReference.fileNameReferenced,
         },
         considerInterfaces,
-        considerTypes,
+        considerOthers,
       );
     }
 
@@ -292,7 +321,7 @@ export class ClassLoader {
           fileNameReferenced: classReference.fileNameReferenced,
         },
         considerInterfaces,
-        considerTypes,
+        considerOthers,
       );
     }
 
@@ -303,7 +332,7 @@ export class ClassLoader {
         qualifiedPath: qualifiedPathInner,
         ...exportedImportedAllNamed[componentName],
         fileNameReferenced: classReference.fileNameReferenced,
-      }, considerInterfaces, considerTypes);
+      }, considerInterfaces, considerOthers);
     }
 
     // Follow named import links
@@ -313,7 +342,45 @@ export class ClassLoader {
         qualifiedPath: qualifiedPathInner,
         ...importedElementsAllNamed[componentName],
         fileNameReferenced: classReference.fileNameReferenced,
-      }, considerInterfaces, considerTypes);
+      }, considerInterfaces, considerOthers);
+    }
+
+    // Check enum values
+    if (classReference.qualifiedPath && classReference.qualifiedPath.length === 1) {
+      const enumName = classReference.qualifiedPath[0];
+      const enumKey = classReference.localName;
+      const enumDeclaration = exportedEnums[enumName] || declaredEnums[enumName];
+      if (enumDeclaration) {
+        for (const enumMember of enumDeclaration.members) {
+          if (enumMember.id.type === AST_NODE_TYPES.Identifier && enumMember.id.name === enumKey &&
+            enumMember.initializer && enumMember.initializer.type === AST_NODE_TYPES.Literal) {
+            // Expose the enum entry as type alias
+            const typeNode: TSTypeAliasDeclaration = {
+              type: AST_NODE_TYPES.TSTypeAliasDeclaration,
+              id: {
+                type: AST_NODE_TYPES.Identifier,
+                name: enumKey,
+                loc: <any> undefined,
+                range: <any> undefined,
+              },
+              typeAnnotation: {
+                type: AST_NODE_TYPES.TSLiteralType,
+                literal: enumMember.initializer,
+                loc: <any> undefined,
+                range: <any> undefined,
+              },
+              loc: <any> undefined,
+              range: <any> undefined,
+            };
+            return <any> <TypeLoaded> {
+              type: 'type',
+              ...classReference,
+              declaration: typeNode,
+              ast,
+            };
+          }
+        }
+      }
     }
 
     // If we still haven't found the class, iterate over all export all's
@@ -324,7 +391,7 @@ export class ClassLoader {
           qualifiedPath: qualifiedPathInner,
           ...subFile,
           fileNameReferenced: classReference.fileNameReferenced,
-        }, considerInterfaces, considerTypes);
+        }, considerInterfaces, considerOthers);
       } catch {
         // Ignore class not found errors
       }
@@ -338,7 +405,7 @@ export class ClassLoader {
         targetString,
         classReference,
         considerInterfaces,
-        considerTypes,
+        considerOthers,
       );
     }
 
@@ -457,6 +524,7 @@ export class ClassLoader {
     const exportedClasses: Record<string, ClassDeclaration> = {};
     const exportedInterfaces: Record<string, TSInterfaceDeclaration> = {};
     const exportedTypes: Record<string, TSTypeAliasDeclaration> = {};
+    const exportedEnums: Record<string, TSEnumDeclaration> = {};
     const exportedNamespaces: Record<string, TSModuleDeclaration> = {};
     const exportedImportedElements: Record<string, ClassReference> = {};
     const exportedImportedAll: { packageName: string; fileName: string; fileNameReferenced: string }[] = [];
@@ -466,6 +534,7 @@ export class ClassLoader {
     const declaredClasses: Record<string, ClassDeclaration> = {};
     const declaredInterfaces: Record<string, TSInterfaceDeclaration> = {};
     const declaredTypes: Record<string, TSTypeAliasDeclaration> = {};
+    const declaredEnums: Record<string, TSEnumDeclaration> = {};
     const declaredNamespaces: Record<string, TSModuleDeclaration> = {};
     const importedElements: Record<string, ClassReference> = {};
     const importedElementsAllNamed:
@@ -488,6 +557,9 @@ export class ClassLoader {
         } else if (statement.declaration && statement.declaration.type === AST_NODE_TYPES.TSTypeAliasDeclaration) {
           // Form: `export type A = ...`
           exportedTypes[statement.declaration.id.name] = statement.declaration;
+        } else if (statement.declaration && statement.declaration.type === AST_NODE_TYPES.TSEnumDeclaration) {
+          // Form: `export enum A {...}`
+          exportedEnums[statement.declaration.id.name] = statement.declaration;
         } else if (statement.declaration && statement.declaration.type === AST_NODE_TYPES.TSModuleDeclaration &&
           'name' in statement.declaration.id) {
           // Form: `export namespace A { ... }`
@@ -540,6 +612,9 @@ export class ClassLoader {
       } else if (statement.type === AST_NODE_TYPES.TSTypeAliasDeclaration && statement.id) {
         // Form: `declare type A = ...`
         declaredTypes[statement.id.name] = statement;
+      } else if (statement.type === AST_NODE_TYPES.TSEnumDeclaration && statement.id) {
+        // Form: `declare enum A {...}`
+        declaredEnums[statement.id.name] = statement;
       } else if (statement.type === AST_NODE_TYPES.TSModuleDeclaration && statement.id && 'name' in statement.id) {
         // Form `declare namespace A { ... }
         declaredNamespaces[statement.id.name] = statement;
@@ -571,6 +646,7 @@ export class ClassLoader {
       exportedClasses,
       exportedInterfaces,
       exportedTypes,
+      exportedEnums,
       exportedNamespaces,
       exportedImportedElements,
       exportedImportedAll,
@@ -579,6 +655,7 @@ export class ClassLoader {
       declaredClasses,
       declaredInterfaces,
       declaredTypes,
+      declaredEnums,
       declaredNamespaces,
       importedElements,
       importedElementsAllNamed,
@@ -603,6 +680,8 @@ export interface ClassElements {
   exportedInterfaces: Record<string, TSInterfaceDeclaration>;
   // Types that have been declared in a file via `export type A = ...`
   exportedTypes: Record<string, TSTypeAliasDeclaration>;
+  // Enums that have been declared in a file via `export enum A {...}`
+  exportedEnums: Record<string, TSEnumDeclaration>;
   // Namespaces that have been declared in a file via `export namespace A { ... }`
   exportedNamespaces: Record<string, TSModuleDeclaration>;
   // Elements that have been exported via `export { A as B } from "b"`
@@ -619,6 +698,8 @@ export interface ClassElements {
   declaredInterfaces: Record<string, TSInterfaceDeclaration>;
   // Types that have been declared in a file via `declare type A = ...`
   declaredTypes: Record<string, TSTypeAliasDeclaration>;
+  // Enums that have been declared in a file via `declare enum A {...}`
+  declaredEnums: Record<string, TSEnumDeclaration>;
   // Namespaces that have been declared in a file via `declare namespace A { ... }`
   declaredNamespaces: Record<string, TSModuleDeclaration>;
   // Elements that are imported from elsewhere via `import {A} from ''`

@@ -5,7 +5,7 @@ import { ContextParser } from 'jsonld-context-parser';
 import type {
   ClassIndex,
   ClassLoaded,
-  ClassReferenceLoaded, ClassReferenceLoadedWithoutType,
+  ClassReferenceLoaded, ClassReferenceLoadedClassOrInterface,
   InterfaceLoaded,
 } from '../../lib/parse/ClassIndex';
 import type { ConstructorData } from '../../lib/parse/ConstructorLoader';
@@ -22,7 +22,7 @@ import { ContextConstructorMocked } from '../ContextConstructorMocked';
 
 describe('ComponentConstructor', () => {
   let ctor: ComponentConstructor;
-  let classReference: ClassReferenceLoadedWithoutType;
+  let classReference: ClassReferenceLoadedClassOrInterface;
   let externalComponents: ExternalComponents;
   let context: JsonLdContextNormalized;
   let externalContextsCallback: ExternalContextCallback;

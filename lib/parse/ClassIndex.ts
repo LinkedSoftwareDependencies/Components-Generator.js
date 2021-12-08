@@ -2,6 +2,7 @@ import type {
   ClassDeclaration,
   TSInterfaceDeclaration,
   TSTypeAliasDeclaration,
+  TSEnumDeclaration,
   TypeNode,
 } from '@typescript-eslint/types/dist/ts-estree';
 import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
@@ -30,12 +31,12 @@ export interface ClassReference {
 /**
  * A loaded reference.
  */
-export type ClassReferenceLoaded = ClassLoaded | InterfaceLoaded | TypeLoaded;
+export type ClassReferenceLoaded = ClassLoaded | InterfaceLoaded | TypeLoaded | EnumLoaded;
 
 /**
- * A loaded reference without type aliases.
+ * A loaded reference without type aliases and enums.
  */
-export type ClassReferenceLoadedWithoutType = ClassLoaded | InterfaceLoaded;
+export type ClassReferenceLoadedClassOrInterface = ClassLoaded | InterfaceLoaded;
 
 /**
  * A loaded class with a full class declaration.
@@ -89,7 +90,7 @@ export interface InterfaceLoaded extends ClassReference {
 }
 
 /**
- * A loaded type aliases with a full type declaration.
+ * A loaded type alias with a full type declaration.
  */
 export interface TypeLoaded extends ClassReference {
   type: 'type';
@@ -99,6 +100,23 @@ export interface TypeLoaded extends ClassReference {
   fileName: string;
   // The loaded type declaration.
   declaration: TSTypeAliasDeclaration;
+  // The full AST the interface was present in.
+  ast: AST<TSESTreeOptions>;
+  // The tsdoc comment of this class
+  comment?: string;
+}
+
+/**
+ * A loaded enum with a full type declaration.
+ */
+export interface EnumLoaded extends ClassReference {
+  type: 'enum';
+  // The name of the interface within the file.
+  localName: string;
+  // The name of the file the interface is defined in.
+  fileName: string;
+  // The loaded enum declaration.
+  declaration: TSEnumDeclaration;
   // The full AST the interface was present in.
   ast: AST<TSESTreeOptions>;
   // The tsdoc comment of this class

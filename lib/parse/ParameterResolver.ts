@@ -5,7 +5,8 @@ import type { ClassLoader } from './ClassLoader';
 import type { CommentLoader } from './CommentLoader';
 import type { ConstructorData } from './ConstructorLoader';
 import type {
-  GenericTypeParameterData, ParameterData,
+  GenericTypeParameterData,
+  ParameterData,
   ParameterDataField,
   ParameterRangeResolved,
   ParameterRangeUnresolved,
@@ -217,6 +218,31 @@ export class ParameterResolver {
         `type alias ${classOrInterface.localName} in ${classOrInterface.fileName}`,
       );
       return this.resolveRange(unresolvedFields, classOrInterface, genericTypeRemappings);
+    }
+
+    // If we find an enum, just interpret the enum value, and return as union type
+    if (classOrInterface.type === 'enum') {
+      const parameterLoader = new ParameterLoader({ commentLoader: this.commentLoader });
+      const enumRangeTypes = await Promise.all(classOrInterface.declaration.members
+        .map((enumMember, i) => {
+          if (enumMember.initializer && enumMember.initializer.type === AST_NODE_TYPES.Literal) {
+            return this.resolveRange(parameterLoader.getRangeFromTypeNode(
+              classOrInterface,
+              {
+                type: AST_NODE_TYPES.TSLiteralType,
+                literal: enumMember.initializer,
+                loc: <any> undefined,
+                range: <any> undefined,
+              },
+              `enum ${classOrInterface.localName} in ${classOrInterface.fileName}`,
+            ), owningClass, genericTypeRemappings);
+          }
+          throw new Error(`Detected enum ${classOrInterface.localName} having an unsupported member (member ${i}) in ${classOrInterface.fileName}`);
+        }));
+      return {
+        type: 'union',
+        elements: enumRangeTypes,
+      };
     }
 
     // If we find an interface, load it as a hash with nested fields

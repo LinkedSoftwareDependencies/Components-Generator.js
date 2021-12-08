@@ -5,7 +5,7 @@ import type {
   ClassIndex,
   ClassLoaded,
   ClassReference,
-  ClassReferenceLoadedWithoutType,
+  ClassReferenceLoadedClassOrInterface,
 } from '../parse/ClassIndex';
 import type { ConstructorData } from '../parse/ConstructorLoader';
 import type { PackageMetadata } from '../parse/PackageMetadataLoader';
@@ -33,7 +33,7 @@ export class ComponentConstructor {
   private readonly fileExtension: string;
   private readonly contextConstructor: ContextConstructor;
   private readonly pathDestination: PathDestinationDefinition;
-  private readonly classAndInterfaceIndex: ClassIndex<ClassReferenceLoadedWithoutType>;
+  private readonly classAndInterfaceIndex: ClassIndex<ClassReferenceLoadedClassOrInterface>;
   private readonly classConstructors: ClassIndex<ConstructorData<ParameterRangeResolved>>;
   private readonly externalComponents: ExternalComponents;
   private readonly contextParser: ContextParser;
@@ -169,7 +169,7 @@ export class ComponentConstructor {
   public async constructComponent(
     context: JsonLdContextNormalized,
     externalContextsCallback: ExternalContextCallback,
-    classReference: ClassReferenceLoadedWithoutType,
+    classReference: ClassReferenceLoadedClassOrInterface,
     constructorData: ConstructorData<ParameterRangeResolved> | undefined,
   ): Promise<ComponentDefinition> {
     // Determine generic type parameters
@@ -366,7 +366,7 @@ export class ComponentConstructor {
   public async constructGenericTypeParameters(
     context: JsonLdContextNormalized,
     externalContextsCallback: ExternalContextCallback,
-    classReference: ClassReferenceLoadedWithoutType,
+    classReference: ClassReferenceLoadedClassOrInterface,
     genericTypes: GenericTypeParameterData<ParameterRangeResolved>[],
   ): Promise<GenericTypeParameterDefinition[]> {
     const definitions: GenericTypeParameterDefinition[] = [];
@@ -734,7 +734,7 @@ export interface ComponentConstructorArgs {
   fileExtension: string;
   contextConstructor: ContextConstructor;
   pathDestination: PathDestinationDefinition;
-  classAndInterfaceIndex: ClassIndex<ClassReferenceLoadedWithoutType>;
+  classAndInterfaceIndex: ClassIndex<ClassReferenceLoadedClassOrInterface>;
   classConstructors: ClassIndex<ConstructorData<ParameterRangeResolved>>;
   externalComponents: ExternalComponents;
   contextParser: ContextParser;

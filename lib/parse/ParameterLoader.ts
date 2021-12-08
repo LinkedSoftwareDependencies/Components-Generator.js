@@ -251,7 +251,9 @@ export class ParameterLoader {
               } in ${classLoaded.localName} at ${classLoaded.fileName}`);
             default:
               // First check if the type is a direct generic type
-              if (classLoaded.type !== 'type' && typeNode.typeName.name in classLoaded.generics) {
+              if (classLoaded.type !== 'type' &&
+                classLoaded.type !== 'enum' &&
+                typeNode.typeName.name in classLoaded.generics) {
                 return {
                   type: 'genericTypeReference',
                   value: typeNode.typeName.name,

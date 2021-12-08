@@ -1,5 +1,4 @@
 import type { TSTypeLiteral } from '@typescript-eslint/types/dist/ts-estree';
-
 import type { ClassLoaded, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from '../../lib/parse/ClassIndex';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
 import { CommentLoader } from '../../lib/parse/CommentLoader';
@@ -867,7 +866,7 @@ class MyInnerClass<AInner, BInner> {
         'A.d.ts': ``,
       };
       await expect(loader.resolveRangeInterface('IFaceA', undefined, undefined, classReference, classReference, {}))
-        .rejects.toThrow(new Error('Could not load class or interface or type IFaceA from A'));
+        .rejects.toThrow(new Error('Could not load class or interface or other type IFaceA from A'));
     });
 
     it('should resolve an empty interface', async() => {
@@ -1001,6 +1000,60 @@ type Type = string | boolean;
           ],
         });
     });
+
+    it('should resolve an enum', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `
+enum Enum {
+  a = 'A',
+  b = 'B',
+}
+`,
+      };
+      expect(await loader.resolveRangeInterface('Enum', undefined, undefined, classReference, classReference, {}))
+        .toEqual({
+          type: 'union',
+          elements: [
+            {
+              type: 'literal',
+              value: 'A',
+            },
+            {
+              type: 'literal',
+              value: 'B',
+            },
+          ],
+        });
+    });
+
+    it('should resolve an enum value', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `
+enum Enum {
+  a = 'A',
+  b = 'B',
+}
+`,
+      };
+      expect(await loader.resolveRangeInterface('a', [ 'Enum' ], undefined, classReference, classReference, {}))
+        .toEqual({
+          type: 'literal',
+          value: 'A',
+        });
+    });
+
+    it('should throw on an enum without expression', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `
+enum Enum {
+  a = 'A',
+  b,
+}
+`,
+      };
+      await expect(loader.resolveRangeInterface('Enum', undefined, undefined, classReference, classReference, {}))
+        .rejects.toThrowError(`Detected enum Enum having an unsupported member (member 1) in A`);
+    });
   });
 
   describe('isInterfaceImplicitClass', () => {
@@ -1084,7 +1137,7 @@ export interface A{
         'A.d.ts': ``,
       };
       await expect(loader.loadClassOrInterfacesChain(classReference))
-        .rejects.toThrow(new Error('Could not load class or interface or type A from A'));
+        .rejects.toThrow(new Error('Could not load class or interface or other type A from A'));
     });
 
     it('should load a class', async() => {
@@ -1381,7 +1434,7 @@ export interface A{
       };
       const iface = <InterfaceLoaded> await loader.loadClassOrInterfacesChain(classReference);
       await expect(loader.getNestedFieldsFromInterface(iface, classReference, {}))
-        .rejects.toThrow(new Error('Could not load class or interface or type B from A'));
+        .rejects.toThrow(new Error('Could not load class or interface or other type B from A'));
     });
 
     it('should error on an interface with a non-existing class field', async() => {
@@ -1396,7 +1449,7 @@ export interface A{
       };
       const iface = <InterfaceLoaded> await loader.loadClassOrInterfacesChain(classReference);
       await expect(loader.getNestedFieldsFromInterface(iface, classReference, {}))
-        .rejects.toThrow(new Error('Could not load class or interface or type B from B'));
+        .rejects.toThrow(new Error('Could not load class or interface or other type B from B'));
     });
 
     it('should handle an interface with an empty interface field', async() => {
@@ -1668,7 +1721,7 @@ export class A{
   fieldA: B;
 }`);
       await expect(loader.getNestedFieldsFromHash(hash, owningClass, {}))
-        .rejects.toThrow(new Error('Could not load class or interface or type B from file'));
+        .rejects.toThrow(new Error('Could not load class or interface or other type B from file'));
     });
 
     it('should error on a hash with a non-existing class field', async() => {
@@ -1679,7 +1732,7 @@ export class A{
   fieldA: B;
 }`, `import {B} from './B';`);
       await expect(loader.getNestedFieldsFromHash(hash, owningClass, {}))
-        .rejects.toThrow(new Error('Could not load class or interface or type B from B'));
+        .rejects.toThrow(new Error('Could not load class or interface or other type B from B'));
     });
 
     it('should handle a hash with an empty interface field', async() => {

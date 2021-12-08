@@ -990,7 +990,7 @@ export = NS`,
       });
     });
 
-    describe('when considering types', () => {
+    describe('when considering other types', () => {
       it('for an empty file should throw', async() => {
         loader = new ClassLoader({
           resolutionContext: new ResolutionContextMocked({
@@ -1005,7 +1005,7 @@ export = NS`,
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
         }, false, true))
-          .rejects.toThrow(new Error('Could not load class or type A from file'));
+          .rejects.toThrow(new Error('Could not load class or other type A from file'));
       });
 
       it('for a file without the file type should throw', async() => {
@@ -1028,7 +1028,7 @@ export * from './lib/D';
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
         }, false, true))
-          .rejects.toThrow(new Error('Could not load class or type A from file'));
+          .rejects.toThrow(new Error('Could not load class or other type A from file'));
       });
 
       it('for an exported class', async() => {
@@ -1389,6 +1389,185 @@ export * from './file3'
           });
       });
 
+      it('for an exported enum', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `export enum A{}`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'A',
+            fileName: 'file',
+            declaration: {
+              id: { name: 'A' },
+              type: 'TSEnumDeclaration',
+            },
+          });
+      });
+
+      it('for a declared enum', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `declare enum A{}`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'A',
+            fileName: 'file',
+            declaration: {
+              id: { name: 'A' },
+              type: 'TSEnumDeclaration',
+            },
+          });
+      });
+
+      it('for an imported enum', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `import { B as A } from './file2'`,
+            'file2.d.ts': `export enum B{}`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'B',
+            fileName: 'file2',
+            declaration: {
+              id: { name: 'B' },
+              type: 'TSEnumDeclaration',
+            },
+          });
+      });
+
+      it('for an enum linked via export import', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `export { B as A } from './file2'`,
+            'file2.d.ts': `export enum B{}`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'B',
+            fileName: 'file2',
+            declaration: {
+              id: { name: 'B' },
+              type: 'TSEnumDeclaration',
+            },
+          });
+      });
+
+      it('for an enum linked via export *', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `export * from './file2'`,
+            'file2.d.ts': `export enum B{}`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'B',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'B',
+            fileName: 'file2',
+            declaration: {
+              id: { name: 'B' },
+              type: 'TSEnumDeclaration',
+            },
+          });
+      });
+
+      it('for an enum linked on of the multiple export *', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `
+export * from './file1'
+export * from './file2'
+export * from './file3'
+`,
+            'file2.d.ts': `export enum B{}`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'B',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'B',
+            fileName: 'file2',
+            declaration: {
+              id: { name: 'B' },
+              type: 'TSEnumDeclaration',
+            },
+          });
+      });
+
+      it('for an enum linked via nested export *', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `export * from './file2'`,
+            'file2.d.ts': `export * from './file3'`,
+            'file3.d.ts': `export * from './file4'`,
+            'file4.d.ts': `export enum B{}`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'B',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'B',
+            fileName: 'file4',
+            declaration: {
+              id: { name: 'B' },
+              type: 'TSEnumDeclaration',
+            },
+          });
+      });
+
       it('for an exported class with comment', async() => {
         loader = new ClassLoader({
           resolutionContext: new ResolutionContextMocked({
@@ -1534,6 +1713,116 @@ export = NS`,
               type: 'TSTypeAliasDeclaration',
             },
           });
+      });
+
+      it('for an exported enum value', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `export enum A { a = 'B' }`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'a',
+          qualifiedPath: [ 'A' ],
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            type: 'type',
+            localName: 'a',
+            fileName: 'file',
+            fileNameReferenced: 'fileReferenced',
+            declaration: {
+              type: AST_NODE_TYPES.TSTypeAliasDeclaration,
+              id: {
+                type: AST_NODE_TYPES.Identifier,
+                name: 'a',
+              },
+              typeAnnotation: {
+                type: AST_NODE_TYPES.TSLiteralType,
+                literal: {
+                  type: AST_NODE_TYPES.Literal,
+                  value: 'B',
+                },
+              },
+            },
+          });
+      });
+
+      it('for a declared enum value', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `declare enum A { a = 'B' }`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'a',
+          qualifiedPath: [ 'A' ],
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            type: 'type',
+            localName: 'a',
+            fileName: 'file',
+            fileNameReferenced: 'fileReferenced',
+            declaration: {
+              type: AST_NODE_TYPES.TSTypeAliasDeclaration,
+              id: {
+                type: AST_NODE_TYPES.Identifier,
+                name: 'a',
+              },
+              typeAnnotation: {
+                type: AST_NODE_TYPES.TSLiteralType,
+                literal: {
+                  type: AST_NODE_TYPES.Literal,
+                  value: 'B',
+                },
+              },
+            },
+          });
+      });
+
+      it('for an exported enum value without expression should error', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `export enum A { a }`,
+          }),
+          logger,
+          commentLoader,
+        });
+        await expect(loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'a',
+          qualifiedPath: [ 'A' ],
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .rejects.toThrowError(`Could not load class or other type A.a from file`);
+      });
+
+      it('for no exported enum value should error', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': ``,
+          }),
+          logger,
+          commentLoader,
+        });
+        await expect(loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'a',
+          qualifiedPath: [ 'A' ],
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .rejects.toThrowError(`Could not load class or other type A.a from file`);
       });
     });
 
@@ -2347,6 +2636,28 @@ export = NS`,
           declaredTypes: {
             A: {
               type: 'TSTypeAliasDeclaration',
+            },
+          },
+        });
+    });
+
+    it('for an exported enum', () => {
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export enum A {}`)))
+        .toMatchObject({
+          exportedEnums: {
+            A: {
+              type: 'TSEnumDeclaration',
+            },
+          },
+        });
+    });
+
+    it('for a declared enum', () => {
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`declare enum A {}`)))
+        .toMatchObject({
+          declaredEnums: {
+            A: {
+              type: 'TSEnumDeclaration',
             },
           },
         });

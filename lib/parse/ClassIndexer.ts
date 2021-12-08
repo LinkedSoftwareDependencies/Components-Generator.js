@@ -7,7 +7,7 @@ import type {
   ClassIndex,
   ClassReference,
   ClassReferenceLoaded,
-  ClassReferenceLoadedWithoutType,
+  ClassReferenceLoadedClassOrInterface,
   InterfaceLoaded,
 } from './ClassIndex';
 import type { ClassLoader } from './ClassLoader';
@@ -31,8 +31,8 @@ export class ClassIndexer {
    */
   public async createIndex(
     classReferences: ClassIndex<ClassReference>,
-  ): Promise<ClassIndex<ClassReferenceLoadedWithoutType>> {
-    const classIndex: ClassIndex<ClassReferenceLoadedWithoutType> = {};
+  ): Promise<ClassIndex<ClassReferenceLoadedClassOrInterface>> {
+    const classIndex: ClassIndex<ClassReferenceLoadedClassOrInterface> = {};
 
     for (const [ className, classReference ] of Object.entries(classReferences)) {
       if (!(className in this.ignoreClasses)) {
@@ -48,7 +48,7 @@ export class ClassIndexer {
    * such as its declaration and loaded super class referenced.
    * @param classReference The reference to a class or interface.
    */
-  public async loadClassChain(classReference: ClassReference): Promise<ClassReferenceLoadedWithoutType> {
+  public async loadClassChain(classReference: ClassReference): Promise<ClassReferenceLoadedClassOrInterface> {
     // Load the class declaration
     const classReferenceLoaded: ClassReferenceLoaded = await this.classLoader
       .loadClassDeclaration(classReference, true, false);
