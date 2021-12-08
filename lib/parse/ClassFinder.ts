@@ -62,6 +62,7 @@ export class ClassFinder {
       exportDefinitions.named[localName] = {
         packageName,
         localName,
+        qualifiedPath: undefined,
         fileName,
         fileNameReferenced: fileName,
       };
@@ -70,6 +71,7 @@ export class ClassFinder {
       exportDefinitions.named[localName] = {
         packageName,
         localName,
+        qualifiedPath: undefined,
         fileName,
         fileNameReferenced: fileName,
       };
@@ -80,6 +82,7 @@ export class ClassFinder {
       exportDefinitions.named[exportedName] = {
         packageName,
         localName,
+        qualifiedPath: undefined,
         fileName: importedFileName,
         fileNameReferenced: fileName,
       };
@@ -94,6 +97,7 @@ export class ClassFinder {
           exportDefinitions.named[exportedName] = {
             packageName,
             localName,
+            qualifiedPath: undefined,
             fileName,
             fileNameReferenced: fileName,
           };
@@ -105,6 +109,7 @@ export class ClassFinder {
           exportDefinitions.named[exportedName] = {
             packageName,
             localName,
+            qualifiedPath: undefined,
             fileName,
             fileNameReferenced: fileName,
           };

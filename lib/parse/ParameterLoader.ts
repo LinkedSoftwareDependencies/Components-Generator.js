@@ -1,5 +1,4 @@
-import type {
-  Identifier,
+import type { Identifier,
   TSPropertySignature,
   TSTypeLiteral,
   TypeElement,
@@ -7,7 +6,8 @@ import type {
   TSIndexSignature,
   TSTypeReference,
   Parameter,
-} from '@typescript-eslint/types/dist/ts-estree';
+  EntityName, TSTypeParameterInstantiation } from '@typescript-eslint/types/dist/ts-estree';
+
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import type { ClassReferenceLoaded, InterfaceLoaded, ClassReference } from './ClassIndex';
 import type { CommentData, ConstructorCommentData, CommentLoader } from './CommentLoader';
@@ -264,28 +264,28 @@ export class ParameterLoader {
                 return typeAliasOverride;
               }
 
-              // If we have type parameters, determine the generic type param instantiations
-              // eslint-disable-next-line no-case-declarations
-              let genericTypeParameterInstantiations: ParameterRangeUnresolved[] | undefined;
-              if (typeNode.typeParameters) {
-                genericTypeParameterInstantiations = typeNode.typeParameters.params
-                  .map(genericTypeParameter => this.getRangeFromTypeNode(
-                    classLoaded,
-                    genericTypeParameter,
-                    `generic type instantiation on ${classLoaded.localName} in ${classLoaded.fileName}`,
-                  ));
-              }
-
               // Otherwise, assume we have an interface/class parameter
               return {
                 type: 'interface',
                 value: typeNode.typeName.name,
-                genericTypeParameterInstantiations,
+                genericTypeParameterInstantiations: typeNode.typeParameters ?
+                  this.getGenericTypeParameterInstantiations(typeNode.typeParameters, classLoaded) :
+                  undefined,
                 origin: classLoaded,
               };
           }
+        } else {
+          // Otherwise we have a qualified name: AST_NODE_TYPES.TSQualifiedName
+          return {
+            type: 'interface',
+            value: typeNode.typeName.right.name,
+            qualifiedPath: this.getQualifiedPath(typeNode.typeName.left),
+            genericTypeParameterInstantiations: typeNode.typeParameters ?
+              this.getGenericTypeParameterInstantiations(typeNode.typeParameters, classLoaded) :
+              undefined,
+            origin: classLoaded,
+          };
         }
-        break;
       case AST_NODE_TYPES.TSBooleanKeyword:
         return { type: 'raw', value: 'boolean' };
       case AST_NODE_TYPES.TSNumberKeyword:
@@ -338,6 +338,27 @@ export class ParameterLoader {
     }
     throw new Error(`Could not understand parameter type ${typeNode.type} of ${errorIdentifier
     } in ${classLoaded.localName} at ${classLoaded.fileName}`);
+  }
+
+  protected getGenericTypeParameterInstantiations(
+    typeParameters: TSTypeParameterInstantiation,
+    classLoaded: ClassReferenceLoaded,
+  ): ParameterRangeUnresolved[] {
+    return typeParameters.params
+      .map(genericTypeParameter => this.getRangeFromTypeNode(
+        classLoaded,
+        genericTypeParameter,
+        `generic type instantiation on ${classLoaded.localName} in ${classLoaded.fileName}`,
+      ));
+  }
+
+  protected getQualifiedPath(qualifiedEntity: EntityName): string[] {
+    switch (qualifiedEntity.type) {
+      case AST_NODE_TYPES.TSQualifiedName:
+        return [ ...this.getQualifiedPath(qualifiedEntity.left), qualifiedEntity.right.name ];
+      case AST_NODE_TYPES.Identifier:
+        return [ qualifiedEntity.name ];
+    }
   }
 
   public getFieldRange(
@@ -605,6 +626,10 @@ export type ParameterRangeUnresolved = {
 } | {
   type: 'interface';
   value: string;
+  /**
+   * For qualified names, this array contains the path segments.
+   */
+  qualifiedPath?: string[];
   genericTypeParameterInstantiations: ParameterRangeUnresolved[] | undefined;
   /**
    * The place from which the interface was referenced.

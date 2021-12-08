@@ -125,6 +125,7 @@ export class ParameterResolver {
         }
         return await this.resolveRangeInterface(
           range.value,
+          range.qualifiedPath,
           range.genericTypeParameterInstantiations,
           range.origin,
           owningClass,
@@ -169,6 +170,7 @@ export class ParameterResolver {
   /**
    * Resolve a class or interface.
    * @param interfaceName A class or interface name.
+   * @param qualifiedPath Qualified path to the class or interface. Is undefined if there is no qualified path.
    * @param genericTypeParameterInstances Generic type parameters that were supplied for instantiation.
    *                                      Note that these generics are NOT the same as the generics that may be defined
    *                                      within the class itself.
@@ -178,6 +180,7 @@ export class ParameterResolver {
    */
   public async resolveRangeInterface(
     interfaceName: string,
+    qualifiedPath: string[] | undefined,
     genericTypeParameterInstances: ParameterRangeUnresolved[] | undefined,
     owningClass: ClassReferenceLoaded,
     rootOwningClass: ClassReferenceLoaded,
@@ -186,6 +189,7 @@ export class ParameterResolver {
     const classOrInterface = await this.loadClassOrInterfacesChain({
       packageName: owningClass.packageName,
       localName: interfaceName,
+      qualifiedPath,
       fileName: owningClass.fileName,
       fileNameReferenced: owningClass.fileNameReferenced,
     });
@@ -269,6 +273,7 @@ export class ParameterResolver {
           const superInterface = await this.loadClassOrInterfacesChain({
             packageName: classOrInterface.packageName,
             localName: interfaceName,
+            qualifiedPath: classReference.qualifiedPath,
             fileName: classOrInterface.fileName,
             fileNameReferenced: classOrInterface.fileNameReferenced,
           });
@@ -286,6 +291,7 @@ export class ParameterResolver {
         return await this.loadClassOrInterfacesChain({
           packageName: classOrInterface.packageName,
           localName: classOrInterface.declaration.typeAnnotation.typeName.name,
+          qualifiedPath: classReference.qualifiedPath,
           fileName: classOrInterface.fileName,
           fileNameReferenced: classOrInterface.fileNameReferenced,
         });

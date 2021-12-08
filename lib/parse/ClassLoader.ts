@@ -121,7 +121,8 @@ export class ClassLoader {
     try {
       ast = await this.resolutionContext.parseTypescriptFile(classReference.fileName);
     } catch (error: unknown) {
-      throw new Error(`Could not load ${targetString} ${classReference.localName} from ${classReference.fileName}:\n${(<Error> error).message}`);
+      const name = `${classReference.qualifiedPath && classReference.qualifiedPath.length > 0 ? `${classReference.qualifiedPath.join('.')}.` : ''}${classReference.localName}`;
+      throw new Error(`Could not load ${targetString} ${name} from ${classReference.fileName}:\n${(<Error> error).message}`);
     }
 
     return this.loadClassDeclarationFromAst(ast, targetString, classReference, considerInterfaces, considerTypes);
@@ -149,107 +150,170 @@ export class ClassLoader {
       exportedClasses,
       exportedInterfaces,
       exportedTypes,
+      exportedImportedAllNamed,
       declaredClasses,
       declaredInterfaces,
       declaredTypes,
       declaredNamespaces,
       importedElements,
+      importedElementsAllNamed,
       exportedImportedAll,
       exportedImportedElements,
       exportAssignment,
     } = this.getClassElements(classReference.packageName, classReference.fileName, ast);
 
-    // If the class has been exported in this file, return directly
-    if (classReference.localName in exportedClasses) {
-      const declaration = exportedClasses[classReference.localName];
-      return <any> this.enhanceLoadedWithComment(<ClassLoaded> {
-        type: 'class',
-        ...classReference,
-        declaration,
-        ast,
-        abstract: declaration.abstract,
-        generics: this.collectGenericTypes(declaration),
-      });
-    }
+    let componentName: string;
+    let qualifiedPathInner: string[] | undefined;
+    if (classReference.qualifiedPath && classReference.qualifiedPath.length > 0) {
+      // In all following code, look for the qualified path head
+      componentName = classReference.qualifiedPath[0];
 
-    // If the class has been declared in this file, return directly
-    if (classReference.localName in declaredClasses) {
-      const declaration = declaredClasses[classReference.localName];
-      return <any> this.enhanceLoadedWithComment(<ClassLoaded> {
-        type: 'class',
-        ...classReference,
-        declaration,
-        ast,
-        abstract: declaration.abstract,
-        generics: this.collectGenericTypes(declaration),
-      });
-    }
+      // For recursive calls to getClassElements, we'll have to slice off the head
+      qualifiedPathInner = classReference.qualifiedPath.slice(1);
+    } else {
+      // Otherwise if we don't have a qualified path, look for the class name
+      componentName = classReference.localName;
 
-    // Only consider interfaces if explicitly enabled
-    if (considerInterfaces) {
-      // If the interface has been exported in this file, return directly
-      if (classReference.localName in exportedInterfaces) {
-        const declaration = exportedInterfaces[classReference.localName];
-        return <any> this.enhanceLoadedWithComment(<InterfaceLoaded> {
-          type: 'interface',
+      // If the class has been exported in this file, return directly
+      if (componentName in exportedClasses) {
+        const declaration = exportedClasses[componentName];
+        return <any> this.enhanceLoadedWithComment(<ClassLoaded>{
+          type: 'class',
           ...classReference,
           declaration,
           ast,
+          abstract: declaration.abstract,
           generics: this.collectGenericTypes(declaration),
         });
       }
 
-      // If the interface has been declared in this file, return directly
-      if (classReference.localName in declaredInterfaces) {
-        const declaration = declaredInterfaces[classReference.localName];
-        return <any> this.enhanceLoadedWithComment(<InterfaceLoaded> {
-          type: 'interface',
+      // If the class has been declared in this file, return directly
+      if (componentName in declaredClasses) {
+        const declaration = declaredClasses[componentName];
+        return <any> this.enhanceLoadedWithComment(<ClassLoaded>{
+          type: 'class',
           ...classReference,
           declaration,
           ast,
+          abstract: declaration.abstract,
           generics: this.collectGenericTypes(declaration),
         });
       }
+
+      // Only consider interfaces if explicitly enabled
+      if (considerInterfaces) {
+        // If the interface has been exported in this file, return directly
+        if (componentName in exportedInterfaces) {
+          const declaration = exportedInterfaces[componentName];
+          return <any> this.enhanceLoadedWithComment(<InterfaceLoaded>{
+            type: 'interface',
+            ...classReference,
+            declaration,
+            ast,
+            generics: this.collectGenericTypes(declaration),
+          });
+        }
+
+        // If the interface has been declared in this file, return directly
+        if (componentName in declaredInterfaces) {
+          const declaration = declaredInterfaces[componentName];
+          return <any> this.enhanceLoadedWithComment(<InterfaceLoaded>{
+            type: 'interface',
+            ...classReference,
+            declaration,
+            ast,
+            generics: this.collectGenericTypes(declaration),
+          });
+        }
+      }
+
+      // Only consider types if explicitly enabled
+      if (considerTypes) {
+        if (componentName in exportedTypes) {
+          const declaration = exportedTypes[componentName];
+          return <any> this.enhanceLoadedWithComment(<TypeLoaded>{
+            type: 'type',
+            ...classReference,
+            declaration,
+            ast,
+          });
+        }
+        if (componentName in declaredTypes) {
+          const declaration = declaredTypes[componentName];
+          return <any> this.enhanceLoadedWithComment(<TypeLoaded>{
+            type: 'type',
+            ...classReference,
+            declaration,
+            ast,
+          });
+        }
+      }
     }
 
-    // Only consider types if explicitly enabled
-    if (considerTypes) {
-      if (classReference.localName in exportedTypes) {
-        const declaration = exportedTypes[classReference.localName];
-        return <any> this.enhanceLoadedWithComment(<TypeLoaded> {
-          type: 'type',
-          ...classReference,
-          declaration,
-          ast,
-        });
-      }
-      if (classReference.localName in declaredTypes) {
-        const declaration = declaredTypes[classReference.localName];
-        return <any> this.enhanceLoadedWithComment(<TypeLoaded> {
-          type: 'type',
-          ...classReference,
-          declaration,
-          ast,
-        });
-      }
-    }
+    // If we haven't found anything so far, we will follow import/export links.
 
     // If the class is available via an import, follow that import link
-    if (classReference.localName in importedElements) {
+    if (componentName in importedElements) {
+      const entry = importedElements[componentName];
+      let localNameInner: string;
+      if (qualifiedPathInner) {
+        localNameInner = classReference.localName;
+        qualifiedPathInner = [ entry.localName, ...qualifiedPathInner ];
+      } else {
+        localNameInner = entry.localName;
+      }
       return this.loadClassDeclaration(
-        importedElements[classReference.localName],
+        {
+          ...entry,
+          localName: localNameInner,
+          qualifiedPath: qualifiedPathInner,
+          fileNameReferenced: classReference.fileNameReferenced,
+        },
         considerInterfaces,
         considerTypes,
       );
     }
 
     // If the class is available via an exported import, follow that import link
-    if (classReference.localName in exportedImportedElements) {
+    if (componentName in exportedImportedElements) {
+      const entry = exportedImportedElements[componentName];
+      let localNameInner: string;
+      if (qualifiedPathInner) {
+        localNameInner = classReference.localName;
+        qualifiedPathInner = [ entry.localName, ...qualifiedPathInner ];
+      } else {
+        localNameInner = entry.localName;
+      }
       return this.loadClassDeclaration(
-        exportedImportedElements[classReference.localName],
+        {
+          ...entry,
+          localName: localNameInner,
+          qualifiedPath: qualifiedPathInner,
+          fileNameReferenced: classReference.fileNameReferenced,
+        },
         considerInterfaces,
         considerTypes,
       );
+    }
+
+    // Check for named exported elements
+    if (componentName in exportedImportedAllNamed) {
+      return await this.loadClassDeclaration({
+        localName: classReference.localName,
+        qualifiedPath: qualifiedPathInner,
+        ...exportedImportedAllNamed[componentName],
+        fileNameReferenced: classReference.fileNameReferenced,
+      }, considerInterfaces, considerTypes);
+    }
+
+    // Follow named import links
+    if (componentName in importedElementsAllNamed) {
+      return await this.loadClassDeclaration({
+        localName: classReference.localName,
+        qualifiedPath: qualifiedPathInner,
+        ...importedElementsAllNamed[componentName],
+        fileNameReferenced: classReference.fileNameReferenced,
+      }, considerInterfaces, considerTypes);
     }
 
     // If we still haven't found the class, iterate over all export all's
@@ -257,6 +321,7 @@ export class ClassLoader {
       try {
         return await this.loadClassDeclaration({
           localName: classReference.localName,
+          qualifiedPath: qualifiedPathInner,
           ...subFile,
           fileNameReferenced: classReference.fileNameReferenced,
         }, considerInterfaces, considerTypes);
@@ -269,7 +334,7 @@ export class ClassLoader {
     if (exportAssignment && typeof exportAssignment === 'string' && exportAssignment in declaredNamespaces) {
       const namespace: TSModuleDeclaration = declaredNamespaces[exportAssignment];
       return this.loadClassDeclarationFromAst(
-        <TSModuleBlock> namespace.body,
+        <TSModuleBlock>namespace.body,
         targetString,
         classReference,
         considerInterfaces,
@@ -277,7 +342,8 @@ export class ClassLoader {
       );
     }
 
-    throw new Error(`Could not load ${targetString} ${classReference.localName} from ${classReference.fileName}`);
+    const name = `${classReference.qualifiedPath && classReference.qualifiedPath.length > 0 ? `${classReference.qualifiedPath.join('.')}.` : ''}${classReference.localName}`;
+    throw new Error(`Could not load ${targetString} ${name} from ${classReference.fileName}`);
   }
 
   /**
@@ -394,12 +460,16 @@ export class ClassLoader {
     const exportedNamespaces: Record<string, TSModuleDeclaration> = {};
     const exportedImportedElements: Record<string, ClassReference> = {};
     const exportedImportedAll: { packageName: string; fileName: string; fileNameReferenced: string }[] = [];
+    const exportedImportedAllNamed:
+    Record<string, { packageName: string; fileName: string; fileNameReferenced: string }> = {};
     const exportedUnknowns: Record<string, string> = {};
     const declaredClasses: Record<string, ClassDeclaration> = {};
     const declaredInterfaces: Record<string, TSInterfaceDeclaration> = {};
     const declaredTypes: Record<string, TSTypeAliasDeclaration> = {};
     const declaredNamespaces: Record<string, TSModuleDeclaration> = {};
     const importedElements: Record<string, ClassReference> = {};
+    const importedElementsAllNamed:
+    Record<string, { packageName: string; fileName: string; fileNameReferenced: string }> = {};
     let exportAssignment: string | ClassDeclaration | undefined;
 
     for (const statement of ast.body) {
@@ -429,6 +499,7 @@ export class ClassLoader {
           for (const specifier of statement.specifiers) {
             exportedImportedElements[specifier.exported.name] = {
               localName: specifier.local.name,
+              qualifiedPath: undefined,
               ...this.importTargetToAbsolutePath(packageName, fileName, statement.source.value),
             };
           }
@@ -443,7 +514,12 @@ export class ClassLoader {
         if (statement.source &&
           statement.source.type === AST_NODE_TYPES.Literal &&
           typeof statement.source.value === 'string') {
-          exportedImportedAll.push(this.importTargetToAbsolutePath(packageName, fileName, statement.source.value));
+          const entry = this.importTargetToAbsolutePath(packageName, fileName, statement.source.value);
+          if (statement.exported) {
+            exportedImportedAllNamed[statement.exported.name] = entry;
+          } else {
+            exportedImportedAll.push(entry);
+          }
         }
       } else if (statement.type === AST_NODE_TYPES.TSExportAssignment) {
         // Form: `export = ...`
@@ -470,18 +546,23 @@ export class ClassLoader {
       } else if (statement.type === AST_NODE_TYPES.ImportDeclaration &&
         statement.source.type === AST_NODE_TYPES.Literal &&
         typeof statement.source.value === 'string') {
-        // Form: `import {A} from './lib/A'`
-        for (const specifier of statement.specifiers) {
-          if (specifier.type === AST_NODE_TYPES.ImportSpecifier) {
-            try {
+        try {
+          const entry = this.importTargetToAbsolutePath(packageName, fileName, statement.source.value);
+          for (const specifier of statement.specifiers) {
+            if (specifier.type === AST_NODE_TYPES.ImportSpecifier) {
+              // Form: `import {A} from './lib/A'`
               importedElements[specifier.local.name] = {
                 localName: specifier.imported.name,
-                ...this.importTargetToAbsolutePath(packageName, fileName, statement.source.value),
+                qualifiedPath: undefined,
+                ...entry,
               };
-            } catch {
-              // Omit imports that throw an error
+            } else if (specifier.type === AST_NODE_TYPES.ImportNamespaceSpecifier) {
+              // Form: `import * as A from './lib/A'`
+              importedElementsAllNamed[specifier.local.name] = entry;
             }
           }
+        } catch {
+          // Omit imports that throw an error
         }
       }
     }
@@ -493,12 +574,14 @@ export class ClassLoader {
       exportedNamespaces,
       exportedImportedElements,
       exportedImportedAll,
+      exportedImportedAllNamed,
       exportedUnknowns,
       declaredClasses,
       declaredInterfaces,
       declaredTypes,
       declaredNamespaces,
       importedElements,
+      importedElementsAllNamed,
       exportAssignment,
     };
   }
@@ -526,6 +609,8 @@ export interface ClassElements {
   exportedImportedElements: Record<string, ClassReference>;
   // Exports via `export * from "b"`
   exportedImportedAll: { packageName: string; fileName: string; fileNameReferenced: string }[];
+  // Exports via `export * as A from "b"`
+  exportedImportedAllNamed: Record<string, { packageName: string; fileName: string; fileNameReferenced: string }>;
   // Things that have been exported via `export {A as B}`, where the target is not known
   exportedUnknowns: Record<string, string>;
   // Classes that have been declared in a file via `declare class A`
@@ -538,6 +623,8 @@ export interface ClassElements {
   declaredNamespaces: Record<string, TSModuleDeclaration>;
   // Elements that are imported from elsewhere via `import {A} from ''`
   importedElements: Record<string, ClassReference>;
+  // Elements that are imported from elsewhere via `import * as A from ''`
+  importedElementsAllNamed: Record<string, { packageName: string; fileName: string; fileNameReferenced: string }>;
   // Element exported via `export = ...`
   exportAssignment: string | ClassDeclaration | undefined;
 }

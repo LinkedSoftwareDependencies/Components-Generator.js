@@ -866,7 +866,7 @@ class MyInnerClass<AInner, BInner> {
       resolutionContext.contentsOverrides = {
         'A.d.ts': ``,
       };
-      await expect(loader.resolveRangeInterface('IFaceA', undefined, classReference, classReference, {}))
+      await expect(loader.resolveRangeInterface('IFaceA', undefined, undefined, classReference, classReference, {}))
         .rejects.toThrow(new Error('Could not load class or interface or type IFaceA from A'));
     });
 
@@ -876,7 +876,7 @@ class MyInnerClass<AInner, BInner> {
 interface IFaceA {}
 `,
       };
-      expect(await loader.resolveRangeInterface('IFaceA', undefined, classReference, classReference, {}))
+      expect(await loader.resolveRangeInterface('IFaceA', undefined, undefined, classReference, classReference, {}))
         .toEqual({
           type: 'nested',
           value: [],
@@ -889,7 +889,7 @@ interface IFaceA {}
 class ClassA {}
 `,
       };
-      expect(await loader.resolveRangeInterface('ClassA', undefined, classReference, classReference, {}))
+      expect(await loader.resolveRangeInterface('ClassA', undefined, undefined, classReference, classReference, {}))
         .toMatchObject({
           type: 'class',
           value: { localName: 'ClassA', fileName: 'A' },
@@ -904,7 +904,7 @@ interface ClassA {
 }
 `,
       };
-      expect(await loader.resolveRangeInterface('ClassA', undefined, classReference, classReference, {}))
+      expect(await loader.resolveRangeInterface('ClassA', undefined, undefined, classReference, classReference, {}))
         .toMatchObject({
           type: 'class',
           value: { localName: 'ClassA', fileName: 'A' },
@@ -920,7 +920,7 @@ interface IFaceA {
 }
 `,
       };
-      expect(await loader.resolveRangeInterface('IFaceA', undefined, classReference, classReference, {}))
+      expect(await loader.resolveRangeInterface('IFaceA', undefined, undefined, classReference, classReference, {}))
         .toEqual({
           type: 'nested',
           value: [
@@ -955,7 +955,7 @@ interface IFaceB {
 }
 `,
       };
-      expect(await loader.resolveRangeInterface('IFaceA', undefined, classReference, classReference, {}))
+      expect(await loader.resolveRangeInterface('IFaceA', undefined, undefined, classReference, classReference, {}))
         .toEqual({
           type: 'nested',
           value: [
@@ -986,7 +986,7 @@ interface IFaceB {
 type Type = string | boolean;
 `,
       };
-      expect(await loader.resolveRangeInterface('Type', undefined, classReference, classReference, {}))
+      expect(await loader.resolveRangeInterface('Type', undefined, undefined, classReference, classReference, {}))
         .toEqual({
           type: 'union',
           elements: [

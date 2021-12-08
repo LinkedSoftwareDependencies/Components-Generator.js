@@ -1416,6 +1416,23 @@ export interface A{
         });
     });
 
+    it('should get the range of a qualified name with generic', async() => {
+      expect(await getFieldRange('fieldA: a.B<T>', {}))
+        .toEqual({
+          type: 'interface',
+          value: 'B',
+          genericTypeParameterInstantiations: [
+            {
+              type: 'interface',
+              value: 'T',
+              origin: expect.anything(),
+            },
+          ],
+          qualifiedPath: [ 'a' ],
+          origin: expect.anything(),
+        });
+    });
+
     it('should get the range of a hash', async() => {
       expect(await getFieldRange('fieldA: { a: number }', {}))
         .toMatchObject({
@@ -1442,9 +1459,14 @@ export interface A{
         });
     });
 
-    it('should error on a field with qualified name', async() => {
-      await expect(async() => await getFieldRange('fieldA: a.B', {}))
-        .rejects.toThrow(new Error('Could not understand parameter type TSTypeReference of field fieldA in A at file'));
+    it('should get the range of a qualified name', async() => {
+      expect(await getFieldRange('fieldA: a.B', {}))
+        .toEqual({ type: 'interface', value: 'B', qualifiedPath: [ 'a' ], origin: expect.anything() });
+    });
+
+    it('should get the range of a long qualified name', async() => {
+      expect(await getFieldRange('fieldA: a.b.c.D', {}))
+        .toEqual({ type: 'interface', value: 'D', qualifiedPath: [ 'a', 'b', 'c' ], origin: expect.anything() });
     });
 
     it('should error on a field without type', async() => {

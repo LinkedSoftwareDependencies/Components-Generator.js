@@ -63,6 +63,7 @@ export class ClassIndexer {
           superClassLoaded = await this.loadClassChain({
             packageName: classReferenceLoaded.packageName,
             localName: superClassName,
+            qualifiedPath: classReferenceLoaded.qualifiedPath,
             fileName: classReferenceLoaded.fileName,
             fileNameReferenced: classReferenceLoaded.fileNameReferenced,
           });
@@ -86,6 +87,7 @@ export class ClassIndexer {
             interfaceOrClassLoaded = await this.classLoader.loadClassDeclaration({
               packageName: classReferenceLoaded.packageName,
               localName: interfaceName,
+              qualifiedPath: classReferenceLoaded.qualifiedPath,
               fileName: classReferenceLoaded.fileName,
               fileNameReferenced: classReferenceLoaded.fileNameReferenced,
             }, true, false);
@@ -108,6 +110,7 @@ export class ClassIndexer {
             superInterface = await this.loadClassChain({
               packageName: classReferenceLoaded.packageName,
               localName: interfaceName,
+              qualifiedPath: classReferenceLoaded.qualifiedPath,
               fileName: classReferenceLoaded.fileName,
               fileNameReferenced: classReferenceLoaded.fileNameReferenced,
             });

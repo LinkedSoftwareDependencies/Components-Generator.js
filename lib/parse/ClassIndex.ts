@@ -19,6 +19,8 @@ export interface ClassReference {
   packageName: string;
   // The name of the class within the file.
   localName: string;
+  // Qualified path to the class.
+  qualifiedPath?: string[];
   // The name of the file the class is defined in.
   fileName: string;
   // The first name of the file this class was referenced from, in a chain of imports/exports (in top-down order)
