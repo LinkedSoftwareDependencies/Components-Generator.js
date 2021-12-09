@@ -1,6 +1,27 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.0.0-beta.4"></a>
+## [v3.0.0-beta.4](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.0-beta.3...v3.0.0-beta.4) - 2021-12-09
+
+### Added
+* [Handle keyof param ranges](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/4e0df62cf6d2189a0c338f7b33f7d61b47209ab1)
+* [Export component member keys, for keyof checking](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/391aa833632b5bc3aac4eaeb020ed60b7695c845)
+* [Handle generics in type aliases](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/1983f478d52e7ebbb1c5e9bab99f6fe5172d53ba)
+* [Allow fieldNameToId to refer to other packages](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/3a25ad74a91cb8a149d80f02f8cdc186d5e8db57)
+* Support qualified paths:
+  * [Support qualified paths in ignored components](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/d4703c82c017fc43974b59e5be62015df4e55b1b)
+  * [Support parameters referring to components with qualified paths](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/8a4e112ccf776b6aa025925947e6c42aeecffa7d)
+* [Support enum and enum value parameter ranges](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/96e86972b3f20fdfa387a4891ee832ffdddb6da9)
+
+### Changed
+* [Return undefined for nested parameter ranges](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/de7cde1f2cef6a339eb427bce0536ce31fbaba97)
+* * [Improve error message for unsupported nested fields](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/05b9e150cd5312c2cc424b0be30317e06ff3bb5b)
+
+### Fixed
+* [Fix stackoverflow on generic remapping with self-references](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/326f31fb5ceab75bf238448693893b4ceba212b5)
+
+
 <a name="v3.0.0-beta.3"></a>
 ## [v3.0.0-beta.3](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.0-beta.2...v3.0.0-beta.3) - 2021-12-07
 
