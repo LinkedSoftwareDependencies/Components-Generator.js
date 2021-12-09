@@ -2474,14 +2474,16 @@ describe('ComponentConstructor', () => {
       });
     });
 
-    it('should throw on a nested parameter range', async() => {
+    it('should construct on a nested parameter range as undefined', async() => {
       const rangeValue: ParameterData<any>[] = [];
-      await expect(ctor.constructParameterRange(
+      expect(await ctor.constructParameterRange(
         { type: 'nested', value: rangeValue },
         context,
         externalContextsCallback,
         'mp:components/a/b/file-param.jsonld#MyClass_field',
-      )).rejects.toThrow('Composition of nested fields is unsupported');
+      )).toEqual({
+        '@type': 'ParameterRangeUndefined',
+      });
     });
 
     it('should construct an undefined parameter range', async() => {
