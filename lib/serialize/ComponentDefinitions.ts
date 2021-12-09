@@ -23,6 +23,7 @@ export interface ComponentDefinition {
   comment?: string;
   genericTypeParameters?: GenericTypeParameterDefinition[];
   parameters: ParameterDefinition[];
+  memberKeys: string[];
   constructorArguments: ConstructorArgumentDefinition[];
 }
 

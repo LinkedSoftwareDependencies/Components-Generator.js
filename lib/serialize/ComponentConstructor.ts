@@ -217,6 +217,9 @@ export class ComponentConstructor {
       }
     }
 
+    // Obtain the keys of all members
+    const memberKeys = classReference.memberKeys;
+
     // Fill in fields
     return {
       '@id': scopedId,
@@ -226,6 +229,7 @@ export class ComponentConstructor {
       ...classReference.comment ? { comment: classReference.comment } : {},
       ...genericTypeParameters && genericTypeParameters.length > 0 ? { genericTypeParameters } : {},
       parameters,
+      memberKeys,
       constructorArguments,
     };
   }

@@ -111,6 +111,7 @@ describe('ComponentConstructor', () => {
           localName: 'MyClass1',
           fileName: Path.normalize('/docs/package/src/b/file'),
           generics: {},
+          memberKeys: [ 'field1_1', 'field1_2' ],
         },
         MyClass2: {
           type: 'class',
@@ -118,6 +119,7 @@ describe('ComponentConstructor', () => {
           localName: 'MyClass2',
           fileName: Path.normalize('/docs/package/src/b/file'),
           generics: {},
+          memberKeys: [ 'field2_1' ],
         },
       };
       (<any> ctor).classConstructors = <ClassIndex<ConstructorData<ParameterRangeResolved>>> {
@@ -160,6 +162,7 @@ describe('ComponentConstructor', () => {
               constructorArguments: [],
               parameters: [],
               requireElement: 'MyClass1',
+              memberKeys: [ 'field1_1', 'field1_2' ],
             },
             {
               '@id': 'mp:components/b/file.jsonld#MyClass2',
@@ -181,6 +184,7 @@ describe('ComponentConstructor', () => {
                   range: 'xsd:string',
                 },
               ],
+              memberKeys: [ 'field2_1' ],
             },
           ],
         },

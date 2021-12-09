@@ -1,4 +1,8 @@
 import * as Path from 'path';
+import type {
+  ClassBody,
+  TSInterfaceBody,
+} from '@typescript-eslint/types/dist/ts-estree';
 import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
@@ -2739,6 +2743,79 @@ import {D as X} from './lib/D'
             },
           },
         });
+    });
+  });
+
+  describe('collectClassMembers', () => {
+    const fileName = Path.normalize('dir/file');
+
+    function getClassBody(contents: string): ClassBody {
+      return loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`declare class A{${contents}}`)).declaredClasses.A.body;
+    }
+
+    function getInterfaceBody(contents: string): TSInterfaceBody {
+      return loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`declare interface A{${contents}}`)).declaredInterfaces.A.body;
+    }
+
+    describe('for classes', () => {
+      it('for an empty class', async() => {
+        expect(loader.collectClassMembers(getClassBody(``))).toEqual([]);
+      });
+
+      it('for simple fields', async() => {
+        expect(loader.collectClassMembers(getClassBody(`
+fieldA: string;
+fieldB: MyClass;
+`))).toEqual([
+          'fieldA',
+          'fieldB',
+        ]);
+      });
+
+      it('for computed fields', async() => {
+        expect(loader.collectClassMembers(getClassBody(`
+[A.fieldA]: string;
+fieldB: MyClass;
+`))).toEqual([
+          'fieldB',
+        ]);
+      });
+
+      it('for simple methods', async() => {
+        expect(loader.collectClassMembers(getClassBody(`
+public functionA(): string{}
+private functionB(): string{}
+`))).toEqual([
+          'functionA',
+          'functionB',
+        ]);
+      });
+    });
+
+    describe('for interfaces', () => {
+      it('for an empty interface', async() => {
+        expect(loader.collectClassMembers(getInterfaceBody(``))).toEqual([]);
+      });
+
+      it('for simple fields', async() => {
+        expect(loader.collectClassMembers(getInterfaceBody(`
+fieldA: string;
+fieldB: MyClass;
+`))).toEqual([
+          'fieldA',
+          'fieldB',
+        ]);
+      });
+
+      it('for simple methods', async() => {
+        expect(loader.collectClassMembers(getInterfaceBody(`
+public functionA(): string;
+private functionB(): string;
+`))).toEqual([
+          'functionA',
+          'functionB',
+        ]);
+      });
     });
   });
 });
