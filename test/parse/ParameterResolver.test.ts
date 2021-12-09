@@ -964,6 +964,22 @@ class MyInnerClass<AInner, BInner> {
         ],
       });
     });
+
+    it('should handle a genericTypeReference range with recursive remapping to itself', async() => {
+      expect(await loader.resolveRange({
+        type: 'genericTypeReference',
+        value: 'T',
+      }, classReference, {
+        T: {
+          type: 'genericTypeReference',
+          value: 'T',
+        },
+      })).toEqual({
+        type: 'genericTypeReference',
+        value: 'T',
+        origin: classReference,
+      });
+    });
   });
 
   describe('resolveRangeInterface', () => {

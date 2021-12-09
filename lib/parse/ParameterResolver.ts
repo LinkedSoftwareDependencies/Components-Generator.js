@@ -165,7 +165,11 @@ export class ParameterResolver {
       case 'genericTypeReference':
         // If this generic type was remapped, return that remapped type
         if (range.value in genericTypeRemappings) {
-          return this.resolveRange(genericTypeRemappings[range.value], owningClass, genericTypeRemappings);
+          const mapped = genericTypeRemappings[range.value];
+          // Avoid infinite recursion via mapping to itself
+          if (mapped.type !== 'genericTypeReference' || mapped.value !== range.value) {
+            return this.resolveRange(mapped, owningClass, genericTypeRemappings);
+          }
         }
         return {
           type: 'genericTypeReference',
