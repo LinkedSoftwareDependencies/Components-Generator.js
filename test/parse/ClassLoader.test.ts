@@ -1234,6 +1234,33 @@ export * from './file3'
           });
       });
 
+      it('for an exported type with generics', async() => {
+        loader = new ClassLoader({
+          resolutionContext: new ResolutionContextMocked({
+            'file.d.ts': `export type A<T> = number;`,
+          }),
+          logger,
+          commentLoader,
+        });
+        expect(await loader.loadClassDeclaration({
+          packageName: 'p',
+          localName: 'A',
+          fileName: 'file',
+          fileNameReferenced: 'fileReferenced',
+        }, false, true))
+          .toMatchObject({
+            localName: 'A',
+            fileName: 'file',
+            declaration: {
+              id: { name: 'A' },
+              type: 'TSTypeAliasDeclaration',
+            },
+            generics: {
+              T: expect.anything(),
+            },
+          });
+      });
+
       it('for a declared type', async() => {
         loader = new ClassLoader({
           resolutionContext: new ResolutionContextMocked({

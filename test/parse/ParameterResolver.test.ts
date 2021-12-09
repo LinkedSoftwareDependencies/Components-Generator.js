@@ -829,6 +829,102 @@ interface IFace2<AInner2> {
       });
     });
 
+    it('should handle a generic range within a simple type alias', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `
+type Type<AOuter> = IFaceA<AOuter>;
+interface IFaceA<AInner> {
+  fieldA: AInner;
+}
+`,
+      };
+      expect(await loader.resolveRange({
+        type: 'interface',
+        value: 'Type',
+        genericTypeParameterInstantiations: [
+          {
+            type: 'genericTypeReference',
+            value: 'AOuter',
+          },
+        ],
+        origin: classReference,
+      }, classReference, {})).toMatchObject({
+        type: 'nested',
+        value: [
+          {
+            type: 'field',
+            name: 'fieldA',
+            range: {
+              type: 'genericTypeReference',
+              value: 'AOuter',
+              origin: classReference,
+            },
+          },
+        ],
+      });
+    });
+
+    it('should handle a generic range within a type alias to union type', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `
+type Type<AOuter> = IFaceA<AOuter> | IFaceB<AOuter>;
+interface IFaceA<AInner> {
+  fieldA: AInner;
+}
+interface IFaceB<AInner> {
+  fieldB: AInner;
+}
+`,
+      };
+      expect(await loader.resolveRange({
+        type: 'interface',
+        value: 'Type',
+        genericTypeParameterInstantiations: [
+          {
+            type: 'genericTypeReference',
+            value: 'AOuter',
+          },
+        ],
+        origin: classReference,
+      }, classReference, {})).toMatchObject({
+        type: 'union',
+        elements: [
+          {
+            type: 'nested',
+            value: [
+              {
+                type: 'field',
+                name: 'fieldA',
+                range: {
+                  type: 'genericTypeReference',
+                  value: 'AOuter',
+                  origin: {
+                    localName: 'Type',
+                  },
+                },
+              },
+            ],
+          },
+          {
+            type: 'nested',
+            value: [
+              {
+                type: 'field',
+                name: 'fieldB',
+                range: {
+                  type: 'genericTypeReference',
+                  value: 'AOuter',
+                  origin: {
+                    localName: 'Type',
+                  },
+                },
+              },
+            ],
+          },
+        ],
+      });
+    });
+
     it('should handle a generic range within a class and remap generic types', async() => {
       resolutionContext.contentsOverrides = {
         'A.d.ts': `

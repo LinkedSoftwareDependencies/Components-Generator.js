@@ -104,6 +104,8 @@ export interface TypeLoaded extends ClassReference {
   ast: AST<TSESTreeOptions>;
   // The tsdoc comment of this class
   comment?: string;
+  // The generic types of this class
+  generics: GenericTypes;
 }
 
 /**

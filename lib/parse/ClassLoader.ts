@@ -245,6 +245,7 @@ export class ClassLoader {
             ...classReference,
             declaration,
             ast,
+            generics: this.collectGenericTypes(declaration),
           });
         }
         if (componentName in declaredTypes) {
@@ -254,6 +255,7 @@ export class ClassLoader {
             ...classReference,
             declaration,
             ast,
+            generics: this.collectGenericTypes(declaration),
           });
         }
 
@@ -417,7 +419,9 @@ export class ClassLoader {
    * Create a hash of generic types in the given class declaration.
    * @param classDeclaration A class or interface declaration.
    */
-  public collectGenericTypes(classDeclaration: ClassDeclaration | TSInterfaceDeclaration): GenericTypes {
+  public collectGenericTypes(
+    classDeclaration: ClassDeclaration | TSInterfaceDeclaration | TSTypeAliasDeclaration,
+  ): GenericTypes {
     const genericTypes: GenericTypes = {};
     if (classDeclaration.typeParameters) {
       for (const param of classDeclaration.typeParameters.params) {
