@@ -102,6 +102,13 @@ export class ParameterResolver {
       })));
   }
 
+  protected isIgnored(qualifiedPath: string[] | undefined, className: string): boolean {
+    if (qualifiedPath && qualifiedPath.length > 0) {
+      className = `${qualifiedPath.join('.')}.${className}`;
+    }
+    return className in this.ignoreClasses;
+  }
+
   /**
    * Resolve the given parameter range.
    * @param range An unresolved parameter range.
@@ -119,7 +126,7 @@ export class ParameterResolver {
       case 'override':
         return range;
       case 'interface':
-        if (range.value in this.ignoreClasses) {
+        if (this.isIgnored(range.qualifiedPath, range.value)) {
           return {
             type: 'undefined',
           };
@@ -294,7 +301,7 @@ export class ParameterResolver {
     if (classOrInterface.type === 'interface') {
       classOrInterface.superInterfaces = await Promise.all(this.classLoader
         .getSuperInterfaceNames(classOrInterface.declaration, classOrInterface.fileName)
-        .filter(interfaceName => !(interfaceName in this.ignoreClasses))
+        .filter(interfaceName => !this.isIgnored(undefined, interfaceName))
         .map(async interfaceName => {
           const superInterface = await this.loadClassOrInterfacesChain({
             packageName: classOrInterface.packageName,

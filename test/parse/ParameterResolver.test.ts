@@ -446,6 +446,23 @@ describe('ParameterResolver', () => {
       });
     });
 
+    it('should handle an ignored interface range pointing to a class with qualified path', async() => {
+      ignoreClasses['a.MyClass'] = true;
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `export * from './MyClass'`,
+        'MyClass.d.ts': `export class MyClass{}`,
+      };
+      expect(await loader.resolveRange({
+        type: 'interface',
+        value: 'MyClass',
+        qualifiedPath: [ 'a' ],
+        genericTypeParameterInstantiations: [],
+        origin: classReference,
+      }, classReference, {})).toMatchObject({
+        type: 'undefined',
+      });
+    });
+
     it('should handle an interface range pointing to an implicit class', async() => {
       resolutionContext.contentsOverrides = {
         'A.d.ts': `export * from './MyClass'`,
