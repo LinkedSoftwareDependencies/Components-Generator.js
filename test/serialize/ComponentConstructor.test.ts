@@ -2619,6 +2619,18 @@ describe('ComponentConstructor', () => {
         parameterRangeGenericType: 'mp:components/a/b/file-param.jsonld#MyClass__generic_T',
       });
     });
+
+    it('should construct a keyof parameter range', async() => {
+      expect(await ctor.constructParameterRange(
+        { type: 'keyof', value: { type: 'raw', value: 'boolean' }},
+        context,
+        externalContextsCallback,
+        'mp:a/b/file-param#MyClass_field',
+      )).toEqual({
+        '@type': 'ParameterRangeKeyof',
+        parameterRangeValue: 'xsd:boolean',
+      });
+    });
   });
 
   describe('populateOptionalParameterFields', () => {

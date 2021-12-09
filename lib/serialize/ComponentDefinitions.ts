@@ -47,7 +47,7 @@ export type ParameterDefinitionRange = string | { '@id': string; parameters: Par
   '@type': 'ParameterRangeUnion' | 'ParameterRangeIntersection' | 'ParameterRangeTuple';
   parameterRangeElements: ParameterDefinitionRange[];
 } | {
-  '@type': 'ParameterRangeRest' | 'ParameterRangeArray';
+  '@type': 'ParameterRangeRest' | 'ParameterRangeArray' | 'ParameterRangeKeyof';
   parameterRangeValue: ParameterDefinitionRange;
 } | {
   '@type': 'ParameterRangeUndefined';

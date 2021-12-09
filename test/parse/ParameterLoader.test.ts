@@ -1715,6 +1715,19 @@ export interface A{
       await expect(async() => await getFieldRange('fieldA: 100n', {}))
         .rejects.toThrow(new Error(`Could not understand parameter type TSLiteralType of field fieldA in A at file`));
     });
+
+    it('should get the range of a keyof field type', async() => {
+      expect(await getFieldRange('fieldA: keyof MyClass', {}))
+        .toEqual({
+          type: 'keyof',
+          value: { type: 'interface', value: 'MyClass', origin: expect.anything() },
+        });
+    });
+
+    it('should error on a readonly type', async() => {
+      await expect(async() => await getFieldRange('fieldA: readonly ABC', {}))
+        .rejects.toThrow(new Error(`Could not understand parameter type TSTypeOperator of field fieldA in A at file`));
+    });
   });
 
   describe('overrideRawRange', () => {

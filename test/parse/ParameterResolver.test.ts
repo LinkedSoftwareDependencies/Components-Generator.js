@@ -980,6 +980,29 @@ class MyInnerClass<AInner, BInner> {
         origin: classReference,
       });
     });
+
+    it('should handle a keyof range', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `export * from './MyClass'`,
+        'MyClass.d.ts': `export class MyClass{}`,
+      };
+
+      expect(await loader.resolveRange({
+        type: 'keyof',
+        value: {
+          type: 'interface',
+          value: 'MyClass',
+          genericTypeParameterInstantiations: [],
+          origin: classReference,
+        },
+      }, classReference, {})).toMatchObject({
+        type: 'keyof',
+        value: {
+          type: 'class',
+          value: { localName: 'MyClass', fileName: 'MyClass' },
+        },
+      });
+    });
   });
 
   describe('resolveRangeInterface', () => {

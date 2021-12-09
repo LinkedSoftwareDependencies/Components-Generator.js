@@ -158,9 +158,11 @@ export class ParameterResolver {
         };
       case 'array':
       case 'rest':
+      case 'keyof':
         return {
           type: range.type,
-          value: await this.resolveRange(range.value, owningClass, genericTypeRemappings),
+          // TODO: remove the following any cast when TS bug is fixed
+          value: <any> await this.resolveRange(range.value, owningClass, genericTypeRemappings),
         };
       case 'genericTypeReference':
         // If this generic type was remapped, return that remapped type

@@ -335,6 +335,13 @@ export class ParameterLoader {
           type: 'rest',
           value: this.getRangeFromTypeNode(classLoaded, typeNode.typeAnnotation, errorIdentifier),
         };
+      case AST_NODE_TYPES.TSTypeOperator:
+        if (typeNode.operator === 'keyof' && typeNode.typeAnnotation) {
+          return {
+            type: 'keyof',
+            value: this.getRangeFromTypeNode(classLoaded, typeNode.typeAnnotation, errorIdentifier),
+          };
+        }
     }
     throw new Error(`Could not understand parameter type ${typeNode.type} of ${errorIdentifier
     } in ${classLoaded.localName} at ${classLoaded.fileName}`);
@@ -440,10 +447,12 @@ export class ParameterLoader {
         };
       case 'rest':
       case 'array':
+      case 'keyof':
         // Recursively apply override operation on value
         return {
           type: range.type,
-          value: this.overrideRawRange(range.value, override),
+          // TODO: remove the following any cast when TS bug is fixed
+          value: <any> this.overrideRawRange(range.value, override),
         };
     }
   }
@@ -656,6 +665,9 @@ export type ParameterRangeUnresolved = {
   type: 'array';
   value: ParameterRangeUnresolved;
 } | {
+  type: 'keyof';
+  value: ParameterRangeUnresolved;
+} | {
   type: 'genericTypeReference';
   value: string;
 };
@@ -692,6 +704,9 @@ export type ParameterRangeResolved = {
   value: ParameterRangeResolved;
 } | {
   type: 'array';
+  value: ParameterRangeResolved;
+} | {
+  type: 'keyof';
   value: ParameterRangeResolved;
 } | {
   type: 'genericTypeReference';

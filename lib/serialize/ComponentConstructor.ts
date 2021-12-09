@@ -731,8 +731,20 @@ export class ComponentConstructor {
         };
       case 'rest':
       case 'array':
+      case 'keyof':
+        switch (range.type) {
+          case 'rest':
+            type = 'ParameterRangeRest';
+            break;
+          case 'array':
+            type = 'ParameterRangeArray';
+            break;
+          case 'keyof':
+            type = 'ParameterRangeKeyof';
+            break;
+        }
         return {
-          '@type': range.type === 'rest' ? 'ParameterRangeRest' : 'ParameterRangeArray',
+          '@type': <any> type,
           parameterRangeValue: await this
             .constructParameterRange(range.value, context, externalContextsCallback, fieldId),
         };
