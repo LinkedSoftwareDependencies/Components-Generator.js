@@ -222,7 +222,7 @@ Each argument in the constructor of the class must be one of the following:
 * Another class, which will be mapped to the component `@id`.
 * A record or interface containing key-value pairs where each value matches one of the possible options. Nesting is allowed.
 * Reference to a generic type that is defined on the class.
-* An array, tuple, union, or intersection over any of the allowed types.
+* An array, `keyof`, tuple, union, or intersection over any of the allowed types.
   
 Here is an example that showcases all of these options:  
    ```typescript
