@@ -675,7 +675,7 @@ export class ComponentConstructor {
         }
         return componentId;
       case 'nested':
-        throw new Error('Composition of nested fields is unsupported');
+        throw new Error(`Composition of nested fields is unsupported in ${fieldId}`);
       case 'undefined':
         return {
           '@type': 'ParameterRangeUndefined',
