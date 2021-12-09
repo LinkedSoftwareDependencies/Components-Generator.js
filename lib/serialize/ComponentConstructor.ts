@@ -327,7 +327,34 @@ export class ComponentConstructor {
     if (scope.parentFieldNames.length > 0) {
       fieldName = `${scope.parentFieldNames.join('_')}_${fieldName}`;
     }
-    let id = context.compactIri(`${ComponentConstructor.classNameToIriForPackage(this.packageMetadata, this.pathDestination, classReference, this.fileExtension)}_${fieldName}`);
+
+    // Mint a new IRI if class is in the current package
+    let iri: string | undefined;
+    if (classReference.packageName === this.packageMetadata.name) {
+      iri = ComponentConstructor.classNameToIriForPackage(
+        this.packageMetadata,
+        this.pathDestination,
+        classReference,
+        this.fileExtension,
+      );
+    }
+
+    // Use existing IRI if class is in another package (that is also being built currently)
+    const otherPackageMetadata = this.externalComponents.packagesBeingGenerated[classReference.packageName];
+    if (otherPackageMetadata) {
+      iri = ComponentConstructor.classNameToIriForPackage(
+        otherPackageMetadata.packageMetadata,
+        otherPackageMetadata.pathDestination,
+        classReference,
+        this.fileExtension,
+      );
+    }
+
+    if (!iri) {
+      throw new Error(`Tried to reference a field ${fieldName} in "${this.pathDestination.packageRootDirectory}" outside the current package: ${classReference.fileName}`);
+    }
+
+    let id = context.compactIri(`${iri}_${fieldName}`);
     if (id in scope.fieldIdsHash) {
       id += `_${scope.fieldIdsHash[id]++}`;
     } else {

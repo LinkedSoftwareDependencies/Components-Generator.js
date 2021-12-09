@@ -1028,6 +1028,47 @@ describe('ComponentConstructor', () => {
         fileNameReferenced: 'unused',
       }, 'field', scope)).toEqual('mp:components/a/b/MyOwnClass.jsonld#MyClass_field_2');
     });
+
+    it('should return a compacted field IRI for a class in another package that is being generated', async() => {
+      const packageMetadata = <any> {
+        name: 'other-package',
+        version: '3.2.1',
+        moduleIri: 'https://linkedsoftwaredependencies.org/bundles/npm/other-package',
+        contexts: {
+          'http://example.org/context-other-package.jsonld': true,
+        },
+      };
+      externalComponents.packagesBeingGenerated['other-package'] = {
+        packageMetadata,
+        pathDestination: {
+          packageRootDirectory: Path.normalize('/docs/other-package'),
+          originalPath: 'src',
+          replacementPath: 'components',
+        },
+        minimalContext: await new ContextParser({
+          documentLoader: new PrefetchedDocumentLoader({
+            contexts: {},
+          }),
+          skipValidation: true,
+        }).parse(new ContextConstructorMocked({ packageMetadata }).constructContext()),
+      };
+      expect(ctor.fieldNameToId(context, {
+        packageName: 'other-package',
+        localName: 'MyClass',
+        fileName: Path.normalize('/docs/other-package/src/a/b/MyOwnClass'),
+        fileNameReferenced: 'unused',
+      }, 'field', scope)).toEqual('npmd:other-package/^3.0.0/components/a/b/MyOwnClass.jsonld#MyClass_field');
+    });
+
+    it('should throw on a compacted field IRI for a class in another package that is not being generated', async() => {
+      expect(() => ctor.fieldNameToId(context, {
+        packageName: 'other-package',
+        localName: 'MyClass',
+        fileName: Path.normalize('/docs/other-package/src/a/b/MyOwnClass'),
+        fileNameReferenced: 'unused',
+      }, 'field', scope))
+        .toThrowError(/Tried to reference a field field in ".*" outside the current package: .*/u);
+    });
   });
 
   describe('constructGenericTypeParameters', () => {
