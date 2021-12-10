@@ -1,7 +1,11 @@
 import type { TSTypeLiteral, Identifier, TSIndexSignature,
   TSTypeReference } from '@typescript-eslint/types/dist/ts-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
+
+import { ClassFinder } from '../../lib/parse/ClassFinder';
 import type { ClassLoaded, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from '../../lib/parse/ClassIndex';
+
+import { ClassIndexer } from '../../lib/parse/ClassIndexer';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
 import type { CommentData } from '../../lib/parse/CommentLoader';
 import { CommentLoader } from '../../lib/parse/CommentLoader';
@@ -30,6 +34,225 @@ describe('ParameterLoader', () => {
     constructorLoader = new ConstructorLoader({ commentLoader });
   });
 
+  describe('loadAllExtensionData', () => {
+    const clazz: ClassReference = {
+      packageName: 'p',
+      localName: 'A',
+      fileName: 'file',
+      fileNameReferenced: 'fileReferenced',
+    };
+
+    async function getClass(definition: string) {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': definition,
+      };
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, true, true);
+      return classLoaded.type === 'type' ?
+        classLoaded :
+        await new ClassIndexer({
+          classLoader,
+          classFinder: new ClassFinder({ classLoader }),
+          ignoreClasses: {},
+          logger,
+        }).loadClassChain(classLoaded);
+    }
+
+    it('should be empty for empty index', async() => {
+      expect(loader.loadAllExtensionData({})).toEqual({});
+    });
+
+    it('should handle a non-emty index', async() => {
+      expect(loader.loadAllExtensionData({
+        A: await getClass(`export class A extends SuperA {}
+export class SuperA {}`),
+        B: await getClass(`export type A = number`),
+        C: await getClass(`export interface A {}`),
+      })).toEqual({
+        A: expect.anything(),
+        C: expect.anything(),
+      });
+    });
+  });
+
+  describe('loadExtensionData', () => {
+    const clazz: ClassReference = {
+      packageName: 'p',
+      localName: 'A',
+      fileName: 'file',
+      fileNameReferenced: 'fileReferenced',
+    };
+
+    async function getClass(definition: string) {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': definition,
+      };
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, true, false);
+      return await new ClassIndexer({
+        classLoader,
+        classFinder: new ClassFinder({ classLoader }),
+        ignoreClasses: {},
+        logger,
+      }).loadClassChain(classLoaded);
+    }
+
+    it('should be empty for no extensions', async() => {
+      const classLoaded = await getClass(`
+export class A{}`);
+      expect(loader.loadExtensionData(classLoaded)).toEqual([]);
+    });
+
+    it('should be empty for no extensions and interfaces', async() => {
+      const classLoaded = await getClass(`
+export class A{}`);
+      delete (<any> classLoaded).implementsInterfaces;
+      expect(loader.loadExtensionData(classLoaded)).toEqual([]);
+    });
+
+    it('should handle a class extension', async() => {
+      const classLoaded = await getClass(`
+export class A extends SuperA {}
+export class SuperA {}`);
+      expect(loader.loadExtensionData(classLoaded)).toMatchObject([
+        {
+          classLoaded: <any> {
+            localName: 'SuperA',
+          },
+          genericTypeInstantiations: [],
+        },
+      ]);
+    });
+
+    it('should handle interface extensions', async() => {
+      const classLoaded = await getClass(`
+export class A implements IFace1, IFace2{};
+export interface IFace1 {};
+export interface IFace2 {};`);
+      expect(loader.loadExtensionData(classLoaded)).toMatchObject([
+        {
+          classLoaded: <any> {
+            localName: 'IFace1',
+          },
+          genericTypeInstantiations: [],
+        },
+        {
+          classLoaded: <any> {
+            localName: 'IFace2',
+          },
+          genericTypeInstantiations: [],
+        },
+      ]);
+    });
+
+    it('should handle interface supers', async() => {
+      const classLoaded = await getClass(`
+export interface A extends IFace1, IFace2{};
+export interface IFace1 {};
+export interface IFace2 {};`);
+      expect(loader.loadExtensionData(classLoaded)).toMatchObject([
+        {
+          classLoaded: <any> {
+            localName: 'IFace1',
+          },
+          genericTypeInstantiations: [],
+        },
+        {
+          classLoaded: <any> {
+            localName: 'IFace2',
+          },
+          genericTypeInstantiations: [],
+        },
+      ]);
+    });
+
+    it('should handle interface without supers', async() => {
+      const classLoaded = await getClass(`
+export interface A{};`);
+      delete (<any> classLoaded).superInterfaces;
+      expect(loader.loadExtensionData(classLoaded)).toMatchObject([]);
+    });
+
+    it('should handle a class extension with generics', async() => {
+      const classLoaded = await getClass(`
+export class A extends SuperA<string> {};
+export class SuperA<x>{};`);
+      expect(loader.loadExtensionData(classLoaded)).toMatchObject([
+        {
+          classLoaded: <any> {
+            localName: 'SuperA',
+          },
+          genericTypeInstantiations: [
+            {
+              type: 'raw',
+              value: 'string',
+            },
+          ],
+        },
+      ]);
+    });
+
+    it('should handle interface extensions with generics', async() => {
+      const classLoaded = await getClass(`
+export class A implements IFace1<string>, IFace2<number> {}
+export interface IFace1<x>{};
+export interface IFace2<x>{};`);
+      expect(loader.loadExtensionData(classLoaded)).toMatchObject([
+        {
+          classLoaded: <any> {
+            localName: 'IFace1',
+          },
+          genericTypeInstantiations: [
+            {
+              type: 'raw',
+              value: 'string',
+            },
+          ],
+        },
+        {
+          classLoaded: <any> {
+            localName: 'IFace2',
+          },
+          genericTypeInstantiations: [
+            {
+              type: 'raw',
+              value: 'number',
+            },
+          ],
+        },
+      ]);
+    });
+
+    it('should handle interface supers with generics', async() => {
+      const classLoaded = await getClass(`
+export interface A extends IFace1<string>, IFace2<number> {}
+export interface IFace1<x>{};
+export interface IFace2<x>{};`);
+      expect(loader.loadExtensionData(classLoaded)).toMatchObject([
+        {
+          classLoaded: <any> {
+            localName: 'IFace1',
+          },
+          genericTypeInstantiations: [
+            {
+              type: 'raw',
+              value: 'string',
+            },
+          ],
+        },
+        {
+          classLoaded: <any> {
+            localName: 'IFace2',
+          },
+          genericTypeInstantiations: [
+            {
+              type: 'raw',
+              value: 'number',
+            },
+          ],
+        },
+      ]);
+    });
+  });
+
   describe('loadConstructorFields', () => {
     const clazz: ClassReference = {
       packageName: 'p',
@@ -43,7 +266,7 @@ describe('ParameterLoader', () => {
         'file.d.ts': definition,
       };
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
-      const constructorChain = constructorLoader.getConstructorChain(classLoaded);
+      const constructorChain = constructorLoader.getConstructorChain({ value: classLoaded });
       const parameterLoader = new ParameterLoader({ commentLoader });
 
       return { constructorChain, parameterLoader, classLoaded };
@@ -790,7 +1013,7 @@ export interface A{
   fieldB: MyClass2;
 }`)).iface;
       iface.superInterfaces = [
-        ifaceSuper,
+        { value: ifaceSuper },
       ];
       expect(parameterLoader.loadInterfaceFields(iface)).toEqual([
         {
@@ -821,8 +1044,8 @@ export interface A{
   fieldD: MyClass4;
 }`)).iface;
       iface.superInterfaces = [
-        ifaceSuper1,
-        ifaceSuper2,
+        { value: ifaceSuper1 },
+        { value: ifaceSuper2 },
       ];
       expect(parameterLoader.loadInterfaceFields(iface)).toEqual([
         {
@@ -865,7 +1088,7 @@ export interface A{
 }`,
       };
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
-      const hash: TSTypeLiteral = (<any> constructorLoader.getConstructor(classLoaded)!.constructor
+      const hash: TSTypeLiteral = (<any> constructorLoader.getConstructor({ value: classLoaded })!.constructor
         .value.params[0]).typeAnnotation.typeAnnotation;
       const parameterLoader = new ParameterLoader({ commentLoader });
 
@@ -1310,7 +1533,7 @@ export interface A{
 }`,
       };
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
-      const field: Identifier = <any> (constructorLoader.getConstructor(classLoaded)!.constructor)
+      const field: Identifier = <any> (constructorLoader.getConstructor({ value: classLoaded })!.constructor)
         .value.params[0];
       const parameterLoader = new ParameterLoader({ commentLoader });
       return parameterLoader.getFieldRange(classLoaded, field, commentData);
@@ -1481,7 +1704,7 @@ export interface A{
 }`,
       };
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
-      const field: Identifier = <any> (constructorLoader.getConstructor(classLoaded)!.constructor)
+      const field: Identifier = <any> (constructorLoader.getConstructor({ value: classLoaded })!.constructor)
         .value.params[0];
       const parameterLoader = new ParameterLoader({ commentLoader });
 
@@ -1496,7 +1719,7 @@ export interface A{
 }`,
       };
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
-      const field: Identifier = <any> (constructorLoader.getConstructor(classLoaded)!.constructor)
+      const field: Identifier = <any> (constructorLoader.getConstructor({ value: classLoaded })!.constructor)
         .value.params[0];
       const parameterLoader = new ParameterLoader({ commentLoader });
 
@@ -1511,7 +1734,7 @@ export interface A{
 }`,
       };
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
-      const field: Identifier = <any> (constructorLoader.getConstructor(classLoaded)!.constructor)
+      const field: Identifier = <any> (constructorLoader.getConstructor({ value: classLoaded })!.constructor)
         .value.params[0];
       const parameterLoader = new ParameterLoader({ commentLoader });
 
@@ -1995,7 +2218,7 @@ export interface A{
 }`,
       };
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
-      const field: any = <any>(constructorLoader.getConstructor(classLoaded)!.constructor)
+      const field: any = <any>(constructorLoader.getConstructor({ value: classLoaded })!.constructor)
         .value.params[0];
       const indexSignature: TSIndexSignature = field.typeAnnotation.typeAnnotation.members[0];
       parameterLoader = new ParameterLoader({ commentLoader });
@@ -2055,7 +2278,7 @@ export interface A{
 }`,
       };
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
-      const field: any = <any>(constructorLoader.getConstructor(classLoaded)!.constructor)
+      const field: any = <any>(constructorLoader.getConstructor({ value: classLoaded })!.constructor)
         .value.params[0];
       const indexSignature: TSIndexSignature = field.typeAnnotation.typeAnnotation.members[0];
       const parameterLoader = new ParameterLoader({ commentLoader });
@@ -2097,7 +2320,7 @@ export interface A{
 }`,
       };
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
-      const field: Identifier = <any> (constructorLoader.getConstructor(classLoaded)!.constructor)
+      const field: Identifier = <any> (constructorLoader.getConstructor({ value: classLoaded })!.constructor)
         .value.params[0];
       const parameterLoader = new ParameterLoader({ commentLoader });
       const typeNode: TSTypeReference = <TSTypeReference> field.typeAnnotation!.typeAnnotation;

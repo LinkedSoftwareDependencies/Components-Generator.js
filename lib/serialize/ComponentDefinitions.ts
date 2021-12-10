@@ -19,13 +19,18 @@ export interface ComponentDefinition {
   '@id': string;
   '@type': string;
   requireElement: string;
-  extends?: string[];
+  extends?: ExtensionDefinition[];
   comment?: string;
   genericTypeParameters?: GenericTypeParameterDefinition[];
   parameters: ParameterDefinition[];
   memberKeys: string[];
   constructorArguments: ConstructorArgumentDefinition[];
 }
+
+export type ExtensionDefinition = string | {
+  component: string;
+  genericTypeInstances: ParameterDefinitionRange[];
+};
 
 export interface GenericTypeParameterDefinition {
   '@id': string;

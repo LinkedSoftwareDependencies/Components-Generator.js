@@ -33,7 +33,7 @@ describe('CommentLoader', () => {
         logger,
       }).loadClassChain(clazz);
       const constructorLoader = new ConstructorLoader({ commentLoader: loader });
-      const constructorChain = constructorLoader.getConstructorChain(classLoaded);
+      const constructorChain = constructorLoader.getConstructorChain({ value: classLoaded });
       return { loader, constructorChain, classLoaded };
     }
 
@@ -154,7 +154,7 @@ export class C{
       const classLoader = new ClassLoader({ resolutionContext, logger, commentLoader: loader });
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
       const constructorLoader = new ConstructorLoader({ commentLoader: loader });
-      const constructor = constructorLoader.getConstructor(classLoaded)!.constructor;
+      const constructor = constructorLoader.getConstructor({ value: classLoaded })!.constructor;
       return { loader, constructor, classLoaded };
     }
 
@@ -664,7 +664,7 @@ export class A{}`,
       const classLoader = new ClassLoader({ resolutionContext, logger, commentLoader: loader });
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
       const constructorLoader = new ConstructorLoader({ commentLoader: loader });
-      const field = <any> (constructorLoader.getConstructor(classLoaded)!.constructor).value.params[0];
+      const field = <any> (constructorLoader.getConstructor({ value: classLoaded })!.constructor).value.params[0];
       return { loader, field, classLoaded };
     }
 

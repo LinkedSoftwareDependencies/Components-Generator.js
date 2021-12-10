@@ -265,12 +265,56 @@ export class B{}
             type: 'ClassDeclaration',
           },
           superClass: {
-            packageName: 'package',
-            localName: 'B',
-            fileName: 'file',
-            declaration: {
-              id: { name: 'B' },
-              type: 'ClassDeclaration',
+            value: {
+              packageName: 'package',
+              localName: 'B',
+              fileName: 'file',
+              declaration: {
+                id: { name: 'B' },
+                type: 'ClassDeclaration',
+              },
+            },
+          },
+        });
+    });
+
+    it('for an exported class with super in current file with generics', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+export class A extends B<string>{}
+export class B<A>{}
+`,
+      };
+      expect(await indexer.loadClassChain({
+        packageName: 'package',
+        localName: 'A',
+        fileName: 'file',
+        fileNameReferenced: 'fileReferenced',
+      }))
+        .toMatchObject({
+          packageName: 'package',
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'ClassDeclaration',
+          },
+          superClass: {
+            value: {
+              packageName: 'package',
+              localName: 'B',
+              fileName: 'file',
+              declaration: {
+                id: { name: 'B' },
+                type: 'ClassDeclaration',
+              },
+            },
+            genericTypeInstantiations: {
+              params: [
+                {
+                  type: 'TSStringKeyword',
+                },
+              ],
             },
           },
         });
@@ -299,12 +343,14 @@ export { X as B } from './X'
             type: 'ClassDeclaration',
           },
           superClass: {
-            packageName: 'package',
-            localName: 'X',
-            fileName: 'X',
-            declaration: {
-              id: { name: 'X' },
-              type: 'ClassDeclaration',
+            value: {
+              packageName: 'package',
+              localName: 'X',
+              fileName: 'X',
+              declaration: {
+                id: { name: 'X' },
+                type: 'ClassDeclaration',
+              },
             },
           },
         });
@@ -334,12 +380,14 @@ export { X as B } from 'other-package'
             type: 'ClassDeclaration',
           },
           superClass: {
-            packageName: 'other-package',
-            localName: 'X',
-            fileName: '/some-dir/index',
-            declaration: {
-              id: { name: 'X' },
-              type: 'ClassDeclaration',
+            value: {
+              packageName: 'other-package',
+              localName: 'X',
+              fileName: '/some-dir/index',
+              declaration: {
+                id: { name: 'X' },
+                type: 'ClassDeclaration',
+              },
             },
           },
         });
@@ -368,12 +416,14 @@ export * from './X'
             type: 'ClassDeclaration',
           },
           superClass: {
-            packageName: 'package',
-            localName: 'X',
-            fileName: 'X',
-            declaration: {
-              id: { name: 'X' },
-              type: 'ClassDeclaration',
+            value: {
+              packageName: 'package',
+              localName: 'X',
+              fileName: 'X',
+              declaration: {
+                id: { name: 'X' },
+                type: 'ClassDeclaration',
+              },
             },
           },
         });
@@ -404,12 +454,14 @@ export * from './Z'
             type: 'ClassDeclaration',
           },
           superClass: {
-            packageName: 'package',
-            localName: 'X',
-            fileName: 'X',
-            declaration: {
-              id: { name: 'X' },
-              type: 'ClassDeclaration',
+            value: {
+              packageName: 'package',
+              localName: 'X',
+              fileName: 'X',
+              declaration: {
+                id: { name: 'X' },
+                type: 'ClassDeclaration',
+              },
             },
           },
         });
@@ -494,12 +546,58 @@ export interface B{}
           },
           implementsInterfaces: [
             {
-              packageName: 'package',
-              localName: 'B',
-              fileName: 'file',
-              declaration: {
-                id: { name: 'B' },
-                type: 'TSInterfaceDeclaration',
+              value: {
+                packageName: 'package',
+                localName: 'B',
+                fileName: 'file',
+                declaration: {
+                  id: { name: 'B' },
+                  type: 'TSInterfaceDeclaration',
+                },
+              },
+            },
+          ],
+        });
+    });
+
+    it('for an exported class with implements interface in current file with generics', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+export class A implements B<string>{}
+export interface B<X>{}
+`,
+      };
+      expect(await indexer.loadClassChain({
+        packageName: 'package',
+        localName: 'A',
+        fileName: 'file',
+        fileNameReferenced: 'fileReferenced',
+      }))
+        .toMatchObject({
+          packageName: 'package',
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'ClassDeclaration',
+          },
+          implementsInterfaces: [
+            {
+              value: {
+                packageName: 'package',
+                localName: 'B',
+                fileName: 'file',
+                declaration: {
+                  id: { name: 'B' },
+                  type: 'TSInterfaceDeclaration',
+                },
+              },
+              genericTypeInstantiations: {
+                params: [
+                  {
+                    type: 'TSStringKeyword',
+                  },
+                ],
               },
             },
           ],
@@ -530,12 +628,14 @@ export { X as B } from './X'
           },
           implementsInterfaces: [
             {
-              packageName: 'package',
-              localName: 'X',
-              fileName: 'X',
-              declaration: {
-                id: { name: 'X' },
-                type: 'TSInterfaceDeclaration',
+              value: {
+                packageName: 'package',
+                localName: 'X',
+                fileName: 'X',
+                declaration: {
+                  id: { name: 'X' },
+                  type: 'TSInterfaceDeclaration',
+                },
               },
             },
           ],
@@ -615,12 +715,14 @@ export class B{}
           },
           implementsInterfaces: [
             {
-              packageName: 'package',
-              localName: 'B',
-              fileName: 'file',
-              declaration: {
-                id: { name: 'B' },
-                type: 'ClassDeclaration',
+              value: {
+                packageName: 'package',
+                localName: 'B',
+                fileName: 'file',
+                declaration: {
+                  id: { name: 'B' },
+                  type: 'ClassDeclaration',
+                },
               },
             },
           ],
@@ -671,12 +773,58 @@ export interface B{}
           },
           superInterfaces: [
             {
-              packageName: 'package',
-              localName: 'B',
-              fileName: 'file',
-              declaration: {
-                id: { name: 'B' },
-                type: 'TSInterfaceDeclaration',
+              value: {
+                packageName: 'package',
+                localName: 'B',
+                fileName: 'file',
+                declaration: {
+                  id: { name: 'B' },
+                  type: 'TSInterfaceDeclaration',
+                },
+              },
+            },
+          ],
+        });
+    });
+
+    it('for an exported interface with super in current file with generics', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `
+export interface A extends B<string>{}
+export interface B<A>{}
+`,
+      };
+      expect(await indexer.loadClassChain({
+        packageName: 'package',
+        localName: 'A',
+        fileName: 'file',
+        fileNameReferenced: 'fileReferenced',
+      }))
+        .toMatchObject({
+          packageName: 'package',
+          localName: 'A',
+          fileName: 'file',
+          declaration: {
+            id: { name: 'A' },
+            type: 'TSInterfaceDeclaration',
+          },
+          superInterfaces: [
+            {
+              value: {
+                packageName: 'package',
+                localName: 'B',
+                fileName: 'file',
+                declaration: {
+                  id: { name: 'B' },
+                  type: 'TSInterfaceDeclaration',
+                },
+              },
+              genericTypeInstantiations: {
+                params: [
+                  {
+                    type: 'TSStringKeyword',
+                  },
+                ],
               },
             },
           ],
@@ -707,21 +855,25 @@ export interface C{}
           },
           superInterfaces: [
             {
-              packageName: 'package',
-              localName: 'B',
-              fileName: 'file',
-              declaration: {
-                id: { name: 'B' },
-                type: 'TSInterfaceDeclaration',
+              value: {
+                packageName: 'package',
+                localName: 'B',
+                fileName: 'file',
+                declaration: {
+                  id: { name: 'B' },
+                  type: 'TSInterfaceDeclaration',
+                },
               },
             },
             {
-              packageName: 'package',
-              localName: 'C',
-              fileName: 'file',
-              declaration: {
-                id: { name: 'C' },
-                type: 'TSInterfaceDeclaration',
+              value: {
+                packageName: 'package',
+                localName: 'C',
+                fileName: 'file',
+                declaration: {
+                  id: { name: 'C' },
+                  type: 'TSInterfaceDeclaration',
+                },
               },
             },
           ],
@@ -752,12 +904,14 @@ export { X as B } from './X'
           },
           superInterfaces: [
             {
-              packageName: 'package',
-              localName: 'X',
-              fileName: 'X',
-              declaration: {
-                id: { name: 'X' },
-                type: 'TSInterfaceDeclaration',
+              value: {
+                packageName: 'package',
+                localName: 'X',
+                fileName: 'X',
+                declaration: {
+                  id: { name: 'X' },
+                  type: 'TSInterfaceDeclaration',
+                },
               },
             },
           ],
@@ -789,12 +943,14 @@ export { X as B } from 'other-package'
           },
           superInterfaces: [
             {
-              packageName: 'other-package',
-              localName: 'X',
-              fileName: '/some-dir/index',
-              declaration: {
-                id: { name: 'X' },
-                type: 'TSInterfaceDeclaration',
+              value: {
+                packageName: 'other-package',
+                localName: 'X',
+                fileName: '/some-dir/index',
+                declaration: {
+                  id: { name: 'X' },
+                  type: 'TSInterfaceDeclaration',
+                },
               },
             },
           ],
@@ -825,12 +981,14 @@ export * from './X'
           },
           superInterfaces: [
             {
-              packageName: 'package',
-              localName: 'X',
-              fileName: 'X',
-              declaration: {
-                id: { name: 'X' },
-                type: 'TSInterfaceDeclaration',
+              value: {
+                packageName: 'package',
+                localName: 'X',
+                fileName: 'X',
+                declaration: {
+                  id: { name: 'X' },
+                  type: 'TSInterfaceDeclaration',
+                },
               },
             },
           ],
@@ -863,12 +1021,14 @@ export * from './Z'
           },
           superInterfaces: [
             {
-              packageName: 'package',
-              localName: 'X',
-              fileName: 'X',
-              declaration: {
-                id: { name: 'X' },
-                type: 'TSInterfaceDeclaration',
+              value: {
+                packageName: 'package',
+                localName: 'X',
+                fileName: 'X',
+                declaration: {
+                  id: { name: 'X' },
+                  type: 'TSInterfaceDeclaration',
+                },
               },
             },
           ],

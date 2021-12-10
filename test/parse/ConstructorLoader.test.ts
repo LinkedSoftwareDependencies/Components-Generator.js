@@ -285,14 +285,14 @@ export class B{
       resolutionContext.contentsOverrides = {
         'file.d.ts': `export class A{}`,
       };
-      expect(parser.getConstructor(
-        <ClassLoaded> await classIndexer.loadClassChain({
+      expect(parser.getConstructor({
+        value: <ClassLoaded> await classIndexer.loadClassChain({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
         }),
-      )).toBeUndefined();
+      })).toBeUndefined();
     });
 
     it('should return undefined on a class chain without constructors', async() => {
@@ -307,14 +307,14 @@ export class B extends C{}
 `,
         'C.d.ts': `export class C{}`,
       };
-      expect(parser.getConstructor(
-        <ClassLoaded> await classIndexer.loadClassChain({
+      expect(parser.getConstructor({
+        value: <ClassLoaded> await classIndexer.loadClassChain({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
         }),
-      )).toBeUndefined();
+      })).toBeUndefined();
     });
 
     it('should return on a class with a direct constructor', async() => {
@@ -330,10 +330,10 @@ class A{
         fileName: 'file',
         fileNameReferenced: 'fileReferenced',
       });
-      expect(parser.getConstructor(
-        classLoaded,
-      )).toMatchObject({
-        classLoaded,
+      expect(parser.getConstructor({
+        value: classLoaded,
+      })).toMatchObject({
+        classLoaded: { value: classLoaded },
         constructor: {
           computed: false,
           key: {
@@ -381,11 +381,13 @@ export class C{
         fileName: 'file',
         fileNameReferenced: 'fileReferenced',
       });
-      expect(parser.getConstructor(
-        classLoaded,
-      )).toMatchObject({
+      expect(parser.getConstructor({
+        value: classLoaded,
+      })).toMatchObject({
         classLoaded: {
-          localName: 'C',
+          value: {
+            localName: 'C',
+          },
         },
         constructor: {
           computed: false,

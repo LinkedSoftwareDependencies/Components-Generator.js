@@ -13,15 +13,14 @@ import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree'
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import type { Logger } from 'winston';
 import type { ResolutionContext } from '../resolution/ResolutionContext';
-import type {
-  ClassLoaded,
+import type { ClassLoaded,
   ClassReference,
   ClassReferenceLoaded,
   EnumLoaded,
   GenericTypes,
   InterfaceLoaded,
   TypeLoaded,
-} from './ClassIndex';
+  GenericallyTyped } from './ClassIndex';
 import type { CommentLoader } from './CommentLoader';
 
 /**
@@ -44,13 +43,16 @@ export class ClassLoader {
    * @param declaration A class declaration.
    * @param fileName The file name of the current class.
    */
-  public getSuperClassName(declaration: ClassDeclaration, fileName: string): string | undefined {
+  public getSuperClassName(declaration: ClassDeclaration, fileName: string): GenericallyTyped<string> | undefined {
     if (!declaration.superClass) {
       return;
     }
     if (declaration.superClass.type === AST_NODE_TYPES.Identifier) {
       // Extensions in the form of `class A extends B`
-      return declaration.superClass.name;
+      return {
+        value: declaration.superClass.name,
+        genericTypeInstantiations: declaration.superTypeParameters,
+      };
     }
     if (declaration.superClass.type === AST_NODE_TYPES.MemberExpression &&
       declaration.superClass.property.type === AST_NODE_TYPES.Identifier &&
@@ -67,14 +69,17 @@ export class ClassLoader {
    * @param declaration An interface declaration.
    * @param fileName The file name of the current class.
    */
-  public getSuperInterfaceNames(declaration: TSInterfaceDeclaration, fileName: string): string[] {
-    return <string[]> (declaration.extends || [])
+  public getSuperInterfaceNames(declaration: TSInterfaceDeclaration, fileName: string): GenericallyTyped<string>[] {
+    return <GenericallyTyped<string>[]> (declaration.extends || [])
       // eslint-disable-next-line array-callback-return
       .map(extendsExpression => {
         if (extendsExpression.type === AST_NODE_TYPES.TSInterfaceHeritage &&
           extendsExpression.expression.type === AST_NODE_TYPES.Identifier) {
           // Extensions in the form of `interface A extends B`
-          return extendsExpression.expression.name;
+          return {
+            value: extendsExpression.expression.name,
+            genericTypeInstantiations: extendsExpression.typeParameters,
+          };
         }
         // Ignore interfaces that we don't understand
         this.logger.debug(`Ignored an interface expression of unknown type ${extendsExpression.expression.type} on ${declaration.id.name}`);
@@ -87,14 +92,17 @@ export class ClassLoader {
    * @param declaration A class declaration.
    * @param fileName The file name of the current class.
    */
-  public getClassInterfaceNames(declaration: ClassDeclaration, fileName: string): string[] {
-    const interfaceNames = [];
+  public getClassInterfaceNames(declaration: ClassDeclaration, fileName: string): GenericallyTyped<string>[] {
+    const interfaceNames: GenericallyTyped<string>[] = [];
     if (declaration.implements) {
       for (const implement of declaration.implements) {
         if (implement.expression.type !== AST_NODE_TYPES.Identifier) {
           throw new Error(`Could not interpret the implements type on a class in ${fileName} on line ${implement.expression.loc.start.line} column ${implement.expression.loc.start.column}`);
         }
-        interfaceNames.push(implement.expression.name);
+        interfaceNames.push({
+          value: implement.expression.name,
+          genericTypeInstantiations: implement.typeParameters,
+        });
       }
     }
     return interfaceNames;

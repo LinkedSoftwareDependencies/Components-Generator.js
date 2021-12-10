@@ -1,7 +1,7 @@
 import type { ClassDeclaration, MethodDefinition } from '@typescript-eslint/types/dist/ts-estree';
 import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import type { ClassIndex, ClassLoaded, ClassReferenceLoaded } from './ClassIndex';
+import type { ClassIndex, ClassLoaded, ClassReferenceLoaded, GenericallyTyped } from './ClassIndex';
 import type { CommentLoader } from './CommentLoader';
 import type { GenericTypeParameterData, ParameterDataField, ParameterRangeUnresolved } from './ParameterLoader';
 import { ParameterLoader } from './ParameterLoader';
@@ -26,12 +26,16 @@ export class ConstructorLoader {
     const constructorDataIndex: ClassIndex<ConstructorData<ParameterRangeUnresolved>> = {};
     for (const [ className, classLoadedRoot ] of Object.entries(classIndex)) {
       // Initialize default value
-      constructorDataIndex[className] = { genericTypeParameters: [], parameters: [], classLoaded: classLoadedRoot };
+      constructorDataIndex[className] = {
+        genericTypeParameters: [],
+        parameters: [],
+        classLoaded: classLoadedRoot,
+      };
 
       // Fill in constructor data if we're loading a class, and we find a constructor in the inheritance chain.
       if (classLoadedRoot.type === 'class') {
         const parameterLoader = new ParameterLoader({ commentLoader: this.commentLoader });
-        const constructorChain = this.getConstructorChain(classLoadedRoot);
+        const constructorChain = this.getConstructorChain({ value: classLoadedRoot });
         if (constructorChain.length > 0) {
           constructorDataIndex[className] = parameterLoader.loadConstructorFields(constructorChain);
         }
@@ -44,13 +48,13 @@ export class ConstructorLoader {
    * Load the superclass chain of constructor holders starting from the given class.
    * @param classLoaded The class to start from.
    */
-  public getConstructorChain(classLoaded: ClassLoaded): ConstructorHolder[] {
+  public getConstructorChain(classLoaded: GenericallyTyped<ClassLoaded>): ConstructorHolder[] {
     const constructorData = this.getConstructor(classLoaded);
     const chain: ConstructorHolder[] = [];
     if (constructorData) {
       chain.push(constructorData);
-      if (constructorData.classLoaded.superClass) {
-        chain.push(...this.getConstructorChain(constructorData.classLoaded.superClass));
+      if (constructorData.classLoaded.value.superClass) {
+        chain.push(...this.getConstructorChain(constructorData.classLoaded.value.superClass));
       }
     }
     return chain;
@@ -61,16 +65,17 @@ export class ConstructorLoader {
    * Can be undefined if no explicit constructor exists in this class or any of its super classes.
    * @param classLoaded A loaded class reference.
    */
-  public getConstructor(classLoaded: ClassLoaded): ConstructorHolder | undefined {
+  public getConstructor(classLoaded: GenericallyTyped<ClassLoaded>): ConstructorHolder | undefined {
     // First look for the constructor in this class
-    let constructor: MethodDefinition | undefined = this.getConstructorInClass(classLoaded.declaration);
+    let constructor: MethodDefinition | undefined = this.getConstructorInClass(classLoaded.value.declaration);
 
     // If no constructor was found, look in the super class
     if (!constructor) {
-      if (classLoaded.superClass) {
-        const constructorDataSuper = this.getConstructor(classLoaded.superClass);
+      if (classLoaded.value.superClass) {
+        const constructorDataSuper = this.getConstructor(classLoaded.value.superClass);
         if (constructorDataSuper) {
-          ({ constructor, classLoaded } = constructorDataSuper);
+          constructor = constructorDataSuper.constructor;
+          classLoaded = constructorDataSuper.classLoaded;
         }
       }
     }
@@ -137,5 +142,5 @@ export interface ConstructorData<R> {
  */
 export interface ConstructorHolder {
   constructor: MethodDefinition;
-  classLoaded: ClassLoaded;
+  classLoaded: GenericallyTyped<ClassLoaded>;
 }

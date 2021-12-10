@@ -88,8 +88,15 @@ describe('ParameterResolver', () => {
     const classLoaded: ClassLoaded = <any>{ localName: 'A', fileName: 'A' };
 
     it('should handle an empty array', async() => {
-      expect(await loader.resolveConstructorParameters({ classLoaded, genericTypeParameters: [], parameters: []}))
-        .toEqual({ classLoaded, genericTypeParameters: [], parameters: []});
+      expect(await loader.resolveConstructorParameters({
+        classLoaded,
+        genericTypeParameters: [],
+        parameters: [],
+      })).toEqual({
+        classLoaded,
+        genericTypeParameters: [],
+        parameters: [],
+      });
     });
 
     it('should handle a raw parameter', async() => {
@@ -359,6 +366,139 @@ describe('ParameterResolver', () => {
             type: 'class',
             value: { localName: 'MyClass', fileName: 'MyClass' },
           },
+        },
+      ]);
+    });
+  });
+
+  describe('resolveAllExtensionData', () => {
+    it('should handle an empty index', async() => {
+      expect(await loader.resolveAllExtensionData({}, {}))
+        .toEqual({});
+    });
+
+    it('should handle a non-empty simple index', async() => {
+      const iface1 = <any> {};
+      const iface2 = <any> {};
+      expect(await loader.resolveAllExtensionData({
+        A: [
+          {
+            classLoaded: iface1,
+            genericTypeInstantiations: [
+              {
+                type: 'raw',
+                value: 'string',
+              },
+            ],
+          },
+          {
+            classLoaded: iface2,
+            genericTypeInstantiations: [
+              {
+                type: 'raw',
+                value: 'number',
+              },
+            ],
+          },
+        ],
+      }, {
+        A: <any> { type: 'class', localName: 'A', fileName: 'A' },
+      })).toEqual({
+        A: [
+          {
+            classLoaded: iface1,
+            genericTypeInstantiations: [
+              {
+                type: 'raw',
+                value: 'string',
+              },
+            ],
+          },
+          {
+            classLoaded: iface2,
+            genericTypeInstantiations: [
+              {
+                type: 'raw',
+                value: 'number',
+              },
+            ],
+          },
+        ],
+      });
+    });
+  });
+
+  describe('resolveExtensionData', () => {
+    const classReference: ClassReferenceLoaded = <any>{ localName: 'A', fileName: 'A' };
+
+    it('should handle an empty array', async() => {
+      expect(await loader.resolveExtensionData([], classReference, {})).toEqual([]);
+    });
+
+    it('should handle empty generic type instantiations', async() => {
+      const iface1 = <any> {};
+      const iface2 = <any> {};
+      expect(await loader.resolveExtensionData([
+        {
+          classLoaded: iface1,
+          genericTypeInstantiations: [],
+        },
+        {
+          classLoaded: iface2,
+          genericTypeInstantiations: [],
+        },
+      ], classReference, {})).toEqual([
+        {
+          classLoaded: iface1,
+          genericTypeInstantiations: [],
+        },
+        {
+          classLoaded: iface2,
+          genericTypeInstantiations: [],
+        },
+      ]);
+    });
+
+    it('should handle raw generic type instantiations', async() => {
+      const iface1 = <any> {};
+      const iface2 = <any> {};
+      expect(await loader.resolveExtensionData([
+        {
+          classLoaded: iface1,
+          genericTypeInstantiations: [
+            {
+              type: 'raw',
+              value: 'string',
+            },
+          ],
+        },
+        {
+          classLoaded: iface2,
+          genericTypeInstantiations: [
+            {
+              type: 'raw',
+              value: 'number',
+            },
+          ],
+        },
+      ], classReference, {})).toEqual([
+        {
+          classLoaded: iface1,
+          genericTypeInstantiations: [
+            {
+              type: 'raw',
+              value: 'string',
+            },
+          ],
+        },
+        {
+          classLoaded: iface2,
+          genericTypeInstantiations: [
+            {
+              type: 'raw',
+              value: 'number',
+            },
+          ],
         },
       ]);
     });
@@ -1332,14 +1472,64 @@ declare interface C{}
           type: 'interface',
           superInterfaces: [
             {
-              fileName: 'A',
-              localName: 'B',
-              type: 'interface',
+              value: {
+                fileName: 'A',
+                localName: 'B',
+                type: 'interface',
+              },
             },
             {
-              fileName: 'A',
-              localName: 'C',
-              type: 'interface',
+              value: {
+                fileName: 'A',
+                localName: 'C',
+                type: 'interface',
+              },
+            },
+          ],
+        });
+    });
+
+    it('should load an interface with supers with generics', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `
+export interface A extends B<string>, C<number>{}
+export interface B<X>{}
+declare interface C<X>{}
+`,
+      };
+      expect(await loader.loadClassOrInterfacesChain(classReference))
+        .toMatchObject({
+          fileName: 'A',
+          localName: 'A',
+          type: 'interface',
+          superInterfaces: [
+            {
+              value: {
+                fileName: 'A',
+                localName: 'B',
+                type: 'interface',
+              },
+              genericTypeInstantiations: {
+                params: [
+                  {
+                    type: 'TSStringKeyword',
+                  },
+                ],
+              },
+            },
+            {
+              value: {
+                fileName: 'A',
+                localName: 'C',
+                type: 'interface',
+              },
+              genericTypeInstantiations: {
+                params: [
+                  {
+                    type: 'TSNumberKeyword',
+                  },
+                ],
+              },
             },
           ],
         });
@@ -1361,9 +1551,11 @@ declare interface C{}
           type: 'interface',
           superInterfaces: [
             {
-              fileName: 'A',
-              localName: 'B',
-              type: 'interface',
+              value: {
+                fileName: 'A',
+                localName: 'B',
+                type: 'interface',
+              },
             },
           ],
         });
@@ -1386,14 +1578,18 @@ export interface A extends B, C{}
           type: 'interface',
           superInterfaces: [
             {
-              fileName: 'B',
-              localName: 'B',
-              type: 'interface',
+              value: {
+                fileName: 'B',
+                localName: 'B',
+                type: 'interface',
+              },
             },
             {
-              fileName: 'C',
-              localName: 'C',
-              type: 'interface',
+              value: {
+                fileName: 'C',
+                localName: 'C',
+                type: 'interface',
+              },
             },
           ],
         });
@@ -1418,16 +1614,20 @@ export interface B extends C{}
           type: 'interface',
           superInterfaces: [
             {
-              fileName: 'B',
-              localName: 'B',
-              type: 'interface',
-              superInterfaces: [
-                {
-                  fileName: 'C',
-                  localName: 'C',
-                  type: 'interface',
-                },
-              ],
+              value: {
+                fileName: 'B',
+                localName: 'B',
+                type: 'interface',
+                superInterfaces: [
+                  {
+                    value: {
+                      fileName: 'C',
+                      localName: 'C',
+                      type: 'interface',
+                    },
+                  },
+                ],
+              },
             },
           ],
         });
@@ -1461,14 +1661,18 @@ declare interface C{}
           type: 'interface',
           superInterfaces: [
             {
-              fileName: 'A',
-              localName: 'B',
-              type: 'interface',
+              value: {
+                fileName: 'A',
+                localName: 'B',
+                type: 'interface',
+              },
             },
             {
-              fileName: 'A',
-              localName: 'C',
-              type: 'interface',
+              value: {
+                fileName: 'A',
+                localName: 'C',
+                type: 'interface',
+              },
             },
           ],
         });
@@ -1799,7 +2003,7 @@ export class A{
 }`;
       const classLoaded = await classLoader.loadClassDeclaration(classReference, false, false);
       const hash: TSTypeLiteral = (<any> (new ConstructorLoader({ commentLoader })
-        .getConstructor(classLoaded)!.constructor)
+        .getConstructor({ value: classLoaded })!.constructor)
         .value.params[0]).typeAnnotation.typeAnnotation;
 
       return { hash, owningClass: classLoaded };

@@ -9,20 +9,18 @@ import type {
 } from '../parse/ClassIndex';
 import type { ConstructorData } from '../parse/ConstructorLoader';
 import type { PackageMetadata } from '../parse/PackageMetadataLoader';
-import type {
-  DefaultNested,
+import type { DefaultNested,
   DefaultValue,
   GenericTypeParameterData,
   ParameterData,
   ParameterRangeResolved,
-} from '../parse/ParameterLoader';
+  ExtensionData } from '../parse/ParameterLoader';
 import type { ExternalComponents } from '../resolution/ExternalModulesLoader';
 import type { ComponentDefinition,
   ComponentDefinitions, ComponentDefinitionsIndex,
   ConstructorArgumentDefinition, ConstructorFieldDefinition, DefaultValueDefinition,
   ParameterDefinition, ParameterDefinitionRange,
-  GenericTypeParameterDefinition } from './ComponentDefinitions';
-
+  GenericTypeParameterDefinition, ExtensionDefinition } from './ComponentDefinitions';
 import { ContextConstructor } from './ContextConstructor';
 
 /**
@@ -35,6 +33,7 @@ export class ComponentConstructor {
   private readonly pathDestination: PathDestinationDefinition;
   private readonly classAndInterfaceIndex: ClassIndex<ClassReferenceLoadedClassOrInterface>;
   private readonly classConstructors: ClassIndex<ConstructorData<ParameterRangeResolved>>;
+  private readonly classExtensions: ClassIndex<ExtensionData<ParameterRangeResolved>[]>;
   private readonly externalComponents: ExternalComponents;
   private readonly contextParser: ContextParser;
 
@@ -45,6 +44,7 @@ export class ComponentConstructor {
     this.pathDestination = args.pathDestination;
     this.classAndInterfaceIndex = args.classAndInterfaceIndex;
     this.classConstructors = args.classConstructors;
+    this.classExtensions = args.classExtensions;
     this.externalComponents = args.externalComponents;
     this.contextParser = args.contextParser;
   }
@@ -84,6 +84,7 @@ export class ComponentConstructor {
         },
         classReference,
         this.classConstructors[className],
+        this.classExtensions[className],
       ));
     }
 
@@ -165,12 +166,14 @@ export class ComponentConstructor {
    * @param externalContextsCallback Callback for external contexts.
    * @param classReference Class reference of the class component.
    * @param constructorData Constructor data of the owning class.
+   * @param classExtensions Class extensions of the owning class.
    */
   public async constructComponent(
     context: JsonLdContextNormalized,
     externalContextsCallback: ExternalContextCallback,
     classReference: ClassReferenceLoadedClassOrInterface,
     constructorData: ConstructorData<ParameterRangeResolved> | undefined,
+    classExtensions: ExtensionData<ParameterRangeResolved>[] | undefined,
   ): Promise<ComponentDefinition> {
     // Determine generic type parameters
     const genericTypeParameters = constructorData ?
@@ -197,25 +200,10 @@ export class ComponentConstructor {
 
     // Determine extends field based on super class and implementing interfaces.
     // Components.js makes no distinction between a super class and implementing interface, so we merge them here.
-    let ext: string[] | undefined;
-    if (classReference.type === 'class') {
-      if (classReference.superClass || classReference.implementsInterfaces) {
-        ext = [];
-        if (classReference.superClass) {
-          ext.push(await this.classNameToId(context, externalContextsCallback, classReference.superClass));
-        }
-        if (classReference.implementsInterfaces) {
-          for (const iface of classReference.implementsInterfaces) {
-            ext.push(await this.classNameToId(context, externalContextsCallback, iface));
-          }
-        }
-      }
-    } else if (classReference.superInterfaces) {
-      ext = [];
-      for (const iface of classReference.superInterfaces) {
-        ext.push(await this.classNameToId(context, externalContextsCallback, iface));
-      }
-    }
+    const ext: ExtensionDefinition[] | undefined = classExtensions && classExtensions.length > 0 ?
+      await Promise.all(classExtensions.map(async classExtension => await this
+        .constructExtensionDefinition(context, externalContextsCallback, classExtension))) :
+      undefined;
 
     // Obtain the keys of all members
     const memberKeys = classReference.memberKeys;
@@ -232,6 +220,33 @@ export class ComponentConstructor {
       memberKeys,
       constructorArguments,
     };
+  }
+
+  /**
+   * Construct a compacted class IRI.
+   * @param context A parsed JSON-LD context.
+   * @param externalContextsCallback Callback for external contexts.
+   * @param extensionData The extension data.
+   */
+  public async constructExtensionDefinition(
+    context: JsonLdContextNormalized,
+    externalContextsCallback: ExternalContextCallback,
+    extensionData: ExtensionData<ParameterRangeResolved>,
+  ): Promise<ExtensionDefinition> {
+    const id = await this.classNameToId(context, externalContextsCallback, extensionData.classLoaded);
+    if (extensionData.genericTypeInstantiations.length > 0) {
+      return {
+        component: id,
+        genericTypeInstances: await Promise.all(extensionData.genericTypeInstantiations
+          .map(async genericTypeInstantiation => this.constructParameterRange(
+            genericTypeInstantiation,
+            context,
+            externalContextsCallback,
+            '',
+          ))),
+      };
+    }
+    return id;
   }
 
   /**
@@ -782,6 +797,7 @@ export interface ComponentConstructorArgs {
   pathDestination: PathDestinationDefinition;
   classAndInterfaceIndex: ClassIndex<ClassReferenceLoadedClassOrInterface>;
   classConstructors: ClassIndex<ConstructorData<ParameterRangeResolved>>;
+  classExtensions: ClassIndex<ExtensionData<ParameterRangeResolved>[]>;
   externalComponents: ExternalComponents;
   contextParser: ContextParser;
 }

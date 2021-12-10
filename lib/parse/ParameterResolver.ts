@@ -5,6 +5,7 @@ import type { ClassLoader } from './ClassLoader';
 import type { CommentLoader } from './CommentLoader';
 import type { ConstructorData } from './ConstructorLoader';
 import type {
+  ExtensionData,
   GenericTypeParameterData,
   ParameterData,
   ParameterDataField,
@@ -100,6 +101,48 @@ export class ParameterResolver {
         ...parameter,
         range: await this.resolveRange(parameter.range, owningClass, genericTypeRemappings),
       })));
+  }
+
+  /**
+   * Resolve all extension data of a given constructor index.
+   * @param unresolvedExtensionData An index of unresolved constructor data.
+   * @param classIndex The class index containing the owning class references.
+   */
+  public async resolveAllExtensionData(
+    unresolvedExtensionData: ClassIndex<ExtensionData<ParameterRangeUnresolved>[]>,
+    classIndex: ClassIndex<ClassReferenceLoaded>,
+  ): Promise<ClassIndex<ExtensionData<ParameterRangeResolved>[]>> {
+    const resolvedIndex: ClassIndex<ExtensionData<ParameterRangeResolved>[]> = {};
+
+    // Resolve parameters for the different constructors in parallel
+    await Promise.all(Object.entries(unresolvedExtensionData)
+      .map(async([ className, extensionData ]) => {
+        resolvedIndex[className] = await this.resolveExtensionData(extensionData, classIndex[className], {});
+      }));
+
+    return resolvedIndex;
+  }
+
+  /**
+   * Resolve the given array of generic type parameter data in parallel.
+   * @param extensionDatas The extensions of the class.
+   * @param owningClass The class in which the given generic type parameters are declared.
+   * @param genericTypeRemappings A remapping of generic type names.
+   */
+  public async resolveExtensionData(
+    extensionDatas: ExtensionData<ParameterRangeUnresolved>[],
+    owningClass: ClassReferenceLoaded,
+    genericTypeRemappings: Record<string, ParameterRangeUnresolved>,
+  ): Promise<ExtensionData<ParameterRangeResolved>[]> {
+    return await Promise.all(extensionDatas.map(async extensionData => ({
+      classLoaded: extensionData.classLoaded,
+      genericTypeInstantiations: await Promise.all(extensionData.genericTypeInstantiations
+        .map(async genericTypeInstantiation => await this.resolveRange(
+          genericTypeInstantiation,
+          owningClass,
+          genericTypeRemappings,
+        ))),
+    })));
   }
 
   protected isIgnored(qualifiedPath: string[] | undefined, className: string): boolean {
@@ -307,19 +350,19 @@ export class ParameterResolver {
     if (classOrInterface.type === 'interface') {
       classOrInterface.superInterfaces = await Promise.all(this.classLoader
         .getSuperInterfaceNames(classOrInterface.declaration, classOrInterface.fileName)
-        .filter(interfaceName => !this.isIgnored(undefined, interfaceName))
+        .filter(interfaceName => !this.isIgnored(undefined, interfaceName.value))
         .map(async interfaceName => {
           const superInterface = await this.loadClassOrInterfacesChain({
             packageName: classOrInterface.packageName,
-            localName: interfaceName,
+            localName: interfaceName.value,
             qualifiedPath: classReference.qualifiedPath,
             fileName: classOrInterface.fileName,
             fileNameReferenced: classOrInterface.fileNameReferenced,
           });
           if (superInterface.type !== 'interface') {
-            throw new Error(`Detected interface ${classOrInterface.localName} extending from a non-interface ${interfaceName} in ${classReference.fileName}`);
+            throw new Error(`Detected interface ${classOrInterface.localName} extending from a non-interface ${interfaceName.value} in ${classReference.fileName}`);
           }
-          return superInterface;
+          return { value: superInterface, genericTypeInstantiations: interfaceName.genericTypeInstantiations };
         }));
     }
 

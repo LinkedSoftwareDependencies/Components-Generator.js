@@ -10,6 +10,7 @@ import { CommentLoader } from '../parse/CommentLoader';
 import { ConstructorLoader } from '../parse/ConstructorLoader';
 import type { PackageMetadata } from '../parse/PackageMetadataLoader';
 import { PackageMetadataLoader } from '../parse/PackageMetadataLoader';
+import { ParameterLoader } from '../parse/ParameterLoader';
 import { ParameterResolver } from '../parse/ParameterResolver';
 import { ExternalModulesLoader } from '../resolution/ExternalModulesLoader';
 import type { ResolutionContext } from '../resolution/ResolutionContext';
@@ -47,6 +48,12 @@ export class Generator {
     const classLoader = new ClassLoader({ resolutionContext: this.resolutionContext, logger, commentLoader });
     const classFinder = new ClassFinder({ classLoader });
     const classIndexer = new ClassIndexer({ classLoader, classFinder, ignoreClasses: this.ignoreClasses, logger });
+    const parameterLoader = new ParameterLoader({ commentLoader });
+    const parameterResolver = new ParameterResolver({
+      classLoader,
+      commentLoader,
+      ignoreClasses: this.ignoreClasses,
+    });
 
     // Preload package metadata for all provided paths
     const { packageMetadatas, pathMetadatas } = await new BulkPackageMetadataLoader({
@@ -73,11 +80,11 @@ export class Generator {
 
       // Load constructor data
       const constructorsUnresolved = new ConstructorLoader({ commentLoader }).getConstructors(classAndInterfaceIndex);
-      const constructors = await new ParameterResolver({
-        classLoader,
-        commentLoader,
-        ignoreClasses: this.ignoreClasses,
-      }).resolveAllConstructorParameters(constructorsUnresolved);
+      const constructors = await parameterResolver.resolveAllConstructorParameters(constructorsUnresolved);
+
+      // Load extensions data
+      const extensionsUnresolved = parameterLoader.loadAllExtensionData(classAndInterfaceIndex);
+      const extensions = await parameterResolver.resolveAllExtensionData(extensionsUnresolved, classAndInterfaceIndex);
 
       // Load external components
       const externalModulesLoader = new ExternalModulesLoader({
@@ -99,6 +106,7 @@ export class Generator {
         contextConstructor,
         pathDestination,
         classAndInterfaceIndex,
+        classExtensions: extensions,
         classConstructors: constructors,
         externalComponents,
         contextParser: new ContextParser({

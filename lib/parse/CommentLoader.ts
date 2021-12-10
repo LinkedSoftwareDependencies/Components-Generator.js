@@ -19,7 +19,7 @@ export class CommentLoader {
     // the highest priority in setting comment data.
     return constructorChain
       .map(constructorHolder => this.getCommentDataFromConstructorSingle(
-        constructorHolder.classLoaded,
+        constructorHolder.classLoaded.value,
         constructorHolder.constructor,
       ))
       .reduce<ConstructorCommentData>((acc, commentData) => {

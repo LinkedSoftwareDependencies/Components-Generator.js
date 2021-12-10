@@ -163,9 +163,11 @@ describe('ExternalModulesLoader', () => {
           localName: 'Class1',
           packageName: 'package1',
           superClass: {
-            type: 'class',
-            localName: 'Class2',
-            packageName: 'package2',
+            value: {
+              type: 'class',
+              localName: 'Class2',
+              packageName: 'package2',
+            },
           },
         },
         Class3: {
@@ -173,9 +175,11 @@ describe('ExternalModulesLoader', () => {
           localName: 'Class1',
           packageName: 'package2',
           superClass: {
-            type: 'class',
-            localName: 'Class4',
-            packageName: 'my-package',
+            value: {
+              type: 'class',
+              localName: 'Class4',
+              packageName: 'my-package',
+            },
           },
         },
       };
@@ -194,9 +198,11 @@ describe('ExternalModulesLoader', () => {
           packageName: 'package1',
           implementsInterfaces: [
             {
-              type: 'interface',
-              localName: 'Interface2',
-              packageName: 'package2',
+              value: {
+                type: 'interface',
+                localName: 'Interface2',
+                packageName: 'package2',
+              },
             },
           ],
         },
@@ -206,9 +212,11 @@ describe('ExternalModulesLoader', () => {
           packageName: 'package2',
           implementsInterfaces: [
             {
-              type: 'interface',
-              localName: 'Interface4',
-              packageName: 'my-package',
+              value: {
+                type: 'interface',
+                localName: 'Interface4',
+                packageName: 'my-package',
+              },
             },
           ],
         },

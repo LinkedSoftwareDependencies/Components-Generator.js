@@ -6,10 +6,10 @@ import type {
   ClassIndex,
   ClassLoaded,
   ClassReferenceLoaded, ClassReferenceLoadedClassOrInterface,
-  InterfaceLoaded,
 } from '../../lib/parse/ClassIndex';
 import type { ConstructorData } from '../../lib/parse/ConstructorLoader';
-import type { ParameterData, ParameterRangeResolved } from '../../lib/parse/ParameterLoader';
+import type { ParameterData, ParameterRangeResolved, ExtensionData } from '../../lib/parse/ParameterLoader';
+
 import type { ExternalComponents } from '../../lib/resolution/ExternalModulesLoader';
 import type {
   FieldScope,
@@ -83,6 +83,7 @@ describe('ComponentConstructor', () => {
       pathDestination,
       classAndInterfaceIndex: {},
       classConstructors: {},
+      classExtensions: {},
       externalComponents,
       contextParser,
     });
@@ -288,11 +289,6 @@ describe('ComponentConstructor', () => {
           packageName: 'my-package',
           localName: 'MyClass1',
           fileName: Path.normalize('/docs/package/src/b/file'),
-          superClass: {
-            packageName: 'other-package',
-            localName: 'MyClass',
-            fileName: Path.normalize('/docs/package/src/b/file'),
-          },
           generics: {},
         },
         MyClass2: {
@@ -300,11 +296,6 @@ describe('ComponentConstructor', () => {
           packageName: 'my-package',
           localName: 'MyClass2',
           fileName: Path.normalize('/docs/package/src/b/file'),
-          superClass: {
-            packageName: 'other-package',
-            localName: 'MyClass',
-            fileName: Path.normalize('/docs/package/src/b/file'),
-          },
           generics: {},
         },
       };
@@ -332,6 +323,28 @@ describe('ComponentConstructor', () => {
             },
           ],
         },
+      };
+      (<any> ctor).classExtensions = <ClassIndex<ExtensionData<ParameterRangeResolved>[]>> {
+        MyClass1: [
+          {
+            classLoaded: <any> {
+              packageName: 'other-package',
+              localName: 'MyClass',
+              fileName: Path.normalize('/docs/package/src/b/file'),
+            },
+            genericTypeInstantiations: [],
+          },
+        ],
+        MyClass2: [
+          {
+            classLoaded: <any> {
+              packageName: 'other-package',
+              localName: 'MyClass',
+              fileName: Path.normalize('/docs/package/src/b/file'),
+            },
+            genericTypeInstantiations: [],
+          },
+        ],
       };
       externalComponents.components['other-package'] = {
         contextIris: [ 'http://example.org/context-other-package.jsonld' ],
@@ -574,7 +587,7 @@ describe('ComponentConstructor', () => {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         genericTypeParameters: [],
         parameters: [],
-      })).toEqual({
+      }, [])).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [],
@@ -601,7 +614,7 @@ describe('ComponentConstructor', () => {
             comment: 'Hi2',
           },
         ],
-      })).toEqual({
+      }, [])).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [
@@ -630,7 +643,7 @@ describe('ComponentConstructor', () => {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         genericTypeParameters: [],
         parameters: [],
-      })).toEqual({
+      }, [])).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'AbstractClass',
         constructorArguments: [],
@@ -640,16 +653,20 @@ describe('ComponentConstructor', () => {
     });
 
     it('should handle a component with super class', async() => {
-      (<ClassLoaded> classReference).superClass = <any> {
-        packageName: 'my-package',
-        localName: 'SuperClass',
-        fileName: Path.normalize('/docs/package/src/a/b/SuperFile'),
-      };
       expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         genericTypeParameters: [],
         parameters: [],
-      })).toEqual({
+      }, [
+        {
+          classLoaded: <any> {
+            packageName: 'my-package',
+            localName: 'SuperClass',
+            fileName: Path.normalize('/docs/package/src/a/b/SuperFile'),
+          },
+          genericTypeInstantiations: [],
+        },
+      ])).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [],
@@ -660,65 +677,34 @@ describe('ComponentConstructor', () => {
     });
 
     it('should handle a component with implementing interfaces', async() => {
-      (<ClassLoaded> classReference).implementsInterfaces = <any> [
-        {
-          packageName: 'my-package',
-          localName: 'SuperInterface1',
-          fileName: Path.normalize('/docs/package/src/a/b/SuperFile1'),
-        },
-        {
-          packageName: 'my-package',
-          localName: 'SuperInterface2',
-          fileName: Path.normalize('/docs/package/src/a/b/SuperFile2'),
-        },
-      ];
       expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         genericTypeParameters: [],
         parameters: [],
-      })).toEqual({
+      }, [
+        {
+          classLoaded: <any> {
+            packageName: 'my-package',
+            localName: 'SuperInterface1',
+            fileName: Path.normalize('/docs/package/src/a/b/SuperFile1'),
+          },
+          genericTypeInstantiations: [],
+        },
+        {
+          classLoaded: <any> {
+            packageName: 'my-package',
+            localName: 'SuperInterface2',
+            fileName: Path.normalize('/docs/package/src/a/b/SuperFile2'),
+          },
+          genericTypeInstantiations: [],
+        },
+      ])).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [],
         parameters: [],
         requireElement: 'MyClass',
         extends: [
-          'mp:components/a/b/SuperFile1.jsonld#SuperInterface1',
-          'mp:components/a/b/SuperFile2.jsonld#SuperInterface2',
-        ],
-      });
-    });
-
-    it('should handle a component with super class and implementing interfaces', async() => {
-      (<ClassLoaded> classReference).superClass = <any> {
-        packageName: 'my-package',
-        localName: 'SuperClass',
-        fileName: Path.normalize('/docs/package/src/a/b/SuperFile'),
-      };
-      (<ClassLoaded> classReference).implementsInterfaces = <any> [
-        {
-          packageName: 'my-package',
-          localName: 'SuperInterface1',
-          fileName: Path.normalize('/docs/package/src/a/b/SuperFile1'),
-        },
-        {
-          packageName: 'my-package',
-          localName: 'SuperInterface2',
-          fileName: Path.normalize('/docs/package/src/a/b/SuperFile2'),
-        },
-      ];
-      expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
-        classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
-        genericTypeParameters: [],
-        parameters: [],
-      })).toEqual({
-        '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
-        '@type': 'Class',
-        constructorArguments: [],
-        parameters: [],
-        requireElement: 'MyClass',
-        extends: [
-          'mp:components/a/b/SuperFile.jsonld#SuperClass',
           'mp:components/a/b/SuperFile1.jsonld#SuperInterface1',
           'mp:components/a/b/SuperFile2.jsonld#SuperInterface2',
         ],
@@ -731,7 +717,7 @@ describe('ComponentConstructor', () => {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         genericTypeParameters: [],
         parameters: [],
-      })).toEqual({
+      }, [])).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [],
@@ -747,43 +733,12 @@ describe('ComponentConstructor', () => {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         genericTypeParameters: [],
         parameters: [],
-      })).toEqual({
+      }, [])).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'AbstractClass',
         constructorArguments: [],
         parameters: [],
         requireElement: 'MyClass',
-      });
-    });
-
-    it('should handle an interface component with super interfaces', async() => {
-      classReference.type = 'interface';
-      (<InterfaceLoaded> classReference).superInterfaces = <any> [
-        {
-          packageName: 'my-package',
-          localName: 'SuperInterface1',
-          fileName: Path.normalize('/docs/package/src/a/b/SuperFile1'),
-        },
-        {
-          packageName: 'my-package',
-          localName: 'SuperInterface2',
-          fileName: Path.normalize('/docs/package/src/a/b/SuperFile2'),
-        },
-      ];
-      expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
-        classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
-        genericTypeParameters: [],
-        parameters: [],
-      })).toEqual({
-        '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
-        '@type': 'AbstractClass',
-        constructorArguments: [],
-        parameters: [],
-        requireElement: 'MyClass',
-        extends: [
-          'mp:components/a/b/SuperFile1.jsonld#SuperInterface1',
-          'mp:components/a/b/SuperFile2.jsonld#SuperInterface2',
-        ],
       });
     });
 
@@ -842,7 +797,7 @@ describe('ComponentConstructor', () => {
             comment: 'Hi2',
           },
         ],
-      })).toEqual({
+      }, [])).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [
@@ -891,6 +846,28 @@ describe('ComponentConstructor', () => {
           },
         ],
         requireElement: 'MyClass',
+      });
+    });
+  });
+
+  describe('constructExtensionDefinition', () => {
+    it('should handle an extension without generics', async() => {
+      expect(await ctor.constructExtensionDefinition(context, externalContextsCallback, {
+        classLoaded: classReference,
+        genericTypeInstantiations: [],
+      })).toEqual('mp:components/a/b/file-param.jsonld#MyClass');
+    });
+
+    it('should handle an extension with generics', async() => {
+      expect(await ctor.constructExtensionDefinition(context, externalContextsCallback, {
+        classLoaded: classReference,
+        genericTypeInstantiations: [
+          { type: 'raw', value: 'boolean' },
+          { type: 'raw', value: 'string' },
+        ],
+      })).toEqual({
+        component: 'mp:components/a/b/file-param.jsonld#MyClass',
+        genericTypeInstances: [ 'xsd:boolean', 'xsd:string' ],
       });
     });
   });

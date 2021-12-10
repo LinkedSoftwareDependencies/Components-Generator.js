@@ -1,10 +1,10 @@
-import type {
-  ClassDeclaration,
+import type { ClassDeclaration,
   TSInterfaceDeclaration,
   TSTypeAliasDeclaration,
   TSEnumDeclaration,
   TypeNode,
-} from '@typescript-eslint/types/dist/ts-estree';
+  TSTypeParameterInstantiation } from '@typescript-eslint/types/dist/ts-estree';
+
 import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
 
 /**
@@ -52,9 +52,9 @@ export interface ClassLoaded extends ClassReference {
   // The full AST the class was present in.
   ast: AST<TSESTreeOptions>;
   // A super class reference if the class has one
-  superClass?: ClassLoaded;
+  superClass?: GenericallyTyped<ClassLoaded>;
   // Interface or (abstract) class references if the class implements them
-  implementsInterfaces?: ClassReferenceLoaded[];
+  implementsInterfaces?: GenericallyTyped<ClassReferenceLoadedClassOrInterface>[];
   // If this class is an abstract class that can not be instantiated directly
   abstract?: boolean;
   // The tsdoc comment of this class
@@ -71,6 +71,16 @@ export interface ClassLoaded extends ClassReference {
 export type GenericTypes = Record<string, { type?: TypeNode }>;
 
 /**
+ * Something (like a class or interface) that may have generic types assigned to it as instantiation.
+ */
+export interface GenericallyTyped<T> {
+  // The typed value
+  value: T;
+  // The generic types of this value
+  genericTypeInstantiations?: TSTypeParameterInstantiation;
+}
+
+/**
  * A loaded interface with a full interface declaration.
  */
 export interface InterfaceLoaded extends ClassReference {
@@ -84,7 +94,7 @@ export interface InterfaceLoaded extends ClassReference {
   // The full AST the interface was present in.
   ast: AST<TSESTreeOptions>;
   // Super interface references if the interface has them
-  superInterfaces?: InterfaceLoaded[];
+  superInterfaces?: GenericallyTyped<InterfaceLoaded>[];
   // The tsdoc comment of this class
   comment?: string;
   // The generic types of this class

@@ -7,9 +7,9 @@ import type { Identifier,
   TSTypeReference,
   Parameter,
   EntityName, TSTypeParameterInstantiation } from '@typescript-eslint/types/dist/ts-estree';
-
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import type { ClassReferenceLoaded, InterfaceLoaded, ClassReference } from './ClassIndex';
+import type { ClassReferenceLoaded, InterfaceLoaded, ClassReference,
+  ClassReferenceLoadedClassOrInterface, ClassIndex } from './ClassIndex';
 import type { CommentData, ConstructorCommentData, CommentLoader } from './CommentLoader';
 import type { ConstructorData, ConstructorHolder } from './ConstructorLoader';
 import type { TypeReferenceOverride } from './typereferenceoverride/TypeReferenceOverride';
@@ -30,20 +30,81 @@ export class ParameterLoader {
   }
 
   /**
+   * Create a class index containing all constructor data from the classes in the given index.
+   * @param classIndex An index of loaded classes.
+   */
+  public loadAllExtensionData(
+    classIndex: ClassIndex<ClassReferenceLoaded>,
+  ): ClassIndex<ExtensionData<ParameterRangeUnresolved>[]> {
+    const newIndex: ClassIndex<ExtensionData<ParameterRangeUnresolved>[]> = {};
+    for (const [ key, classLoaded ] of Object.entries(classIndex)) {
+      if (classLoaded.type === 'class' || classLoaded.type === 'interface') {
+        newIndex[key] = this.loadExtensionData(classLoaded);
+      }
+    }
+    return newIndex;
+  }
+
+  /**
+   * Load the extension data of the given class or interface.
+   * @param classReference A loaded class or interface reference.
+   */
+  public loadExtensionData(
+    classReference: ClassReferenceLoadedClassOrInterface,
+  ): ExtensionData<ParameterRangeUnresolved>[] {
+    const extensionDatas: ExtensionData<ParameterRangeUnresolved>[] = [];
+    if (classReference.type === 'class') {
+      if (classReference.superClass) {
+        extensionDatas.push({
+          classLoaded: classReference.superClass.value,
+          genericTypeInstantiations: classReference.superClass.genericTypeInstantiations ?
+            this.getGenericTypeParameterInstantiations(
+              classReference.superClass.genericTypeInstantiations,
+              classReference,
+            ) :
+            [],
+        });
+      }
+      if (classReference.implementsInterfaces) {
+        for (const iface of classReference.implementsInterfaces) {
+          extensionDatas.push({
+            classLoaded: iface.value,
+            genericTypeInstantiations: iface.genericTypeInstantiations ?
+              this.getGenericTypeParameterInstantiations(iface.genericTypeInstantiations, classReference) :
+              [],
+          });
+        }
+      }
+    } else if (classReference.superInterfaces) {
+      for (const iface of classReference.superInterfaces) {
+        extensionDatas.push({
+          classLoaded: iface.value,
+          genericTypeInstantiations: iface.genericTypeInstantiations ?
+            this.getGenericTypeParameterInstantiations(iface.genericTypeInstantiations, classReference) :
+            [],
+        });
+      }
+    }
+    return extensionDatas;
+  }
+
+  /**
    * Load all parameter data from all fields in the given constructor inheritance chain.
    * @param constructorChain An array of constructors within the class inheritance chain.
    */
   public loadConstructorFields(
     constructorChain: ConstructorHolder[],
   ): ConstructorData<ParameterRangeUnresolved> {
+    const classLoaded = constructorChain[0].classLoaded.value;
+
     // Load the constructor comment
     const constructorCommentData = this.commentLoader.getCommentDataFromConstructor(constructorChain);
 
     // Load all generic type parameters
     const genericTypeParameters: GenericTypeParameterData<ParameterRangeUnresolved>[] = [];
-    for (const [ genericName, genericType ] of Object.entries(constructorChain[0].classLoaded.generics)) {
+    for (const [ genericName, genericType ] of Object.entries(classLoaded.generics)) {
       this.loadConstructorGeneric(
-        constructorChain[0].classLoaded,
+        classLoaded,
         genericTypeParameters,
         constructorCommentData,
         genericName,
@@ -54,10 +115,14 @@ export class ParameterLoader {
     // Load all constructor parameters
     const parameters: ParameterDataField<ParameterRangeUnresolved>[] = [];
     for (const field of constructorChain[0].constructor.value.params) {
-      this.loadConstructorField(constructorChain[0].classLoaded, parameters, constructorCommentData, field);
+      this.loadConstructorField(classLoaded, parameters, constructorCommentData, field);
     }
 
-    return { genericTypeParameters, parameters, classLoaded: constructorChain[0].classLoaded };
+    return {
+      genericTypeParameters,
+      parameters,
+      classLoaded,
+    };
   }
 
   /**
@@ -123,7 +188,8 @@ export class ParameterLoader {
       .map(field => this.loadTypeElementField(iface, field))
       .filter(Boolean);
     if (iface.superInterfaces && iface.superInterfaces.length > 0) {
-      fields = fields.concat(...iface.superInterfaces.map(superIface => this.loadInterfaceFields(superIface)));
+      // TODO: pass down superIface.genericTypeInstantiations to loadInterfaceFields
+      fields = fields.concat(...iface.superInterfaces.map(superIface => this.loadInterfaceFields(superIface.value)));
     }
     return fields;
   }
@@ -621,6 +687,14 @@ export interface GenericTypeParameterData<R> {
    * The human-readable description of this parameter.
    */
   comment?: string;
+}
+
+/**
+ * Extension information
+ */
+export interface ExtensionData<R> {
+  classLoaded: ClassReferenceLoaded;
+  genericTypeInstantiations: R[];
 }
 
 export type ParameterRangeUnresolved = {

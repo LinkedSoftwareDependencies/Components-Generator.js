@@ -34,7 +34,7 @@ describe('ClassLoader', () => {
     it('should return on a class that is extended', async() => {
       expect(loader.getSuperClassName(<any>(resolutionContext
         .parseTypescriptContents(`class A extends B{}`)).body[0], 'file'))
-        .toEqual('B');
+        .toEqual({ value: 'B' });
     });
 
     it('should error on a class that is extended via a namespace', async() => {
@@ -47,6 +47,21 @@ describe('ClassLoader', () => {
       await expect(async() => loader.getSuperClassName(<any>(resolutionContext
         .parseTypescriptContents(`class A extends class {} {}`)).body[0], 'file'))
         .rejects.toThrow(new Error('Could not interpret type of superclass in file on line 1 column 16'));
+    });
+
+    it('should return on a class that is extended with generics', async() => {
+      expect(loader.getSuperClassName(<any>(resolutionContext
+        .parseTypescriptContents(`class A extends B<string>{}`)).body[0], 'file'))
+        .toMatchObject({
+          value: 'B',
+          genericTypeInstantiations: {
+            params: [
+              {
+                type: 'TSStringKeyword',
+              },
+            ],
+          },
+        });
     });
   });
 
@@ -61,7 +76,7 @@ describe('ClassLoader', () => {
       expect(loader.getSuperInterfaceNames(<any>(resolutionContext
         .parseTypescriptContents('interface A extends B{}')).body[0], 'file'))
         .toEqual([
-          'B',
+          { value: 'B' },
         ]);
     });
 
@@ -69,9 +84,9 @@ describe('ClassLoader', () => {
       expect(loader.getSuperInterfaceNames(<any>(resolutionContext
         .parseTypescriptContents('interface A extends B, C, D{}')).body[0], 'file'))
         .toEqual([
-          'B',
-          'C',
-          'D',
+          { value: 'B' },
+          { value: 'C' },
+          { value: 'D' },
         ]);
     });
 
@@ -86,10 +101,27 @@ describe('ClassLoader', () => {
       expect(loader.getSuperInterfaceNames(<any>(resolutionContext
         .parseTypescriptContents('interface A extends B, {}, D {}')).body[0], 'file'))
         .toEqual([
-          'B',
-          'D',
+          { value: 'B' },
+          { value: 'D' },
         ]);
       expect(logger.debug).toHaveBeenCalledWith(`Ignored an interface expression of unknown type ObjectExpression on A`);
+    });
+
+    it('should return on an interface with generics', async() => {
+      expect(loader.getSuperInterfaceNames(<any>(resolutionContext
+        .parseTypescriptContents(`interface A extends B<string>{}`)).body[0], 'file'))
+        .toMatchObject([
+          {
+            value: 'B',
+            genericTypeInstantiations: {
+              params: [
+                {
+                  type: 'TSStringKeyword',
+                },
+              ],
+            },
+          },
+        ]);
     });
   });
 
@@ -104,7 +136,24 @@ describe('ClassLoader', () => {
       expect(loader.getClassInterfaceNames(<any>(resolutionContext
         .parseTypescriptContents('class A implements X {}')).body[0], 'file'))
         .toEqual([
-          'X',
+          { value: 'X' },
+        ]);
+    });
+
+    it('should return on a class that implements one interface with generics', async() => {
+      expect(loader.getClassInterfaceNames(<any>(resolutionContext
+        .parseTypescriptContents('class A implements X<string> {}')).body[0], 'file'))
+        .toMatchObject([
+          {
+            value: 'X',
+            genericTypeInstantiations: {
+              params: [
+                {
+                  type: 'TSStringKeyword',
+                },
+              ],
+            },
+          },
         ]);
     });
 
@@ -112,9 +161,9 @@ describe('ClassLoader', () => {
       expect(loader.getClassInterfaceNames(<any>(resolutionContext
         .parseTypescriptContents('class A implements X, Y, Z {}')).body[0], 'file'))
         .toEqual([
-          'X',
-          'Y',
-          'Z',
+          { value: 'X' },
+          { value: 'Y' },
+          { value: 'Z' },
         ]);
     });
 

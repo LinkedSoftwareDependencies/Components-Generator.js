@@ -3,13 +3,13 @@
  */
 import type { Logger } from 'winston';
 import type { ClassFinder } from './ClassFinder';
-import type {
-  ClassIndex,
+import type { ClassIndex,
   ClassReference,
   ClassReferenceLoaded,
   ClassReferenceLoadedClassOrInterface,
   InterfaceLoaded,
-} from './ClassIndex';
+  GenericallyTyped } from './ClassIndex';
+
 import type { ClassLoader } from './ClassLoader';
 
 export class ClassIndexer {
@@ -57,73 +57,85 @@ export class ClassIndexer {
       // If the class has a super class, load it recursively
       const superClassName = this.classLoader.getSuperClassName(classReferenceLoaded.declaration,
         classReferenceLoaded.fileName);
-      if (superClassName && !(superClassName in this.ignoreClasses)) {
+      if (superClassName && !(superClassName.value in this.ignoreClasses)) {
         let superClassLoaded;
         try {
           superClassLoaded = await this.loadClassChain({
             packageName: classReferenceLoaded.packageName,
-            localName: superClassName,
+            localName: superClassName.value,
             qualifiedPath: classReferenceLoaded.qualifiedPath,
             fileName: classReferenceLoaded.fileName,
             fileNameReferenced: classReferenceLoaded.fileNameReferenced,
           });
         } catch (error: unknown) {
-          throw new Error(`Failed to load super class ${superClassName} of ${classReference.localName} in ${classReference.fileName}:\n${(<Error>error).message}`);
+          throw new Error(`Failed to load super class ${superClassName.value} of ${classReference.localName} in ${classReference.fileName}:\n${(<Error>error).message}`);
         }
         if (superClassLoaded.type !== 'class') {
-          throw new Error(`Detected non-class ${superClassName} extending from a class ${classReference.localName} in ${classReference.fileName}`);
+          throw new Error(`Detected non-class ${superClassName.value} extending from a class ${classReference.localName} in ${classReference.fileName}`);
         }
-        classReferenceLoaded.superClass = superClassLoaded;
+        classReferenceLoaded.superClass = {
+          value: superClassLoaded,
+          genericTypeInstantiations: superClassName.genericTypeInstantiations,
+        };
       }
 
       // If the class implements interfaces, load them
       const interfaceNames = this.classLoader.getClassInterfaceNames(classReferenceLoaded.declaration,
         classReferenceLoaded.fileName);
-      classReferenceLoaded.implementsInterfaces = <ClassReferenceLoaded[]> (await Promise.all(interfaceNames
-        .filter(interfaceName => !(interfaceName in this.ignoreClasses))
-        .map(async interfaceName => {
-          let interfaceOrClassLoaded;
-          try {
-            interfaceOrClassLoaded = await this.classLoader.loadClassDeclaration({
-              packageName: classReferenceLoaded.packageName,
-              localName: interfaceName,
-              qualifiedPath: classReferenceLoaded.qualifiedPath,
-              fileName: classReferenceLoaded.fileName,
-              fileNameReferenced: classReferenceLoaded.fileNameReferenced,
-            }, true, false);
-          } catch (error: unknown) {
-            // Ignore interfaces that we don't understand
-            this.logger.debug(`Ignored interface ${interfaceName} implemented by ${classReference.localName} in ${classReference.fileName}:\n${(<Error> error).message}`);
-            return;
-          }
-          return interfaceOrClassLoaded;
-        })))
+      classReferenceLoaded.implementsInterfaces = <GenericallyTyped<ClassReferenceLoadedClassOrInterface>[]> (
+        await Promise
+          .all(interfaceNames
+            .filter(interfaceName => !(interfaceName.value in this.ignoreClasses))
+            .map(async interfaceName => {
+              let interfaceOrClassLoaded;
+              try {
+                interfaceOrClassLoaded = await this.classLoader.loadClassDeclaration({
+                  packageName: classReferenceLoaded.packageName,
+                  localName: interfaceName.value,
+                  qualifiedPath: classReferenceLoaded.qualifiedPath,
+                  fileName: classReferenceLoaded.fileName,
+                  fileNameReferenced: classReferenceLoaded.fileNameReferenced,
+                }, true, false);
+              } catch (error: unknown) {
+                // Ignore interfaces that we don't understand
+                this.logger.debug(`Ignored interface ${interfaceName.value} implemented by ${classReference.localName} in ${classReference.fileName}:\n${(<Error> error).message}`);
+                return;
+              }
+              return {
+                value: interfaceOrClassLoaded,
+                genericTypeInstantiations: interfaceName.genericTypeInstantiations,
+              };
+            })))
         .filter(iface => Boolean(iface));
     } else {
       const superInterfaceNames = this.classLoader
         .getSuperInterfaceNames(classReferenceLoaded.declaration, classReferenceLoaded.fileName);
-      classReferenceLoaded.superInterfaces = <InterfaceLoaded[]> (await Promise.all(superInterfaceNames
-        .filter(interfaceName => !(interfaceName in this.ignoreClasses))
-        .map(async interfaceName => {
-          let superInterface;
-          try {
-            superInterface = await this.loadClassChain({
-              packageName: classReferenceLoaded.packageName,
-              localName: interfaceName,
-              qualifiedPath: classReferenceLoaded.qualifiedPath,
-              fileName: classReferenceLoaded.fileName,
-              fileNameReferenced: classReferenceLoaded.fileNameReferenced,
-            });
-          } catch (error: unknown) {
+      classReferenceLoaded.superInterfaces = <GenericallyTyped<InterfaceLoaded>[]> (await Promise
+        .all(superInterfaceNames
+          .filter(interfaceName => !(interfaceName.value in this.ignoreClasses))
+          .map(async interfaceName => {
+            let superInterface;
+            try {
+              superInterface = await this.loadClassChain({
+                packageName: classReferenceLoaded.packageName,
+                localName: interfaceName.value,
+                qualifiedPath: classReferenceLoaded.qualifiedPath,
+                fileName: classReferenceLoaded.fileName,
+                fileNameReferenced: classReferenceLoaded.fileNameReferenced,
+              });
+            } catch (error: unknown) {
             // Ignore interfaces that we don't understand
-            this.logger.debug(`Ignored interface ${interfaceName} extended by ${classReference.localName} in ${classReference.fileName}:\n${(<Error> error).message}`);
-            return;
-          }
-          if (superInterface.type !== 'interface') {
-            throw new Error(`Detected non-interface ${classReferenceLoaded.localName} extending from a class ${interfaceName} in ${classReference.fileName}`);
-          }
-          return superInterface;
-        })))
+              this.logger.debug(`Ignored interface ${interfaceName.value} extended by ${classReference.localName} in ${classReference.fileName}:\n${(<Error> error).message}`);
+              return;
+            }
+            if (superInterface.type !== 'interface') {
+              throw new Error(`Detected non-interface ${classReferenceLoaded.localName} extending from a class ${interfaceName.value} in ${classReference.fileName}`);
+            }
+            return {
+              value: superInterface,
+              genericTypeInstantiations: interfaceName.genericTypeInstantiations,
+            };
+          })))
         .filter(iface => Boolean(iface));
     }
 

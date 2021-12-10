@@ -77,11 +77,11 @@ export class ExternalModulesLoader {
     }
     if (classReference.type === 'class') {
       if (classReference.superClass) {
-        this.indexClassInExternalPackage(classReference.superClass, externalPackages);
+        this.indexClassInExternalPackage(classReference.superClass.value, externalPackages);
       }
       if (classReference.implementsInterfaces) {
         for (const iface of classReference.implementsInterfaces) {
-          this.indexClassInExternalPackage(iface, externalPackages);
+          this.indexClassInExternalPackage(iface.value, externalPackages);
         }
       }
     }
