@@ -350,7 +350,7 @@ export class ParameterResolver {
     if (classOrInterface.type === 'interface') {
       classOrInterface.superInterfaces = await Promise.all(this.classLoader
         .getSuperInterfaceNames(classOrInterface.declaration, classOrInterface.fileName)
-        .filter(interfaceName => !this.isIgnored(undefined, interfaceName.value))
+        .filter(interfaceName => !this.isIgnored(classReference.qualifiedPath, interfaceName.value))
         .map(async interfaceName => {
           const superInterface = await this.loadClassOrInterfacesChain({
             packageName: classOrInterface.packageName,
