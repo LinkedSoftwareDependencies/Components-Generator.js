@@ -1,4 +1,6 @@
+import { AST_NODE_TYPES } from '@typescript-eslint/types/dist/ast-node-types';
 import type { TSTypeLiteral } from '@typescript-eslint/types/dist/ts-estree';
+
 import type { ClassLoaded, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from '../../lib/parse/ClassIndex';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
 import { CommentLoader } from '../../lib/parse/CommentLoader';
@@ -511,7 +513,7 @@ describe('ParameterResolver', () => {
       expect(await loader.resolveRange({
         type: 'raw',
         value: 'boolean',
-      }, classReference, {})).toEqual({
+      }, classReference, {}, true)).toEqual({
         type: 'raw',
         value: 'boolean',
       });
@@ -521,7 +523,7 @@ describe('ParameterResolver', () => {
       expect(await loader.resolveRange({
         type: 'override',
         value: 'boolean',
-      }, classReference, {})).toEqual({
+      }, classReference, {}, true)).toEqual({
         type: 'override',
         value: 'boolean',
       });
@@ -531,10 +533,34 @@ describe('ParameterResolver', () => {
       expect(await loader.resolveRange({
         type: 'literal',
         value: 'abc',
-      }, classReference, {})).toEqual({
+      }, classReference, {}, true)).toEqual({
         type: 'literal',
         value: 'abc',
       });
+    });
+
+    it('should handle a hash range', async() => {
+      expect(await loader.resolveRange({
+        type: 'hash',
+        value: <any> {
+          type: AST_NODE_TYPES.TSTypeLiteral,
+          members: [],
+        },
+      }, classReference, {}, true)).toEqual({
+        type: 'nested',
+        value: [],
+      });
+    });
+
+    it('should throw on a hash range when getNestedFields is false', async() => {
+      await expect(loader.resolveRange({
+        type: 'hash',
+        value: <any> {
+          type: AST_NODE_TYPES.TSTypeLiteral,
+          members: [],
+        },
+      }, classReference, {}, false)).rejects
+        .toThrow(`Unsupported field type hash when nested fields are not allowed in A in A`);
     });
 
     it('should handle an interface range pointing to a class', async() => {
@@ -547,7 +573,7 @@ describe('ParameterResolver', () => {
         value: 'MyClass',
         genericTypeParameterInstantiations: [],
         origin: classReference,
-      }, classReference, {})).toMatchObject({
+      }, classReference, {}, true)).toMatchObject({
         type: 'class',
         value: { localName: 'MyClass', fileName: 'MyClass' },
       });
@@ -564,7 +590,7 @@ describe('ParameterResolver', () => {
         value: 'OtherClass',
         genericTypeParameterInstantiations: [],
         origin: <any> { localName: 'OtherClass', fileName: 'OtherClass' },
-      }, classReference, {})).toMatchObject({
+      }, classReference, {}, true)).toMatchObject({
         type: 'class',
         value: { localName: 'OtherClass', fileName: 'OtherClass' },
       });
@@ -581,7 +607,7 @@ describe('ParameterResolver', () => {
         value: 'MyClass',
         genericTypeParameterInstantiations: [],
         origin: classReference,
-      }, classReference, {})).toMatchObject({
+      }, classReference, {}, true)).toMatchObject({
         type: 'undefined',
       });
     });
@@ -598,7 +624,7 @@ describe('ParameterResolver', () => {
         qualifiedPath: [ 'a' ],
         genericTypeParameterInstantiations: [],
         origin: classReference,
-      }, classReference, {})).toMatchObject({
+      }, classReference, {}, true)).toMatchObject({
         type: 'undefined',
       });
     });
@@ -615,7 +641,7 @@ describe('ParameterResolver', () => {
         value: 'MyClass',
         genericTypeParameterInstantiations: [],
         origin: classReference,
-      }, classReference, {})).toMatchObject({
+      }, classReference, {}, true)).toMatchObject({
         type: 'class',
         value: { localName: 'MyClass', fileName: 'MyClass' },
       });
@@ -633,7 +659,7 @@ describe('ParameterResolver', () => {
         value: 'MyInterface',
         genericTypeParameterInstantiations: [],
         origin: classReference,
-      }, classReference, {})).toMatchObject({
+      }, classReference, {}, true)).toMatchObject({
         type: 'nested',
         value: [
           {
@@ -657,7 +683,7 @@ export interface MyInterface extends IgnoredInterface{};
         value: 'MyInterface',
         genericTypeParameterInstantiations: [],
         origin: classReference,
-      }, classReference, {})).toMatchObject({
+      }, classReference, {}, true)).toMatchObject({
         type: 'nested',
         value: [],
       });
@@ -666,7 +692,7 @@ export interface MyInterface extends IgnoredInterface{};
     it('should handle an undefined range', async() => {
       expect(await loader.resolveRange({
         type: 'undefined',
-      }, classReference, {})).toMatchObject({
+      }, classReference, {}, true)).toMatchObject({
         type: 'undefined',
       });
     });
@@ -695,7 +721,7 @@ export interface MyInterface extends IgnoredInterface{};
             origin: classReference,
           },
         ],
-      }, classReference, {})).toMatchObject({
+      }, classReference, {}, true)).toMatchObject({
         type: 'union',
         elements: [
           {
@@ -738,7 +764,7 @@ export interface MyInterface extends IgnoredInterface{};
             origin: classReference,
           },
         ],
-      }, classReference, {})).toMatchObject({
+      }, classReference, {}, true)).toMatchObject({
         type: 'intersection',
         elements: [
           {
@@ -781,7 +807,7 @@ export interface MyInterface extends IgnoredInterface{};
             origin: classReference,
           },
         ],
-      }, classReference, {})).toMatchObject({
+      }, classReference, {}, true)).toMatchObject({
         type: 'tuple',
         elements: [
           {
@@ -823,7 +849,7 @@ export interface MyInterface extends IgnoredInterface{};
             },
           },
         ],
-      }, classReference, {})).toMatchObject({
+      }, classReference, {}, true)).toMatchObject({
         type: 'tuple',
         elements: [
           {
@@ -855,7 +881,7 @@ export interface MyInterface extends IgnoredInterface{};
           genericTypeParameterInstantiations: [],
           origin: classReference,
         },
-      }, classReference, {})).toMatchObject({
+      }, classReference, {}, true)).toMatchObject({
         type: 'array',
         value: {
           type: 'class',
@@ -868,7 +894,7 @@ export interface MyInterface extends IgnoredInterface{};
       expect(await loader.resolveRange({
         type: 'genericTypeReference',
         value: 'T',
-      }, classReference, {})).toEqual({
+      }, classReference, {}, true)).toEqual({
         type: 'genericTypeReference',
         value: 'T',
         origin: classReference,
@@ -898,7 +924,7 @@ interface IFace<AInner, BInner> {
           },
         ],
         origin: classReference,
-      }, classReference, {})).toMatchObject({
+      }, classReference, {}, true)).toMatchObject({
         type: 'nested',
         value: [
           {
@@ -944,7 +970,7 @@ interface IFace2<AInner2> {
           },
         ],
         origin: classReference,
-      }, classReference, {})).toMatchObject({
+      }, classReference, {}, true)).toMatchObject({
         type: 'nested',
         value: [
           {
@@ -988,7 +1014,7 @@ interface IFaceA<AInner> {
           },
         ],
         origin: classReference,
-      }, classReference, {})).toMatchObject({
+      }, classReference, {}, true)).toMatchObject({
         type: 'nested',
         value: [
           {
@@ -1026,7 +1052,7 @@ interface IFaceB<AInner> {
           },
         ],
         origin: classReference,
-      }, classReference, {})).toMatchObject({
+      }, classReference, {}, true)).toMatchObject({
         type: 'union',
         elements: [
           {
@@ -1087,7 +1113,7 @@ class MyInnerClass<AInner, BInner> {
           },
         ],
         origin: classReference,
-      }, classReference, {})).toMatchObject({
+      }, classReference, {}, true)).toMatchObject({
         type: 'class',
         value: { localName: 'MyInnerClass', fileName: 'A' },
         genericTypeParameterInstances: [
@@ -1114,7 +1140,7 @@ class MyInnerClass<AInner, BInner> {
           type: 'genericTypeReference',
           value: 'T',
         },
-      })).toEqual({
+      }, true)).toEqual({
         type: 'genericTypeReference',
         value: 'T',
         origin: classReference,
@@ -1135,7 +1161,7 @@ class MyInnerClass<AInner, BInner> {
           genericTypeParameterInstantiations: [],
           origin: classReference,
         },
-      }, classReference, {})).toMatchObject({
+      }, classReference, {}, true)).toMatchObject({
         type: 'keyof',
         value: {
           type: 'class',
@@ -1157,7 +1183,8 @@ class MyInnerClass<AInner, BInner> {
       resolutionContext.contentsOverrides = {
         'A.d.ts': ``,
       };
-      await expect(loader.resolveRangeInterface('IFaceA', undefined, undefined, classReference, classReference, {}))
+      await expect(loader
+        .resolveRangeInterface('IFaceA', undefined, undefined, classReference, classReference, {}, true))
         .rejects.toThrow(new Error('Could not load class or interface or other type IFaceA from A'));
     });
 
@@ -1167,7 +1194,8 @@ class MyInnerClass<AInner, BInner> {
 interface IFaceA {}
 `,
       };
-      expect(await loader.resolveRangeInterface('IFaceA', undefined, undefined, classReference, classReference, {}))
+      expect(await loader
+        .resolveRangeInterface('IFaceA', undefined, undefined, classReference, classReference, {}, true))
         .toEqual({
           type: 'nested',
           value: [],
@@ -1180,7 +1208,8 @@ interface IFaceA {}
 class ClassA {}
 `,
       };
-      expect(await loader.resolveRangeInterface('ClassA', undefined, undefined, classReference, classReference, {}))
+      expect(await loader
+        .resolveRangeInterface('ClassA', undefined, undefined, classReference, classReference, {}, true))
         .toMatchObject({
           type: 'class',
           value: { localName: 'ClassA', fileName: 'A' },
@@ -1195,7 +1224,8 @@ interface ClassA {
 }
 `,
       };
-      expect(await loader.resolveRangeInterface('ClassA', undefined, undefined, classReference, classReference, {}))
+      expect(await loader
+        .resolveRangeInterface('ClassA', undefined, undefined, classReference, classReference, {}, true))
         .toMatchObject({
           type: 'class',
           value: { localName: 'ClassA', fileName: 'A' },
@@ -1211,7 +1241,8 @@ interface IFaceA {
 }
 `,
       };
-      expect(await loader.resolveRangeInterface('IFaceA', undefined, undefined, classReference, classReference, {}))
+      expect(await loader
+        .resolveRangeInterface('IFaceA', undefined, undefined, classReference, classReference, {}, true))
         .toEqual({
           type: 'nested',
           value: [
@@ -1235,6 +1266,23 @@ interface IFaceA {
         });
     });
 
+    it('should resolve an interface with raw fields with getNestedFields false', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `
+interface IFaceA {
+  fieldA: string;
+  fieldB: number;
+}
+`,
+      };
+      expect(await loader
+        .resolveRangeInterface('IFaceA', undefined, undefined, classReference, classReference, {}, false))
+        .toMatchObject({
+          type: 'class',
+          value: { localName: 'IFaceA', fileName: 'A' },
+        });
+    });
+
     it('should resolve a nested interface', async() => {
       resolutionContext.contentsOverrides = {
         'A.d.ts': `
@@ -1246,7 +1294,8 @@ interface IFaceB {
 }
 `,
       };
-      expect(await loader.resolveRangeInterface('IFaceA', undefined, undefined, classReference, classReference, {}))
+      expect(await loader
+        .resolveRangeInterface('IFaceA', undefined, undefined, classReference, classReference, {}, true))
         .toEqual({
           type: 'nested',
           value: [
@@ -1277,7 +1326,7 @@ interface IFaceB {
 type Type = string | boolean;
 `,
       };
-      expect(await loader.resolveRangeInterface('Type', undefined, undefined, classReference, classReference, {}))
+      expect(await loader.resolveRangeInterface('Type', undefined, undefined, classReference, classReference, {}, true))
         .toEqual({
           type: 'union',
           elements: [
@@ -1302,7 +1351,7 @@ enum Enum {
 }
 `,
       };
-      expect(await loader.resolveRangeInterface('Enum', undefined, undefined, classReference, classReference, {}))
+      expect(await loader.resolveRangeInterface('Enum', undefined, undefined, classReference, classReference, {}, true))
         .toEqual({
           type: 'union',
           elements: [
@@ -1327,7 +1376,7 @@ enum Enum {
 }
 `,
       };
-      expect(await loader.resolveRangeInterface('a', [ 'Enum' ], undefined, classReference, classReference, {}))
+      expect(await loader.resolveRangeInterface('a', [ 'Enum' ], undefined, classReference, classReference, {}, true))
         .toEqual({
           type: 'literal',
           value: 'A',
@@ -1343,7 +1392,7 @@ enum Enum {
 }
 `,
       };
-      await expect(loader.resolveRangeInterface('Enum', undefined, undefined, classReference, classReference, {}))
+      await expect(loader.resolveRangeInterface('Enum', undefined, undefined, classReference, classReference, {}, true))
         .rejects.toThrowError(`Detected enum Enum having an unsupported member (member 1) in A`);
     });
   });

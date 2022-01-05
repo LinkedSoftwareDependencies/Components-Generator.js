@@ -81,7 +81,9 @@ export class ParameterResolver {
     return await Promise.all(genericTypeParameters
       .map(async generic => ({
         ...generic,
-        range: generic.range ? await this.resolveRange(generic.range, owningClass, genericTypeRemappings) : undefined,
+        range: generic.range ?
+          await this.resolveRange(generic.range, owningClass, genericTypeRemappings, false) :
+          undefined,
       })));
   }
 
@@ -99,7 +101,7 @@ export class ParameterResolver {
     return await Promise.all(parameters
       .map(async parameter => ({
         ...parameter,
-        range: await this.resolveRange(parameter.range, owningClass, genericTypeRemappings),
+        range: await this.resolveRange(parameter.range, owningClass, genericTypeRemappings, true),
       })));
   }
 
@@ -141,6 +143,7 @@ export class ParameterResolver {
           genericTypeInstantiation,
           owningClass,
           genericTypeRemappings,
+          false,
         ))),
     })));
   }
@@ -157,11 +160,13 @@ export class ParameterResolver {
    * @param range An unresolved parameter range.
    * @param owningClass The class this range was defined in.
    * @param genericTypeRemappings A remapping of generic type names.
+   * @param getNestedFields If Records and interfaces should produce nested field ranges.
    */
   public async resolveRange(
     range: ParameterRangeUnresolved,
     owningClass: ClassReferenceLoaded,
     genericTypeRemappings: Record<string, ParameterRangeUnresolved>,
+    getNestedFields: boolean,
   ): Promise<ParameterRangeResolved> {
     switch (range.type) {
       case 'raw':
@@ -181,8 +186,12 @@ export class ParameterResolver {
           range.origin,
           owningClass,
           genericTypeRemappings,
+          getNestedFields,
         );
       case 'hash':
+        if (!getNestedFields) {
+          throw new Error(`Unsupported field type ${range.type} when nested fields are not allowed in ${owningClass.localName} in ${owningClass.fileName}`);
+        }
         return {
           type: 'nested',
           value: await this.getNestedFieldsFromHash(range.value, owningClass, genericTypeRemappings),
@@ -197,7 +206,7 @@ export class ParameterResolver {
         return {
           type: range.type,
           elements: await Promise.all(range.elements
-            .map(child => this.resolveRange(child, owningClass, genericTypeRemappings))),
+            .map(child => this.resolveRange(child, owningClass, genericTypeRemappings, getNestedFields))),
         };
       case 'array':
       case 'rest':
@@ -205,7 +214,7 @@ export class ParameterResolver {
         return {
           type: range.type,
           // TODO: remove the following any cast when TS bug is fixed
-          value: <any> await this.resolveRange(range.value, owningClass, genericTypeRemappings),
+          value: <any> await this.resolveRange(range.value, owningClass, genericTypeRemappings, getNestedFields),
         };
       case 'genericTypeReference':
         // If this generic type was remapped, return that remapped type
@@ -213,7 +222,7 @@ export class ParameterResolver {
           const mapped = genericTypeRemappings[range.value];
           // Avoid infinite recursion via mapping to itself
           if (mapped.type !== 'genericTypeReference' || mapped.value !== range.value) {
-            return this.resolveRange(mapped, owningClass, genericTypeRemappings);
+            return this.resolveRange(mapped, owningClass, genericTypeRemappings, getNestedFields);
           }
         }
         return {
@@ -234,6 +243,7 @@ export class ParameterResolver {
    * @param owningClass The class this interface was used in.
    * @param rootOwningClass The top-level class this interface was used in. Necessary for generic type resolution.
    * @param genericTypeRemappings A remapping of generic type names.
+   * @param getNestedFields If Records and interfaces should produce nested field ranges.
    */
   public async resolveRangeInterface(
     interfaceName: string,
@@ -242,6 +252,7 @@ export class ParameterResolver {
     owningClass: ClassReferenceLoaded,
     rootOwningClass: ClassReferenceLoaded,
     genericTypeRemappings: Record<string, ParameterRangeUnresolved>,
+    getNestedFields: boolean,
   ): Promise<ParameterRangeResolved> {
     const classOrInterface = await this.loadClassOrInterfacesChain({
       packageName: owningClass.packageName,
@@ -253,14 +264,15 @@ export class ParameterResolver {
 
     // If we find a class, or an interface that is implicitly a class, return the class reference directly
     if (classOrInterface.type === 'class' ||
-      (classOrInterface.type === 'interface' && this.isInterfaceImplicitClass(classOrInterface))) {
+      (classOrInterface.type === 'interface' &&
+        (!getNestedFields || this.isInterfaceImplicitClass(classOrInterface)))) {
       return {
         type: 'class',
         value: classOrInterface,
         genericTypeParameterInstances: genericTypeParameterInstances ?
           await Promise.all(genericTypeParameterInstances
             .map(genericTypeParameter => this
-              .resolveRange(genericTypeParameter, rootOwningClass, genericTypeRemappings))) :
+              .resolveRange(genericTypeParameter, rootOwningClass, genericTypeRemappings, getNestedFields))) :
           undefined,
       };
     }
@@ -273,7 +285,7 @@ export class ParameterResolver {
         classOrInterface.declaration.typeAnnotation,
         `type alias ${classOrInterface.localName} in ${classOrInterface.fileName}`,
       );
-      return this.resolveRange(unresolvedFields, classOrInterface, genericTypeRemappings);
+      return this.resolveRange(unresolvedFields, classOrInterface, genericTypeRemappings, getNestedFields);
     }
 
     // If we find an enum, just interpret the enum value, and return as union type
@@ -291,7 +303,7 @@ export class ParameterResolver {
                 range: <any> undefined,
               },
               `enum ${classOrInterface.localName} in ${classOrInterface.fileName}`,
-            ), owningClass, genericTypeRemappings);
+            ), owningClass, genericTypeRemappings, getNestedFields);
           }
           throw new Error(`Detected enum ${classOrInterface.localName} having an unsupported member (member ${i}) in ${classOrInterface.fileName}`);
         }));
