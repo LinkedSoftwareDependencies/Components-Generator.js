@@ -367,7 +367,7 @@ export class ParameterResolver {
           const superInterface = await this.loadClassOrInterfacesChain({
             packageName: classOrInterface.packageName,
             localName: interfaceName.value,
-            qualifiedPath: classReference.qualifiedPath,
+            qualifiedPath: [],
             fileName: classOrInterface.fileName,
             fileNameReferenced: classOrInterface.fileNameReferenced,
           });
@@ -385,7 +385,7 @@ export class ParameterResolver {
         return await this.loadClassOrInterfacesChain({
           packageName: classOrInterface.packageName,
           localName: classOrInterface.declaration.typeAnnotation.typeName.name,
-          qualifiedPath: classReference.qualifiedPath,
+          qualifiedPath: [],
           fileName: classOrInterface.fileName,
           fileNameReferenced: classOrInterface.fileNameReferenced,
         });

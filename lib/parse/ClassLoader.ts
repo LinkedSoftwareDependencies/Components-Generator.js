@@ -600,7 +600,7 @@ export class ClassLoader {
           }
         }
       } else if (statement.type === AST_NODE_TYPES.ExportAllDeclaration) {
-        // Form: `export * from "b"`
+        // Form: `export * from "b"` or `export * as B from "b"`
         if (statement.source &&
           statement.source.type === AST_NODE_TYPES.Literal &&
           typeof statement.source.value === 'string') {

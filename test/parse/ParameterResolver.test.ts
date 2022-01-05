@@ -1682,6 +1682,47 @@ export interface B extends C{}
         });
     });
 
+    it('should load an interface with super over different files via a qualified path', async() => {
+      resolutionContext.contentsOverrides = {
+        'index.d.ts': `
+import * as a from './A';
+`,
+        'A.d.ts': `
+import { B } from './B';
+export interface A extends B {}
+`,
+        'B.d.ts': `
+import { C } from './C';
+export interface B extends C {}
+`,
+        'C.d.ts': `export interface C{}`,
+      };
+      expect(await loader.loadClassOrInterfacesChain({ ...classReference, fileName: 'index', qualifiedPath: [ 'a' ]}))
+        .toMatchObject({
+          fileName: 'A',
+          localName: 'A',
+          type: 'interface',
+          superInterfaces: [
+            {
+              value: {
+                fileName: 'B',
+                localName: 'B',
+                type: 'interface',
+                superInterfaces: [
+                  {
+                    value: {
+                      fileName: 'C',
+                      localName: 'C',
+                      type: 'interface',
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        });
+    });
+
     it('should error on an interface extending from a class', async() => {
       resolutionContext.contentsOverrides = {
         'A.d.ts': `
