@@ -639,23 +639,19 @@ export class ClassLoader {
       } else if (statement.type === AST_NODE_TYPES.ImportDeclaration &&
         statement.source.type === AST_NODE_TYPES.Literal &&
         typeof statement.source.value === 'string') {
-        try {
-          const entry = this.importTargetToAbsolutePath(packageName, fileName, statement.source.value);
-          for (const specifier of statement.specifiers) {
-            if (specifier.type === AST_NODE_TYPES.ImportSpecifier) {
-              // Form: `import {A} from './lib/A'`
-              importedElements[specifier.local.name] = {
-                localName: specifier.imported.name,
-                qualifiedPath: undefined,
-                ...entry,
-              };
-            } else if (specifier.type === AST_NODE_TYPES.ImportNamespaceSpecifier) {
-              // Form: `import * as A from './lib/A'`
-              importedElementsAllNamed[specifier.local.name] = entry;
-            }
+        const entry = this.importTargetToAbsolutePath(packageName, fileName, statement.source.value);
+        for (const specifier of statement.specifiers) {
+          if (specifier.type === AST_NODE_TYPES.ImportSpecifier) {
+            // Form: `import {A} from './lib/A'`
+            importedElements[specifier.local.name] = {
+              localName: specifier.imported.name,
+              qualifiedPath: undefined,
+              ...entry,
+            };
+          } else if (specifier.type === AST_NODE_TYPES.ImportNamespaceSpecifier) {
+            // Form: `import * as A from './lib/A'`
+            importedElementsAllNamed[specifier.local.name] = entry;
           }
-        } catch {
-          // Omit imports that throw an error
         }
       }
     }

@@ -109,14 +109,32 @@ export class ResolutionContext {
   public resolvePackageIndex(packageName: string, currentFilePath: string): string {
     try {
       // First check if we have an @types package
-      const packageJsonPath = require.resolve(
-        `@types/${packageName}/package.json`,
-        { paths: [ currentFilePath ]},
-      );
-      return Path.join(Path.dirname(packageJsonPath), require(packageJsonPath).types);
+      return this.resolvePackageIndexInner(require, `@types/${packageName}`, currentFilePath);
     } catch {
-      // Otherwise, fallback to the actual package
-      return require.resolve(packageName, { paths: [ currentFilePath ]});
+      try {
+        // Fallback to the actual package
+        return this.resolvePackageIndexInner(require, packageName, currentFilePath);
+      } catch {
+        // As final fallback, check if the package is a valid Node.js built-in like 'stream'.
+        require.resolve(packageName, { paths: [ currentFilePath ]});
+
+        // If so, require the Node.js types, and resolve the file for the built-in package
+        const rootFile = this.resolvePackageIndexInner(require, `@types/node`, currentFilePath);
+        return rootFile.replace(/index\.d\.ts$/u, `${packageName}.d.ts`);
+      }
     }
+  }
+
+  public resolvePackageIndexInner(req: NodeJS.Require, packageName: string, currentFilePath: string): string {
+    const packageJsonPath = req.resolve(
+      `${packageName}/package.json`,
+      { paths: [ currentFilePath ]},
+    );
+    const packageJson = req(packageJsonPath);
+    let typesPath = packageJson.types || packageJson.typings || packageJson.main.replace(/\.js$/u, '.d.ts');
+    if (!typesPath.endsWith('.d.ts')) {
+      typesPath += '.d.ts';
+    }
+    return Path.join(Path.dirname(packageJsonPath), typesPath);
   }
 }

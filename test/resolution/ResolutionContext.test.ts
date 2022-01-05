@@ -112,12 +112,60 @@ describe('ResolutionContext', () => {
   describe('resolvePackageIndex', () => {
     it('Should resolve from the currentFilePath for a package without separate typings', async() => {
       expect(resolutionContext.resolvePackageIndex('asynciterator', Path.join(__dirname, '../../')))
-        .toEqual(Path.join(__dirname, '../../node_modules/asynciterator/dist/asynciterator.cjs'));
+        .toEqual(Path.join(__dirname, '../../node_modules/asynciterator/dist/asynciterator.d.ts'));
     });
 
     it('Should resolve from the currentFilePath for a package with separate typings', async() => {
       expect(resolutionContext.resolvePackageIndex('lru-cache', Path.join(__dirname, '../../')))
-        .toEqual(Path.join(__dirname, '../../node_modules/@types/lru-cache/index'));
+        .toEqual(Path.join(__dirname, '../../node_modules/@types/lru-cache/index.d.ts'));
+    });
+
+    it('Should resolve from the currentFilePath for a package without separate typings without extension', async() => {
+      expect(resolutionContext.resolvePackageIndex('@comunica/bus-rdf-parse', Path.join(__dirname, '../../')))
+        .toEqual(Path.join(__dirname, '../../node_modules/@comunica/bus-rdf-parse/index.d.ts'));
+    });
+
+    it('Should resolve from the currentFilePath for a built-in package', async() => {
+      expect(resolutionContext.resolvePackageIndex('stream', Path.join(__dirname, '../../')))
+        .toEqual(Path.join(__dirname, '../../node_modules/@types/node/stream.d.ts'));
+    });
+  });
+
+  describe('resolvePackageIndexInner', () => {
+    it('Should handle package.json with types field', async() => {
+      const req: any = () => ({
+        types: 'abc.d.ts',
+      });
+      req.resolve = () => '/root/a/';
+      expect(resolutionContext.resolvePackageIndexInner(req, 'asynciterator', ''))
+        .toEqual(Path.normalize('/root/abc.d.ts'));
+    });
+
+    it('Should handle package.json with typings field', async() => {
+      const req: any = () => ({
+        typings: 'abc.d.ts',
+      });
+      req.resolve = () => '/root/a/';
+      expect(resolutionContext.resolvePackageIndexInner(req, 'asynciterator', ''))
+        .toEqual(Path.normalize('/root/abc.d.ts'));
+    });
+
+    it('Should handle package.json with implicit types field', async() => {
+      const req: any = () => ({
+        main: 'abc.js',
+      });
+      req.resolve = () => '/root/a/';
+      expect(resolutionContext.resolvePackageIndexInner(req, 'asynciterator', ''))
+        .toEqual(Path.normalize('/root/abc.d.ts'));
+    });
+
+    it('Should handle package.json with types field without extension', async() => {
+      const req: any = () => ({
+        types: 'abc',
+      });
+      req.resolve = () => '/root/a/';
+      expect(resolutionContext.resolvePackageIndexInner(req, 'asynciterator', ''))
+        .toEqual(Path.normalize('/root/abc.d.ts'));
     });
   });
 });

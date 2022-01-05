@@ -2562,8 +2562,8 @@ export = NS`,
     });
 
     it('for a single import from an unknown package', () => {
-      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`import {A as B} from 'unknown-package'`)).importedElements)
-        .toEqual({});
+      expect(() => loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`import {A as B} from 'unknown-package'`)).importedElements)
+        .toThrow(`Could not resolve 'unknown-package' from path 'dir/file'`);
     });
 
     it('for export all', () => {
