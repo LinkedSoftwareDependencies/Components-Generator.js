@@ -552,17 +552,6 @@ describe('ParameterResolver', () => {
       });
     });
 
-    it('should throw on a hash range when getNestedFields is false', async() => {
-      await expect(loader.resolveRange({
-        type: 'hash',
-        value: <any> {
-          type: AST_NODE_TYPES.TSTypeLiteral,
-          members: [],
-        },
-      }, classReference, {}, false)).rejects
-        .toThrow(`Unsupported field type hash when nested fields are not allowed in A in A`);
-    });
-
     it('should handle an interface range pointing to a class', async() => {
       resolutionContext.contentsOverrides = {
         'A.d.ts': `export * from './MyClass'`,

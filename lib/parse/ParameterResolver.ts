@@ -189,9 +189,6 @@ export class ParameterResolver {
           getNestedFields,
         );
       case 'hash':
-        if (!getNestedFields) {
-          throw new Error(`Unsupported field type ${range.type} when nested fields are not allowed in ${owningClass.localName} in ${owningClass.fileName}`);
-        }
         return {
           type: 'nested',
           value: await this.getNestedFieldsFromHash(range.value, owningClass, genericTypeRemappings),
