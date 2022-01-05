@@ -953,19 +953,19 @@ describe('ComponentConstructor', () => {
       })).rejects.toThrow(`Tried to reference a class 'MyClass' from an external module 'other-package' that does not expose this component`);
     });
 
-    it('should throw when an external package does not exist', async() => {
+    it('should handle an external package that does not expose components', async() => {
       externalComponents.components['other-package-other'] = {
         contextIris: [ 'http://example.org/context-other-package.jsonld' ],
         componentNamesToIris: {
           MyClass: 'http://example.org/other-package.ttl#MyClass',
         },
       };
-      await expect(ctor.classNameToId(context, externalContextsCallback, {
+      expect(await ctor.classNameToId(context, externalContextsCallback, {
         packageName: 'other-package',
         localName: 'MyClass',
         fileName: Path.normalize('/docs/other-package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
-      })).rejects.toThrow(`Tried to reference a class 'MyClass' from an external module 'other-package' that is not a dependency`);
+      })).toEqual('urn:npm:other-package:MyClass');
     });
   });
 

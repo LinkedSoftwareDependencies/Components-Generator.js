@@ -296,7 +296,8 @@ export class ComponentConstructor {
     // Use existing IRI if class is in another package (pre-built)
     const moduleComponents = this.externalComponents.components[classReference.packageName];
     if (!moduleComponents) {
-      throw new Error(`Tried to reference a class '${classReference.localName}' from an external module '${classReference.packageName}' that is not a dependency`);
+      // Mint a dummy IRI if the component is not exposing components files
+      return `urn:npm:${classReference.packageName}:${classReference.localName}`;
     }
     moduleComponents.contextIris.forEach(iri => externalContextsCallback(iri));
     const componentIri = moduleComponents.componentNamesToIris[classReference.localName];
