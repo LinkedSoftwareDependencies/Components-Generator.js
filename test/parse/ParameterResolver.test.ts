@@ -1205,6 +1205,20 @@ class ClassA {}
         });
     });
 
+    it('should resolve a class multiple times via cache', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `
+class ClassA {}
+`,
+      };
+      const first = await loader
+        .resolveRangeInterface('ClassA', undefined, undefined, classReference, classReference, {}, true);
+      const second = await loader
+        .resolveRangeInterface('ClassA', undefined, undefined, classReference, classReference, {}, true);
+      expect(first).toBe(second);
+      expect((<any> loader).cacheInterfaceRange.keys()).toEqual([ 'ClassA::::A' ]);
+    });
+
     it('should resolve an implicit class', async() => {
       resolutionContext.contentsOverrides = {
         'A.d.ts': `

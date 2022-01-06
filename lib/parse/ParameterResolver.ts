@@ -1,5 +1,6 @@
 import type { TSTypeLiteral } from '@typescript-eslint/types/dist/ts-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
+import * as LRUCache from 'lru-cache';
 import type { ClassIndex, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from './ClassIndex';
 import type { ClassLoader } from './ClassLoader';
 import type { CommentLoader } from './CommentLoader';
@@ -18,11 +19,13 @@ export class ParameterResolver {
   private readonly classLoader: ClassLoader;
   private readonly commentLoader: CommentLoader;
   private readonly ignoreClasses: Record<string, boolean>;
+  private readonly cacheInterfaceRange: LRUCache<string, ParameterRangeResolved>;
 
   public constructor(args: ParameterResolverArgs) {
     this.classLoader = args.classLoader;
     this.commentLoader = args.commentLoader;
     this.ignoreClasses = args.ignoreClasses;
+    this.cacheInterfaceRange = new LRUCache(2_048);
   }
 
   /**
@@ -243,6 +246,32 @@ export class ParameterResolver {
    * @param getNestedFields If Records and interfaces should produce nested field ranges.
    */
   public async resolveRangeInterface(
+    interfaceName: string,
+    qualifiedPath: string[] | undefined,
+    genericTypeParameterInstances: ParameterRangeUnresolved[] | undefined,
+    owningClass: ClassReferenceLoaded,
+    rootOwningClass: ClassReferenceLoaded,
+    genericTypeRemappings: Record<string, ParameterRangeUnresolved>,
+    getNestedFields: boolean,
+  ): Promise<ParameterRangeResolved> {
+    const cacheKey = `${interfaceName}::${(qualifiedPath || []).join('.')}::${owningClass.fileName}`;
+    let resolved = this.cacheInterfaceRange.get(cacheKey);
+    if (!resolved) {
+      resolved = await this.resolveRangeInterfaceInner(
+        interfaceName,
+        qualifiedPath,
+        genericTypeParameterInstances,
+        owningClass,
+        rootOwningClass,
+        genericTypeRemappings,
+        getNestedFields,
+      );
+      this.cacheInterfaceRange.set(cacheKey, resolved);
+    }
+    return resolved;
+  }
+
+  protected async resolveRangeInterfaceInner(
     interfaceName: string,
     qualifiedPath: string[] | undefined,
     genericTypeParameterInstances: ParameterRangeUnresolved[] | undefined,
