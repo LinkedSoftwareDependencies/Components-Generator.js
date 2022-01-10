@@ -3,7 +3,7 @@ import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree'
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import type { ClassIndex, ClassLoaded, ClassReferenceLoaded, GenericallyTyped } from './ClassIndex';
 import type { CommentLoader } from './CommentLoader';
-import type { GenericTypeParameterData, ParameterDataField, ParameterRangeUnresolved } from './ParameterLoader';
+import type { ParameterDataField, ParameterRangeUnresolved } from './ParameterLoader';
 import { ParameterLoader } from './ParameterLoader';
 
 /**
@@ -27,7 +27,6 @@ export class ConstructorLoader {
     for (const [ className, classLoadedRoot ] of Object.entries(classIndex)) {
       // Initialize default value
       constructorDataIndex[className] = {
-        genericTypeParameters: [],
         parameters: [],
         classLoaded: classLoadedRoot,
       };
@@ -132,7 +131,6 @@ export interface ConstructorLoaderArgs {
  * Constructor parameter information
  */
 export interface ConstructorData<R> {
-  genericTypeParameters: GenericTypeParameterData<R>[];
   parameters: ParameterDataField<R>[];
   classLoaded: ClassReferenceLoaded;
 }

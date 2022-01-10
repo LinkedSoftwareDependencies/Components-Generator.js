@@ -12,6 +12,7 @@ import type { ClassReferenceLoaded, InterfaceLoaded, ClassReference,
   ClassReferenceLoadedClassOrInterface, ClassIndex } from './ClassIndex';
 import type { CommentData, ConstructorCommentData, CommentLoader } from './CommentLoader';
 import type { ConstructorData, ConstructorHolder } from './ConstructorLoader';
+import type { GenericsData } from './GenericsLoader';
 import type { TypeReferenceOverride } from './typereferenceoverride/TypeReferenceOverride';
 import { TypeReferenceOverrideAliasRecord } from './typereferenceoverride/TypeReferenceOverrideAliasRecord';
 
@@ -100,18 +101,6 @@ export class ParameterLoader {
     // Load the constructor comment
     const constructorCommentData = this.commentLoader.getCommentDataFromConstructor(constructorChain);
 
-    // Load all generic type parameters
-    const genericTypeParameters: GenericTypeParameterData<ParameterRangeUnresolved>[] = [];
-    for (const [ genericName, genericType ] of Object.entries(classLoaded.generics)) {
-      this.loadConstructorGeneric(
-        classLoaded,
-        genericTypeParameters,
-        constructorCommentData,
-        genericName,
-        genericType.type,
-      );
-    }
-
     // Load all constructor parameters
     const parameters: ParameterDataField<ParameterRangeUnresolved>[] = [];
     for (const field of constructorChain[0].constructor.value.params) {
@@ -119,24 +108,43 @@ export class ParameterLoader {
     }
 
     return {
-      genericTypeParameters,
       parameters,
       classLoaded,
     };
   }
 
   /**
-   * Load the generic type parameter data from the given generic in a constructor.
+   * Load generics types from the given class.
+   * @param classLoaded A loaded class.
+   */
+  public loadClassGenerics(classLoaded: ClassReferenceLoadedClassOrInterface): GenericsData<ParameterRangeUnresolved> {
+    // Load all generic type parameters
+    const genericTypeParameters: GenericTypeParameterData<ParameterRangeUnresolved>[] = [];
+    for (const [ genericName, genericType ] of Object.entries(classLoaded.generics)) {
+      this.loadClassGeneric(
+        classLoaded,
+        genericTypeParameters,
+        genericName,
+        genericType.type,
+      );
+    }
+
+    return {
+      genericTypeParameters,
+      classLoaded,
+    };
+  }
+
+  /**
+   * Load the generic type parameter data from the given generic in a class.
    * @param classLoaded The loaded class in which the field is defined.
    * @param genericTypeParameters The array of generic type parameters that will be appended to.
-   * @param constructorCommentData Comment data from the constructor.
    * @param genericName The generic type name.
    * @param genericType The optional generic type range.
    */
-  public loadConstructorGeneric(
+  public loadClassGeneric(
     classLoaded: ClassReferenceLoaded,
     genericTypeParameters: GenericTypeParameterData<ParameterRangeUnresolved>[],
-    constructorCommentData: ConstructorCommentData,
     genericName: string,
     genericType: TypeNode | undefined,
   ): void {

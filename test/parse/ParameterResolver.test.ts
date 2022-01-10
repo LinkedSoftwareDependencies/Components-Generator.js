@@ -36,7 +36,6 @@ describe('ParameterResolver', () => {
       expect(await loader.resolveAllConstructorParameters({
         A: {
           classLoaded: <any> { type: 'class', localName: 'A', fileName: 'A' },
-          genericTypeParameters: [],
           parameters: [
             {
               type: 'field',
@@ -51,7 +50,6 @@ describe('ParameterResolver', () => {
       })).toEqual({
         A: {
           classLoaded: <any> { type: 'class', localName: 'A', fileName: 'A' },
-          genericTypeParameters: [],
           parameters: [
             {
               type: 'field',
@@ -70,7 +68,6 @@ describe('ParameterResolver', () => {
       expect(await loader.resolveAllConstructorParameters({
         A: {
           classLoaded: <any> { type: 'interface', localName: 'A', fileName: 'A' },
-          genericTypeParameters: [],
           parameters: [
             {
               type: 'field',
@@ -92,11 +89,9 @@ describe('ParameterResolver', () => {
     it('should handle an empty array', async() => {
       expect(await loader.resolveConstructorParameters({
         classLoaded,
-        genericTypeParameters: [],
         parameters: [],
       })).toEqual({
         classLoaded,
-        genericTypeParameters: [],
         parameters: [],
       });
     });
@@ -104,7 +99,6 @@ describe('ParameterResolver', () => {
     it('should handle a raw parameter', async() => {
       expect(await loader.resolveConstructorParameters({
         classLoaded,
-        genericTypeParameters: [],
         parameters: [
           {
             type: 'field',
@@ -118,7 +112,6 @@ describe('ParameterResolver', () => {
       }))
         .toEqual({
           classLoaded,
-          genericTypeParameters: [],
           parameters: [
             {
               type: 'field',
@@ -130,6 +123,43 @@ describe('ParameterResolver', () => {
             },
           ],
         });
+    });
+  });
+
+  describe('resolveAllGenericTypeParameterData', () => {
+    it('should handle an empty index', async() => {
+      expect(await loader.resolveAllGenericTypeParameterData({}))
+        .toEqual({});
+    });
+
+    it('should handle a non-empty simple index', async() => {
+      expect(await loader.resolveAllGenericTypeParameterData({
+        A: {
+          classLoaded: <any> { type: 'class', localName: 'A', fileName: 'A' },
+          genericTypeParameters: [
+            {
+              name: 'fieldA',
+              range: {
+                type: 'raw',
+                value: 'boolean',
+              },
+            },
+          ],
+        },
+      })).toEqual({
+        A: {
+          classLoaded: <any> { type: 'class', localName: 'A', fileName: 'A' },
+          genericTypeParameters: [
+            {
+              name: 'fieldA',
+              range: {
+                type: 'raw',
+                value: 'boolean',
+              },
+            },
+          ],
+        },
+      });
     });
   });
 

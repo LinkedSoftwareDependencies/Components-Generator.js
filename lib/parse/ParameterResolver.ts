@@ -5,6 +5,7 @@ import type { ClassIndex, ClassReference, ClassReferenceLoaded, InterfaceLoaded 
 import type { ClassLoader } from './ClassLoader';
 import type { CommentLoader } from './CommentLoader';
 import type { ConstructorData } from './ConstructorLoader';
+import type { GenericsData } from './GenericsLoader';
 import type {
   ExtensionData,
   GenericTypeParameterData,
@@ -56,11 +57,6 @@ export class ParameterResolver {
     unresolvedConstructorData: ConstructorData<ParameterRangeUnresolved>,
   ): Promise<ConstructorData<ParameterRangeResolved>> {
     return {
-      genericTypeParameters: await this.resolveGenericTypeParameterData(
-        unresolvedConstructorData.genericTypeParameters,
-        unresolvedConstructorData.classLoaded,
-        {},
-      ),
       parameters: <ParameterDataField<ParameterRangeResolved>[]> (await this.resolveParameterData(
         unresolvedConstructorData.parameters,
         unresolvedConstructorData.classLoaded,
@@ -68,6 +64,31 @@ export class ParameterResolver {
       )).filter(parameter => parameter.type === 'field'),
       classLoaded: unresolvedConstructorData.classLoaded,
     };
+  }
+
+  /**
+   * Resolve all generic type parameters of a given constructor index.
+   * @param unresolvedParametersIndex An index of unresolved constructor data.
+   */
+  public async resolveAllGenericTypeParameterData(
+    unresolvedParametersIndex: ClassIndex<GenericsData<ParameterRangeUnresolved>>,
+  ): Promise<ClassIndex<GenericsData<ParameterRangeResolved>>> {
+    const resolvedGenericsIndex: ClassIndex<GenericsData<ParameterRangeResolved>> = {};
+
+    // Resolve parameters for the different constructors in parallel
+    await Promise.all(Object.entries(unresolvedParametersIndex)
+      .map(async([ className, unresolvedGenericsData ]) => {
+        resolvedGenericsIndex[className] = {
+          genericTypeParameters: await this.resolveGenericTypeParameterData(
+            unresolvedGenericsData.genericTypeParameters,
+            unresolvedGenericsData.classLoaded,
+            {},
+          ),
+          classLoaded: unresolvedGenericsData.classLoaded,
+        };
+      }));
+
+    return resolvedGenericsIndex;
   }
 
   /**

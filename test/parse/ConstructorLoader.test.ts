@@ -43,7 +43,6 @@ describe('ConstructorLoader', () => {
         A,
       })).toEqual({
         A: {
-          genericTypeParameters: [],
           parameters: [],
           classLoaded: A,
         },
@@ -64,7 +63,6 @@ describe('ConstructorLoader', () => {
         A,
       })).toEqual({
         A: {
-          genericTypeParameters: [],
           parameters: [],
           classLoaded: A,
         },
@@ -109,7 +107,6 @@ export class B{
         B,
       })).toEqual({
         A: {
-          genericTypeParameters: [],
           parameters: [
             {
               type: 'field',
@@ -144,7 +141,6 @@ export class B{
           classLoaded: A,
         },
         B: {
-          genericTypeParameters: [],
           parameters: [
             {
               type: 'field',
@@ -191,7 +187,6 @@ export class B{
         A,
       })).toEqual({
         A: {
-          genericTypeParameters: [],
           parameters: [
             {
               type: 'field',
@@ -222,58 +217,6 @@ export class B{
               },
             },
           ],
-          classLoaded: A,
-        },
-      });
-    });
-
-    it('should return for a single class with generic types', async() => {
-      resolutionContext.contentsOverrides = {
-        'file.d.ts': `export class A<A, B extends number, C extends Class<B, string>>{
-  constructor(){}
-}`,
-      };
-      const A = await classIndexer.loadClassChain({
-        packageName: 'p',
-        localName: 'A',
-        fileName: 'file',
-        fileNameReferenced: 'fileReferenced',
-      });
-      expect(parser.getConstructors({
-        A,
-      })).toEqual({
-        A: {
-          genericTypeParameters: [
-            {
-              name: 'A',
-            },
-            {
-              name: 'B',
-              range: {
-                type: 'raw',
-                value: 'number',
-              },
-            },
-            {
-              name: 'C',
-              range: {
-                type: 'interface',
-                value: 'Class',
-                genericTypeParameterInstantiations: [
-                  {
-                    type: 'genericTypeReference',
-                    value: 'B',
-                  },
-                  {
-                    type: 'raw',
-                    value: 'string',
-                  },
-                ],
-                origin: expect.anything(),
-              },
-            },
-          ],
-          parameters: [],
           classLoaded: A,
         },
       });

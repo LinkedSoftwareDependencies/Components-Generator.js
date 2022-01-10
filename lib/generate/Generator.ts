@@ -8,6 +8,7 @@ import { ClassIndexer } from '../parse/ClassIndexer';
 import { ClassLoader } from '../parse/ClassLoader';
 import { CommentLoader } from '../parse/CommentLoader';
 import { ConstructorLoader } from '../parse/ConstructorLoader';
+import { GenericsLoader } from '../parse/GenericsLoader';
 import type { PackageMetadata } from '../parse/PackageMetadataLoader';
 import { PackageMetadataLoader } from '../parse/PackageMetadataLoader';
 import { ParameterLoader } from '../parse/ParameterLoader';
@@ -82,6 +83,10 @@ export class Generator {
       const constructorsUnresolved = new ConstructorLoader({ commentLoader }).getConstructors(classAndInterfaceIndex);
       const constructors = await parameterResolver.resolveAllConstructorParameters(constructorsUnresolved);
 
+      // Load generics data
+      const genericsUnresolved = new GenericsLoader({ parameterLoader }).getGenerics(classAndInterfaceIndex);
+      const generics = await parameterResolver.resolveAllGenericTypeParameterData(genericsUnresolved);
+
       // Load extensions data
       const extensionsUnresolved = parameterLoader.loadAllExtensionData(classAndInterfaceIndex);
       const extensions = await parameterResolver.resolveAllExtensionData(extensionsUnresolved, classAndInterfaceIndex);
@@ -106,8 +111,9 @@ export class Generator {
         contextConstructor,
         pathDestination,
         classAndInterfaceIndex,
-        classExtensions: extensions,
         classConstructors: constructors,
+        classGenerics: generics,
+        classExtensions: extensions,
         externalComponents,
         contextParser: new ContextParser({
           documentLoader: new PrefetchedDocumentLoader({

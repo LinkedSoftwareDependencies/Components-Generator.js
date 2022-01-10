@@ -8,6 +8,7 @@ import type {
   ClassReferenceLoadedClassOrInterface,
 } from '../parse/ClassIndex';
 import type { ConstructorData } from '../parse/ConstructorLoader';
+import type { GenericsData } from '../parse/GenericsLoader';
 import type { PackageMetadata } from '../parse/PackageMetadataLoader';
 import type { DefaultNested,
   DefaultValue,
@@ -33,6 +34,7 @@ export class ComponentConstructor {
   private readonly pathDestination: PathDestinationDefinition;
   private readonly classAndInterfaceIndex: ClassIndex<ClassReferenceLoadedClassOrInterface>;
   private readonly classConstructors: ClassIndex<ConstructorData<ParameterRangeResolved>>;
+  private readonly classGenerics: ClassIndex<GenericsData<ParameterRangeResolved>>;
   private readonly classExtensions: ClassIndex<ExtensionData<ParameterRangeResolved>[]>;
   private readonly externalComponents: ExternalComponents;
   private readonly contextParser: ContextParser;
@@ -44,6 +46,7 @@ export class ComponentConstructor {
     this.pathDestination = args.pathDestination;
     this.classAndInterfaceIndex = args.classAndInterfaceIndex;
     this.classConstructors = args.classConstructors;
+    this.classGenerics = args.classGenerics;
     this.classExtensions = args.classExtensions;
     this.externalComponents = args.externalComponents;
     this.contextParser = args.contextParser;
@@ -84,6 +87,7 @@ export class ComponentConstructor {
         },
         classReference,
         this.classConstructors[className],
+        this.classGenerics[className],
         this.classExtensions[className],
       ));
     }
@@ -166,6 +170,7 @@ export class ComponentConstructor {
    * @param externalContextsCallback Callback for external contexts.
    * @param classReference Class reference of the class component.
    * @param constructorData Constructor data of the owning class.
+   * @param genericsData Generics data of the owning class.
    * @param classExtensions Class extensions of the owning class.
    */
   public async constructComponent(
@@ -173,15 +178,16 @@ export class ComponentConstructor {
     externalContextsCallback: ExternalContextCallback,
     classReference: ClassReferenceLoadedClassOrInterface,
     constructorData: ConstructorData<ParameterRangeResolved> | undefined,
+    genericsData: GenericsData<ParameterRangeResolved> | undefined,
     classExtensions: ExtensionData<ParameterRangeResolved>[] | undefined,
   ): Promise<ComponentDefinition> {
     // Determine generic type parameters
-    const genericTypeParameters = constructorData ?
+    const genericTypeParameters = genericsData ?
       await this.constructGenericTypeParameters(
         context,
         externalContextsCallback,
         classReference,
-        constructorData.genericTypeParameters,
+        genericsData.genericTypeParameters,
       ) :
       undefined;
 
@@ -799,6 +805,7 @@ export interface ComponentConstructorArgs {
   pathDestination: PathDestinationDefinition;
   classAndInterfaceIndex: ClassIndex<ClassReferenceLoadedClassOrInterface>;
   classConstructors: ClassIndex<ConstructorData<ParameterRangeResolved>>;
+  classGenerics: ClassIndex<GenericsData<ParameterRangeResolved>>;
   classExtensions: ClassIndex<ExtensionData<ParameterRangeResolved>[]>;
   externalComponents: ExternalComponents;
   contextParser: ContextParser;

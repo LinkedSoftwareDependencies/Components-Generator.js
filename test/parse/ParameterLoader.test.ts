@@ -279,7 +279,6 @@ export class A{
 }`);
       expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
-        genericTypeParameters: [],
         parameters: [],
       });
     });
@@ -291,7 +290,6 @@ export class A{
 }`);
       expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
-        genericTypeParameters: [],
         parameters: [
           {
             type: 'field',
@@ -315,7 +313,6 @@ export class A{
 }`);
       expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
-        genericTypeParameters: [],
         parameters: [
           {
             type: 'field',
@@ -340,7 +337,6 @@ export class A{
 }`);
       expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
-        genericTypeParameters: [],
         parameters: [],
       });
     });
@@ -357,7 +353,6 @@ export class A{
 }`);
       expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
-        genericTypeParameters: [],
         parameters: [
           {
             type: 'field',
@@ -408,7 +403,6 @@ export class A{
 }`);
       expect(parameterLoader.loadConstructorFields(constructorChain)).toMatchObject({
         classLoaded,
-        genericTypeParameters: [],
         parameters: [
           {
             name: 'fieldA',
@@ -439,7 +433,6 @@ export class A{
 }`);
       expect(parameterLoader.loadConstructorFields(constructorChain)).toMatchObject({
         classLoaded,
-        genericTypeParameters: [],
         parameters: [
           {
             name: 'fieldA',
@@ -462,7 +455,6 @@ export class A{
 }`);
       expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
-        genericTypeParameters: [],
         parameters: [
           {
             type: 'field',
@@ -483,7 +475,6 @@ export class A{
 }`);
       expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
-        genericTypeParameters: [],
         parameters: [
           {
             type: 'field',
@@ -504,7 +495,6 @@ export class A{
 }`);
       expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
-        genericTypeParameters: [],
         parameters: [
           {
             type: 'field',
@@ -525,7 +515,6 @@ export class A{
 }`);
       expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
-        genericTypeParameters: [],
         parameters: [
           {
             type: 'field',
@@ -549,7 +538,6 @@ export class A{
 }`);
       expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
-        genericTypeParameters: [],
         parameters: [
           {
             type: 'field',
@@ -578,7 +566,6 @@ export class A{
 }`);
       expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
-        genericTypeParameters: [],
         parameters: [
           {
             type: 'field',
@@ -611,7 +598,6 @@ export class A{
 }`);
       expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
-        genericTypeParameters: [],
         parameters: [
           {
             type: 'field',
@@ -640,7 +626,6 @@ export class A{
 }`);
       expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
-        genericTypeParameters: [],
         parameters: [
           {
             type: 'field',
@@ -669,7 +654,6 @@ export class A{
 }`);
       expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
-        genericTypeParameters: [],
         parameters: [
           {
             type: 'field',
@@ -701,7 +685,6 @@ export class A{
 }`);
       expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
-        genericTypeParameters: [],
         parameters: [
           {
             type: 'field',
@@ -733,7 +716,6 @@ export class A{
 }`);
       expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
         classLoaded,
-        genericTypeParameters: [],
         parameters: [
           {
             type: 'field',
@@ -757,29 +739,56 @@ export class A{
         ],
       });
     });
+  });
+
+  describe('loadClassGenerics', () => {
+    const clazz: ClassReference = {
+      packageName: 'p',
+      localName: 'A',
+      fileName: 'file',
+      fileNameReferenced: 'fileReferenced',
+    };
+
+    async function getGenerics(definition: string) {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': definition,
+      };
+      const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
+      const parameterLoader = new ParameterLoader({ commentLoader });
+
+      return { parameterLoader, classLoaded };
+    }
+
+    it('should be empty for a class without generics', async() => {
+      const { parameterLoader, classLoaded } = await getGenerics(`
+export class A{}`);
+      expect(parameterLoader.loadClassGenerics(classLoaded)).toEqual({
+        classLoaded,
+        genericTypeParameters: [],
+      });
+    });
 
     it('should handle a single untyped generic', async() => {
-      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
+      const { parameterLoader, classLoaded } = await getGenerics(`
 export class A<T>{
   constructor() {}
 }`);
-      expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
+      expect(parameterLoader.loadClassGenerics(classLoaded)).toEqual({
         classLoaded,
         genericTypeParameters: [
           {
             name: 'T',
           },
         ],
-        parameters: [],
       });
     });
 
     it('should handle a single typed generic', async() => {
-      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
+      const { parameterLoader, classLoaded } = await getGenerics(`
 export class A<T extends string>{
   constructor() {}
 }`);
-      expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
+      expect(parameterLoader.loadClassGenerics(classLoaded)).toEqual({
         classLoaded,
         genericTypeParameters: [
           {
@@ -787,16 +796,15 @@ export class A<T extends string>{
             range: { type: 'raw', value: 'string' },
           },
         ],
-        parameters: [],
       });
     });
 
     it('should handle a single union typed generic', async() => {
-      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
+      const { parameterLoader, classLoaded } = await getGenerics(`
 export class A<T extends string | number>{
   constructor() {}
 }`);
-      expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
+      expect(parameterLoader.loadClassGenerics(classLoaded)).toEqual({
         classLoaded,
         genericTypeParameters: [
           {
@@ -810,16 +818,15 @@ export class A<T extends string | number>{
             },
           },
         ],
-        parameters: [],
       });
     });
 
     it('should handle a multiple typed generic', async() => {
-      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
+      const { parameterLoader, classLoaded } = await getGenerics(`
 export class A<T extends string, U extends number>{
   constructor() {}
 }`);
-      expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
+      expect(parameterLoader.loadClassGenerics(classLoaded)).toEqual({
         classLoaded,
         genericTypeParameters: [
           {
@@ -831,16 +838,15 @@ export class A<T extends string, U extends number>{
             range: { type: 'raw', value: 'number' },
           },
         ],
-        parameters: [],
       });
     });
 
     it('should handle a single typed generic with sub-generic', async() => {
-      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
+      const { parameterLoader, classLoaded } = await getGenerics(`
 export class A<T extends Class<U>>{
   constructor() {}
 }`);
-      expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
+      expect(parameterLoader.loadClassGenerics(classLoaded)).toEqual({
         classLoaded,
         genericTypeParameters: [
           {
@@ -859,16 +865,15 @@ export class A<T extends Class<U>>{
             },
           },
         ],
-        parameters: [],
       });
     });
 
     it('should handle a multiple typed generic with linked sub-generics', async() => {
-      const { constructorChain, parameterLoader, classLoaded } = await getConstructor(`
+      const { parameterLoader, classLoaded } = await getGenerics(`
 export class A<T extends Class<U>, U extends number>{
   constructor() {}
 }`);
-      expect(parameterLoader.loadConstructorFields(constructorChain)).toEqual({
+      expect(parameterLoader.loadClassGenerics(classLoaded)).toEqual({
         classLoaded,
         genericTypeParameters: [
           {
@@ -890,7 +895,6 @@ export class A<T extends Class<U>, U extends number>{
             range: { type: 'raw', value: 'number' },
           },
         ],
-        parameters: [],
       });
     });
   });
