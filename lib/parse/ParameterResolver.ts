@@ -20,7 +20,7 @@ export class ParameterResolver {
   private readonly classLoader: ClassLoader;
   private readonly commentLoader: CommentLoader;
   private readonly ignoreClasses: Record<string, boolean>;
-  private readonly cacheInterfaceRange: LRUCache<string, ParameterRangeResolved>;
+  private readonly cacheInterfaceRange: LRUCache<string, Promise<ParameterRangeResolved>>;
 
   public constructor(args: ParameterResolverArgs) {
     this.classLoader = args.classLoader;
@@ -266,7 +266,7 @@ export class ParameterResolver {
    * @param genericTypeRemappings A remapping of generic type names.
    * @param getNestedFields If Records and interfaces should produce nested field ranges.
    */
-  public async resolveRangeInterface(
+  public resolveRangeInterface(
     interfaceName: string,
     qualifiedPath: string[] | undefined,
     genericTypeParameterInstances: ParameterRangeUnresolved[] | undefined,
@@ -278,7 +278,7 @@ export class ParameterResolver {
     const cacheKey = `${interfaceName}::${(qualifiedPath || []).join('.')}::${owningClass.fileName}`;
     let resolved = this.cacheInterfaceRange.get(cacheKey);
     if (!resolved) {
-      resolved = await this.resolveRangeInterfaceInner(
+      resolved = this.resolveRangeInterfaceInner(
         interfaceName,
         qualifiedPath,
         genericTypeParameterInstances,
