@@ -536,6 +536,103 @@ describe('ParameterResolver', () => {
     });
   });
 
+  describe('hashParameterRangeUnresolved', () => {
+    it('should hash undefined', () => {
+      expect(loader.hashParameterRangeUnresolved({ type: 'undefined' }))
+        .toEqual('undefined');
+    });
+
+    it('should hash interface', () => {
+      expect(loader.hashParameterRangeUnresolved(<any> { type: 'interface', value: 'IFACE' }))
+        .toEqual('interface:IFACE');
+    });
+
+    it('should hash genericTypeReference', () => {
+      expect(loader.hashParameterRangeUnresolved({ type: 'genericTypeReference', value: 'val' }))
+        .toEqual('genericTypeReference:val');
+    });
+
+    it('should hash raw', () => {
+      expect(loader.hashParameterRangeUnresolved({ type: 'raw', value: 'boolean' }))
+        .toEqual('raw:boolean');
+    });
+
+    it('should hash literal', () => {
+      expect(loader.hashParameterRangeUnresolved({ type: 'literal', value: 'val' }))
+        .toEqual('literal:val');
+    });
+
+    it('should hash override', () => {
+      expect(loader.hashParameterRangeUnresolved({ type: 'override', value: 'val' }))
+        .toEqual('override:val');
+    });
+
+    it('should hash union', () => {
+      expect(loader.hashParameterRangeUnresolved({
+        type: 'union',
+        elements: [
+          { type: 'raw', value: 'boolean' },
+          { type: 'raw', value: 'number' },
+        ],
+      }))
+        .toEqual('union:[raw:boolean,raw:number]');
+    });
+
+    it('should hash intersection', () => {
+      expect(loader.hashParameterRangeUnresolved({
+        type: 'intersection',
+        elements: [
+          { type: 'raw', value: 'boolean' },
+          { type: 'raw', value: 'number' },
+        ],
+      }))
+        .toEqual('intersection:[raw:boolean,raw:number]');
+    });
+
+    it('should hash tuple', () => {
+      expect(loader.hashParameterRangeUnresolved({
+        type: 'tuple',
+        elements: [
+          { type: 'raw', value: 'boolean' },
+          { type: 'raw', value: 'number' },
+        ],
+      }))
+        .toEqual('tuple:[raw:boolean,raw:number]');
+    });
+
+    it('should hash rest', () => {
+      expect(loader.hashParameterRangeUnresolved({
+        type: 'rest',
+        value: { type: 'raw', value: 'boolean' },
+      }))
+        .toEqual('rest:[raw:boolean]');
+    });
+
+    it('should hash array', () => {
+      expect(loader.hashParameterRangeUnresolved({
+        type: 'array',
+        value: { type: 'raw', value: 'boolean' },
+      }))
+        .toEqual('array:[raw:boolean]');
+    });
+
+    it('should hash keyof', () => {
+      expect(loader.hashParameterRangeUnresolved({
+        type: 'keyof',
+        value: { type: 'raw', value: 'boolean' },
+      }))
+        .toEqual('keyof:[raw:boolean]');
+    });
+
+    it('should hash hash', () => {
+      expect(loader.hashParameterRangeUnresolved({
+        type: 'hash',
+        value: <any> { a: 'b' },
+      }))
+        .toEqual('hash:{"a":"b"}');
+    });
+  });
+
   describe('resolveRange', () => {
     const classReference: ClassReferenceLoaded = <any> { localName: 'A', fileName: 'A' };
 
@@ -1246,7 +1343,26 @@ class ClassA {}
       const second = await loader
         .resolveRangeInterface('ClassA', undefined, undefined, classReference, classReference, {}, true);
       expect(first).toBe(second);
-      expect((<any> loader).cacheInterfaceRange.keys()).toEqual([ 'ClassA::::A' ]);
+      expect((<any> loader).cacheInterfaceRange.keys()).toEqual([ 'ClassA::::::A' ]);
+    });
+
+    it('should resolve a class multiple times with different generics without cache', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `
+class ClassA {}
+`,
+      };
+      const first = await loader
+        .resolveRangeInterface('ClassA', undefined, [
+          { type: 'raw', value: 'boolean' },
+        ], classReference, classReference, {}, true);
+      const second = await loader
+        .resolveRangeInterface('ClassA', undefined, [
+          { type: 'raw', value: 'number' },
+        ], classReference, classReference, {}, true);
+      expect(first).not.toBe(second);
+      expect((<any> loader).cacheInterfaceRange.keys())
+        .toEqual([ 'ClassA::::raw:number::A', 'ClassA::::raw:boolean::A' ]);
     });
 
     it('should resolve an implicit class', async() => {

@@ -255,6 +255,33 @@ export class ParameterResolver {
   }
 
   /**
+   * Hash the given parameter range to a unique string representation.
+   * @param range An unresolved range.
+   */
+  public hashParameterRangeUnresolved(range: ParameterRangeUnresolved): string {
+    switch (range.type) {
+      case 'undefined':
+        return 'undefined';
+      case 'interface':
+      case 'genericTypeReference':
+      case 'raw':
+      case 'literal':
+      case 'override':
+        return `${range.type}:${range.value}`;
+      case 'union':
+      case 'intersection':
+      case 'tuple':
+        return `${range.type}:[${range.elements.map(element => this.hashParameterRangeUnresolved(element)).join(',')}]`;
+      case 'rest':
+      case 'array':
+      case 'keyof':
+        return `${range.type}:[${this.hashParameterRangeUnresolved(range.value)}]`;
+      case 'hash':
+        return `hash:${JSON.stringify(range.value)}`;
+    }
+  }
+
+  /**
    * Resolve a class or interface.
    * @param interfaceName A class or interface name.
    * @param qualifiedPath Qualified path to the class or interface. Is undefined if there is no qualified path.
@@ -275,7 +302,11 @@ export class ParameterResolver {
     genericTypeRemappings: Record<string, ParameterRangeUnresolved>,
     getNestedFields: boolean,
   ): Promise<ParameterRangeResolved> {
-    const cacheKey = `${interfaceName}::${(qualifiedPath || []).join('.')}::${owningClass.fileName}`;
+    const cacheKeyGenerics = genericTypeParameterInstances ?
+      genericTypeParameterInstances.map(genericTypeParameterInstance => this
+        .hashParameterRangeUnresolved(genericTypeParameterInstance)).join(',') :
+      '';
+    const cacheKey = `${interfaceName}::${(qualifiedPath || []).join('.')}::${cacheKeyGenerics}::${owningClass.fileName}`;
     let resolved = this.cacheInterfaceRange.get(cacheKey);
     if (!resolved) {
       resolved = this.resolveRangeInterfaceInner(
