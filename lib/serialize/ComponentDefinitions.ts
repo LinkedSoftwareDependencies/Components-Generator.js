@@ -28,7 +28,7 @@ export interface ComponentDefinition {
 }
 
 export type ExtensionDefinition = string | {
-  '@type': 'ParameterRangeGenericComponent';
+  '@type': 'GenericComponentExtension';
   component: string;
   genericTypeInstances: ParameterDefinitionRange[];
 };

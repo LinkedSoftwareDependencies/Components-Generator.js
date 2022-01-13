@@ -883,7 +883,7 @@ describe('ComponentConstructor', () => {
           { type: 'raw', value: 'string' },
         ],
       })).toEqual({
-        '@type': 'ParameterRangeGenericComponent',
+        '@type': 'GenericComponentExtension',
         component: 'mp:components/a/b/file-param.jsonld#MyClass',
         genericTypeInstances: [ 'xsd:boolean', 'xsd:string' ],
       });

@@ -242,7 +242,7 @@ export class ComponentConstructor {
     const id = await this.classNameToId(context, externalContextsCallback, extensionData.classLoaded);
     if (extensionData.genericTypeInstantiations.length > 0) {
       return {
-        '@type': 'ParameterRangeGenericComponent',
+        '@type': 'GenericComponentExtension',
         component: id,
         genericTypeInstances: await Promise.all(extensionData.genericTypeInstantiations
           .map(async genericTypeInstantiation => this.constructParameterRange(
