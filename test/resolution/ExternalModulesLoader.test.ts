@@ -279,6 +279,23 @@ describe('ExternalModulesLoader', () => {
         .toEqual([]);
     });
 
+    it('should ignore wildcard constructor parameters', () => {
+      const constructors: ClassIndex<ConstructorData<ParameterRangeResolved>> = <any> {
+        Class1: {
+          parameters: [
+            {
+              range: {
+                type: 'wildcard',
+                value: 'ignored',
+              },
+            },
+          ],
+        },
+      };
+      expect(loader.findExternalPackages({}, constructors))
+        .toEqual([]);
+    });
+
     it('should ignore genericTypeReference constructor parameters', () => {
       const constructors: ClassIndex<ConstructorData<ParameterRangeResolved>> = <any> {
         Class1: {

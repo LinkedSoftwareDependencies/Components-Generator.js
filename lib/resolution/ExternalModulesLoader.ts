@@ -96,6 +96,7 @@ export class ExternalModulesLoader {
       case 'literal':
       case 'override':
       case 'undefined':
+      case 'wildcard':
       case 'genericTypeReference':
         break;
       case 'class':
