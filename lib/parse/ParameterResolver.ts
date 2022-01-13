@@ -211,7 +211,7 @@ export class ParameterResolver {
       case 'interface':
         if (this.isIgnored(range.qualifiedPath, range.value)) {
           return {
-            type: 'undefined',
+            type: 'wildcard',
           };
         }
 
@@ -242,6 +242,10 @@ export class ParameterResolver {
           type: 'nested',
           value: await this
             .getNestedFieldsFromHash(range.value, owningClass, genericTypeRemappings, handlingInterfaces),
+        };
+      case 'wildcard':
+        return {
+          type: 'wildcard',
         };
       case 'undefined':
         return {
@@ -291,6 +295,8 @@ export class ParameterResolver {
     switch (range.type) {
       case 'undefined':
         return 'undefined';
+      case 'wildcard':
+        return 'wildcard';
       case 'interface':
       case 'genericTypeReference':
       case 'raw':

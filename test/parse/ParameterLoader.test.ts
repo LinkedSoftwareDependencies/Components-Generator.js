@@ -1779,9 +1779,9 @@ export interface A{
         });
     });
 
-    it('should get the range of an unknown type as undefined', async() => {
+    it('should get the range of an unknown type as wildcard', async() => {
       expect(await getFieldRange('fieldA: unknown', {}))
-        .toEqual({ type: 'undefined' });
+        .toEqual({ type: 'wildcard' });
     });
 
     it('should get the range of an undefined type as undefined', async() => {
@@ -1789,19 +1789,19 @@ export interface A{
         .toEqual({ type: 'undefined' });
     });
 
-    it('should get the range of an any type as undefined', async() => {
+    it('should get the range of an any type as wildcard', async() => {
       expect(await getFieldRange('fieldA: any', {}))
-        .toEqual({ type: 'undefined' });
+        .toEqual({ type: 'wildcard' });
     });
 
-    it('should get the range of an void type as undefined', async() => {
+    it('should get the range of an void type as wildcard', async() => {
       expect(await getFieldRange('fieldA: void', {}))
-        .toEqual({ type: 'undefined' });
+        .toEqual({ type: 'wildcard' });
     });
 
-    it('should get the range of a null type as undefined', async() => {
+    it('should get the range of a null type as wildcard', async() => {
       expect(await getFieldRange('fieldA: null', {}))
-        .toEqual({ type: 'undefined' });
+        .toEqual({ type: 'wildcard' });
     });
 
     it('should get the range of a union type of two raw types', async() => {

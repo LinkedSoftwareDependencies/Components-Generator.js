@@ -2468,7 +2468,7 @@ describe('ComponentConstructor', () => {
       });
     });
 
-    it('should construct on a nested parameter range as undefined', async() => {
+    it('should construct on a nested parameter range as wildcard', async() => {
       const rangeValue: ParameterData<any>[] = [];
       expect(await ctor.constructParameterRange(
         { type: 'nested', value: rangeValue },
@@ -2476,7 +2476,7 @@ describe('ComponentConstructor', () => {
         externalContextsCallback,
         'mp:components/a/b/file-param.jsonld#MyClass_field',
       )).toEqual({
-        '@type': 'ParameterRangeUndefined',
+        '@type': 'ParameterRangeWildcard',
       });
     });
 
@@ -2488,6 +2488,17 @@ describe('ComponentConstructor', () => {
         'mp:components/a/b/file-param.jsonld#MyClass_field',
       )).toEqual({
         '@type': 'ParameterRangeUndefined',
+      });
+    });
+
+    it('should construct a wildcard parameter range', async() => {
+      expect(await ctor.constructParameterRange(
+        { type: 'wildcard' },
+        context,
+        externalContextsCallback,
+        'mp:components/a/b/file-param.jsonld#MyClass_field',
+      )).toEqual({
+        '@type': 'ParameterRangeWildcard',
       });
     });
 

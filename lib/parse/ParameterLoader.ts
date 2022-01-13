@@ -387,12 +387,13 @@ export class ParameterLoader {
         };
       case AST_NODE_TYPES.TSParenthesizedType:
         return this.getRangeFromTypeNode(classLoaded, typeNode.typeAnnotation, errorIdentifier);
-      case AST_NODE_TYPES.TSUnknownKeyword:
       case AST_NODE_TYPES.TSUndefinedKeyword:
+        return { type: 'undefined' };
+      case AST_NODE_TYPES.TSUnknownKeyword:
       case AST_NODE_TYPES.TSVoidKeyword:
       case AST_NODE_TYPES.TSNullKeyword:
       case AST_NODE_TYPES.TSAnyKeyword:
-        return { type: 'undefined' };
+        return { type: 'wildcard' };
       case AST_NODE_TYPES.TSTupleType:
         return {
           type: 'tuple',
@@ -508,6 +509,7 @@ export class ParameterLoader {
         // Replace these types
         return override;
       case 'undefined':
+      case 'wildcard':
       case 'override':
         // Override has no effect here
         return range;
@@ -732,6 +734,8 @@ export type ParameterRangeUnresolved = {
 } | {
   type: 'undefined';
 } | {
+  type: 'wildcard';
+} | {
   type: 'union';
   elements: ParameterRangeUnresolved[];
 } | {
@@ -772,6 +776,8 @@ export type ParameterRangeResolved = {
   value: ParameterData<ParameterRangeResolved>[];
 } | {
   type: 'undefined';
+} | {
+  type: 'wildcard';
 } | {
   type: 'union';
   elements: ParameterRangeResolved[];

@@ -731,11 +731,15 @@ export class ComponentConstructor {
       case 'nested':
         // TODO: Composition of nested fields is unsupported
         return {
-          '@type': 'ParameterRangeUndefined',
+          '@type': 'ParameterRangeWildcard',
         };
       case 'undefined':
         return {
           '@type': 'ParameterRangeUndefined',
+        };
+      case 'wildcard':
+        return {
+          '@type': 'ParameterRangeWildcard',
         };
       case 'union':
       case 'intersection':

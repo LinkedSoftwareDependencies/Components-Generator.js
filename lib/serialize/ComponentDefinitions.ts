@@ -59,6 +59,8 @@ export type ParameterDefinitionRange = string | { '@id': string; parameters: Par
 } | {
   '@type': 'ParameterRangeUndefined';
 } | {
+  '@type': 'ParameterRangeWildcard';
+} | {
   '@type': 'ParameterRangeCollectEntries';
   'parameterRangeCollectEntriesParameters': ParameterDefinition[];
 } | {

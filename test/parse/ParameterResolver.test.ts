@@ -542,6 +542,11 @@ describe('ParameterResolver', () => {
         .toEqual('undefined');
     });
 
+    it('should hash wildcard', () => {
+      expect(loader.hashParameterRangeUnresolved({ type: 'wildcard' }))
+        .toEqual('wildcard');
+    });
+
     it('should hash interface', () => {
       expect(loader.hashParameterRangeUnresolved(<any> { type: 'interface', value: 'IFACE' }))
         .toEqual('interface:IFACE');
@@ -724,7 +729,7 @@ describe('ParameterResolver', () => {
         genericTypeParameterInstantiations: [],
         origin: classReference,
       }, classReference, {}, true, new Set())).toMatchObject({
-        type: 'undefined',
+        type: 'wildcard',
       });
     });
 
@@ -741,7 +746,7 @@ describe('ParameterResolver', () => {
         genericTypeParameterInstantiations: [],
         origin: classReference,
       }, classReference, {}, true, new Set())).toMatchObject({
-        type: 'undefined',
+        type: 'wildcard',
       });
     });
 
@@ -802,6 +807,14 @@ export interface MyInterface extends IgnoredInterface{};
       }, classReference, {}, true, new Set())).toMatchObject({
         type: 'nested',
         value: [],
+      });
+    });
+
+    it('should handle a wildcard range', async() => {
+      expect(await loader.resolveRange({
+        type: 'wildcard',
+      }, classReference, {}, true, new Set())).toMatchObject({
+        type: 'wildcard',
       });
     });
 
