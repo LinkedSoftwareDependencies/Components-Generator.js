@@ -1,6 +1,26 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.0.0-beta.5"></a>
+## [v3.0.0-beta.5](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.0-beta.4...v3.0.0-beta.5) - 2022-01-17
+
+### Added
+* [Generate wildcard parameter ranges](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/193ea080f4bfbc4e4591b2609eb5a4bf554f605e)
+* Improve generics support:
+  * [Output generic type instances on class/iface extensions](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/3c7528ea4b774a808d053a8e55bc1f513ca9f022)
+  * [Generate wrapped comp extensions as GenericComponentExtension](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/110e3832e45958e4a974fd7a057b292b2be18f6b)
+* [Handle references to external packages that do no expose components](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/22c43c03ed5fa3da7b4c4b6e06cd71e9eb0c048e)
+* [Cache interface range resolution](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/c184e4722c5cda54aafce7ca92bf070551d6baee)
+
+### Fixed
+* [Inherit qualified path on class/iface chains](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/75d962c52423890ffb4ec9d27f88bf29a712149b)
+* [Fix resolution not working on type-only packages, Closes #83](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/e1c0126a7a396cd7792385bb1bdda9984cfd1626)
+* [Don't resolve as nested fields when handling extension data](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/a7401ef79e84d3ddef88ee7bf2008cdb91506b5e)
+* [Emit @type of ExtensionDefinitions](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/5545a4ebb116ea06f13a374dd65c658bf85dd15c)
+* [Fix qualified path incorrectly propagating to extension defs](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/2b12135a83d7132545b426cf8c2ecb75fd0a0d22)
+* [Don't throw on hash range when getNestedFields is false](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/f87ea4c03aca4bc7b2741aebbac669b2d84c6ca6)
+* [Fix generics not being generated for interfaces](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/facf5fc164321d9a2ec1be92c75d2f493f722120)
+
 <a name="v3.0.0-beta.4"></a>
 ## [v3.0.0-beta.4](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.0-beta.3...v3.0.0-beta.4) - 2021-12-09
 
