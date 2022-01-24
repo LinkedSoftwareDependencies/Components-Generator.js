@@ -1,10 +1,10 @@
 import { AST_NODE_TYPES } from '@typescript-eslint/types/dist/ast-node-types';
 import type { TSTypeLiteral } from '@typescript-eslint/types/dist/ts-estree';
-
 import type { ClassLoaded, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from '../../lib/parse/ClassIndex';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
 import { CommentLoader } from '../../lib/parse/CommentLoader';
 import { ConstructorLoader } from '../../lib/parse/ConstructorLoader';
+import { ParameterLoader } from '../../lib/parse/ParameterLoader';
 import { ParameterResolver } from '../../lib/parse/ParameterResolver';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
@@ -12,6 +12,7 @@ describe('ParameterResolver', () => {
   const resolutionContext = new ResolutionContextMocked({});
   let logger: any;
   let commentLoader: CommentLoader;
+  let parameterLoader: ParameterLoader;
   let classLoader: ClassLoader;
   let ignoreClasses: Record<string, boolean>;
   let loader: ParameterResolver;
@@ -23,7 +24,8 @@ describe('ParameterResolver', () => {
     commentLoader = new CommentLoader();
     classLoader = new ClassLoader({ resolutionContext, logger, commentLoader });
     ignoreClasses = {};
-    loader = new ParameterResolver({ classLoader, ignoreClasses, commentLoader });
+    parameterLoader = new ParameterLoader({ commentLoader, hardErrorUnsupported: true, logger });
+    loader = new ParameterResolver({ classLoader, ignoreClasses, parameterLoader });
   });
 
   describe('resolveAllConstructorParameters', () => {
@@ -2282,7 +2284,7 @@ export class A{
   constructor(fieldA: ${definition}) {}
 }`;
       const classLoaded = await classLoader.loadClassDeclaration(classReference, false, false);
-      const hash: TSTypeLiteral = (<any> (new ConstructorLoader({ commentLoader })
+      const hash: TSTypeLiteral = (<any> (new ConstructorLoader({ parameterLoader })
         .getConstructor({ value: classLoaded })!.constructor)
         .value.params[0]).typeAnnotation.typeAnnotation;
 

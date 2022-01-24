@@ -17,6 +17,7 @@ Usage:
        -i ignore-classes.json  Relative path to an optional file with class names to ignore
        -l info                 The logger level
        -r prefix               Optional custom JSON-LD module prefix
+       --lenient               If unsupported language features must produce a warning instead of an error
        --debugState            If a 'componentsjs-generator-debug-state.json' file should be created with debug information
        --help                  Show information about this command
 `);

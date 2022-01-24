@@ -36,4 +36,9 @@ export interface GeneratorConfig {
    * If a 'componentsjs-generator-debug-state.json' file should be created with debug information.
    */
   debugState: boolean;
+  /**
+   * If unsupported language features should cause a hard crash.
+   * Otherwise they are emitted as warning instead of error.
+   */
+  hardErrorUnsupported: boolean;
 }

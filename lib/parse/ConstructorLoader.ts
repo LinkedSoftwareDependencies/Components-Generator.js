@@ -2,18 +2,16 @@ import type { ClassDeclaration, MethodDefinition } from '@typescript-eslint/type
 import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import type { ClassIndex, ClassLoaded, ClassReferenceLoaded, GenericallyTyped } from './ClassIndex';
-import type { CommentLoader } from './CommentLoader';
-import type { ParameterDataField, ParameterRangeUnresolved } from './ParameterLoader';
-import { ParameterLoader } from './ParameterLoader';
+import type { ParameterDataField, ParameterRangeUnresolved, ParameterLoader } from './ParameterLoader';
 
 /**
  * Loads the constructor data of classes.
  */
 export class ConstructorLoader {
-  private readonly commentLoader: CommentLoader;
+  private readonly parameterLoader: ParameterLoader;
 
   public constructor(args: ConstructorLoaderArgs) {
-    this.commentLoader = args.commentLoader;
+    this.parameterLoader = args.parameterLoader;
   }
 
   /**
@@ -33,10 +31,9 @@ export class ConstructorLoader {
 
       // Fill in constructor data if we're loading a class, and we find a constructor in the inheritance chain.
       if (classLoadedRoot.type === 'class') {
-        const parameterLoader = new ParameterLoader({ commentLoader: this.commentLoader });
         const constructorChain = this.getConstructorChain({ value: classLoadedRoot });
         if (constructorChain.length > 0) {
-          constructorDataIndex[className] = parameterLoader.loadConstructorFields(constructorChain);
+          constructorDataIndex[className] = this.parameterLoader.loadConstructorFields(constructorChain);
         }
       }
     }
@@ -124,7 +121,7 @@ export class ConstructorLoader {
 }
 
 export interface ConstructorLoaderArgs {
-  commentLoader: CommentLoader;
+  parameterLoader: ParameterLoader;
 }
 
 /**

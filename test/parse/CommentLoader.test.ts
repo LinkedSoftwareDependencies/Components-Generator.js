@@ -4,6 +4,7 @@ import { ClassIndexer } from '../../lib/parse/ClassIndexer';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
 import { CommentLoader } from '../../lib/parse/CommentLoader';
 import { ConstructorLoader } from '../../lib/parse/ConstructorLoader';
+import { ParameterLoader } from '../../lib/parse/ParameterLoader';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
 describe('CommentLoader', () => {
@@ -32,7 +33,8 @@ describe('CommentLoader', () => {
         ignoreClasses: {},
         logger,
       }).loadClassChain(clazz);
-      const constructorLoader = new ConstructorLoader({ commentLoader: loader });
+      const parameterLoader = new ParameterLoader({ commentLoader: loader, hardErrorUnsupported: true, logger });
+      const constructorLoader = new ConstructorLoader({ parameterLoader });
       const constructorChain = constructorLoader.getConstructorChain({ value: classLoaded });
       return { loader, constructorChain, classLoaded };
     }
@@ -153,7 +155,8 @@ export class C{
       const loader = new CommentLoader();
       const classLoader = new ClassLoader({ resolutionContext, logger, commentLoader: loader });
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
-      const constructorLoader = new ConstructorLoader({ commentLoader: loader });
+      const parameterLoader = new ParameterLoader({ commentLoader: loader, hardErrorUnsupported: true, logger });
+      const constructorLoader = new ConstructorLoader({ parameterLoader });
       const constructor = constructorLoader.getConstructor({ value: classLoaded })!.constructor;
       return { loader, constructor, classLoaded };
     }
@@ -663,7 +666,8 @@ export class A{}`,
       const loader = new CommentLoader();
       const classLoader = new ClassLoader({ resolutionContext, logger, commentLoader: loader });
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
-      const constructorLoader = new ConstructorLoader({ commentLoader: loader });
+      const parameterLoader = new ParameterLoader({ commentLoader: loader, hardErrorUnsupported: true, logger });
+      const constructorLoader = new ConstructorLoader({ parameterLoader });
       const field = <any> (constructorLoader.getConstructor({ value: classLoaded })!.constructor).value.params[0];
       return { loader, field, classLoaded };
     }

@@ -44,6 +44,7 @@ export class GeneratorFactory {
         acc[entry] = true;
         return acc;
       }, {}),
+      hardErrorUnsupported: config.hardErrorUnsupported,
     });
   }
 
@@ -69,6 +70,7 @@ export class GeneratorFactory {
       logLevel: 'info',
       modulePrefix: undefined,
       debugState: false,
+      hardErrorUnsupported: true,
     };
   }
 
@@ -94,6 +96,9 @@ export class GeneratorFactory {
     }
     if (cliArgs.debugState) {
       config.debugState = cliArgs.debugState;
+    }
+    if (cliArgs.lenient) {
+      config.hardErrorUnsupported = false;
     }
     return config;
   }

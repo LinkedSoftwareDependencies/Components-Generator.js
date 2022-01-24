@@ -4,6 +4,7 @@ import { ClassIndexer } from '../../lib/parse/ClassIndexer';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
 import { CommentLoader } from '../../lib/parse/CommentLoader';
 import { ConstructorLoader } from '../../lib/parse/ConstructorLoader';
+import { ParameterLoader } from '../../lib/parse/ParameterLoader';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
 describe('ConstructorLoader', () => {
@@ -15,7 +16,8 @@ describe('ConstructorLoader', () => {
 
   beforeEach(() => {
     commentLoader = new CommentLoader();
-    parser = new ConstructorLoader({ commentLoader });
+    const parameterLoader = new ParameterLoader({ commentLoader, hardErrorUnsupported: true, logger });
+    parser = new ConstructorLoader({ parameterLoader });
     logger = {
       debug: jest.fn(),
     };

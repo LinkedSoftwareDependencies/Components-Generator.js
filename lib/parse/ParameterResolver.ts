@@ -8,28 +8,25 @@ import type {
   InterfaceLoaded,
 } from './ClassIndex';
 import type { ClassLoader } from './ClassLoader';
-import type { CommentLoader } from './CommentLoader';
 import type { ConstructorData } from './ConstructorLoader';
 import type { GenericsData } from './GenericsLoader';
-import type {
-  ExtensionData,
+import type { ExtensionData,
   GenericTypeParameterData,
   ParameterData,
   ParameterDataField,
   ParameterRangeResolved,
   ParameterRangeUnresolved,
-} from './ParameterLoader';
-import { ParameterLoader } from './ParameterLoader';
+  ParameterLoader } from './ParameterLoader';
 
 export class ParameterResolver {
   private readonly classLoader: ClassLoader;
-  private readonly commentLoader: CommentLoader;
+  private readonly parameterLoader: ParameterLoader;
   private readonly ignoreClasses: Record<string, boolean>;
   private readonly cacheInterfaceRange: LRUCache<string, Promise<ParameterRangeResolved>>;
 
   public constructor(args: ParameterResolverArgs) {
     this.classLoader = args.classLoader;
-    this.commentLoader = args.commentLoader;
+    this.parameterLoader = args.parameterLoader;
     this.ignoreClasses = args.ignoreClasses;
     this.cacheInterfaceRange = new LRUCache(2_048);
   }
@@ -401,8 +398,7 @@ export class ParameterResolver {
 
     // If we find a type alias, just interpret the type directly
     if (classOrInterface.type === 'type') {
-      const parameterLoader = new ParameterLoader({ commentLoader: this.commentLoader });
-      const unresolvedFields = parameterLoader.getRangeFromTypeNode(
+      const unresolvedFields = this.parameterLoader.getRangeFromTypeNode(
         classOrInterface,
         classOrInterface.declaration.typeAnnotation,
         `type alias ${classOrInterface.localName} in ${classOrInterface.fileName}`,
@@ -413,11 +409,10 @@ export class ParameterResolver {
 
     // If we find an enum, just interpret the enum value, and return as union type
     if (classOrInterface.type === 'enum') {
-      const parameterLoader = new ParameterLoader({ commentLoader: this.commentLoader });
       const enumRangeTypes = await Promise.all(classOrInterface.declaration.members
         .map((enumMember, i) => {
           if (enumMember.initializer && enumMember.initializer.type === AST_NODE_TYPES.Literal) {
-            return this.resolveRange(parameterLoader.getRangeFromTypeNode(
+            return this.resolveRange(this.parameterLoader.getRangeFromTypeNode(
               classOrInterface,
               {
                 type: AST_NODE_TYPES.TSLiteralType,
@@ -533,8 +528,7 @@ export class ParameterResolver {
     genericTypeRemappings: Record<string, ParameterRangeUnresolved>,
     handlingInterfaces: Set<string>,
   ): Promise<ParameterData<ParameterRangeResolved>[]> {
-    const parameterLoader = new ParameterLoader({ commentLoader: this.commentLoader });
-    const unresolvedFields = parameterLoader.loadInterfaceFields(iface);
+    const unresolvedFields = this.parameterLoader.loadInterfaceFields(iface);
     return await this.resolveParameterData(unresolvedFields, owningClass, genericTypeRemappings, handlingInterfaces);
   }
 
@@ -551,14 +545,13 @@ export class ParameterResolver {
     genericTypeRemappings: Record<string, ParameterRangeUnresolved>,
     handlingInterfaces: Set<string>,
   ): Promise<ParameterData<ParameterRangeResolved>[]> {
-    const parameterLoader = new ParameterLoader({ commentLoader: this.commentLoader });
-    const unresolvedFields = parameterLoader.loadHashFields(owningClass, hash);
+    const unresolvedFields = this.parameterLoader.loadHashFields(owningClass, hash);
     return this.resolveParameterData(unresolvedFields, owningClass, genericTypeRemappings, handlingInterfaces);
   }
 }
 
 export interface ParameterResolverArgs {
   classLoader: ClassLoader;
-  commentLoader: CommentLoader;
+  parameterLoader: ParameterLoader;
   ignoreClasses: Record<string, boolean>;
 }

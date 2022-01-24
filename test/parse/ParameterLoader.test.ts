@@ -26,12 +26,13 @@ describe('ParameterLoader', () => {
   beforeEach(() => {
     logger = {
       debug: jest.fn(),
+      error: jest.fn(),
     };
     commentLoader = new CommentLoader();
     classLoader = new ClassLoader({ resolutionContext, logger, commentLoader });
     classLoadedDummy = <any> { localName: 'A', fileName: 'file' };
-    loader = new ParameterLoader({ commentLoader });
-    constructorLoader = new ConstructorLoader({ commentLoader });
+    loader = new ParameterLoader({ commentLoader, hardErrorUnsupported: true, logger });
+    constructorLoader = new ConstructorLoader({ parameterLoader: loader });
   });
 
   describe('loadAllExtensionData', () => {
@@ -267,7 +268,7 @@ export interface IFace2<x>{};`);
       };
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
       const constructorChain = constructorLoader.getConstructorChain({ value: classLoaded });
-      const parameterLoader = new ParameterLoader({ commentLoader });
+      const parameterLoader = new ParameterLoader({ commentLoader, hardErrorUnsupported: true, logger });
 
       return { constructorChain, parameterLoader, classLoaded };
     }
@@ -754,7 +755,7 @@ export class A{
         'file.d.ts': definition,
       };
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
-      const parameterLoader = new ParameterLoader({ commentLoader });
+      const parameterLoader = new ParameterLoader({ commentLoader, hardErrorUnsupported: true, logger });
 
       return { parameterLoader, classLoaded };
     }
@@ -913,7 +914,7 @@ export class A<T extends Class<U>, U extends number>{
         'file.d.ts': definition,
       };
       const classLoaded = <InterfaceLoaded> await classLoader.loadClassDeclaration(clazz, true, false);
-      const parameterLoader = new ParameterLoader({ commentLoader });
+      const parameterLoader = new ParameterLoader({ commentLoader, hardErrorUnsupported: true, logger });
 
       return { iface: classLoaded, parameterLoader };
     }
@@ -1094,7 +1095,7 @@ export interface A{
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
       const hash: TSTypeLiteral = (<any> constructorLoader.getConstructor({ value: classLoaded })!.constructor
         .value.params[0]).typeAnnotation.typeAnnotation;
-      const parameterLoader = new ParameterLoader({ commentLoader });
+      const parameterLoader = new ParameterLoader({ commentLoader, hardErrorUnsupported: true, logger });
 
       return { hash, parameterLoader, classLoaded };
     }
@@ -1529,7 +1530,7 @@ export interface A{
       fileNameReferenced: 'fileReferenced',
     };
 
-    async function getFieldRange(fieldDeclaration: string, commentData: CommentData):
+    async function getFieldRange(fieldDeclaration: string, commentData: CommentData, hardErrorUnsupported = true):
     Promise<ParameterRangeUnresolved> {
       resolutionContext.contentsOverrides = {
         'file.d.ts': `export class A{
@@ -1539,7 +1540,7 @@ export interface A{
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
       const field: Identifier = <any> (constructorLoader.getConstructor({ value: classLoaded })!.constructor)
         .value.params[0];
-      const parameterLoader = new ParameterLoader({ commentLoader });
+      const parameterLoader = new ParameterLoader({ commentLoader, hardErrorUnsupported, logger });
       return parameterLoader.getFieldRange(classLoaded, field, commentData);
     }
 
@@ -1607,9 +1608,21 @@ export interface A{
         .rejects.toThrow(new Error('Found invalid Array field type at field fieldA in A at file'));
     });
 
+    it('should log on an Array field type with no params', async() => {
+      expect(await getFieldRange('fieldA: Array<>', {}, false))
+        .toEqual({ type: 'wildcard' });
+      expect(logger.error).toHaveBeenCalledWith('Found invalid Array field type at field fieldA in A at file');
+    });
+
     it('should error on an Array field type with too many params', async() => {
       await expect(async() => await getFieldRange('fieldA: Array<string, string>', {}))
         .rejects.toThrow(new Error('Found invalid Array field type at field fieldA in A at file'));
+    });
+
+    it('should log on an Array field type with too many params', async() => {
+      expect(await getFieldRange('fieldA: Array<string, string>', {}, false))
+        .toEqual({ type: 'wildcard' });
+      expect(logger.error).toHaveBeenCalledWith('Found invalid Array field type at field fieldA in A at file');
     });
 
     it('should handle a nested array', async() => {
@@ -1701,6 +1714,12 @@ export interface A{
         .rejects.toThrow(new Error('Missing field type on fieldA in A at file'));
     });
 
+    it('should log on a field without type', async() => {
+      expect(await getFieldRange('fieldA', {}, false))
+        .toEqual({ type: 'wildcard' });
+      expect(logger.error).toHaveBeenCalledWith('Missing field type on fieldA in A at file');
+    });
+
     it('should get the range of a generic type', async() => {
       resolutionContext.contentsOverrides = {
         'file.d.ts': `export class A<T extends MyClass>{
@@ -1710,7 +1729,7 @@ export interface A{
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
       const field: Identifier = <any> (constructorLoader.getConstructor({ value: classLoaded })!.constructor)
         .value.params[0];
-      const parameterLoader = new ParameterLoader({ commentLoader });
+      const parameterLoader = new ParameterLoader({ commentLoader, hardErrorUnsupported: true, logger });
 
       expect(parameterLoader.getFieldRange(classLoaded, field, {}))
         .toEqual({ type: 'genericTypeReference', value: 'T' });
@@ -1725,7 +1744,7 @@ export interface A{
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
       const field: Identifier = <any> (constructorLoader.getConstructor({ value: classLoaded })!.constructor)
         .value.params[0];
-      const parameterLoader = new ParameterLoader({ commentLoader });
+      const parameterLoader = new ParameterLoader({ commentLoader, hardErrorUnsupported: true, logger });
 
       expect(parameterLoader.getFieldRange(classLoaded, field, {}))
         .toEqual({ type: 'genericTypeReference', value: 'T' });
@@ -1740,7 +1759,7 @@ export interface A{
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
       const field: Identifier = <any> (constructorLoader.getConstructor({ value: classLoaded })!.constructor)
         .value.params[0];
-      const parameterLoader = new ParameterLoader({ commentLoader });
+      const parameterLoader = new ParameterLoader({ commentLoader, hardErrorUnsupported: true, logger });
 
       expect(parameterLoader.getFieldRange(classLoaded, field, {}))
         .toEqual({ type: 'genericTypeReference', value: 'T' });
@@ -1943,6 +1962,12 @@ export interface A{
         .rejects.toThrow(new Error(`Could not understand parameter type TSLiteralType of field fieldA in A at file`));
     });
 
+    it('should log on a literal of unsupported type', async() => {
+      expect(await getFieldRange('fieldA: 100n', {}, false))
+        .toEqual({ type: 'wildcard' });
+      expect(logger.error).toHaveBeenCalledWith(`Could not understand parameter type TSLiteralType of field fieldA in A at file`);
+    });
+
     it('should get the range of a keyof field type', async() => {
       expect(await getFieldRange('fieldA: keyof MyClass', {}))
         .toEqual({
@@ -1955,6 +1980,8 @@ export interface A{
       await expect(async() => await getFieldRange('fieldA: readonly ABC', {}))
         .rejects.toThrow(new Error(`Could not understand parameter type TSTypeOperator of field fieldA in A at file`));
     });
+
+    // TODO
   });
 
   describe('overrideRawRange', () => {
@@ -2225,7 +2252,7 @@ export interface A{
       const field: any = <any>(constructorLoader.getConstructor({ value: classLoaded })!.constructor)
         .value.params[0];
       const indexSignature: TSIndexSignature = field.typeAnnotation.typeAnnotation.members[0];
-      parameterLoader = new ParameterLoader({ commentLoader });
+      parameterLoader = new ParameterLoader({ commentLoader, hardErrorUnsupported: true, logger });
       return parameterLoader.getIndexDomain(classLoaded, indexSignature);
     }
 
@@ -2274,7 +2301,7 @@ export interface A{
       fileNameReferenced: 'fileReferenced',
     };
 
-    async function getIndexRange(fieldDeclaration: string, commentData: CommentData):
+    async function getIndexRange(fieldDeclaration: string, commentData: CommentData, hardErrorUnsupported = true):
     Promise<ParameterRangeUnresolved> {
       resolutionContext.contentsOverrides = {
         'file.d.ts': `export class A{
@@ -2285,7 +2312,7 @@ export interface A{
       const field: any = <any>(constructorLoader.getConstructor({ value: classLoaded })!.constructor)
         .value.params[0];
       const indexSignature: TSIndexSignature = field.typeAnnotation.typeAnnotation.members[0];
-      const parameterLoader = new ParameterLoader({ commentLoader });
+      const parameterLoader = new ParameterLoader({ commentLoader, hardErrorUnsupported, logger });
       return parameterLoader.getIndexRange(classLoaded, indexSignature, commentData);
     }
 
@@ -2307,6 +2334,12 @@ export interface A{
       await expect(async() => await getIndexRange('{[k: string]}', {}))
         .rejects.toThrow(new Error('Missing field type on an index signature in A at file'));
     });
+
+    it('should log on a missing range', async() => {
+      expect(await getIndexRange('{[k: string]}', {}, false))
+        .toEqual({ type: 'wildcard' });
+      expect(logger.error).toHaveBeenCalledWith('Missing field type on an index signature in A at file');
+    });
   });
 
   describe('handleTypeOverride', () => {
@@ -2326,7 +2359,7 @@ export interface A{
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
       const field: Identifier = <any> (constructorLoader.getConstructor({ value: classLoaded })!.constructor)
         .value.params[0];
-      const parameterLoader = new ParameterLoader({ commentLoader });
+      const parameterLoader = new ParameterLoader({ commentLoader, hardErrorUnsupported: true, logger });
       const typeNode: TSTypeReference = <TSTypeReference> field.typeAnnotation!.typeAnnotation;
       return parameterLoader.handleTypeOverride(typeNode);
     }

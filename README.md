@@ -105,6 +105,7 @@ Usage:
        -e jsonld               Extension for components files (without .), defaults to 'jsonld'
        -i ignore-classes.json  Relative path to an optional file with class names to ignore
        -r prefix               Optional custom JSON-LD module prefix
+       --lenient               If unsupported language features must produce a warning instead of an error
        --debugState            If a 'componentsjs-generator-debug-state.json' file should be created with debug information
        --help                  Show information about this command
 ```
@@ -127,7 +128,8 @@ The following shows an example of the possible options:
   "ignoreComponents": [ "Class1", "Class2" ],
   "logLevel": "info",
   "modulePrefix": "myprefix",
-  "debugState": "true"
+  "debugState": "true",
+  "hardErrorUnsupported": false
 }
 ```
 

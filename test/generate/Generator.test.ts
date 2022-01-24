@@ -27,6 +27,7 @@ describe('Generator', () => {
       logLevel: 'info',
       debugState: false,
       prefixes: 'pre',
+      hardErrorUnsupported: true,
     });
   });
 

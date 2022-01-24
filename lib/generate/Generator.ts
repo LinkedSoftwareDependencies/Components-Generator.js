@@ -31,6 +31,7 @@ export class Generator {
   private readonly logLevel: LogLevel;
   private readonly debugState: boolean;
   private readonly prefixes?: string | Record<string, string>;
+  private readonly hardErrorUnsupported: boolean;
 
   public constructor(args: GeneratorArgs) {
     this.resolutionContext = args.resolutionContext;
@@ -40,6 +41,7 @@ export class Generator {
     this.logLevel = args.logLevel;
     this.debugState = args.debugState;
     this.prefixes = args.prefixes;
+    this.hardErrorUnsupported = args.hardErrorUnsupported;
   }
 
   public async generateComponents(): Promise<void> {
@@ -49,10 +51,14 @@ export class Generator {
     const classLoader = new ClassLoader({ resolutionContext: this.resolutionContext, logger, commentLoader });
     const classFinder = new ClassFinder({ classLoader });
     const classIndexer = new ClassIndexer({ classLoader, classFinder, ignoreClasses: this.ignoreClasses, logger });
-    const parameterLoader = new ParameterLoader({ commentLoader });
+    const parameterLoader = new ParameterLoader({
+      commentLoader,
+      hardErrorUnsupported: this.hardErrorUnsupported,
+      logger,
+    });
     const parameterResolver = new ParameterResolver({
       classLoader,
-      commentLoader,
+      parameterLoader,
       ignoreClasses: this.ignoreClasses,
     });
 
@@ -80,7 +86,7 @@ export class Generator {
       const classAndInterfaceIndex = await classIndexer.createIndex(packageExports);
 
       // Load constructor data
-      const constructorsUnresolved = new ConstructorLoader({ commentLoader }).getConstructors(classAndInterfaceIndex);
+      const constructorsUnresolved = new ConstructorLoader({ parameterLoader }).getConstructors(classAndInterfaceIndex);
       const constructors = await parameterResolver.resolveAllConstructorParameters(constructorsUnresolved);
 
       // Load generics data
@@ -151,4 +157,5 @@ export interface GeneratorArgs {
   logLevel: LogLevel;
   debugState: boolean;
   prefixes?: string | Record<string, string>;
+  hardErrorUnsupported: boolean;
 }

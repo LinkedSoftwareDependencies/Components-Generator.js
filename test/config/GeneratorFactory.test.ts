@@ -54,6 +54,7 @@ describe('GeneratorFactory', () => {
         logLevel: 'info',
         modulePrefix: undefined,
         debugState: false,
+        hardErrorUnsupported: true,
       });
     });
 
@@ -68,6 +69,7 @@ describe('GeneratorFactory', () => {
         logLevel: 'info',
         modulePrefix: undefined,
         debugState: true,
+        hardErrorUnsupported: true,
       });
     });
 
@@ -86,6 +88,7 @@ describe('GeneratorFactory', () => {
         logLevel: 'info',
         modulePrefix: 'PRE',
         debugState: false,
+        hardErrorUnsupported: true,
       });
     });
 
@@ -104,6 +107,7 @@ describe('GeneratorFactory', () => {
         logLevel: 'info',
         modulePrefix: 'PRE',
         debugState: true,
+        hardErrorUnsupported: true,
       });
     });
   });
@@ -119,6 +123,7 @@ describe('GeneratorFactory', () => {
         logLevel: 'info',
         modulePrefix: undefined,
         debugState: false,
+        hardErrorUnsupported: true,
       });
     });
   });
@@ -138,6 +143,7 @@ describe('GeneratorFactory', () => {
         l: 'info',
         r: 'pre',
         debugState: true,
+        lenient: true,
       })).toEqual({
         source: 'lib/',
         destination: 'components/',
@@ -146,6 +152,7 @@ describe('GeneratorFactory', () => {
         logLevel: 'info',
         modulePrefix: 'pre',
         debugState: true,
+        hardErrorUnsupported: false,
       });
     });
   });

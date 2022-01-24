@@ -17,7 +17,9 @@ describe('GenericsLoader', () => {
 
   beforeEach(() => {
     commentLoader = new CommentLoader();
-    parser = new GenericsLoader({ parameterLoader: new ParameterLoader({ commentLoader }) });
+    parser = new GenericsLoader({
+      parameterLoader: new ParameterLoader({ commentLoader, hardErrorUnsupported: true, logger }),
+    });
     logger = {
       debug: jest.fn(),
     };

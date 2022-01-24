@@ -8,6 +8,7 @@ import type { Identifier,
   Parameter,
   EntityName, TSTypeParameterInstantiation } from '@typescript-eslint/types/dist/ts-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
+import type { Logger } from 'winston';
 import type { ClassReferenceLoaded, InterfaceLoaded, ClassReference,
   ClassReferenceLoadedClassOrInterface, ClassIndex } from './ClassIndex';
 import type { CommentData, ConstructorCommentData, CommentLoader } from './CommentLoader';
@@ -25,9 +26,13 @@ export class ParameterLoader {
   ];
 
   private readonly commentLoader: CommentLoader;
+  private readonly hardErrorUnsupported: boolean;
+  private readonly logger: Logger;
 
   public constructor(args: ParameterLoaderArgs) {
     this.commentLoader = args.commentLoader;
+    this.hardErrorUnsupported = args.hardErrorUnsupported;
+    this.logger = args.logger;
   }
 
   /**
@@ -181,7 +186,7 @@ export class ParameterLoader {
     } else if (field.type === AST_NODE_TYPES.TSParameterProperty) {
       this.loadConstructorField(classLoaded, parameters, constructorCommentData, field.parameter);
     } else {
-      throw new Error(`Could not understand constructor parameter type ${field.type} in ${classLoaded.localName} at ${classLoaded.fileName}`);
+      this.throwOrWarn(new Error(`Could not understand constructor parameter type ${field.type} in ${classLoaded.localName} at ${classLoaded.fileName}`));
     }
   }
 
@@ -240,7 +245,7 @@ export class ParameterLoader {
         }
         return;
       default:
-        throw new Error(`Unsupported field type ${typeElement.type} in ${classLoaded.localName} in ${classLoaded.fileName}`);
+        this.throwOrWarn(new Error(`Unsupported field type ${typeElement.type} in ${classLoaded.localName} in ${classLoaded.fileName}`));
     }
   }
 
@@ -321,8 +326,9 @@ export class ParameterLoader {
                   value: this.getRangeFromTypeNode(classLoaded, typeNode.typeParameters.params[0], errorIdentifier),
                 };
               }
-              throw new Error(`Found invalid Array field type at ${errorIdentifier
-              } in ${classLoaded.localName} at ${classLoaded.fileName}`);
+              this.throwOrWarn(new Error(`Found invalid Array field type at ${errorIdentifier
+              } in ${classLoaded.localName} at ${classLoaded.fileName}`));
+              return { type: 'wildcard' };
             default:
               // First check if the type is a direct generic type
               if (classLoaded.type !== 'enum' && typeNode.typeName.name in classLoaded.generics) {
@@ -418,8 +424,9 @@ export class ParameterLoader {
           };
         }
     }
-    throw new Error(`Could not understand parameter type ${typeNode.type} of ${errorIdentifier
-    } in ${classLoaded.localName} at ${classLoaded.fileName}`);
+    this.throwOrWarn(new Error(`Could not understand parameter type ${typeNode.type} of ${errorIdentifier
+    } in ${classLoaded.localName} at ${classLoaded.fileName}`));
+    return { type: 'wildcard' };
   }
 
   protected getGenericTypeParameterInstantiations(
@@ -461,8 +468,9 @@ export class ParameterLoader {
 
     // Throw if no range was found
     if (!range) {
-      throw new Error(`Missing field type on ${this.getFieldName(classLoaded, field)
-      } in ${classLoaded.localName} at ${classLoaded.fileName}`);
+      this.throwOrWarn(new Error(`Missing field type on ${this.getFieldName(classLoaded, field)
+      } in ${classLoaded.localName} at ${classLoaded.fileName}`));
+      return { type: 'wildcard' };
     }
 
     // If the field has the '?' annotation, explicitly allow undefined as value to make it be considered optional.
@@ -610,8 +618,9 @@ export class ParameterLoader {
       );
     }
 
-    throw new Error(`Missing field type on ${this.getErrorIdentifierIndex()
-    } in ${classLoaded.localName} at ${classLoaded.fileName}`);
+    this.throwOrWarn(new Error(`Missing field type on ${this.getErrorIdentifierIndex()
+    } in ${classLoaded.localName} at ${classLoaded.fileName}`));
+    return { type: 'wildcard' };
   }
 
   /**
@@ -626,10 +635,20 @@ export class ParameterLoader {
       }
     }
   }
+
+  protected throwOrWarn(error: Error): void {
+    if (this.hardErrorUnsupported) {
+      throw error;
+    } else {
+      this.logger.error(error.message);
+    }
+  }
 }
 
 export interface ParameterLoaderArgs {
   commentLoader: CommentLoader;
+  hardErrorUnsupported: boolean;
+  logger: Logger;
 }
 
 export type ParameterData<R> = ParameterDataField<R> | ParameterDataIndex<R>;
