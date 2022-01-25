@@ -101,9 +101,11 @@ export class ContextConstructor {
             longestCommonPrefix = longestCommonPrefixNew.join(prefixDelimiter);
           }
         }
-        if (longestCommonPrefix) {
+        if (longestCommonPrefix && longestCommonPrefix.length > 0) {
           for (const shortcut of shortcutAliases) {
-            typeScopedContext[shortcut.slice(longestCommonPrefix.length + 1)] = typeScopedContext[shortcut];
+            if (shortcut.length > longestCommonPrefix.length) {
+              typeScopedContext[shortcut.slice(longestCommonPrefix.length + 1)] = typeScopedContext[shortcut];
+            }
           }
         }
 

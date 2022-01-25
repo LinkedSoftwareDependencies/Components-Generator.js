@@ -502,6 +502,46 @@ describe('ContextConstructor', () => {
         });
       });
 
+      it('should handle non-empty component definitions without shared prefixes', () => {
+        expect(ctor.constructComponentShortcuts({
+          '/docs/package/components/file1': {
+            '@context': [
+              'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
+            ],
+            '@id': 'npmd:my-package',
+            components: [
+              {
+                '@id': 'mp:file1#MyClass1',
+                '@type': 'Class',
+                constructorArguments: [],
+                parameters: [
+                  {
+                    '@id': 'mp:file1#MyClass1_param1',
+                    range: {
+                      '@type': 'ParameterRangeArray',
+                      parameterRangeValue: 'xsd:float',
+                    },
+                  },
+                ],
+                memberKeys: [],
+                requireElement: 'MyClass1',
+              },
+            ],
+          },
+        })).toEqual({
+          MyClass1: {
+            '@id': 'mp:file1#MyClass1',
+            '@prefix': true,
+            '@context': {
+              param1: {
+                '@id': 'mp:file1#MyClass1_param1',
+                '@container': '@list',
+              },
+            },
+          },
+        });
+      });
+
       it('should handle non-empty component definitions for JSON ranges', () => {
         expect(ctor.constructComponentShortcuts({
           '/docs/package/components/file1': {
