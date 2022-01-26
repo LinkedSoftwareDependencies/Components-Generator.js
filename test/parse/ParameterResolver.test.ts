@@ -631,6 +631,14 @@ describe('ParameterResolver', () => {
         .toEqual('keyof:[raw:boolean]');
     });
 
+    it('should hash typeof', () => {
+      expect(loader.hashParameterRangeUnresolved(<any> {
+        type: 'typeof',
+        value: 'CLASS',
+      }))
+        .toEqual('typeof:CLASS');
+    });
+
     it('should hash hash', () => {
       expect(loader.hashParameterRangeUnresolved({
         type: 'hash',
@@ -1299,6 +1307,62 @@ class MyInnerClass<AInner, BInner> {
           value: { localName: 'MyClass', fileName: 'MyClass' },
         },
       });
+    });
+
+    it('should handle a keyof range over a typeof over an enum', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `export * from './MyEnum'`,
+        'MyEnum.d.ts': `export enum MyEnum {
+  keya = 'valuea',
+  'keyb' = 'valueb',
+}`,
+      };
+
+      expect(await loader.resolveRange({
+        type: 'keyof',
+        value: {
+          type: 'typeof',
+          value: 'MyEnum',
+          origin: classReference,
+        },
+      }, classReference, {}, true, new Set())).toMatchObject({
+        type: 'union',
+        elements: [
+          { type: 'literal', value: 'keya' },
+          { type: 'literal', value: 'keyb' },
+        ],
+      });
+    });
+
+    it('should throw on a keyof range over a typeof over a non-enum', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `export * from './MyClass'`,
+        'MyClass.d.ts': `export class MyClass {}`,
+      };
+
+      await expect(loader.resolveRange({
+        type: 'keyof',
+        value: {
+          type: 'typeof',
+          value: 'MyClass',
+          origin: classReference,
+        },
+      }, classReference, {}, true, new Set())).rejects
+        .toThrowError(`Detected typeof of unsupported value MyClass in A`);
+    });
+
+    it('should throw on a typeof range', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `export * from './MyClass'`,
+        'MyClass.d.ts': `export class MyClass{}`,
+      };
+
+      await expect(loader.resolveRange({
+        type: 'typeof',
+        value: 'MyClass',
+        origin: classReference,
+      }, classReference, {}, true, new Set())).rejects
+        .toThrowError(`Detected typeof of unsupported value MyClass in A`);
     });
 
     it('should handle an interface recursively pointing to itself', async() => {

@@ -117,6 +117,7 @@ export class ExternalModulesLoader {
       case 'rest':
       case 'array':
       case 'keyof':
+      case 'typeof':
         this.indexParameterRangeInExternalPackage(parameterRange.value, externalPackages);
         break;
     }

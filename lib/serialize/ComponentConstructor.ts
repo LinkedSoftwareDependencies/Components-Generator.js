@@ -763,6 +763,7 @@ export class ComponentConstructor {
       case 'rest':
       case 'array':
       case 'keyof':
+      case 'typeof':
         switch (range.type) {
           case 'rest':
             type = 'ParameterRangeRest';
@@ -772,6 +773,9 @@ export class ComponentConstructor {
             break;
           case 'keyof':
             type = 'ParameterRangeKeyof';
+            break;
+          case 'typeof':
+            type = 'ParameterRangeTypeof';
             break;
         }
         return {

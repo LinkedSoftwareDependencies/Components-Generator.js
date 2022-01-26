@@ -1,4 +1,5 @@
-import type { TSTypeLiteral } from '@typescript-eslint/types/dist/ts-estree';
+import type { TSTypeLiteral, PropertyNameNonComputed } from '@typescript-eslint/types/dist/ts-estree';
+
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import * as LRUCache from 'lru-cache';
 import type {
@@ -260,6 +261,35 @@ export class ParameterResolver {
       case 'array':
       case 'rest':
       case 'keyof':
+        // Special case: if we have a `keyof typeof Enum`, return a union of the keys of the enum
+        if (range.value.type === 'typeof') {
+          const classOrInterface = await this.loadClassOrInterfacesChain({
+            packageName: owningClass.packageName,
+            localName: range.value.value,
+            qualifiedPath: range.value.qualifiedPath,
+            fileName: owningClass.fileName,
+            fileNameReferenced: owningClass.fileNameReferenced,
+          });
+
+          if (classOrInterface.type === 'enum') {
+            const enumRangeTypes: ParameterRangeResolved[] = await Promise.all(classOrInterface.declaration.members
+              // eslint-disable-next-line array-callback-return
+              .map((enumMember, i) => {
+                const key = <PropertyNameNonComputed> enumMember.id;
+                switch (key.type) {
+                  case AST_NODE_TYPES.Literal:
+                    return { type: 'literal', value: key.value };
+                  case AST_NODE_TYPES.Identifier:
+                    return { type: 'literal', value: key.name };
+                }
+              }));
+            return {
+              type: 'union',
+              elements: enumRangeTypes,
+            };
+          }
+        }
+
         return {
           type: range.type,
           // TODO: remove the following any cast when TS bug is fixed
@@ -281,6 +311,8 @@ export class ParameterResolver {
           value: range.value,
           origin: owningClass,
         };
+      case 'typeof':
+        throw new Error(`Detected typeof of unsupported value ${range.value} in ${owningClass.fileName}`);
     }
   }
 
@@ -299,6 +331,7 @@ export class ParameterResolver {
       case 'raw':
       case 'literal':
       case 'override':
+      case 'typeof':
         return `${range.type}:${range.value}`;
       case 'union':
       case 'intersection':

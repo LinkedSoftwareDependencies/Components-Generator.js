@@ -423,6 +423,22 @@ export class ParameterLoader {
             value: this.getRangeFromTypeNode(classLoaded, typeNode.typeAnnotation, errorIdentifier),
           };
         }
+        break;
+      case AST_NODE_TYPES.TSTypeQuery:
+        if (typeNode.exprName.type === AST_NODE_TYPES.Identifier) {
+          return {
+            type: 'typeof',
+            value: typeNode.exprName.name,
+            origin: classLoaded,
+          };
+        }
+        // Otherwise we have a qualified name: AST_NODE_TYPES.TSQualifiedName
+        return {
+          type: 'typeof',
+          value: typeNode.exprName.right.name,
+          qualifiedPath: this.getQualifiedPath(typeNode.exprName.left),
+          origin: classLoaded,
+        };
     }
     this.throwOrWarn(new Error(`Could not understand parameter type ${typeNode.type} of ${errorIdentifier
     } in ${classLoaded.localName} at ${classLoaded.fileName}`));
@@ -514,6 +530,7 @@ export class ParameterLoader {
       case 'hash':
       case 'interface':
       case 'genericTypeReference':
+      case 'typeof':
         // Replace these types
         return override;
       case 'undefined':
@@ -775,6 +792,17 @@ export type ParameterRangeUnresolved = {
 } | {
   type: 'genericTypeReference';
   value: string;
+} | {
+  type: 'typeof';
+  value: string;
+  /**
+   * For qualified names, this array contains the path segments.
+   */
+  qualifiedPath?: string[];
+  /**
+   * The place from which the interface was referenced.
+   */
+  origin: ClassReferenceLoaded;
 };
 
 export type ParameterRangeResolved = {
@@ -822,6 +850,9 @@ export type ParameterRangeResolved = {
    * The place in which the generic type was defined.
    */
   origin: ClassReferenceLoaded;
+} | {
+  type: 'typeof';
+  value: ParameterRangeResolved;
 };
 
 /**

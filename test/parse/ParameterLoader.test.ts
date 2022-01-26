@@ -1981,7 +1981,24 @@ export interface A{
         .rejects.toThrow(new Error(`Could not understand parameter type TSTypeOperator of field fieldA in A at file`));
     });
 
-    // TODO
+    it('should get the range of a typeof field type', async() => {
+      expect(await getFieldRange('fieldA: typeof MyClass', {}))
+        .toEqual({
+          type: 'typeof',
+          value: 'MyClass',
+          origin: expect.anything(),
+        });
+    });
+
+    it('should get the range of a typeof field type with qualified path', async() => {
+      expect(await getFieldRange('fieldA: typeof A.B.MyClass', {}))
+        .toEqual({
+          type: 'typeof',
+          value: 'MyClass',
+          qualifiedPath: [ 'A', 'B' ],
+          origin: expect.anything(),
+        });
+    });
   });
 
   describe('overrideRawRange', () => {
@@ -2054,6 +2071,23 @@ export interface A{
         {
           type: 'genericTypeReference',
           value: 'T',
+        },
+        {
+          type: 'raw',
+          value: 'boolean',
+        },
+      )).toEqual({
+        type: 'raw',
+        value: 'boolean',
+      });
+    });
+
+    it('should override a typeof range', () => {
+      expect(loader.overrideRawRange(
+        {
+          type: 'typeof',
+          value: 'T',
+          origin: classLoadedDummy,
         },
         {
           type: 'raw',

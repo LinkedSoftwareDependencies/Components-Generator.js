@@ -2636,6 +2636,18 @@ describe('ComponentConstructor', () => {
         parameterRangeValue: 'xsd:boolean',
       });
     });
+
+    it('should construct a typeof parameter range', async() => {
+      expect(await ctor.constructParameterRange(
+        { type: 'typeof', value: { type: 'raw', value: 'boolean' }},
+        context,
+        externalContextsCallback,
+        'mp:a/b/file-param#MyClass_field',
+      )).toEqual({
+        '@type': 'ParameterRangeTypeof',
+        parameterRangeValue: 'xsd:boolean',
+      });
+    });
   });
 
   describe('populateOptionalParameterFields', () => {
