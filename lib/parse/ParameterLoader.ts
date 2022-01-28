@@ -400,6 +400,10 @@ export class ParameterLoader {
       case AST_NODE_TYPES.TSNullKeyword:
       case AST_NODE_TYPES.TSAnyKeyword:
         return { type: 'wildcard' };
+      case AST_NODE_TYPES.TSFunctionType:
+      case AST_NODE_TYPES.TSImportType:
+        // These types are explicitly not supported
+        return { type: 'wildcard' };
       case AST_NODE_TYPES.TSTupleType:
         return {
           type: 'tuple',

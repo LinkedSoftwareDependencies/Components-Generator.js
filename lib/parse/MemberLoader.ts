@@ -51,7 +51,11 @@ export class MemberLoader {
         case AST_NODE_TYPES.TSPropertySignature:
         case AST_NODE_TYPES.TSMethodSignature:
           if (element.key.type === 'Identifier') {
-            const typeNode = 'typeAnnotation' in element ? element.typeAnnotation!.typeAnnotation : undefined;
+            // TODO: more types may be needed here, such as AST_NODE_TYPES.TSPropertySignature
+            const typeNode = element.type === AST_NODE_TYPES.ClassProperty ||
+            element.type === AST_NODE_TYPES.TSAbstractClassProperty ?
+              element.typeAnnotation?.typeAnnotation :
+              undefined;
             members.push({
               name: element.key.name,
               range: typeNode ?

@@ -184,6 +184,20 @@ private functionB(): string{}
           },
         ]);
       });
+
+      it('for simple fields without type annotation', async() => {
+        expect(parser.collectClassFields(getClassBody(`
+fieldA;
+fieldB;
+`))).toMatchObject([
+          {
+            name: 'fieldA',
+          },
+          {
+            name: 'fieldB',
+          },
+        ]);
+      });
     });
 
     describe('for interfaces', () => {
@@ -198,17 +212,9 @@ fieldB: MyClass;
 `))).toMatchObject([
           {
             name: 'fieldA',
-            range: {
-              type: 'raw',
-              value: 'string',
-            },
           },
           {
             name: 'fieldB',
-            range: {
-              type: 'interface',
-              value: 'MyClass',
-            },
           },
         ]);
       });
