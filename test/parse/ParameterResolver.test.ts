@@ -281,6 +281,157 @@ describe('ParameterResolver', () => {
     // TODO: also test with generic type instantiation of raw number
   });
 
+  describe('resolveAllMemberParameterData', () => {
+    it('should handle an empty index', async() => {
+      expect(await loader.resolveAllMemberParameterData({}))
+        .toEqual({});
+    });
+
+    it('should handle a non-empty simple index', async() => {
+      expect(await loader.resolveAllMemberParameterData({
+        A: {
+          classLoaded: <any> { type: 'class', localName: 'A', fileName: 'A' },
+          members: [
+            {
+              name: 'fieldA',
+              range: {
+                type: 'raw',
+                value: 'boolean',
+              },
+            },
+          ],
+        },
+      })).toEqual({
+        A: {
+          classLoaded: <any> { type: 'class', localName: 'A', fileName: 'A' },
+          members: [
+            {
+              name: 'fieldA',
+              range: {
+                type: 'raw',
+                value: 'boolean',
+              },
+            },
+          ],
+        },
+      });
+    });
+  });
+
+  describe('resolveMemberParameterData', () => {
+    const classReference: ClassReferenceLoaded = <any>{ localName: 'A', fileName: 'A' };
+
+    it('should handle an empty array', async() => {
+      expect(await loader.resolveMemberParameterData([], classReference, {})).toEqual([]);
+    });
+
+    it('should handle raw members', async() => {
+      expect(await loader.resolveMemberParameterData([
+        {
+          name: 'A',
+        },
+        {
+          name: 'B',
+          range: {
+            type: 'raw',
+            value: 'number',
+          },
+        },
+      ], classReference, {})).toEqual([
+        {
+          name: 'A',
+        },
+        {
+          name: 'B',
+          range: {
+            type: 'raw',
+            value: 'number',
+          },
+        },
+      ]);
+    });
+
+    it('should handle a member with class value', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `export * from './MyClass'`,
+        'MyClass.d.ts': `export class MyClass{}`,
+      };
+      expect(await loader.resolveMemberParameterData([
+        {
+          name: 'A',
+          range: {
+            type: 'interface',
+            value: 'MyClass',
+            genericTypeParameterInstantiations: [],
+            origin: classReference,
+          },
+        },
+      ], classReference, {})).toMatchObject([
+        {
+          name: 'A',
+          range: {
+            type: 'class',
+            value: { localName: 'MyClass', fileName: 'MyClass' },
+          },
+        },
+      ]);
+    });
+
+    it('should handle a member with class value with sub-generics', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `export * from './MyClass'`,
+        'MyClass.d.ts': `export class MyClass<T, U>{}`,
+      };
+      expect(await loader.resolveMemberParameterData([
+        {
+          name: 'A',
+          range: {
+            type: 'interface',
+            value: 'MyClass',
+            genericTypeParameterInstantiations: [
+              {
+                type: 'genericTypeReference',
+                value: 'B',
+              },
+              {
+                type: 'raw',
+                value: 'number',
+              },
+            ],
+            origin: classReference,
+          },
+        },
+        {
+          name: 'B',
+        },
+      ], classReference, {})).toMatchObject([
+        {
+          name: 'A',
+          range: {
+            type: 'class',
+            value: {
+              type: 'class',
+              localName: 'MyClass',
+            },
+            genericTypeParameterInstances: [
+              {
+                type: 'genericTypeReference',
+                value: 'B',
+              },
+              {
+                type: 'raw',
+                value: 'number',
+              },
+            ],
+          },
+        },
+        {
+          name: 'B',
+        },
+      ]);
+    });
+  });
+
   describe('resolveParameterData', () => {
     const classReference: ClassReferenceLoaded = <any>{ localName: 'A', fileName: 'A' };
 

@@ -9,19 +9,24 @@ import type {
 } from '../parse/ClassIndex';
 import type { ConstructorData } from '../parse/ConstructorLoader';
 import type { GenericsData } from '../parse/GenericsLoader';
+import type { MemberData } from '../parse/MemberLoader';
 import type { PackageMetadata } from '../parse/PackageMetadataLoader';
-import type { DefaultNested,
+import type {
+  DefaultNested,
   DefaultValue,
   GenericTypeParameterData,
   ParameterData,
   ParameterRangeResolved,
-  ExtensionData } from '../parse/ParameterLoader';
+  ExtensionData, MemberParameterData,
+} from '../parse/ParameterLoader';
 import type { ExternalComponents } from '../resolution/ExternalModulesLoader';
-import type { ComponentDefinition,
+import type {
+  ComponentDefinition,
   ComponentDefinitions, ComponentDefinitionsIndex,
   ConstructorArgumentDefinition, ConstructorFieldDefinition, DefaultValueDefinition,
   ParameterDefinition, ParameterDefinitionRange,
-  GenericTypeParameterDefinition, ExtensionDefinition } from './ComponentDefinitions';
+  GenericTypeParameterDefinition, ExtensionDefinition, MemberFieldDefinition,
+} from './ComponentDefinitions';
 import { ContextConstructor } from './ContextConstructor';
 
 /**
@@ -36,6 +41,7 @@ export class ComponentConstructor {
   private readonly classConstructors: ClassIndex<ConstructorData<ParameterRangeResolved>>;
   private readonly classGenerics: ClassIndex<GenericsData<ParameterRangeResolved>>;
   private readonly classExtensions: ClassIndex<ExtensionData<ParameterRangeResolved>[]>;
+  private readonly classMembers: ClassIndex<MemberData<ParameterRangeResolved>>;
   private readonly externalComponents: ExternalComponents;
   private readonly contextParser: ContextParser;
 
@@ -48,6 +54,7 @@ export class ComponentConstructor {
     this.classConstructors = args.classConstructors;
     this.classGenerics = args.classGenerics;
     this.classExtensions = args.classExtensions;
+    this.classMembers = args.classMembers;
     this.externalComponents = args.externalComponents;
     this.contextParser = args.contextParser;
   }
@@ -89,6 +96,7 @@ export class ComponentConstructor {
         this.classConstructors[className],
         this.classGenerics[className],
         this.classExtensions[className],
+        this.classMembers[className]?.members,
       ));
     }
 
@@ -172,6 +180,7 @@ export class ComponentConstructor {
    * @param constructorData Constructor data of the owning class.
    * @param genericsData Generics data of the owning class.
    * @param classExtensions Class extensions of the owning class.
+   * @param classMembers Class members of the owning class.
    */
   public async constructComponent(
     context: JsonLdContextNormalized,
@@ -180,6 +189,7 @@ export class ComponentConstructor {
     constructorData: ConstructorData<ParameterRangeResolved> | undefined,
     genericsData: GenericsData<ParameterRangeResolved> | undefined,
     classExtensions: ExtensionData<ParameterRangeResolved>[] | undefined,
+    classMembers: MemberParameterData<ParameterRangeResolved>[] | undefined,
   ): Promise<ComponentDefinition> {
     // Determine generic type parameters
     const genericTypeParameters = genericsData ?
@@ -212,7 +222,14 @@ export class ComponentConstructor {
       undefined;
 
     // Obtain the keys of all members
-    const memberKeys = classReference.memberKeys;
+    const memberFields = classMembers ?
+      await this.constructMembers(
+        context,
+        externalContextsCallback,
+        classReference,
+        classMembers,
+      ) :
+      undefined;
 
     // Fill in fields
     return {
@@ -223,7 +240,7 @@ export class ComponentConstructor {
       ...classReference.comment ? { comment: classReference.comment } : {},
       ...genericTypeParameters && genericTypeParameters.length > 0 ? { genericTypeParameters } : {},
       parameters,
-      memberKeys,
+      ...memberFields && memberFields.length > 0 ? { memberFields } : {},
       constructorArguments,
     };
   }
@@ -409,6 +426,24 @@ export class ComponentConstructor {
   }
 
   /**
+   * Construct a compacted member name IRI.
+   * @param context A parsed JSON-LD context.
+   * @param classReference The class reference.
+   * @param memberName The name of the member type.
+   */
+  public memberToId(
+    context: JsonLdContextNormalized,
+    classReference: ClassReference,
+    memberName: string,
+  ): string {
+    return this.fieldNameToId(context, classReference, `_member_${memberName}`, {
+      parentFieldNames: [],
+      fieldIdsHash: {},
+      defaultNested: [],
+    });
+  }
+
+  /**
    * Construct constructor arguments from the given constructor data.
    * Additionally, parameters will be appended to the parameters array.
    *
@@ -430,6 +465,36 @@ export class ComponentConstructor {
         '@id': id,
         ...genericType.range ?
           { range: await this.constructParameterRange(genericType.range, context, externalContextsCallback, id) } :
+          {},
+      });
+    }
+    return definitions;
+  }
+
+  /**
+   * Construct constructor arguments from the given member data.
+   *
+   * @param context A parsed JSON-LD context.
+   * @param externalContextsCallback Callback for external contexts.
+   * @param classReference Class reference of the class component owning this constructor.
+   * @param members Members of the class.
+   */
+  public async constructMembers(
+    context: JsonLdContextNormalized,
+    externalContextsCallback: ExternalContextCallback,
+    classReference: ClassReferenceLoadedClassOrInterface,
+    members: MemberParameterData<ParameterRangeResolved>[],
+  ): Promise<MemberFieldDefinition[]> {
+    const definitions: MemberFieldDefinition[] = [];
+    for (const member of members) {
+      const id = this.memberToId(context, classReference, member.name);
+      definitions.push({
+        '@id': id,
+        memberFieldName: member.name,
+        ...member.range ?
+          {
+            range: await this.constructParameterRange(member.range, context, externalContextsCallback, id),
+          } :
           {},
       });
     }
@@ -823,6 +888,7 @@ export interface ComponentConstructorArgs {
   classConstructors: ClassIndex<ConstructorData<ParameterRangeResolved>>;
   classGenerics: ClassIndex<GenericsData<ParameterRangeResolved>>;
   classExtensions: ClassIndex<ExtensionData<ParameterRangeResolved>[]>;
+  classMembers: ClassIndex<MemberData<ParameterRangeResolved>>;
   externalComponents: ExternalComponents;
   contextParser: ContextParser;
 }

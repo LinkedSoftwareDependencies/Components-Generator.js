@@ -61,8 +61,6 @@ export interface ClassLoaded extends ClassReference {
   comment?: string;
   // The generic types of this class
   generics: GenericTypes;
-  // The keys of all members
-  memberKeys: string[];
 }
 
 /**
@@ -99,8 +97,14 @@ export interface InterfaceLoaded extends ClassReference {
   comment?: string;
   // The generic types of this class
   generics: GenericTypes;
-  // The keys of all members
-  memberKeys: string[];
+}
+
+/**
+ * A member field of a class or interface.
+ */
+export interface MemberField {
+  name: string;
+  range: TypeNode | undefined;
 }
 
 /**

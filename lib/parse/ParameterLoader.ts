@@ -742,6 +742,21 @@ export interface GenericTypeParameterData<R> {
   comment?: string;
 }
 
+export interface MemberParameterData<R> {
+  /**
+   * The member name.
+   */
+  name: string;
+  /**
+   * The range of the member parameter.
+   */
+  range?: R;
+  /**
+   * The human-readable description of this member.
+   */
+  comment?: string;
+}
+
 /**
  * Extension information
  */

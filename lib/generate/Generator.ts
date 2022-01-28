@@ -9,6 +9,7 @@ import { ClassLoader } from '../parse/ClassLoader';
 import { CommentLoader } from '../parse/CommentLoader';
 import { ConstructorLoader } from '../parse/ConstructorLoader';
 import { GenericsLoader } from '../parse/GenericsLoader';
+import { MemberLoader } from '../parse/MemberLoader';
 import type { PackageMetadata } from '../parse/PackageMetadataLoader';
 import { PackageMetadataLoader } from '../parse/PackageMetadataLoader';
 import { ParameterLoader } from '../parse/ParameterLoader';
@@ -97,6 +98,10 @@ export class Generator {
       const extensionsUnresolved = parameterLoader.loadAllExtensionData(classAndInterfaceIndex);
       const extensions = await parameterResolver.resolveAllExtensionData(extensionsUnresolved, classAndInterfaceIndex);
 
+      // Load members data
+      const membersUnresolved = new MemberLoader({ parameterLoader }).getMembers(classAndInterfaceIndex);
+      const members = await parameterResolver.resolveAllMemberParameterData(membersUnresolved);
+
       // Load external components
       const externalModulesLoader = new ExternalModulesLoader({
         pathDestination,
@@ -120,6 +125,7 @@ export class Generator {
         classConstructors: constructors,
         classGenerics: generics,
         classExtensions: extensions,
+        classMembers: members,
         externalComponents,
         contextParser: new ContextParser({
           documentLoader: new PrefetchedDocumentLoader({

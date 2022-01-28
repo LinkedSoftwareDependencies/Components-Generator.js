@@ -11,13 +11,14 @@ import type {
 import type { ClassLoader } from './ClassLoader';
 import type { ConstructorData } from './ConstructorLoader';
 import type { GenericsData } from './GenericsLoader';
+import type { MemberData } from './MemberLoader';
 import type { ExtensionData,
   GenericTypeParameterData,
   ParameterData,
   ParameterDataField,
   ParameterRangeResolved,
   ParameterRangeUnresolved,
-  ParameterLoader } from './ParameterLoader';
+  ParameterLoader, MemberParameterData } from './ParameterLoader';
 
 export class ParameterResolver {
   private readonly classLoader: ClassLoader;
@@ -111,6 +112,47 @@ export class ParameterResolver {
         ...generic,
         range: generic.range ?
           await this.resolveRange(generic.range, owningClass, genericTypeRemappings, false, new Set()) :
+          undefined,
+      })));
+  }
+
+  /**
+   * Resolve all member parameters of a given constructor index.
+   * @param unresolvedParametersIndex An index of unresolved constructor data.
+   */
+  public async resolveAllMemberParameterData(
+    unresolvedParametersIndex: ClassIndex<MemberData<ParameterRangeUnresolved>>,
+  ): Promise<ClassIndex<MemberData<ParameterRangeResolved>>> {
+    const resolvedIndex: ClassIndex<MemberData<ParameterRangeResolved>> = {};
+
+    // Resolve parameters for the different constructors in parallel
+    await Promise.all(Object.entries(unresolvedParametersIndex)
+      .map(async([ className, unresolvedData ]) => {
+        resolvedIndex[className] = {
+          members: await this.resolveMemberParameterData(unresolvedData.members, unresolvedData.classLoaded, {}),
+          classLoaded: unresolvedData.classLoaded,
+        };
+      }));
+
+    return resolvedIndex;
+  }
+
+  /**
+   * Resolve the given array of member parameter data in parallel.
+   * @param members An array of unresolved members.
+   * @param owningClass The class in which the given generic type parameters are declared.
+   * @param genericTypeRemappings A remapping of generic type names.
+   */
+  public async resolveMemberParameterData(
+    members: MemberParameterData<ParameterRangeUnresolved>[],
+    owningClass: ClassReferenceLoaded,
+    genericTypeRemappings: Record<string, ParameterRangeUnresolved>,
+  ): Promise<GenericTypeParameterData<ParameterRangeResolved>[]> {
+    return await Promise.all(members
+      .map(async member => ({
+        ...member,
+        range: member.range ?
+          await this.resolveRange(member.range, owningClass, genericTypeRemappings, false, new Set()) :
           undefined,
       })));
   }

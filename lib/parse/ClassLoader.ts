@@ -6,21 +6,21 @@ import type {
   TSModuleBlock,
   TSModuleDeclaration,
   TSTypeAliasDeclaration,
-  ClassBody,
-  TSInterfaceBody,
 } from '@typescript-eslint/types/dist/ts-estree';
 import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import type { Logger } from 'winston';
 import type { ResolutionContext } from '../resolution/ResolutionContext';
-import type { ClassLoaded,
+import type {
+  ClassLoaded,
   ClassReference,
   ClassReferenceLoaded,
   EnumLoaded,
   GenericTypes,
   InterfaceLoaded,
   TypeLoaded,
-  GenericallyTyped } from './ClassIndex';
+  GenericallyTyped,
+} from './ClassIndex';
 import type { CommentLoader } from './CommentLoader';
 
 /**
@@ -202,7 +202,6 @@ export class ClassLoader {
           ast,
           abstract: declaration.abstract,
           generics: this.collectGenericTypes(declaration),
-          memberKeys: this.collectClassMembers(declaration.body),
         });
       }
 
@@ -216,7 +215,6 @@ export class ClassLoader {
           ast,
           abstract: declaration.abstract,
           generics: this.collectGenericTypes(declaration),
-          memberKeys: this.collectClassMembers(declaration.body),
         });
       }
 
@@ -231,7 +229,6 @@ export class ClassLoader {
             declaration,
             ast,
             generics: this.collectGenericTypes(declaration),
-            memberKeys: this.collectClassMembers(declaration.body),
           });
         }
 
@@ -244,7 +241,6 @@ export class ClassLoader {
             declaration,
             ast,
             generics: this.collectGenericTypes(declaration),
-            memberKeys: this.collectClassMembers(declaration.body),
           });
         }
       }
@@ -675,31 +671,6 @@ export class ClassLoader {
       importedElementsAllNamed,
       exportAssignment,
     };
-  }
-
-  /**
-   * Obtain the class member keys.
-   * This should correspond to the keys that are available within the `keyof` range of this class
-   * @param body A class or interface body
-   */
-  public collectClassMembers(body: ClassBody | TSInterfaceBody): string[] {
-    const members: string[] = [];
-    for (const element of body.body) {
-      // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
-      switch (element.type) {
-        case AST_NODE_TYPES.ClassProperty:
-        case AST_NODE_TYPES.TSAbstractClassProperty:
-        case AST_NODE_TYPES.MethodDefinition:
-        case AST_NODE_TYPES.TSAbstractMethodDefinition:
-        case AST_NODE_TYPES.TSPropertySignature:
-        case AST_NODE_TYPES.TSMethodSignature:
-          if (element.key.type === 'Identifier') {
-            members.push(element.key.name);
-          }
-          break;
-      }
-    }
-    return members;
   }
 }
 

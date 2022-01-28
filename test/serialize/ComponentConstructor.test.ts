@@ -8,6 +8,7 @@ import type {
   ClassReferenceLoaded, ClassReferenceLoadedClassOrInterface,
 } from '../../lib/parse/ClassIndex';
 import type { ConstructorData } from '../../lib/parse/ConstructorLoader';
+import type { MemberData } from '../../lib/parse/MemberLoader';
 import type { ParameterData, ParameterRangeResolved, ExtensionData } from '../../lib/parse/ParameterLoader';
 
 import type { ExternalComponents } from '../../lib/resolution/ExternalModulesLoader';
@@ -85,6 +86,7 @@ describe('ComponentConstructor', () => {
       classConstructors: {},
       classGenerics: {},
       classExtensions: {},
+      classMembers: {},
       externalComponents,
       contextParser,
     });
@@ -113,7 +115,6 @@ describe('ComponentConstructor', () => {
           localName: 'MyClass1',
           fileName: Path.normalize('/docs/package/src/b/file'),
           generics: {},
-          memberKeys: [ 'field1_1', 'field1_2' ],
         },
         MyClass2: {
           type: 'class',
@@ -121,7 +122,6 @@ describe('ComponentConstructor', () => {
           localName: 'MyClass2',
           fileName: Path.normalize('/docs/package/src/b/file'),
           generics: {},
-          memberKeys: [ 'field2_1' ],
         },
       };
       (<any> ctor).classConstructors = <ClassIndex<ConstructorData<ParameterRangeResolved>>> {
@@ -151,6 +151,35 @@ describe('ComponentConstructor', () => {
           ],
         },
       };
+      (<any> ctor).classMembers = <ClassIndex<MemberData<ParameterRangeResolved>>> {
+        MyClass1: {
+          members: [
+            {
+              name: 'field1_1',
+              range: {
+                type: 'raw',
+                value: 'boolean',
+              },
+            },
+            {
+              name: 'field1_2',
+              range: {
+                type: 'raw',
+                value: 'number',
+              },
+            },
+          ],
+          classLoaded: <any> {},
+        },
+        MyClass2: {
+          members: [
+            {
+              name: 'field2_1',
+            },
+          ],
+          classLoaded: <any> {},
+        },
+      };
       expect(await ctor.constructComponents()).toEqual({
         [Path.normalize('/docs/package/components/b/file')]: {
           '@context': [
@@ -164,7 +193,18 @@ describe('ComponentConstructor', () => {
               constructorArguments: [],
               parameters: [],
               requireElement: 'MyClass1',
-              memberKeys: [ 'field1_1', 'field1_2' ],
+              memberFields: [
+                {
+                  '@id': 'mp:components/b/file.jsonld#MyClass1__member_field1_1',
+                  memberFieldName: 'field1_1',
+                  range: 'xsd:boolean',
+                },
+                {
+                  '@id': 'mp:components/b/file.jsonld#MyClass1__member_field1_2',
+                  memberFieldName: 'field1_2',
+                  range: 'xsd:number',
+                },
+              ],
             },
             {
               '@id': 'mp:components/b/file.jsonld#MyClass2',
@@ -186,7 +226,12 @@ describe('ComponentConstructor', () => {
                   range: 'xsd:string',
                 },
               ],
-              memberKeys: [ 'field2_1' ],
+              memberFields: [
+                {
+                  '@id': 'mp:components/b/file.jsonld#MyClass2__member_field2_1',
+                  memberFieldName: 'field2_1',
+                },
+              ],
             },
           ],
         },
@@ -590,7 +635,7 @@ describe('ComponentConstructor', () => {
       }, {
         genericTypeParameters: [],
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
-      }, [])).toEqual({
+      }, [], [])).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [],
@@ -619,7 +664,7 @@ describe('ComponentConstructor', () => {
       }, {
         genericTypeParameters: [],
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
-      }, [])).toEqual({
+      }, [], [])).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [
@@ -650,7 +695,7 @@ describe('ComponentConstructor', () => {
       }, {
         genericTypeParameters: [],
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
-      }, [])).toEqual({
+      }, [], [])).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'AbstractClass',
         constructorArguments: [],
@@ -675,7 +720,7 @@ describe('ComponentConstructor', () => {
           },
           genericTypeInstantiations: [],
         },
-      ])).toEqual({
+      ], [])).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [],
@@ -709,7 +754,7 @@ describe('ComponentConstructor', () => {
           },
           genericTypeInstantiations: [],
         },
-      ])).toEqual({
+      ], [])).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [],
@@ -730,7 +775,7 @@ describe('ComponentConstructor', () => {
       }, {
         genericTypeParameters: [],
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
-      }, [])).toEqual({
+      }, [], [])).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [],
@@ -748,7 +793,7 @@ describe('ComponentConstructor', () => {
       }, {
         genericTypeParameters: [],
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
-      }, [])).toEqual({
+      }, [], [])).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'AbstractClass',
         constructorArguments: [],
@@ -814,7 +859,7 @@ describe('ComponentConstructor', () => {
           },
         ],
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
-      }, [])).toEqual({
+      }, [], [])).toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [

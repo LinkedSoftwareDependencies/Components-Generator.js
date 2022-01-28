@@ -23,7 +23,7 @@ export interface ComponentDefinition {
   comment?: string;
   genericTypeParameters?: GenericTypeParameterDefinition[];
   parameters: ParameterDefinition[];
-  memberKeys: string[];
+  memberFields?: MemberFieldDefinition[];
   constructorArguments: ConstructorArgumentDefinition[];
 }
 
@@ -78,6 +78,12 @@ export type ParameterDefinitionRange = string | { '@id': string; parameters: Par
   parameterRangeIndexedObject: ParameterDefinitionRange;
   parameterRangeIndexedIndex: ParameterDefinitionRange;
 };
+
+export interface MemberFieldDefinition {
+  '@id': string;
+  memberFieldName: string;
+  range?: ParameterDefinitionRange;
+}
 
 export type ConstructorArgumentDefinition = string | { '@id': string } | {
   '@id': string;
