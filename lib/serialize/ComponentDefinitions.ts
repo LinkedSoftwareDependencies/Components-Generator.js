@@ -73,6 +73,10 @@ export type ParameterDefinitionRange = string | { '@id': string; parameters: Par
   '@type': 'ParameterRangeGenericComponent';
   component: string;
   genericTypeInstances: ParameterDefinitionRange[];
+} | {
+  '@type': 'ParameterRangeIndexed';
+  parameterRangeIndexedObject: ParameterDefinitionRange;
+  parameterRangeIndexedIndex: ParameterDefinitionRange;
 };
 
 export type ConstructorArgumentDefinition = string | { '@id': string } | {

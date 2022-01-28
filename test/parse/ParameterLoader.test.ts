@@ -1999,6 +1999,30 @@ export interface A{
           origin: expect.anything(),
         });
     });
+
+    it('should get the range of a static indexed access field type', async() => {
+      expect(await getFieldRange('fieldA: MyClass["field"]', {}))
+        .toEqual({
+          type: 'indexed',
+          object: { type: 'interface', value: 'MyClass', origin: expect.anything() },
+          index: { type: 'literal', value: 'field' },
+        });
+    });
+
+    it('should get the range of a dynamic indexed access field type', async() => {
+      expect(await getFieldRange('fieldA: MyClass["fieldA" | "fieldB"]', {}))
+        .toEqual({
+          type: 'indexed',
+          object: { type: 'interface', value: 'MyClass', origin: expect.anything() },
+          index: {
+            type: 'union',
+            elements: [
+              { type: 'literal', value: 'fieldA' },
+              { type: 'literal', value: 'fieldB' },
+            ],
+          },
+        });
+    });
   });
 
   describe('overrideRawRange', () => {
@@ -2088,6 +2112,23 @@ export interface A{
           type: 'typeof',
           value: 'T',
           origin: classLoadedDummy,
+        },
+        {
+          type: 'raw',
+          value: 'boolean',
+        },
+      )).toEqual({
+        type: 'raw',
+        value: 'boolean',
+      });
+    });
+
+    it('should override an indexed range', () => {
+      expect(loader.overrideRawRange(
+        {
+          type: 'indexed',
+          object: <any> {},
+          index: <any> {},
         },
         {
           type: 'raw',

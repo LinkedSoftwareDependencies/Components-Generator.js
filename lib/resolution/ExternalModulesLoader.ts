@@ -120,6 +120,10 @@ export class ExternalModulesLoader {
       case 'typeof':
         this.indexParameterRangeInExternalPackage(parameterRange.value, externalPackages);
         break;
+      case 'indexed':
+        this.indexParameterRangeInExternalPackage(parameterRange.object, externalPackages);
+        this.indexParameterRangeInExternalPackage(parameterRange.index, externalPackages);
+        break;
     }
   }
 

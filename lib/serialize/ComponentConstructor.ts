@@ -788,6 +788,14 @@ export class ComponentConstructor {
           '@type': 'ParameterRangeGenericTypeReference',
           parameterRangeGenericType: this.genericNameToId(context, range.origin, range.value),
         };
+      case 'indexed':
+        return {
+          '@type': 'ParameterRangeIndexed',
+          parameterRangeIndexedObject: await this
+            .constructParameterRange(range.object, context, externalContextsCallback, fieldId),
+          parameterRangeIndexedIndex: await this
+            .constructParameterRange(range.index, context, externalContextsCallback, fieldId),
+        };
     }
   }
 

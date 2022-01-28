@@ -439,6 +439,12 @@ export class ParameterLoader {
           qualifiedPath: this.getQualifiedPath(typeNode.exprName.left),
           origin: classLoaded,
         };
+      case AST_NODE_TYPES.TSIndexedAccessType:
+        return {
+          type: 'indexed',
+          object: this.getRangeFromTypeNode(classLoaded, typeNode.objectType, errorIdentifier),
+          index: this.getRangeFromTypeNode(classLoaded, typeNode.indexType, errorIdentifier),
+        };
     }
     this.throwOrWarn(new Error(`Could not understand parameter type ${typeNode.type} of ${errorIdentifier
     } in ${classLoaded.localName} at ${classLoaded.fileName}`));
@@ -531,6 +537,7 @@ export class ParameterLoader {
       case 'interface':
       case 'genericTypeReference':
       case 'typeof':
+      case 'indexed':
         // Replace these types
         return override;
       case 'undefined':
@@ -803,6 +810,10 @@ export type ParameterRangeUnresolved = {
    * The place from which the interface was referenced.
    */
   origin: ClassReferenceLoaded;
+} | {
+  type: 'indexed';
+  object: ParameterRangeUnresolved;
+  index: ParameterRangeUnresolved;
 };
 
 export type ParameterRangeResolved = {
@@ -853,6 +864,10 @@ export type ParameterRangeResolved = {
 } | {
   type: 'typeof';
   value: ParameterRangeResolved;
+} | {
+  type: 'indexed';
+  object: ParameterRangeResolved;
+  index: ParameterRangeResolved;
 };
 
 /**

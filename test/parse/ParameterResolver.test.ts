@@ -646,6 +646,15 @@ describe('ParameterResolver', () => {
       }))
         .toEqual('hash:{"a":"b"}');
     });
+
+    it('should hash index', () => {
+      expect(loader.hashParameterRangeUnresolved({
+        type: 'indexed',
+        object: { type: 'raw', value: 'boolean' },
+        index: { type: 'raw', value: 'string' },
+      }))
+        .toEqual('indexed:[raw:boolean;raw:string]');
+    });
   });
 
   describe('resolveRange', () => {
@@ -1386,6 +1395,49 @@ class MyInnerClass<AInner, BInner> {
             },
           },
         ],
+      });
+    });
+
+    it('should handle an indexed range over a generic', async() => {
+      expect(await loader.resolveRange({
+        type: 'indexed',
+        object: {
+          type: 'genericTypeReference',
+          value: 'AOuter',
+        },
+        index: { type: 'literal', value: 'keya' },
+      }, classReference, {}, true, new Set())).toMatchObject({
+        type: 'indexed',
+        object: {
+          type: 'genericTypeReference',
+          value: 'AOuter',
+        },
+        index: { type: 'literal', value: 'keya' },
+      });
+    });
+
+    it('should handle an indexed range over a class', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `export * from './MyClass'`,
+        'MyClass.d.ts': `export class MyClass{}`,
+      };
+
+      expect(await loader.resolveRange({
+        type: 'indexed',
+        object: {
+          type: 'interface',
+          value: 'MyClass',
+          genericTypeParameterInstantiations: [],
+          origin: classReference,
+        },
+        index: { type: 'literal', value: 'keya' },
+      }, classReference, {}, true, new Set())).toMatchObject({
+        type: 'indexed',
+        object: {
+          type: 'class',
+          value: { localName: 'MyClass', fileName: 'MyClass' },
+        },
+        index: { type: 'literal', value: 'keya' },
       });
     });
   });

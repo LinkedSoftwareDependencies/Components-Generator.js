@@ -313,6 +313,14 @@ export class ParameterResolver {
         };
       case 'typeof':
         throw new Error(`Detected typeof of unsupported value ${range.value} in ${owningClass.fileName}`);
+      case 'indexed':
+        return {
+          type: 'indexed',
+          object: await this
+            .resolveRange(range.object, owningClass, genericTypeRemappings, getNestedFields, handlingInterfaces),
+          index: await this
+            .resolveRange(range.index, owningClass, genericTypeRemappings, getNestedFields, handlingInterfaces),
+        };
     }
   }
 
@@ -343,6 +351,8 @@ export class ParameterResolver {
         return `${range.type}:[${this.hashParameterRangeUnresolved(range.value)}]`;
       case 'hash':
         return `hash:${JSON.stringify(range.value)}`;
+      case 'indexed':
+        return `${range.type}:[${this.hashParameterRangeUnresolved(range.object)};${this.hashParameterRangeUnresolved(range.index)}]`;
     }
   }
 

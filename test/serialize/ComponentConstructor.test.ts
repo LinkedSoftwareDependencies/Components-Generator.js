@@ -2648,6 +2648,23 @@ describe('ComponentConstructor', () => {
         parameterRangeValue: 'xsd:boolean',
       });
     });
+
+    it('should construct an indexed parameter range', async() => {
+      expect(await ctor.constructParameterRange(
+        {
+          type: 'indexed',
+          object: { type: 'raw', value: 'boolean' },
+          index: { type: 'raw', value: 'boolean' },
+        },
+        context,
+        externalContextsCallback,
+        'mp:a/b/file-param#MyClass_field',
+      )).toEqual({
+        '@type': 'ParameterRangeIndexed',
+        parameterRangeIndexedObject: 'xsd:boolean',
+        parameterRangeIndexedIndex: 'xsd:boolean',
+      });
+    });
   });
 
   describe('populateOptionalParameterFields', () => {

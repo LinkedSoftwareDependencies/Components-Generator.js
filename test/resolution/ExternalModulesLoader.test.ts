@@ -575,6 +575,38 @@ describe('ExternalModulesLoader', () => {
       expect(loader.findExternalPackages({}, constructors))
         .toEqual([ 'package1' ]);
     });
+
+    it('should handle indexed constructor parameters', () => {
+      const constructors: ClassIndex<ConstructorData<ParameterRangeResolved>> = <any> {
+        Class1: {
+          parameters: [
+            {
+              range: {
+                type: 'indexed',
+                object: {
+                  type: 'class',
+                  value: {
+                    type: 'class',
+                    localName: 'Class1',
+                    packageName: 'package1',
+                  },
+                },
+                index: {
+                  type: 'class',
+                  value: {
+                    type: 'class',
+                    localName: 'Class2',
+                    packageName: 'package2',
+                  },
+                },
+              },
+            },
+          ],
+        },
+      };
+      expect(loader.findExternalPackages({}, constructors))
+        .toEqual([ 'package1', 'package2' ]);
+    });
   });
 
   describe('buildModuleStateSelective', () => {
