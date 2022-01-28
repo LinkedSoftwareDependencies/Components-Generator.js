@@ -402,7 +402,8 @@ export class ParameterLoader {
         return { type: 'wildcard' };
       case AST_NODE_TYPES.TSFunctionType:
       case AST_NODE_TYPES.TSImportType:
-        // These types are explicitly not supported
+      case AST_NODE_TYPES.TSMappedType:
+        // TODO: These types are explicitly not supported at the moment
         return { type: 'wildcard' };
       case AST_NODE_TYPES.TSTupleType:
         return {
