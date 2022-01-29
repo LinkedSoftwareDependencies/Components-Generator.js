@@ -1,6 +1,22 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.0.0-beta.6"></a>
+## [v3.0.0-beta.6](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.0-beta.5...v3.0.0-beta.6) - 2022-01-29
+
+### Added
+* [Add lenient generation mode to ignore unsupported lang features](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/6654e77c8d9ff98cdbbd9639b64e79d9817087d1)
+* [Support indexed access type param ranges](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/823deb987b50efadaa0e22fb2ea7e637a7ea37ae)
+* [Support keyof typeof enum as union of enum keys](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/bc15b19c7789d70e3639be9194dd81054cdde561)
+
+### Changed
+* [Emit typed memberFields instead of memberKeys](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/d58bfa24097617ca75e066f027b91589b91f5e4b)
+* [Ignore TSMappedType during generation](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/82082ffa9af45bde8e8bbbde720990664f886a44)
+* [Ignore unsupported function types](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/e40fef9f936cc0d39e25703f092aad61717fac6e)
+
+### Fixed
+* [Fix empty context shortcuts being generated in some cases](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/458d2dea522c6898984baa0dd1b05e3835aad394)
+
 <a name="v3.0.0-beta.5"></a>
 ## [v3.0.0-beta.5](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.0-beta.4...v3.0.0-beta.5) - 2022-01-17
 
