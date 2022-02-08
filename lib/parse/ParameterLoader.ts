@@ -1,12 +1,4 @@
-import type { Identifier,
-  TSPropertySignature,
-  TSTypeLiteral,
-  TypeElement,
-  TypeNode,
-  TSIndexSignature,
-  TSTypeReference,
-  Parameter,
-  EntityName, TSTypeParameterInstantiation } from '@typescript-eslint/types/dist/ts-estree';
+import type { TSESTree } from '@typescript-eslint/typescript-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import type { Logger } from 'winston';
 import type { ClassReferenceLoaded, InterfaceLoaded, ClassReference,
@@ -151,7 +143,7 @@ export class ParameterLoader {
     classLoaded: ClassReferenceLoaded,
     genericTypeParameters: GenericTypeParameterData<ParameterRangeUnresolved>[],
     genericName: string,
-    genericType: TypeNode | undefined,
+    genericType: TSESTree.TypeNode | undefined,
   ): void {
     genericTypeParameters.push({
       name: genericName,
@@ -176,7 +168,7 @@ export class ParameterLoader {
     classLoaded: ClassReferenceLoaded,
     parameters: ParameterDataField<ParameterRangeUnresolved>[],
     constructorCommentData: ConstructorCommentData,
-    field: Parameter,
+    field: TSESTree.Parameter,
   ): void {
     if (field.type === AST_NODE_TYPES.Identifier) {
       const commentData = constructorCommentData[field.name] || {};
@@ -214,7 +206,7 @@ export class ParameterLoader {
    */
   public loadHashFields(
     classLoaded: ClassReferenceLoaded,
-    hash: TSTypeLiteral,
+    hash: TSESTree.TSTypeLiteral,
   ): ParameterData<ParameterRangeUnresolved>[] {
     return <ParameterData<ParameterRangeUnresolved>[]> hash.members
       .map(field => this.loadTypeElementField(classLoaded, field))
@@ -228,7 +220,7 @@ export class ParameterLoader {
    */
   public loadTypeElementField(
     classLoaded: ClassReferenceLoaded,
-    typeElement: TypeElement,
+    typeElement: TSESTree.TypeElement,
   ): ParameterData<ParameterRangeUnresolved> | undefined {
     let commentData;
     switch (typeElement.type) {
@@ -257,7 +249,7 @@ export class ParameterLoader {
    */
   public loadField(
     classLoaded: ClassReferenceLoaded,
-    field: Identifier | TSPropertySignature,
+    field: TSESTree.Identifier | TSESTree.TSPropertySignature,
     commentData: CommentData,
   ): ParameterDataField<ParameterRangeUnresolved> {
     // Required data
@@ -277,7 +269,10 @@ export class ParameterLoader {
     return parameterData;
   }
 
-  public getFieldName(classLoaded: ClassReferenceLoaded, field: Identifier | TSPropertySignature): string {
+  public getFieldName(
+    classLoaded: ClassReferenceLoaded,
+    field: TSESTree.Identifier | TSESTree.TSPropertySignature,
+  ): string {
     if ('name' in field) {
       // If Identifier
       return field.name;
@@ -293,7 +288,10 @@ export class ParameterLoader {
     return `generic type ${genericName}`;
   }
 
-  public getErrorIdentifierField(classLoaded: ClassReferenceLoaded, field: Identifier | TSPropertySignature): string {
+  public getErrorIdentifierField(
+    classLoaded: ClassReferenceLoaded,
+    field: TSESTree.Identifier | TSESTree.TSPropertySignature,
+  ): string {
     return `field ${this.getFieldName(classLoaded, field)}`;
   }
 
@@ -303,7 +301,7 @@ export class ParameterLoader {
 
   public getRangeFromTypeNode(
     classLoaded: ClassReferenceLoaded,
-    typeNode: TypeNode,
+    typeNode: TSESTree.TypeNode,
     errorIdentifier: string,
   ): ParameterRangeUnresolved {
     let typeAliasOverride: ParameterRangeUnresolved | undefined;
@@ -391,8 +389,6 @@ export class ParameterLoader {
           elements: typeNode.types
             .map(type => this.getRangeFromTypeNode(classLoaded, type, errorIdentifier)),
         };
-      case AST_NODE_TYPES.TSParenthesizedType:
-        return this.getRangeFromTypeNode(classLoaded, typeNode.typeAnnotation, errorIdentifier);
       case AST_NODE_TYPES.TSUndefinedKeyword:
         return { type: 'undefined' };
       case AST_NODE_TYPES.TSUnknownKeyword:
@@ -458,7 +454,7 @@ export class ParameterLoader {
   }
 
   protected getGenericTypeParameterInstantiations(
-    typeParameters: TSTypeParameterInstantiation,
+    typeParameters: TSESTree.TSTypeParameterInstantiation,
     classLoaded: ClassReferenceLoaded,
   ): ParameterRangeUnresolved[] {
     return typeParameters.params
@@ -469,7 +465,7 @@ export class ParameterLoader {
       ));
   }
 
-  protected getQualifiedPath(qualifiedEntity: EntityName): string[] {
+  protected getQualifiedPath(qualifiedEntity: TSESTree.EntityName): string[] {
     switch (qualifiedEntity.type) {
       case AST_NODE_TYPES.TSQualifiedName:
         return [ ...this.getQualifiedPath(qualifiedEntity.left), qualifiedEntity.right.name ];
@@ -480,7 +476,7 @@ export class ParameterLoader {
 
   public getFieldRange(
     classLoaded: ClassReferenceLoaded,
-    field: Identifier | TSPropertySignature,
+    field: TSESTree.Identifier | TSESTree.TSPropertySignature,
     commentData: CommentData,
   ): ParameterRangeUnresolved {
     let range: ParameterRangeUnresolved | undefined;
@@ -581,8 +577,11 @@ export class ParameterLoader {
    * @param indexSignature An index signature.
    * @param commentData Comment data about the given field.
    */
-  public loadIndex(classLoaded: ClassReferenceLoaded, indexSignature: TSIndexSignature, commentData: CommentData):
-  ParameterDataIndex<ParameterRangeUnresolved> {
+  public loadIndex(
+    classLoaded: ClassReferenceLoaded,
+    indexSignature: TSESTree.TSIndexSignature,
+    commentData: CommentData,
+  ): ParameterDataIndex<ParameterRangeUnresolved> {
     // Required data
     const parameterData: ParameterDataIndex<ParameterRangeUnresolved> = {
       type: 'index',
@@ -603,7 +602,7 @@ export class ParameterLoader {
 
   public getIndexDomain(
     classLoaded: ClassReferenceLoaded,
-    indexSignature: TSIndexSignature,
+    indexSignature: TSESTree.TSIndexSignature,
   ): 'string' | 'number' | 'boolean' {
     if (indexSignature.parameters.length !== 1) {
       throw new Error(`Expected exactly one key in index signature in ${
@@ -631,7 +630,7 @@ export class ParameterLoader {
 
   public getIndexRange(
     classLoaded: ClassReferenceLoaded,
-    indexSignature: TSIndexSignature,
+    indexSignature: TSESTree.TSIndexSignature,
     commentData: CommentData,
   ): ParameterRangeUnresolved {
     // Check comment data
@@ -657,7 +656,7 @@ export class ParameterLoader {
    * Iterate over all type reference override handler to see if one of them overrides the given type.
    * @param typeNode A type reference node.
    */
-  public handleTypeOverride(typeNode: TSTypeReference): ParameterRangeUnresolved | undefined {
+  public handleTypeOverride(typeNode: TSESTree.TSTypeReference): ParameterRangeUnresolved | undefined {
     for (const typeReferenceOverride of ParameterLoader.typeReferenceOverrides) {
       const handled = typeReferenceOverride.handle(typeNode);
       if (handled) {
@@ -794,7 +793,7 @@ export type ParameterRangeUnresolved = {
   origin: ClassReferenceLoaded;
 } | {
   type: 'hash';
-  value: TSTypeLiteral;
+  value: TSESTree.TSTypeLiteral;
 } | {
   type: 'undefined';
 } | {

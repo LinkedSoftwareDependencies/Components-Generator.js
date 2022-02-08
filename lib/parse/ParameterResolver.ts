@@ -1,5 +1,4 @@
-import type { TSTypeLiteral, PropertyNameNonComputed } from '@typescript-eslint/types/dist/ts-estree';
-
+import type { TSESTree } from '@typescript-eslint/typescript-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import * as LRUCache from 'lru-cache';
 import type {
@@ -317,7 +316,7 @@ export class ParameterResolver {
             const enumRangeTypes: ParameterRangeResolved[] = await Promise.all(classOrInterface.declaration.members
               // eslint-disable-next-line array-callback-return
               .map((enumMember, i) => {
-                const key = <PropertyNameNonComputed> enumMember.id;
+                const key = <TSESTree.PropertyNameNonComputed> enumMember.id;
                 switch (key.type) {
                   case AST_NODE_TYPES.Literal:
                     return { type: 'literal', value: key.value };
@@ -584,17 +583,16 @@ export class ParameterResolver {
     }
 
     // If the result is a type, check if it is an alias for another interface, and load that
-    if (classOrInterface.type === 'type') {
-      if (classOrInterface.declaration.typeAnnotation.type === AST_NODE_TYPES.TSTypeReference &&
+    if (classOrInterface.type === 'type' &&
+      classOrInterface.declaration.typeAnnotation.type === AST_NODE_TYPES.TSTypeReference &&
         classOrInterface.declaration.typeAnnotation.typeName.type === AST_NODE_TYPES.Identifier) {
-        return await this.loadClassOrInterfacesChain({
-          packageName: classOrInterface.packageName,
-          localName: classOrInterface.declaration.typeAnnotation.typeName.name,
-          qualifiedPath: [],
-          fileName: classOrInterface.fileName,
-          fileNameReferenced: classOrInterface.fileNameReferenced,
-        });
-      }
+      return await this.loadClassOrInterfacesChain({
+        packageName: classOrInterface.packageName,
+        localName: classOrInterface.declaration.typeAnnotation.typeName.name,
+        qualifiedPath: [],
+        fileName: classOrInterface.fileName,
+        fileNameReferenced: classOrInterface.fileNameReferenced,
+      });
     }
 
     return classOrInterface;
@@ -625,7 +623,7 @@ export class ParameterResolver {
    * @param handlingInterfaces The names of interfaces that are being handled, and this interface is a part of.
    */
   public async getNestedFieldsFromHash(
-    hash: TSTypeLiteral,
+    hash: TSESTree.TSTypeLiteral,
     owningClass: ClassReferenceLoaded,
     genericTypeRemappings: Record<string, ParameterRangeUnresolved>,
     handlingInterfaces: Set<string>,

@@ -1,5 +1,4 @@
-import type { ClassDeclaration, MethodDefinition } from '@typescript-eslint/types/dist/ts-estree';
-import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
+import type { AST, TSESTreeOptions, TSESTree } from '@typescript-eslint/typescript-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import type { ClassIndex, ClassLoaded, ClassReferenceLoaded, GenericallyTyped } from './ClassIndex';
 import type { ParameterDataField, ParameterRangeUnresolved, ParameterLoader } from './ParameterLoader';
@@ -63,16 +62,14 @@ export class ConstructorLoader {
    */
   public getConstructor(classLoaded: GenericallyTyped<ClassLoaded>): ConstructorHolder | undefined {
     // First look for the constructor in this class
-    let constructor: MethodDefinition | undefined = this.getConstructorInClass(classLoaded.value.declaration);
+    let constructor: TSESTree.MethodDefinition | undefined = this.getConstructorInClass(classLoaded.value.declaration);
 
     // If no constructor was found, look in the super class
-    if (!constructor) {
-      if (classLoaded.value.superClass) {
-        const constructorDataSuper = this.getConstructor(classLoaded.value.superClass);
-        if (constructorDataSuper) {
-          constructor = constructorDataSuper.constructor;
-          classLoaded = constructorDataSuper.classLoaded;
-        }
+    if (!constructor && classLoaded.value.superClass) {
+      const constructorDataSuper = this.getConstructor(classLoaded.value.superClass);
+      if (constructorDataSuper) {
+        constructor = constructorDataSuper.constructor;
+        classLoaded = constructorDataSuper.classLoaded;
       }
     }
 
@@ -83,7 +80,7 @@ export class ConstructorLoader {
    * Retrieve the constructor in the given class, or undefined if it could not be found.
    * @param declaration A class declaration
    */
-  public getConstructorInClass(declaration: ClassDeclaration): MethodDefinition | undefined {
+  public getConstructorInClass(declaration: TSESTree.ClassDeclaration): TSESTree.MethodDefinition | undefined {
     for (const element of declaration.body.body) {
       if (element.type === AST_NODE_TYPES.MethodDefinition &&
         element.kind === 'constructor') {
@@ -99,7 +96,7 @@ export class ConstructorLoader {
    * @param ast A parsed typescript file
    * @param fileName The file name, for error reporting.
    */
-  public getClass(className: string, ast: AST<TSESTreeOptions>, fileName: string): ClassDeclaration {
+  public getClass(className: string, ast: AST<TSESTreeOptions>, fileName: string): TSESTree.ClassDeclaration {
     for (const statement of ast.body) {
       // Classes in the form of `declare class A {}`
       if (statement.type === AST_NODE_TYPES.ClassDeclaration &&
@@ -136,6 +133,6 @@ export interface ConstructorData<R> {
  * Datastructure for holding a constructor and the class it is part of.
  */
 export interface ConstructorHolder {
-  constructor: MethodDefinition;
+  constructor: TSESTree.MethodDefinition;
   classLoaded: GenericallyTyped<ClassLoaded>;
 }

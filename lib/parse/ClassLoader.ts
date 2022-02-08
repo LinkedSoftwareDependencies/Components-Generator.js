@@ -1,13 +1,5 @@
 import * as Path from 'path';
-import type {
-  ClassDeclaration,
-  TSEnumDeclaration,
-  TSInterfaceDeclaration,
-  TSModuleBlock,
-  TSModuleDeclaration,
-  TSTypeAliasDeclaration,
-} from '@typescript-eslint/types/dist/ts-estree';
-import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
+import type { AST, TSESTreeOptions, TSESTree } from '@typescript-eslint/typescript-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import type { Logger } from 'winston';
 import type { ResolutionContext } from '../resolution/ResolutionContext';
@@ -43,7 +35,10 @@ export class ClassLoader {
    * @param declaration A class declaration.
    * @param fileName The file name of the current class.
    */
-  public getSuperClassName(declaration: ClassDeclaration, fileName: string): GenericallyTyped<string> | undefined {
+  public getSuperClassName(
+    declaration: TSESTree.ClassDeclaration,
+    fileName: string,
+  ): GenericallyTyped<string> | undefined {
     if (!declaration.superClass) {
       return;
     }
@@ -69,7 +64,10 @@ export class ClassLoader {
    * @param declaration An interface declaration.
    * @param fileName The file name of the current class.
    */
-  public getSuperInterfaceNames(declaration: TSInterfaceDeclaration, fileName: string): GenericallyTyped<string>[] {
+  public getSuperInterfaceNames(
+    declaration: TSESTree.TSInterfaceDeclaration,
+    fileName: string,
+  ): GenericallyTyped<string>[] {
     return <GenericallyTyped<string>[]> (declaration.extends || [])
       // eslint-disable-next-line array-callback-return
       .map(extendsExpression => {
@@ -92,7 +90,10 @@ export class ClassLoader {
    * @param declaration A class declaration.
    * @param fileName The file name of the current class.
    */
-  public getClassInterfaceNames(declaration: ClassDeclaration, fileName: string): GenericallyTyped<string>[] {
+  public getClassInterfaceNames(
+    declaration: TSESTree.ClassDeclaration,
+    fileName: string,
+  ): GenericallyTyped<string>[] {
     const interfaceNames: GenericallyTyped<string>[] = [];
     if (declaration.implements) {
       for (const implement of declaration.implements) {
@@ -154,7 +155,7 @@ export class ClassLoader {
    *                       such as a type alias or enum.
    */
   public async loadClassDeclarationFromAst<CI extends boolean, CT extends boolean>(
-    ast: AST<TSESTreeOptions> | TSModuleBlock,
+    ast: AST<TSESTreeOptions> | TSESTree.TSModuleBlock,
     targetString: string,
     classReference: ClassReference,
     considerInterfaces: CI,
@@ -367,7 +368,7 @@ export class ClassLoader {
           if (enumMember.id.type === AST_NODE_TYPES.Identifier && enumMember.id.name === enumKey &&
             enumMember.initializer && enumMember.initializer.type === AST_NODE_TYPES.Literal) {
             // Expose the enum entry as type alias
-            const typeNode: TSTypeAliasDeclaration = {
+            const typeNode: TSESTree.TSTypeAliasDeclaration = {
               type: AST_NODE_TYPES.TSTypeAliasDeclaration,
               id: {
                 type: AST_NODE_TYPES.Identifier,
@@ -411,9 +412,9 @@ export class ClassLoader {
 
     // Check if the export assignment refers to a namespace
     if (exportAssignment && typeof exportAssignment === 'string' && exportAssignment in declaredNamespaces) {
-      const namespace: TSModuleDeclaration = declaredNamespaces[exportAssignment];
+      const namespace: TSESTree.TSModuleDeclaration = declaredNamespaces[exportAssignment];
       return this.loadClassDeclarationFromAst(
-        <TSModuleBlock>namespace.body,
+        <TSESTree.TSModuleBlock>namespace.body,
         targetString,
         classReference,
         considerInterfaces,
@@ -430,7 +431,7 @@ export class ClassLoader {
    * @param classDeclaration A class or interface declaration.
    */
   public collectGenericTypes(
-    classDeclaration: ClassDeclaration | TSInterfaceDeclaration | TSTypeAliasDeclaration,
+    classDeclaration: TSESTree.ClassDeclaration | TSESTree.TSInterfaceDeclaration | TSESTree.TSTypeAliasDeclaration,
   ): GenericTypes {
     const genericTypes: GenericTypes = {};
     if (classDeclaration.typeParameters) {
@@ -533,27 +534,27 @@ export class ClassLoader {
   public getClassElements(
     packageName: string,
     fileName: string,
-    ast: AST<TSESTreeOptions> | TSModuleBlock,
+    ast: AST<TSESTreeOptions> | TSESTree.TSModuleBlock,
   ): ClassElements {
-    const exportedClasses: Record<string, ClassDeclaration> = {};
-    const exportedInterfaces: Record<string, TSInterfaceDeclaration> = {};
-    const exportedTypes: Record<string, TSTypeAliasDeclaration> = {};
-    const exportedEnums: Record<string, TSEnumDeclaration> = {};
-    const exportedNamespaces: Record<string, TSModuleDeclaration> = {};
+    const exportedClasses: Record<string, TSESTree.ClassDeclaration> = {};
+    const exportedInterfaces: Record<string, TSESTree.TSInterfaceDeclaration> = {};
+    const exportedTypes: Record<string, TSESTree.TSTypeAliasDeclaration> = {};
+    const exportedEnums: Record<string, TSESTree.TSEnumDeclaration> = {};
+    const exportedNamespaces: Record<string, TSESTree.TSModuleDeclaration> = {};
     const exportedImportedElements: Record<string, ClassReference> = {};
     const exportedImportedAll: { packageName: string; fileName: string; fileNameReferenced: string }[] = [];
     const exportedImportedAllNamed:
     Record<string, { packageName: string; fileName: string; fileNameReferenced: string }> = {};
     const exportedUnknowns: Record<string, string> = {};
-    const declaredClasses: Record<string, ClassDeclaration> = {};
-    const declaredInterfaces: Record<string, TSInterfaceDeclaration> = {};
-    const declaredTypes: Record<string, TSTypeAliasDeclaration> = {};
-    const declaredEnums: Record<string, TSEnumDeclaration> = {};
-    const declaredNamespaces: Record<string, TSModuleDeclaration> = {};
+    const declaredClasses: Record<string, TSESTree.ClassDeclaration> = {};
+    const declaredInterfaces: Record<string, TSESTree.TSInterfaceDeclaration> = {};
+    const declaredTypes: Record<string, TSESTree.TSTypeAliasDeclaration> = {};
+    const declaredEnums: Record<string, TSESTree.TSEnumDeclaration> = {};
+    const declaredNamespaces: Record<string, TSESTree.TSModuleDeclaration> = {};
     const importedElements: Record<string, ClassReference> = {};
     const importedElementsAllNamed:
     Record<string, { packageName: string; fileName: string; fileNameReferenced: string }> = {};
-    let exportAssignment: string | ClassDeclaration | undefined;
+    let exportAssignment: string | TSESTree.ClassDeclaration | undefined;
 
     for (const statement of ast.body) {
       if (statement.type === AST_NODE_TYPES.ExportNamedDeclaration) {
@@ -685,15 +686,15 @@ export interface ClassLoaderArgs {
  */
 export interface ClassElements {
   // Classes that have been declared in a file via `export class A`
-  exportedClasses: Record<string, ClassDeclaration>;
+  exportedClasses: Record<string, TSESTree.ClassDeclaration>;
   // Interfaces that have been declared in a file via `export interface A`
-  exportedInterfaces: Record<string, TSInterfaceDeclaration>;
+  exportedInterfaces: Record<string, TSESTree.TSInterfaceDeclaration>;
   // Types that have been declared in a file via `export type A = ...`
-  exportedTypes: Record<string, TSTypeAliasDeclaration>;
+  exportedTypes: Record<string, TSESTree.TSTypeAliasDeclaration>;
   // Enums that have been declared in a file via `export enum A {...}`
-  exportedEnums: Record<string, TSEnumDeclaration>;
+  exportedEnums: Record<string, TSESTree.TSEnumDeclaration>;
   // Namespaces that have been declared in a file via `export namespace A { ... }`
-  exportedNamespaces: Record<string, TSModuleDeclaration>;
+  exportedNamespaces: Record<string, TSESTree.TSModuleDeclaration>;
   // Elements that have been exported via `export { A as B } from "b"`
   exportedImportedElements: Record<string, ClassReference>;
   // Exports via `export * from "b"`
@@ -703,19 +704,19 @@ export interface ClassElements {
   // Things that have been exported via `export {A as B}`, where the target is not known
   exportedUnknowns: Record<string, string>;
   // Classes that have been declared in a file via `declare class A`
-  declaredClasses: Record<string, ClassDeclaration>;
+  declaredClasses: Record<string, TSESTree.ClassDeclaration>;
   // Interfaces that have been declared in a file via `declare interface A`
-  declaredInterfaces: Record<string, TSInterfaceDeclaration>;
+  declaredInterfaces: Record<string, TSESTree.TSInterfaceDeclaration>;
   // Types that have been declared in a file via `declare type A = ...`
-  declaredTypes: Record<string, TSTypeAliasDeclaration>;
+  declaredTypes: Record<string, TSESTree.TSTypeAliasDeclaration>;
   // Enums that have been declared in a file via `declare enum A {...}`
-  declaredEnums: Record<string, TSEnumDeclaration>;
+  declaredEnums: Record<string, TSESTree.TSEnumDeclaration>;
   // Namespaces that have been declared in a file via `declare namespace A { ... }`
-  declaredNamespaces: Record<string, TSModuleDeclaration>;
+  declaredNamespaces: Record<string, TSESTree.TSModuleDeclaration>;
   // Elements that are imported from elsewhere via `import {A} from ''`
   importedElements: Record<string, ClassReference>;
   // Elements that are imported from elsewhere via `import * as A from ''`
   importedElementsAllNamed: Record<string, { packageName: string; fileName: string; fileNameReferenced: string }>;
   // Element exported via `export = ...`
-  exportAssignment: string | ClassDeclaration | undefined;
+  exportAssignment: string | TSESTree.ClassDeclaration | undefined;
 }

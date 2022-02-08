@@ -44,16 +44,16 @@ export class MemberLoader {
     for (const element of classLoaded.declaration.body.body) {
       // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
       switch (element.type) {
-        case AST_NODE_TYPES.ClassProperty:
-        case AST_NODE_TYPES.TSAbstractClassProperty:
+        case AST_NODE_TYPES.PropertyDefinition:
+        case AST_NODE_TYPES.TSAbstractPropertyDefinition:
         case AST_NODE_TYPES.MethodDefinition:
         case AST_NODE_TYPES.TSAbstractMethodDefinition:
         case AST_NODE_TYPES.TSPropertySignature:
         case AST_NODE_TYPES.TSMethodSignature:
           if (element.key.type === 'Identifier') {
             // TODO: more types may be needed here, such as AST_NODE_TYPES.TSPropertySignature
-            const typeNode = element.type === AST_NODE_TYPES.ClassProperty ||
-            element.type === AST_NODE_TYPES.TSAbstractClassProperty ?
+            const typeNode = element.type === AST_NODE_TYPES.PropertyDefinition ||
+            element.type === AST_NODE_TYPES.TSAbstractPropertyDefinition ?
               element.typeAnnotation?.typeAnnotation :
               undefined;
             members.push({

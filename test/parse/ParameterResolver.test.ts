@@ -1,5 +1,5 @@
-import { AST_NODE_TYPES } from '@typescript-eslint/types/dist/ast-node-types';
-import type { TSTypeLiteral } from '@typescript-eslint/types/dist/ts-estree';
+import type { TSESTree } from '@typescript-eslint/typescript-estree';
+import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import type { ClassLoaded, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from '../../lib/parse/ClassIndex';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
 import { CommentLoader } from '../../lib/parse/CommentLoader';
@@ -2544,14 +2544,14 @@ export interface A<T>{
     };
 
     async function getHash(definition: string, prefix = ''):
-    Promise<{ hash: TSTypeLiteral; owningClass: ClassReferenceLoaded }> {
+    Promise<{ hash: TSESTree.TSTypeLiteral; owningClass: ClassReferenceLoaded }> {
       resolutionContext.contentsOverrides['file.d.ts'] = `
 ${prefix}
 export class A{
   constructor(fieldA: ${definition}) {}
 }`;
       const classLoaded = await classLoader.loadClassDeclaration(classReference, false, false);
-      const hash: TSTypeLiteral = (<any> (new ConstructorLoader({ parameterLoader })
+      const hash: TSESTree.TSTypeLiteral = (<any> (new ConstructorLoader({ parameterLoader })
         .getConstructor({ value: classLoaded })!.constructor)
         .value.params[0]).typeAnnotation.typeAnnotation;
 

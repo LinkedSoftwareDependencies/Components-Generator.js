@@ -1,10 +1,7 @@
-import type { TSTypeLiteral, Identifier, TSIndexSignature,
-  TSTypeReference } from '@typescript-eslint/types/dist/ts-estree';
+import type { TSESTree } from '@typescript-eslint/typescript-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-
 import { ClassFinder } from '../../lib/parse/ClassFinder';
 import type { ClassLoaded, ClassReference, ClassReferenceLoaded, InterfaceLoaded } from '../../lib/parse/ClassIndex';
-
 import { ClassIndexer } from '../../lib/parse/ClassIndexer';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
 import type { CommentData } from '../../lib/parse/CommentLoader';
@@ -1086,14 +1083,14 @@ export interface A{
     };
 
     async function getHash(definition: string):
-    Promise<{ hash: TSTypeLiteral; parameterLoader: ParameterLoader; classLoaded: ClassReferenceLoaded }> {
+    Promise<{ hash: TSESTree.TSTypeLiteral; parameterLoader: ParameterLoader; classLoaded: ClassReferenceLoaded }> {
       resolutionContext.contentsOverrides = {
         'file.d.ts': `export class A{
   constructor(fieldA: ${definition}) {}
 }`,
       };
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
-      const hash: TSTypeLiteral = (<any> constructorLoader.getConstructor({ value: classLoaded })!.constructor
+      const hash: TSESTree.TSTypeLiteral = (<any> constructorLoader.getConstructor({ value: classLoaded })!.constructor
         .value.params[0]).typeAnnotation.typeAnnotation;
       const parameterLoader = new ParameterLoader({ commentLoader, hardErrorUnsupported: true, logger });
 
@@ -1538,7 +1535,7 @@ export interface A{
 }`,
       };
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
-      const field: Identifier = <any> (constructorLoader.getConstructor({ value: classLoaded })!.constructor)
+      const field: TSESTree.Identifier = <any> (constructorLoader.getConstructor({ value: classLoaded })!.constructor)
         .value.params[0];
       const parameterLoader = new ParameterLoader({ commentLoader, hardErrorUnsupported, logger });
       return parameterLoader.getFieldRange(classLoaded, field, commentData);
@@ -1727,7 +1724,7 @@ export interface A{
 }`,
       };
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
-      const field: Identifier = <any> (constructorLoader.getConstructor({ value: classLoaded })!.constructor)
+      const field: TSESTree.Identifier = <any> (constructorLoader.getConstructor({ value: classLoaded })!.constructor)
         .value.params[0];
       const parameterLoader = new ParameterLoader({ commentLoader, hardErrorUnsupported: true, logger });
 
@@ -1742,7 +1739,7 @@ export interface A{
 }`,
       };
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
-      const field: Identifier = <any> (constructorLoader.getConstructor({ value: classLoaded })!.constructor)
+      const field: TSESTree.Identifier = <any> (constructorLoader.getConstructor({ value: classLoaded })!.constructor)
         .value.params[0];
       const parameterLoader = new ParameterLoader({ commentLoader, hardErrorUnsupported: true, logger });
 
@@ -1757,7 +1754,7 @@ export interface A{
 }`,
       };
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
-      const field: Identifier = <any> (constructorLoader.getConstructor({ value: classLoaded })!.constructor)
+      const field: TSESTree.Identifier = <any> (constructorLoader.getConstructor({ value: classLoaded })!.constructor)
         .value.params[0];
       const parameterLoader = new ParameterLoader({ commentLoader, hardErrorUnsupported: true, logger });
 
@@ -2333,7 +2330,7 @@ export interface A{
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
       const field: any = <any>(constructorLoader.getConstructor({ value: classLoaded })!.constructor)
         .value.params[0];
-      const indexSignature: TSIndexSignature = field.typeAnnotation.typeAnnotation.members[0];
+      const indexSignature: TSESTree.TSIndexSignature = field.typeAnnotation.typeAnnotation.members[0];
       parameterLoader = new ParameterLoader({ commentLoader, hardErrorUnsupported: true, logger });
       return parameterLoader.getIndexDomain(classLoaded, indexSignature);
     }
@@ -2393,7 +2390,7 @@ export interface A{
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
       const field: any = <any>(constructorLoader.getConstructor({ value: classLoaded })!.constructor)
         .value.params[0];
-      const indexSignature: TSIndexSignature = field.typeAnnotation.typeAnnotation.members[0];
+      const indexSignature: TSESTree.TSIndexSignature = field.typeAnnotation.typeAnnotation.members[0];
       const parameterLoader = new ParameterLoader({ commentLoader, hardErrorUnsupported, logger });
       return parameterLoader.getIndexRange(classLoaded, indexSignature, commentData);
     }
@@ -2439,10 +2436,10 @@ export interface A{
 }`,
       };
       const classLoaded = await classLoader.loadClassDeclaration(clazz, false, false);
-      const field: Identifier = <any> (constructorLoader.getConstructor({ value: classLoaded })!.constructor)
+      const field: TSESTree.Identifier = <any> (constructorLoader.getConstructor({ value: classLoaded })!.constructor)
         .value.params[0];
       const parameterLoader = new ParameterLoader({ commentLoader, hardErrorUnsupported: true, logger });
-      const typeNode: TSTypeReference = <TSTypeReference> field.typeAnnotation!.typeAnnotation;
+      const typeNode: TSESTree.TSTypeReference = <TSESTree.TSTypeReference> field.typeAnnotation!.typeAnnotation;
       return parameterLoader.handleTypeOverride(typeNode);
     }
 

@@ -11,7 +11,7 @@
     "test": "jest ${1}",
     "coveralls": "jest --coverage && cat ./coverage/lcov.info | coveralls",
     "lint": "eslint . --ext .ts --cache",
-    "prepare": "husky install",
+    "prepare": "husky install && npm run build",
     "version": "manual-git-changelog onversion"
   },
   "jest": {
@@ -70,7 +70,7 @@
   "dependencies": {
     "@types/lru-cache": "^5.1.0",
     "@types/semver": "^7.3.4",
-    "@typescript-eslint/typescript-estree": "^4.6.1",
+    "@typescript-eslint/typescript-estree": "^5.11.0",
     "comment-parser": "^0.7.6",
     "componentsjs": "5.0.0-beta.4",
     "jsonld-context-parser": "^2.1.5",
@@ -87,11 +87,11 @@
     "@types/minimist": "^1.2.0",
     "@types/node": "^14.14.7",
     "@types/rimraf": "^3.0.0",
-    "@typescript-eslint/eslint-plugin": "^4.2.0",
-    "@typescript-eslint/parser": "^4.1.1",
+    "@typescript-eslint/eslint-plugin": "^5.11.0",
+    "@typescript-eslint/parser": "^5.11.0",
     "coveralls": "^3.0.0",
     "eslint": "^7.9.0",
-    "eslint-config-es": "^3.23.0",
+    "eslint-config-es": "3.26.0",
     "eslint-import-resolver-typescript": "^2.3.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-jest": "^24.0.2",
@@ -104,6 +104,6 @@
     "manual-git-changelog": "^1.0.1",
     "rimraf": "latest",
     "ts-jest": "^27.0.1",
-    "typescript": "^4.3.5"
+    "typescript": "^4.5.5"
   }
 }

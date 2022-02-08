@@ -1,9 +1,7 @@
-import type { MethodDefinition, TSPropertySignature,
-  TSIndexSignature, BaseNode } from '@typescript-eslint/types/dist/ts-estree';
+import type { TSESTree } from '@typescript-eslint/typescript-estree';
 import * as commentParse from 'comment-parser';
 import type { ClassReference, ClassReferenceLoaded } from './ClassIndex';
 import type { ConstructorHolder } from './ConstructorLoader';
-
 import type { DefaultNested, DefaultValue, ParameterRangeUnresolved } from './ParameterLoader';
 
 /**
@@ -48,7 +46,7 @@ export class CommentLoader {
    */
   public getCommentDataFromConstructorSingle(
     classLoaded: ClassReferenceLoaded,
-    constructor: MethodDefinition,
+    constructor: TSESTree.MethodDefinition,
   ): ConstructorCommentData {
     // Get the constructor comment
     const comment = this.getCommentRaw(classLoaded, constructor);
@@ -94,7 +92,7 @@ export class CommentLoader {
    */
   public getCommentDataFromField(
     classLoaded: ClassReferenceLoaded,
-    field: TSPropertySignature | TSIndexSignature,
+    field: TSESTree.TSPropertySignature | TSESTree.TSIndexSignature,
   ): CommentData {
     const comment = this.getCommentRaw(classLoaded, field);
     if (comment) {
@@ -227,7 +225,7 @@ export class CommentLoader {
    * @param classLoaded The loaded class in which the field is defined.
    * @param node A node, such as a field or constructor.
    */
-  public getCommentRaw(classLoaded: ClassReferenceLoaded, node: BaseNode): string | undefined {
+  public getCommentRaw(classLoaded: ClassReferenceLoaded, node: TSESTree.BaseNode): string | undefined {
     const line = node.loc.start.line;
     for (const comment of classLoaded.ast.comments || []) {
       if (comment.loc.end.line === line - 1) {

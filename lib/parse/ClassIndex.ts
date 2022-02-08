@@ -1,11 +1,4 @@
-import type { ClassDeclaration,
-  TSInterfaceDeclaration,
-  TSTypeAliasDeclaration,
-  TSEnumDeclaration,
-  TypeNode,
-  TSTypeParameterInstantiation } from '@typescript-eslint/types/dist/ts-estree';
-
-import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
+import type { AST, TSESTreeOptions, TSESTree } from '@typescript-eslint/typescript-estree';
 
 /**
  * A collection of classes, with exported name as key.
@@ -48,7 +41,7 @@ export interface ClassLoaded extends ClassReference {
   // The name of the file the class is defined in.
   fileName: string;
   // The loaded class declaration.
-  declaration: ClassDeclaration;
+  declaration: TSESTree.ClassDeclaration;
   // The full AST the class was present in.
   ast: AST<TSESTreeOptions>;
   // A super class reference if the class has one
@@ -66,7 +59,7 @@ export interface ClassLoaded extends ClassReference {
 /**
  * A hash of generic type name to its properties.
  */
-export type GenericTypes = Record<string, { type?: TypeNode }>;
+export type GenericTypes = Record<string, { type?: TSESTree.TypeNode }>;
 
 /**
  * Something (like a class or interface) that may have generic types assigned to it as instantiation.
@@ -75,7 +68,7 @@ export interface GenericallyTyped<T> {
   // The typed value
   value: T;
   // The generic types of this value
-  genericTypeInstantiations?: TSTypeParameterInstantiation;
+  genericTypeInstantiations?: TSESTree.TSTypeParameterInstantiation;
 }
 
 /**
@@ -88,7 +81,7 @@ export interface InterfaceLoaded extends ClassReference {
   // The name of the file the interface is defined in.
   fileName: string;
   // The loaded interface declaration.
-  declaration: TSInterfaceDeclaration;
+  declaration: TSESTree.TSInterfaceDeclaration;
   // The full AST the interface was present in.
   ast: AST<TSESTreeOptions>;
   // Super interface references if the interface has them
@@ -104,7 +97,7 @@ export interface InterfaceLoaded extends ClassReference {
  */
 export interface MemberField {
   name: string;
-  range: TypeNode | undefined;
+  range: TSESTree.TypeNode | undefined;
 }
 
 /**
@@ -117,7 +110,7 @@ export interface TypeLoaded extends ClassReference {
   // The name of the file the interface is defined in.
   fileName: string;
   // The loaded type declaration.
-  declaration: TSTypeAliasDeclaration;
+  declaration: TSESTree.TSTypeAliasDeclaration;
   // The full AST the interface was present in.
   ast: AST<TSESTreeOptions>;
   // The tsdoc comment of this class
@@ -136,7 +129,7 @@ export interface EnumLoaded extends ClassReference {
   // The name of the file the interface is defined in.
   fileName: string;
   // The loaded enum declaration.
-  declaration: TSEnumDeclaration;
+  declaration: TSESTree.TSEnumDeclaration;
   // The full AST the interface was present in.
   ast: AST<TSESTreeOptions>;
   // The tsdoc comment of this class
