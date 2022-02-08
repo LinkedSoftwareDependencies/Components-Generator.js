@@ -1826,6 +1826,8 @@ export interface A{
     it('should get the range of unsupported types as wildcard', async() => {
       expect(await getFieldRange('fieldA: () => void', {}))
         .toEqual({ type: 'wildcard' });
+      expect(await getFieldRange('fieldA: never', {}))
+        .toEqual({ type: 'wildcard' });
     });
 
     it('should get the range of a union type of two raw types', async() => {
