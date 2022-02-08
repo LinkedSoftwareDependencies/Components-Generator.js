@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.0.0-beta.7"></a>
+## [v3.0.0-beta.7](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.0-beta.6...v3.0.0-beta.7) - 2022-02-08
+
+### Added
+* [Add support for never param types as wildcard, Closes #85](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/67b4972e66db8710469b0f678852f5c9fa52e5f5)
+
 <a name="v3.0.0-beta.6"></a>
 ## [v3.0.0-beta.6](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.0-beta.5...v3.0.0-beta.6) - 2022-01-29
 
