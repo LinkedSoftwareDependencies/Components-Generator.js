@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.0.0"></a>
+## [v3.0.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.0-beta.7...v3.0.0) - 2022-03-01
+
+### Changed
+* [Update to CJS 5](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/f2be05ba2065116c9b2bf405fd84e8d1ce0155c1)
+* [Update dependency @types/node to v16](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/66dfae6b27d923c795f6bc455272fb8c95e0a048)
+
 <a name="v3.0.0-beta.7"></a>
 ## [v3.0.0-beta.7](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.0-beta.6...v3.0.0-beta.7) - 2022-02-08
 
