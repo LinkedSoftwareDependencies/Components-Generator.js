@@ -3,6 +3,7 @@
 [![Build status](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/workflows/CI/badge.svg)](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/actions?query=workflow%3ACI)
 [![Coverage Status](https://coveralls.io/repos/github/LinkedSoftwareDependencies/Components-Generator.js/badge.svg?branch=master)](https://coveralls.io/github/LinkedSoftwareDependencies/Components-Generator.js?branch=master)
 [![npm version](https://badge.fury.io/js/componentsjs-generator.svg)](https://www.npmjs.com/package/componentsjs-generator)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5644902.svg)](https://doi.org/10.5281/zenodo.5644902)
 
 This is a tool to automatically generate `.jsonld` component files from TypeScript classes
 for the [Components.js](https://github.com/LinkedSoftwareDependencies/Components.js) dependency injection framework.
