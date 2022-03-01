@@ -43,7 +43,7 @@ describe('ContextConstructor', () => {
       it('should handle undefined component definitions', () => {
         expect(ctor.constructContext()).toEqual({
           '@context': [
-            'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld',
+            'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^5.0.0/components/context.jsonld',
             {
               npmd: 'https://linkedsoftwaredependencies.org/bundles/npm/',
               mp: 'npmd:my-package/^2.0.0/',
@@ -88,7 +88,7 @@ describe('ContextConstructor', () => {
           },
         })).toEqual({
           '@context': [
-            'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld',
+            'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^5.0.0/components/context.jsonld',
             {
               MyClass1: {
                 '@id': 'mp:file1#MyClass1',
@@ -887,7 +887,7 @@ describe('ContextConstructor', () => {
         },
       })).toEqual({
         '@context': [
-          'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld',
+          'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^5.0.0/components/context.jsonld',
           {
             MyClass1: {
               '@id': 'mp:file1#MyClass1',
