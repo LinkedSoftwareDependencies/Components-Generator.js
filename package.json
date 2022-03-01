@@ -96,7 +96,7 @@
     "eslint-plugin-tsdoc": "^0.2.7",
     "eslint-plugin-unused-imports": "^2.0.0",
     "fs-extra": "^10.0.0",
-    "husky": "^6.0.0",
+    "husky": "^7.0.0",
     "jest": "^27.0.1",
     "jest-extended": "^0.11.2",
     "manual-git-changelog": "^1.0.1",
