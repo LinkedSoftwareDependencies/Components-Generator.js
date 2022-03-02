@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.0.1"></a>
+## [v3.0.1](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.0...v3.0.1) - 2022-03-02
+
+### Fixed
+* [Fix Components.js version range being too strict](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/7c64fc71d80ead5fcc7fc84e5f51a4df0c1e6551)
+
 <a name="v3.0.0"></a>
 ## [v3.0.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.0-beta.7...v3.0.0) - 2022-03-01
 
