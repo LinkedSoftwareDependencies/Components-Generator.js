@@ -122,7 +122,7 @@ describe('ResolutionContext', () => {
 
     it('Should resolve from the currentFilePath for a package without separate typings without extension', async() => {
       expect(resolutionContext.resolvePackageIndex('@comunica/bus-rdf-parse', Path.join(__dirname, '../../')))
-        .toEqual(Path.join(__dirname, '../../node_modules/@comunica/bus-rdf-parse/index.d.ts'));
+        .toEqual(Path.join(__dirname, '../../node_modules/@comunica/bus-rdf-parse/lib/index.d.ts'));
     });
 
     it('Should resolve from the currentFilePath for a built-in package', async() => {
