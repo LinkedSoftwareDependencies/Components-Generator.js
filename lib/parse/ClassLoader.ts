@@ -457,11 +457,17 @@ export class ClassLoader {
   /**
    * Load a class, and get all class elements from it.
    * @param packageName Package name we are importing from.
-   * @param fileName A file path.
+   * @param filePath A file path.
+   * @returns {Promise<ClassElements & { resolvedPath: string }>} Promise of the class elements along with
+   * the resolved file path that was used to load these class elements.
    */
-  public async loadClassElements(packageName: string, fileName: string): Promise<ClassElements> {
-    const ast = await this.resolutionContext.parseTypescriptFile(fileName);
-    return this.getClassElements(packageName, fileName, ast);
+  public async loadClassElements(packageName: string, filePath: string): Promise<
+  ClassElements & { resolvedPath: string }
+  > {
+    const resolvedPath = await this.resolutionContext.resolveTypesPath(filePath);
+    const ast = await this.resolutionContext.parseTypescriptFile(resolvedPath);
+    const classElements = this.getClassElements(packageName, resolvedPath, ast);
+    return { ...classElements, resolvedPath };
   }
 
   /**
