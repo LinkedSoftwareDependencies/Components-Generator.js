@@ -359,6 +359,35 @@ export {A};
         });
     });
 
+    it('for a directory export', async() => {
+      resolutionContext.contentsOverrides = {
+        [Path.normalize('directory-export/index.d.ts')]: `
+          export * from './lib';
+        `,
+        [Path.normalize('directory-export/lib/index.d.ts')]: `
+        export * from './A';
+        export * from './C';
+        `,
+        [Path.normalize('directory-export/lib/A.d.ts')]: 'export class A {}',
+        [Path.normalize('directory-export/lib/C.d.ts')]: 'export class C {}',
+      };
+      expect(await parser.getPackageExports('package', Path.normalize('directory-export/index')))
+        .toEqual({
+          A: {
+            packageName: 'package',
+            fileName: Path.normalize('directory-export/lib/A'),
+            fileNameReferenced: Path.normalize('directory-export/lib/A'),
+            localName: 'A',
+          },
+          C: {
+            packageName: 'package',
+            fileName: Path.normalize('directory-export/lib/C'),
+            fileNameReferenced: Path.normalize('directory-export/lib/C'),
+            localName: 'C',
+          },
+        });
+    });
+
     it('for a multiple exports', async() => {
       resolutionContext.contentsOverrides = {
         [Path.normalize('package-multiple/index.d.ts')]: `

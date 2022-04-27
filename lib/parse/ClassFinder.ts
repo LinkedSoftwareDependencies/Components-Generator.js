@@ -42,6 +42,7 @@ export class ClassFinder {
   Promise<{ named: ClassIndex<ClassReference>; unnamed: { packageName: string; fileName: string }[] }> {
     // Load the elements of the class
     const {
+      resolvedPath,
       exportedClasses,
       exportedInterfaces,
       exportedImportedElements,
@@ -63,8 +64,8 @@ export class ClassFinder {
         packageName,
         localName,
         qualifiedPath: undefined,
-        fileName,
-        fileNameReferenced: fileName,
+        fileName: resolvedPath,
+        fileNameReferenced: resolvedPath,
       };
     }
     for (const localName in exportedInterfaces) {
@@ -72,8 +73,8 @@ export class ClassFinder {
         packageName,
         localName,
         qualifiedPath: undefined,
-        fileName,
-        fileNameReferenced: fileName,
+        fileName: resolvedPath,
+        fileNameReferenced: resolvedPath,
       };
     }
 
@@ -84,7 +85,7 @@ export class ClassFinder {
         localName,
         qualifiedPath: undefined,
         fileName: importedFileName,
-        fileNameReferenced: fileName,
+        fileNameReferenced: resolvedPath,
       };
     }
 
@@ -98,8 +99,8 @@ export class ClassFinder {
             packageName,
             localName,
             qualifiedPath: undefined,
-            fileName,
-            fileNameReferenced: fileName,
+            fileName: resolvedPath,
+            fileNameReferenced: resolvedPath,
           };
           break;
         }
@@ -110,8 +111,8 @@ export class ClassFinder {
             packageName,
             localName,
             qualifiedPath: undefined,
-            fileName,
-            fileNameReferenced: fileName,
+            fileName: resolvedPath,
+            fileNameReferenced: resolvedPath,
           };
           break;
         }

@@ -32,6 +32,26 @@ export class ResolutionContext {
   }
 
   /**
+   * Resolve the correct type declarations path for a specific path used
+   * in the exports.
+   *
+   * @param {string} filePath File path without .d.ts
+   * @returns {Promise<string>} Promise of the file path without .d.ts that is
+   *  either equal to the parameter or the index of the directory.
+   */
+  public resolveTypesPath(filePath: string): Promise<string> {
+    return new Promise(resolve => {
+      fs.access(`${filePath}.d.ts`, error => {
+        if (error) {
+          // No file found, treat as directory with an index
+          filePath = Path.normalize(`${filePath}/index`);
+        }
+        resolve(filePath);
+      });
+    });
+  }
+
+  /**
    * Write the content of a file.
    * If any of the underlying directories do not exist, they will be created.
    *

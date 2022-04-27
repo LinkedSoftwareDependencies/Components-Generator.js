@@ -168,4 +168,16 @@ describe('ResolutionContext', () => {
         .toEqual(Path.normalize('/root/abc.d.ts'));
     });
   });
+
+  describe('resolveTypesPath', () => {
+    it('Should resolve a types path of a directory', async() => {
+      expect(await resolutionContext.resolveTypesPath(`${__dirname}/../data/directory`))
+        .toEqual(Path.normalize(`${__dirname}/../data/directory/index`));
+    });
+
+    it('Should resolve a types path of a file', async() => {
+      expect(await resolutionContext.resolveTypesPath(`${__dirname}/../data/file`))
+        .toEqual(`${__dirname}/../data/file`);
+    });
+  });
 });
