@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.0.3"></a>
+## [v3.0.3](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.1...v3.0.3) - 2022-04-27
+
+### Fixed
+* [Fix resolution of an index.d.ts inside a directory, Closes #99](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/8b8229090a73dcc1b7762d358952c2a1e2a5209b)
+
 <a name="v3.0.2"></a>
 ## [v3.0.2](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.1...v3.0.2) - 2022-03-15
 
