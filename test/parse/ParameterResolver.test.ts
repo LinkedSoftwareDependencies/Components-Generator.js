@@ -1549,6 +1549,82 @@ class MyInnerClass<AInner, BInner> {
       });
     });
 
+    it('should handle an interface recursively pointing to itself indirectly', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `export interface MyInterface { field: string | MyInterface[]; }`,
+      };
+      expect(await loader.resolveRange({
+        type: 'interface',
+        value: 'MyInterface',
+        genericTypeParameterInstantiations: [],
+        origin: classReference,
+      }, classReference, {}, true, new Set())).toMatchObject({
+        type: 'nested',
+        value: [
+          {
+            type: 'field',
+            name: 'field',
+            range: {
+              type: 'union',
+              elements: [
+                {
+                  type: 'raw',
+                  value: 'string',
+                },
+                {
+                  type: 'array',
+                  value: {
+                    type: 'class',
+                    value: { localName: 'MyInterface', fileName: 'A' },
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      });
+    });
+
+    it('should handle an interface containing a recursive type', async() => {
+      resolutionContext.contentsOverrides = {
+        'A.d.ts': `export interface MyInterface { field: MyType[]; };
+export type MyType = string | MyType[];`,
+      };
+      expect(await loader.resolveRange({
+        type: 'interface',
+        value: 'MyInterface',
+        genericTypeParameterInstantiations: [],
+        origin: classReference,
+      }, classReference, {}, true, new Set())).toMatchObject({
+        type: 'nested',
+        value: [
+          {
+            type: 'field',
+            name: 'field',
+            range: {
+              type: 'array',
+              value: {
+                type: 'union',
+                elements: [
+                  {
+                    type: 'raw',
+                    value: 'string',
+                  },
+                  {
+                    type: 'array',
+                    value: {
+                      type: 'class',
+                      value: { localName: 'MyType', fileName: 'A' },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ],
+      });
+    });
+
     it('should handle an indexed range over a generic', async() => {
       expect(await loader.resolveRange({
         type: 'indexed',

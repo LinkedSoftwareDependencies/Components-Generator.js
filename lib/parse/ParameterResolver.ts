@@ -462,8 +462,9 @@ export class ParameterResolver {
 
     // If we find a class, or an interface that is implicitly a class, return the class reference directly
     if (classOrInterface.type === 'class' ||
-      (classOrInterface.type === 'interface' &&
-        (!getNestedFields || this.isInterfaceImplicitClass(classOrInterface)))) {
+      ((classOrInterface.type === 'interface' || classOrInterface.type === 'type') &&
+        (!getNestedFields ||
+          (classOrInterface.type === 'interface' && this.isInterfaceImplicitClass(classOrInterface))))) {
       return {
         type: 'class',
         value: classOrInterface,
