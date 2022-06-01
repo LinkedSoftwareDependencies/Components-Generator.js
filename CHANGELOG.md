@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.0.4"></a>
+## [v3.0.4](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.3...v3.0.4) - 2022-06-01
+
+### Fixed
+* [Fix process halting on recursive types](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/9375d1478b361ade2a61958f7310ff29efd525d2)
+
 <a name="v3.0.3"></a>
 ## [v3.0.3](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.1...v3.0.3) - 2022-04-27
 
