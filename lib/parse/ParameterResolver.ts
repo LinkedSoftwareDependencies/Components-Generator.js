@@ -462,9 +462,8 @@ export class ParameterResolver {
 
     // If we find a class, or an interface that is implicitly a class, return the class reference directly
     if (classOrInterface.type === 'class' ||
-      ((classOrInterface.type === 'interface' || classOrInterface.type === 'type') &&
-        (!getNestedFields ||
-          (classOrInterface.type === 'interface' && this.isInterfaceImplicitClass(classOrInterface))))) {
+      (classOrInterface.type === 'interface' &&
+        (!getNestedFields || this.isInterfaceImplicitClass(classOrInterface)))) {
       return {
         type: 'class',
         value: classOrInterface,
@@ -483,6 +482,17 @@ export class ParameterResolver {
 
     // If we find a type alias, just interpret the type directly
     if (classOrInterface.type === 'type') {
+      // Error on unsupported recursive types
+      const interfaceKey = this.hashParameterRangeUnresolved({
+        type: 'interface',
+        value: classOrInterface.localName,
+        genericTypeParameterInstantiations: [],
+        origin: <any> undefined,
+      });
+      if (!getNestedFields && handlingInterfaces.has(interfaceKey)) {
+        throw new Error(`Detected unsupported recursive type definition on ${classOrInterface.localName}`);
+      }
+
       const unresolvedFields = this.parameterLoader.getRangeFromTypeNode(
         classOrInterface,
         classOrInterface.declaration.typeAnnotation,
