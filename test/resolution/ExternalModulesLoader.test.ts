@@ -92,6 +92,9 @@ describe('ExternalModulesLoader', () => {
     });
     req = {
       resolve(id: string, { paths }: any) {
+        if (id.includes('invalid')) {
+          throw new Error('invalid package');
+        }
         return paths[0] + id;
       },
     };
@@ -943,6 +946,15 @@ describe('ExternalModulesLoader', () => {
           '/path/to/package1',
           '/path/to/package2',
         ]);
+    });
+
+    it('should ignore invalid packages', () => {
+      expect(loader.buildNodeModulePathsSelective(req, [ '/path/to/' ], [ 'package1', 'invalid' ]))
+        .toEqual([
+          '/path/to/package1',
+        ]);
+      expect(logger.warn).toHaveBeenCalledTimes(1);
+      expect(logger.warn).toHaveBeenLastCalledWith(`Ignoring invalid package "invalid": invalid package`);
     });
   });
 
