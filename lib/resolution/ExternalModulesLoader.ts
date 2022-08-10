@@ -190,6 +190,7 @@ export class ExternalModulesLoader {
   /**
    * Get all currently available node module paths.
    * Adapted from {@link ModuleStateBuilder#buildNodeModulePaths}.
+   * Invalid packages will be ignored and filtered out.
    * @param req The `require` instance.
    * @param nodeModuleImportPaths The import paths to resolve from.
    * @param packageNames The package names to resolve the path for.
@@ -199,10 +200,16 @@ export class ExternalModulesLoader {
     nodeModuleImportPaths: string[],
     packageNames: string[],
   ): string[] {
-    return packageNames
-      .map(packageName => req
-        .resolve(`${packageName}/package.json`, { paths: nodeModuleImportPaths })
-        .slice(0, -13));
+    const packages: string[] = [];
+    for (const packageName of packageNames) {
+      try {
+        const packagePath = req.resolve(`${packageName}/package.json`, { paths: nodeModuleImportPaths });
+        packages.push(packagePath.slice(0, -13));
+      } catch (error: unknown) {
+        this.logger.warn(`Ignoring invalid package "${packageName}": ${(<Error> error).message}`);
+      }
+    }
+    return packages;
   }
 
   /**
