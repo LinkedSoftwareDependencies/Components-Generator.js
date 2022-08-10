@@ -472,6 +472,7 @@ export class ClassLoader {
 
   /**
    * Convert the given import path to an absolute file path, coupled with the module it is part of.
+   * Result is `undefined` if there was an error resolving the package.
    * @param currentPackageName Package name we are importing from.
    * @param currentFilePath Absolute path to a file in which the import path occurs.
    * @param importPath Possibly relative path that is being imported.
@@ -480,7 +481,7 @@ export class ClassLoader {
     currentPackageName: string,
     currentFilePath: string,
     importPath: string,
-  ): { packageName: string; fileName: string; fileNameReferenced: string } {
+  ): { packageName: string; fileName: string; fileNameReferenced: string } | undefined {
     // Handle import paths within the current package
     if (importPath.startsWith('.')) {
       return {
@@ -520,7 +521,13 @@ export class ClassLoader {
     }
 
     // Resolve paths
-    const packageRoot = this.resolutionContext.resolvePackageIndex(packageName, currentFilePath);
+    let packageRoot: string;
+    try {
+      packageRoot = this.resolutionContext.resolvePackageIndex(packageName, currentFilePath);
+    } catch (error: unknown) {
+      this.logger.warn(`Ignoring invalid package "${packageName}": ${(<Error> error).message}`);
+      return;
+    }
     const remoteFilePath = packagePath ?
       Path.join(Path.dirname(packageRoot), packagePath) :
       packageRoot.slice(0, packageRoot.indexOf('.', packageRoot.lastIndexOf('/')));
@@ -590,11 +597,14 @@ export class ClassLoader {
           typeof statement.source.value === 'string') {
           // Form: `export { A as B } from "b"`
           for (const specifier of statement.specifiers) {
-            exportedImportedElements[specifier.exported.name] = {
-              localName: specifier.local.name,
-              qualifiedPath: undefined,
-              ...this.importTargetToAbsolutePath(packageName, fileName, statement.source.value),
-            };
+            const entry = this.importTargetToAbsolutePath(packageName, fileName, statement.source.value);
+            if (entry) {
+              exportedImportedElements[specifier.exported.name] = {
+                localName: specifier.local.name,
+                qualifiedPath: undefined,
+                ...entry,
+              };
+            }
           }
         } else {
           // Form: `export { A as B }`
@@ -608,10 +618,12 @@ export class ClassLoader {
           statement.source.type === AST_NODE_TYPES.Literal &&
           typeof statement.source.value === 'string') {
           const entry = this.importTargetToAbsolutePath(packageName, fileName, statement.source.value);
-          if (statement.exported) {
-            exportedImportedAllNamed[statement.exported.name] = entry;
-          } else {
-            exportedImportedAll.push(entry);
+          if (entry) {
+            if (statement.exported) {
+              exportedImportedAllNamed[statement.exported.name] = entry;
+            } else {
+              exportedImportedAll.push(entry);
+            }
           }
         }
       } else if (statement.type === AST_NODE_TYPES.TSExportAssignment) {
@@ -643,17 +655,19 @@ export class ClassLoader {
         statement.source.type === AST_NODE_TYPES.Literal &&
         typeof statement.source.value === 'string') {
         const entry = this.importTargetToAbsolutePath(packageName, fileName, statement.source.value);
-        for (const specifier of statement.specifiers) {
-          if (specifier.type === AST_NODE_TYPES.ImportSpecifier) {
-            // Form: `import {A} from './lib/A'`
-            importedElements[specifier.local.name] = {
-              localName: specifier.imported.name,
-              qualifiedPath: undefined,
-              ...entry,
-            };
-          } else if (specifier.type === AST_NODE_TYPES.ImportNamespaceSpecifier) {
-            // Form: `import * as A from './lib/A'`
-            importedElementsAllNamed[specifier.local.name] = entry;
+        if (entry) {
+          for (const specifier of statement.specifiers) {
+            if (specifier.type === AST_NODE_TYPES.ImportSpecifier) {
+              // Form: `import {A} from './lib/A'`
+              importedElements[specifier.local.name] = {
+                localName: specifier.imported.name,
+                qualifiedPath: undefined,
+                ...entry,
+              };
+            } else if (specifier.type === AST_NODE_TYPES.ImportNamespaceSpecifier) {
+              // Form: `import * as A from './lib/A'`
+              importedElementsAllNamed[specifier.local.name] = entry;
+            }
           }
         }
       }

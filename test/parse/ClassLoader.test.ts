@@ -14,6 +14,7 @@ describe('ClassLoader', () => {
   beforeEach(() => {
     resolutionContext = new ResolutionContextMocked({});
     logger = {
+      warn: jest.fn(),
       debug: jest.fn(),
     };
     commentLoader = new CommentLoader();
@@ -2380,8 +2381,9 @@ export = NS`,
     });
 
     it('for a package that does not exist', () => {
-      expect(() => loader.importTargetToAbsolutePath('package', 'dir/lib/fileA', 'other-package'))
-        .toThrow(`Could not resolve 'other-package' from path 'dir/lib/fileA'`);
+      expect(loader.importTargetToAbsolutePath('package', 'dir/lib/fileA', 'other-package')).toBeUndefined();
+      expect(logger.warn).toHaveBeenCalledTimes(1);
+      expect(logger.warn).toHaveBeenLastCalledWith(`Ignoring invalid package "other-package": Could not resolve 'other-package' from path 'dir/lib/fileA'`);
     });
 
     it('for a file in a package', () => {
@@ -2558,8 +2560,12 @@ export = NS`,
     });
 
     it('for a single import from an unknown package', () => {
-      expect(() => loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`import {A as B} from 'unknown-package'`)).importedElements)
-        .toThrow(/Could not resolve 'unknown-package' from path .*/u);
+      expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`import {A as B} from 'unknown-package'`)).importedElements)
+        .toEqual({});
+      expect(logger.warn).toHaveBeenCalledTimes(1);
+      expect(logger.warn).toHaveBeenLastCalledWith(expect.stringMatching(
+        /Ignoring invalid package "unknown-package": Could not resolve 'unknown-package' from path .*/u,
+      ));
     });
 
     it('for export all', () => {
