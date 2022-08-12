@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.1.0"></a>
+## [v3.1.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.4...v3.1.0) - 2022-08-12
+
+### Changed
+* [Prevent ClassLoader from throwing error on invalid packages, Closes #95](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/5f8e23c98f6bd4a9b436461ef8832bbb4e336705)
+* [Prevent ExternalModulesLoader from throwing error on invalid packages, Closes #95](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/016a371b4bddef005319cf151de9e07ed15c1307)
+
 <a name="v3.0.5"></a>
 ## [v3.0.5](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.4...v3.0.5) - 2022-06-27
 
