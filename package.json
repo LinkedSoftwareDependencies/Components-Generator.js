@@ -102,6 +102,6 @@
     "manual-git-changelog": "^1.0.1",
     "rimraf": "latest",
     "ts-jest": "^29.0.0",
-    "typescript": "^4.5.5"
+    "typescript": "^5.0.0"
   }
 }
