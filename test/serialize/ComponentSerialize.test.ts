@@ -1,5 +1,5 @@
-import * as Path from 'path';
 import { ComponentSerializer } from '../../lib/serialize/ComponentSerializer';
+import { normalizeFilePath } from '../../lib/util/PathUtil';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
 describe('ComponentSerializer', () => {
@@ -71,9 +71,9 @@ describe('ComponentSerializer', () => {
           'ex:my-package/file2.jsonld',
           'ex:my-package/file/a/b/c.jsonld',
         ],
-      })).toEqual(Path.normalize('/components/components.jsonld'));
+      })).toEqual(normalizeFilePath('/components/components.jsonld'));
       expect(resolutionContext.contentsOverrides).toEqual({
-        [Path.normalize('/components/components.jsonld')]: `{
+        [normalizeFilePath('/components/components.jsonld')]: `{
   "@context": [
     "http://example.org/my-package/context.jsonld"
   ],
@@ -98,9 +98,9 @@ describe('ComponentSerializer', () => {
             a: 'b',
           },
         ],
-      })).toEqual(Path.normalize('/components/context.jsonld'));
+      })).toEqual(normalizeFilePath('/components/context.jsonld'));
       expect(resolutionContext.contentsOverrides).toEqual({
-        [Path.normalize('/components/context.jsonld')]: `{
+        [normalizeFilePath('/components/context.jsonld')]: `{
   "@context": [
     {
       "a": "b"

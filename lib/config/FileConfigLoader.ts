@@ -1,5 +1,5 @@
-import * as Path from 'path';
 import type { ResolutionContext } from '../resolution/ResolutionContext';
+import { joinFilePath } from '../util/PathUtil';
 import type { GeneratorConfig } from './GeneratorConfig';
 
 /**
@@ -20,7 +20,7 @@ export class FileConfigLoader {
    */
   public async getClosestConfigFile(cwd: string): Promise<Partial<GeneratorConfig> | undefined> {
     for (const directory of this.getConsideredDirectories(cwd)) {
-      const configPath = Path.join(directory, FileConfigLoader.DEFAULT_CONFIG_NAME);
+      const configPath = joinFilePath(directory, FileConfigLoader.DEFAULT_CONFIG_NAME);
       try {
         const textContents = await this.resolutionContext.getFileContent(configPath);
         return JSON.parse(textContents);

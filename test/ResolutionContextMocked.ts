@@ -1,7 +1,7 @@
 /* istanbul ignore file */
-import * as Path from 'path';
 import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
 import { ResolutionContext } from '../lib/resolution/ResolutionContext';
+import { normalizeFilePath } from '../lib/util/PathUtil';
 
 export class ResolutionContextMocked extends ResolutionContext {
   public contentsOverrides: Record<string, string | AST<TSESTreeOptions>>;
@@ -19,7 +19,7 @@ export class ResolutionContextMocked extends ResolutionContext {
   public resolveTypesPath(filePath: string): Promise<string> {
     return new Promise(resolve => {
       if (!(`${filePath}.d.ts` in this.contentsOverrides)) {
-        return resolve(Path.normalize(`${filePath}/index`));
+        return resolve(normalizeFilePath(`${filePath}/index`));
       }
       resolve(filePath);
     });

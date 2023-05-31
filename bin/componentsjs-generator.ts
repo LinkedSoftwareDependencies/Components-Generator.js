@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import * as fs from 'fs';
-import * as Path from 'path';
 import * as minimist from 'minimist';
 import { GeneratorFactory } from '../lib/config/GeneratorFactory';
 import { ResolutionContext } from '../lib/resolution/ResolutionContext';
+import { joinFilePath, normalizeFilePath } from '../lib/util/PathUtil';
 
 function showHelp(): void {
   process.stderr.write(`Generates components files for TypeScript files in a package
@@ -37,19 +37,19 @@ if (args.help) {
   showHelp();
 } else {
   const packageRootDirectories = (args._.length > 0 ? args._ : [ '' ])
-    .map(path => Path.posix.join(process.cwd(), path))
+    .map(path => joinFilePath(normalizeFilePath(process.cwd()), path))
     .flatMap(path => {
       // Since path expansion does not work on Windows, we may receive wildcard paths, so let's expand those here
       if (path.endsWith('*')) {
         path = path.slice(0, -1);
         // eslint-disable-next-line no-sync
         return fs.readdirSync(path)
-          .map(subFile => Path.posix.join(path, subFile));
+          .map(subFile => joinFilePath(path, subFile));
       }
       return path;
     });
   new GeneratorFactory({ resolutionContext: new ResolutionContext() })
-    .createGenerator(process.cwd(), args, packageRootDirectories)
+    .createGenerator(normalizeFilePath(process.cwd()), args, packageRootDirectories)
     .then(generator => generator.generateComponents())
     .catch((error: Error) => {
       process.stderr.write(`${error.message}\n`);

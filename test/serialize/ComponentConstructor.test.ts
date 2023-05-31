@@ -1,4 +1,3 @@
-import * as Path from 'path';
 import { PrefetchedDocumentLoader } from 'componentsjs/lib/rdf/PrefetchedDocumentLoader';
 import type { JsonLdContextNormalized } from 'jsonld-context-parser';
 import { ContextParser } from 'jsonld-context-parser';
@@ -19,6 +18,7 @@ import type {
 } from '../../lib/serialize/ComponentConstructor';
 import { ComponentConstructor } from '../../lib/serialize/ComponentConstructor';
 import type { ParameterDefinition } from '../../lib/serialize/ComponentDefinitions';
+import { normalizeFilePath } from '../../lib/util/PathUtil';
 import { ContextConstructorMocked } from '../ContextConstructorMocked';
 
 describe('ComponentConstructor', () => {
@@ -35,7 +35,7 @@ describe('ComponentConstructor', () => {
       type: 'class',
       packageName: 'my-package',
       localName: 'MyClass',
-      fileName: Path.normalize('/docs/package/src/a/b/file-param'),
+      fileName: normalizeFilePath('/docs/package/src/a/b/file-param'),
       generics: {},
     };
 
@@ -73,7 +73,7 @@ describe('ComponentConstructor', () => {
     };
     const contextConstructor = new ContextConstructorMocked({ packageMetadata });
     pathDestination = {
-      packageRootDirectory: Path.normalize('/docs/package'),
+      packageRootDirectory: normalizeFilePath('/docs/package'),
       originalPath: 'src',
       replacementPath: 'components',
     };
@@ -113,14 +113,14 @@ describe('ComponentConstructor', () => {
           type: 'class',
           packageName: 'my-package',
           localName: 'MyClass1',
-          fileName: Path.normalize('/docs/package/src/b/file'),
+          fileName: normalizeFilePath('/docs/package/src/b/file'),
           generics: {},
         },
         MyClass2: {
           type: 'class',
           packageName: 'my-package',
           localName: 'MyClass2',
-          fileName: Path.normalize('/docs/package/src/b/file'),
+          fileName: normalizeFilePath('/docs/package/src/b/file'),
           generics: {},
         },
       };
@@ -181,7 +181,7 @@ describe('ComponentConstructor', () => {
         },
       };
       expect(await ctor.constructComponents()).toEqual({
-        [Path.normalize('/docs/package/components/b/file')]: {
+        [normalizeFilePath('/docs/package/components/b/file')]: {
           '@context': [
             'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
           ],
@@ -244,14 +244,14 @@ describe('ComponentConstructor', () => {
           type: 'class',
           packageName: 'my-package',
           localName: 'MyClass1',
-          fileName: Path.normalize('/docs/package/src/file1'),
+          fileName: normalizeFilePath('/docs/package/src/file1'),
           generics: {},
         },
         MyClass2: {
           type: 'class',
           packageName: 'my-package',
           localName: 'MyClass2',
-          fileName: Path.normalize('/docs/package/src/b/file2'),
+          fileName: normalizeFilePath('/docs/package/src/b/file2'),
           generics: {},
         },
       };
@@ -281,7 +281,7 @@ describe('ComponentConstructor', () => {
         },
       };
       expect(await ctor.constructComponents()).toEqual({
-        [Path.normalize('/docs/package/components/file1')]: {
+        [normalizeFilePath('/docs/package/components/file1')]: {
           '@context': [
             'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
           ],
@@ -296,7 +296,7 @@ describe('ComponentConstructor', () => {
             },
           ],
         },
-        [Path.normalize('/docs/package/components/b/file2')]: {
+        [normalizeFilePath('/docs/package/components/b/file2')]: {
           '@context': [
             'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
           ],
@@ -334,14 +334,14 @@ describe('ComponentConstructor', () => {
           type: 'class',
           packageName: 'my-package',
           localName: 'MyClass1',
-          fileName: Path.normalize('/docs/package/src/b/file'),
+          fileName: normalizeFilePath('/docs/package/src/b/file'),
           generics: {},
         },
         MyClass2: {
           type: 'class',
           packageName: 'my-package',
           localName: 'MyClass2',
-          fileName: Path.normalize('/docs/package/src/b/file'),
+          fileName: normalizeFilePath('/docs/package/src/b/file'),
           generics: {},
         },
       };
@@ -376,7 +376,7 @@ describe('ComponentConstructor', () => {
             classLoaded: <any> {
               packageName: 'other-package',
               localName: 'MyClass',
-              fileName: Path.normalize('/docs/package/src/b/file'),
+              fileName: normalizeFilePath('/docs/package/src/b/file'),
             },
             genericTypeInstantiations: [],
           },
@@ -386,7 +386,7 @@ describe('ComponentConstructor', () => {
             classLoaded: <any> {
               packageName: 'other-package',
               localName: 'MyClass',
-              fileName: Path.normalize('/docs/package/src/b/file'),
+              fileName: normalizeFilePath('/docs/package/src/b/file'),
             },
             genericTypeInstantiations: [],
           },
@@ -399,7 +399,7 @@ describe('ComponentConstructor', () => {
         },
       };
       expect(await ctor.constructComponents()).toEqual({
-        [Path.normalize('/docs/package/components/b/file')]: {
+        [normalizeFilePath('/docs/package/components/b/file')]: {
           '@context': [
             'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
             'http://example.org/context-other-package.jsonld',
@@ -447,8 +447,8 @@ describe('ComponentConstructor', () => {
           type: 'class',
           packageName: 'other-package',
           localName: 'MyClass',
-          fileName: Path.normalize('/docs/other-package/src/b/file'),
-          fileNameReferenced: Path.normalize('/docs/package/src/b/file'),
+          fileName: normalizeFilePath('/docs/other-package/src/b/file'),
+          fileNameReferenced: normalizeFilePath('/docs/package/src/b/file'),
           generics: {},
         },
       };
@@ -467,7 +467,7 @@ describe('ComponentConstructor', () => {
         },
       };
       expect(await ctor.constructComponents()).toEqual({
-        [Path.normalize('/docs/package/components/b/file')]: {
+        [normalizeFilePath('/docs/package/components/b/file')]: {
           '@context': [
             'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
             'http://example.org/context-other-package.jsonld',
@@ -492,19 +492,19 @@ describe('ComponentConstructor', () => {
           type: 'class',
           packageName: 'my-package',
           localName: 'MyClass1',
-          fileName: Path.normalize('/docs/package/src/b/file'),
+          fileName: normalizeFilePath('/docs/package/src/b/file'),
           generics: {},
         },
         MyClass2: {
           type: 'class',
           packageName: 'my-package',
           localName: 'MyClass2',
-          fileName: Path.normalize('/docs/package/src/b/file'),
+          fileName: normalizeFilePath('/docs/package/src/b/file'),
           generics: {},
         },
       };
       expect(await ctor.constructComponents()).toEqual({
-        [Path.normalize('/docs/package/components/b/file')]: {
+        [normalizeFilePath('/docs/package/components/b/file')]: {
           '@context': [
             'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
           ],
@@ -545,9 +545,9 @@ describe('ComponentConstructor', () => {
 
     it('should handle a non-empty index', async() => {
       expect(await ctor.constructComponentsIndex(<any> {
-        [Path.normalize('/docs/package/components/file1')]: true,
-        [Path.normalize('/docs/package/components/file2')]: true,
-        [Path.normalize('/docs/package/components/file/a/b/c')]: true,
+        [normalizeFilePath('/docs/package/components/file1')]: true,
+        [normalizeFilePath('/docs/package/components/file2')]: true,
+        [normalizeFilePath('/docs/package/components/file/a/b/c')]: true,
       })).toEqual({
         '@context': [
           'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
@@ -588,30 +588,16 @@ describe('ComponentConstructor', () => {
     });
 
     it('should handle a valid path', () => {
-      expect(ComponentConstructor.getPathRelative(pathDestination, Path.normalize('/docs/package/src/a/b/myFile')))
+      expect(ComponentConstructor.getPathRelative(pathDestination, normalizeFilePath('/docs/package/src/a/b/myFile')))
         .toEqual('a/b/myFile');
     });
 
-    it('should generate the correct path for POSIX path implementations.', () => {
-      const sep = Path.sep;
-      (<any> Path).sep = Path.posix.sep;
-      (<any> ctor).pathDestination.packageRootDirectory = Path.posix.normalize('/docs/package');
+    it('should generate the correct path.', () => {
+      (<any> ctor).pathDestination.packageRootDirectory = normalizeFilePath('/docs/package');
       expect(ComponentConstructor.getPathRelative(
         pathDestination,
-        Path.posix.normalize('/docs/package/src/a/b/myFile'),
+        normalizeFilePath('/docs/package/src/a/b/myFile'),
       )).toEqual('a/b/myFile');
-      (<any> Path).sep = sep;
-    });
-
-    it('should generate the correct path for win32 path implementations.', () => {
-      const sep = Path.sep;
-      (<any> Path).sep = Path.win32.sep;
-      (<any> ctor).pathDestination.packageRootDirectory = Path.win32.normalize('/docs/package');
-      expect(ComponentConstructor.getPathRelative(
-        pathDestination,
-        Path.win32.normalize('/docs/package/src/a/b/myFile'),
-      )).toEqual('a/b/myFile');
-      (<any> Path).sep = sep;
     });
   });
 
@@ -622,8 +608,8 @@ describe('ComponentConstructor', () => {
     });
 
     it('should handle a valid path', () => {
-      expect(ComponentConstructor.getPathDestination(pathDestination, Path.normalize('/docs/package/src/myFile')))
-        .toEqual(Path.normalize('/docs/package/components/myFile'));
+      expect(ComponentConstructor.getPathDestination(pathDestination, normalizeFilePath('/docs/package/src/myFile')))
+        .toEqual(normalizeFilePath('/docs/package/components/myFile'));
     });
   });
 
@@ -716,7 +702,7 @@ describe('ComponentConstructor', () => {
           classLoaded: <any> {
             packageName: 'my-package',
             localName: 'SuperClass',
-            fileName: Path.normalize('/docs/package/src/a/b/SuperFile'),
+            fileName: normalizeFilePath('/docs/package/src/a/b/SuperFile'),
           },
           genericTypeInstantiations: [],
         },
@@ -742,7 +728,7 @@ describe('ComponentConstructor', () => {
           classLoaded: <any> {
             packageName: 'my-package',
             localName: 'SuperInterface1',
-            fileName: Path.normalize('/docs/package/src/a/b/SuperFile1'),
+            fileName: normalizeFilePath('/docs/package/src/a/b/SuperFile1'),
           },
           genericTypeInstantiations: [],
         },
@@ -750,7 +736,7 @@ describe('ComponentConstructor', () => {
           classLoaded: <any> {
             packageName: 'my-package',
             localName: 'SuperInterface2',
-            fileName: Path.normalize('/docs/package/src/a/b/SuperFile2'),
+            fileName: normalizeFilePath('/docs/package/src/a/b/SuperFile2'),
           },
           genericTypeInstantiations: [],
         },
@@ -947,7 +933,7 @@ describe('ComponentConstructor', () => {
       expect(await ctor.classNameToId(context, externalContextsCallback, {
         packageName: 'my-package',
         localName: 'MyClass',
-        fileName: Path.normalize('/docs/package/src/a/b/MyOwnClass'),
+        fileName: normalizeFilePath('/docs/package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
       })).toEqual('mp:components/a/b/MyOwnClass.jsonld#MyClass');
     });
@@ -964,7 +950,7 @@ describe('ComponentConstructor', () => {
       externalComponents.packagesBeingGenerated['other-package'] = {
         packageMetadata,
         pathDestination: {
-          packageRootDirectory: Path.normalize('/docs/other-package'),
+          packageRootDirectory: normalizeFilePath('/docs/other-package'),
           originalPath: 'src',
           replacementPath: 'components',
         },
@@ -978,7 +964,7 @@ describe('ComponentConstructor', () => {
       expect(await ctor.classNameToId(context, externalContextsCallback, {
         packageName: 'other-package',
         localName: 'MyClass',
-        fileName: Path.normalize('/docs/other-package/src/a/b/MyOwnClass'),
+        fileName: normalizeFilePath('/docs/other-package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
       })).toEqual('op:components/a/b/MyOwnClass.jsonld#MyClass');
       expect(externalContextsCallback).toHaveBeenCalledWith('http://example.org/context-other-package.jsonld');
@@ -994,7 +980,7 @@ describe('ComponentConstructor', () => {
       expect(await ctor.classNameToId(context, externalContextsCallback, {
         packageName: 'other-package',
         localName: 'MyClass',
-        fileName: Path.normalize('/docs/other-package/src/a/b/MyOwnClass'),
+        fileName: normalizeFilePath('/docs/other-package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
       })).toEqual('op:MyClass');
       expect(externalContextsCallback).toHaveBeenCalledWith('http://example.org/context-other-package.jsonld');
@@ -1010,7 +996,7 @@ describe('ComponentConstructor', () => {
       await expect(ctor.classNameToId(context, externalContextsCallback, {
         packageName: 'other-package',
         localName: 'MyClass',
-        fileName: Path.normalize('/docs/other-package/src/a/b/MyOwnClass'),
+        fileName: normalizeFilePath('/docs/other-package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
       })).rejects.toThrow(`Tried to reference a class 'MyClass' from an external module 'other-package' that does not expose this component`);
     });
@@ -1025,7 +1011,7 @@ describe('ComponentConstructor', () => {
       expect(await ctor.classNameToId(context, externalContextsCallback, {
         packageName: 'other-package',
         localName: 'MyClass',
-        fileName: Path.normalize('/docs/other-package/src/a/b/MyOwnClass'),
+        fileName: normalizeFilePath('/docs/other-package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
       })).toEqual('urn:npm:other-package:MyClass');
     });
@@ -1036,7 +1022,7 @@ describe('ComponentConstructor', () => {
       expect(ctor.fieldNameToId(context, {
         packageName: 'my-package',
         localName: 'MyClass',
-        fileName: Path.normalize('/docs/package/src/a/b/MyOwnClass'),
+        fileName: normalizeFilePath('/docs/package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
       }, 'field', scope)).toEqual('mp:components/a/b/MyOwnClass.jsonld#MyClass_field');
     });
@@ -1047,7 +1033,7 @@ describe('ComponentConstructor', () => {
       expect(ctor.fieldNameToId(context, {
         packageName: 'my-package',
         localName: 'MyClass',
-        fileName: Path.normalize('/docs/package/src/a/b/MyOwnClass'),
+        fileName: normalizeFilePath('/docs/package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
       }, 'field', scope)).toEqual('mp:components/a/b/MyOwnClass.jsonld#MyClass_a_b_field');
     });
@@ -1056,19 +1042,19 @@ describe('ComponentConstructor', () => {
       expect(ctor.fieldNameToId(context, {
         packageName: 'my-package',
         localName: 'MyClass',
-        fileName: Path.normalize('/docs/package/src/a/b/MyOwnClass'),
+        fileName: normalizeFilePath('/docs/package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
       }, 'field', scope)).toEqual('mp:components/a/b/MyOwnClass.jsonld#MyClass_field');
       expect(ctor.fieldNameToId(context, {
         packageName: 'my-package',
         localName: 'MyClass',
-        fileName: Path.normalize('/docs/package/src/a/b/MyOwnClass'),
+        fileName: normalizeFilePath('/docs/package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
       }, 'field', scope)).toEqual('mp:components/a/b/MyOwnClass.jsonld#MyClass_field_1');
       expect(ctor.fieldNameToId(context, {
         packageName: 'my-package',
         localName: 'MyClass',
-        fileName: Path.normalize('/docs/package/src/a/b/MyOwnClass'),
+        fileName: normalizeFilePath('/docs/package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
       }, 'field', scope)).toEqual('mp:components/a/b/MyOwnClass.jsonld#MyClass_field_2');
     });
@@ -1085,7 +1071,7 @@ describe('ComponentConstructor', () => {
       externalComponents.packagesBeingGenerated['other-package'] = {
         packageMetadata,
         pathDestination: {
-          packageRootDirectory: Path.normalize('/docs/other-package'),
+          packageRootDirectory: normalizeFilePath('/docs/other-package'),
           originalPath: 'src',
           replacementPath: 'components',
         },
@@ -1099,7 +1085,7 @@ describe('ComponentConstructor', () => {
       expect(ctor.fieldNameToId(context, {
         packageName: 'other-package',
         localName: 'MyClass',
-        fileName: Path.normalize('/docs/other-package/src/a/b/MyOwnClass'),
+        fileName: normalizeFilePath('/docs/other-package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
       }, 'field', scope)).toEqual('npmd:other-package/^3.0.0/components/a/b/MyOwnClass.jsonld#MyClass_field');
     });
@@ -1108,7 +1094,7 @@ describe('ComponentConstructor', () => {
       expect(() => ctor.fieldNameToId(context, {
         packageName: 'other-package',
         localName: 'MyClass',
-        fileName: Path.normalize('/docs/other-package/src/a/b/MyOwnClass'),
+        fileName: normalizeFilePath('/docs/other-package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
       }, 'field', scope))
         .toThrowError(/Tried to reference a field field in ".*" outside the current package: .*/u);
@@ -1445,7 +1431,7 @@ describe('ComponentConstructor', () => {
             value: <ClassReferenceLoaded> {
               packageName: 'my-package',
               localName: 'ClassParam',
-              fileName: Path.normalize('/docs/package/src/a/b/file-param'),
+              fileName: normalizeFilePath('/docs/package/src/a/b/file-param'),
             },
             genericTypeParameterInstances: undefined,
           },
@@ -2427,7 +2413,7 @@ describe('ComponentConstructor', () => {
           '',
           scope,
         )).rejects
-        .toThrow(new Error(`Detected illegal indexed element inside a non-field in MyClass at ${Path.normalize('/docs/package/src/a/b/file-param')}`));
+        .toThrow(new Error(`Detected illegal indexed element inside a non-field in MyClass at ${normalizeFilePath('/docs/package/src/a/b/file-param')}`));
     });
   });
 
@@ -2465,7 +2451,7 @@ describe('ComponentConstructor', () => {
       const rangeValue: ClassReferenceLoaded = <any> {
         packageName: 'my-package',
         localName: 'ClassParam',
-        fileName: Path.normalize('/docs/package/src/a/b/file-param'),
+        fileName: normalizeFilePath('/docs/package/src/a/b/file-param'),
       };
       expect(await ctor.constructParameterRange(
         { type: 'class', value: rangeValue, genericTypeParameterInstances: undefined },
@@ -2479,7 +2465,7 @@ describe('ComponentConstructor', () => {
       const rangeValue: ClassReferenceLoaded = <any> {
         packageName: 'my-package',
         localName: 'ClassParam',
-        fileName: Path.normalize('/docs/package/src/a/b/file-param'),
+        fileName: normalizeFilePath('/docs/package/src/a/b/file-param'),
       };
       expect(await ctor.constructParameterRange(
         {
@@ -2551,7 +2537,7 @@ describe('ComponentConstructor', () => {
       const rangeValueClass: ClassReferenceLoaded = <any> {
         packageName: 'my-package',
         localName: 'ClassParam',
-        fileName: Path.normalize('/docs/package/src/a/b/file-param'),
+        fileName: normalizeFilePath('/docs/package/src/a/b/file-param'),
       };
       const children: ParameterRangeResolved[] = [
         { type: 'raw', value: 'boolean' },
@@ -2575,7 +2561,7 @@ describe('ComponentConstructor', () => {
       const rangeValueClass: ClassReferenceLoaded = <any> {
         packageName: 'my-package',
         localName: 'ClassParam',
-        fileName: Path.normalize('/docs/package/src/a/b/file-param'),
+        fileName: normalizeFilePath('/docs/package/src/a/b/file-param'),
       };
       const children: ParameterRangeResolved[] = [
         { type: 'raw', value: 'boolean' },
@@ -2599,7 +2585,7 @@ describe('ComponentConstructor', () => {
       const rangeValueClass: ClassReferenceLoaded = <any> {
         packageName: 'my-package',
         localName: 'ClassParam',
-        fileName: Path.normalize('/docs/package/src/a/b/file-param'),
+        fileName: normalizeFilePath('/docs/package/src/a/b/file-param'),
       };
       const elements: ParameterRangeResolved[] = [
         { type: 'raw', value: 'boolean' },
@@ -2623,7 +2609,7 @@ describe('ComponentConstructor', () => {
       const rangeValueClass: ClassReferenceLoaded = <any> {
         packageName: 'my-package',
         localName: 'ClassParam',
-        fileName: Path.normalize('/docs/package/src/a/b/file-param'),
+        fileName: normalizeFilePath('/docs/package/src/a/b/file-param'),
       };
       const elements: ParameterRangeResolved[] = [
         { type: 'rest', value: { type: 'raw', value: 'boolean' }},

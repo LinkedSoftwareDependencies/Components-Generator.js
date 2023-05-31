@@ -1,8 +1,8 @@
-import * as Path from 'path';
 import type { AST, TSESTreeOptions, TSESTree } from '@typescript-eslint/typescript-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import type { Logger } from 'winston';
 import type { ResolutionContext } from '../resolution/ResolutionContext';
+import { filePathDirName, joinFilePath } from '../util/PathUtil';
 import type {
   ClassLoaded,
   ClassReference,
@@ -486,7 +486,7 @@ export class ClassLoader {
     if (importPath.startsWith('.')) {
       return {
         packageName: currentPackageName,
-        fileName: Path.join(Path.dirname(currentFilePath), importPath),
+        fileName: joinFilePath(filePathDirName(currentFilePath), importPath),
         fileNameReferenced: currentFilePath,
       };
     }
@@ -529,7 +529,7 @@ export class ClassLoader {
       return;
     }
     const remoteFilePath = packagePath ?
-      Path.join(Path.dirname(packageRoot), packagePath) :
+      joinFilePath(filePathDirName(packageRoot), packagePath) :
       packageRoot.slice(0, packageRoot.indexOf('.', packageRoot.lastIndexOf('/')));
     return {
       packageName,

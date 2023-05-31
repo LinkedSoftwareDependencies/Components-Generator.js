@@ -1,7 +1,7 @@
-import * as Path from 'path';
 import { JsonLdContextNormalized } from 'jsonld-context-parser';
 import { BulkPackageMetadataLoader } from '../../lib/parse/BulkPackageMetadataLoader';
 import { PackageMetadataLoader } from '../../lib/parse/PackageMetadataLoader';
+import { normalizeFilePath } from '../../lib/util/PathUtil';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
 describe('BulkPackageMetadataLoader', () => {
@@ -40,12 +40,12 @@ describe('BulkPackageMetadataLoader', () => {
         packageMetadatas: {},
         pathMetadatas: {},
       });
-      expect(logger.warn).toHaveBeenCalledWith(`Skipped generating invalid package at "/": Could not find mocked path for ${Path.normalize('/package.json')}`);
+      expect(logger.warn).toHaveBeenCalledWith(`Skipped generating invalid package at "/": Could not find mocked path for ${normalizeFilePath('/package.json')}`);
     });
 
     it('should skip an invalid package that does not exist', async() => {
       resolutionContext.contentsOverrides = {
-        [Path.normalize('/package.json')]: `{
+        [normalizeFilePath('/package.json')]: `{
   "name": "@solid/community-server",
   "version": "1.2.3"
 }`,
@@ -61,12 +61,12 @@ describe('BulkPackageMetadataLoader', () => {
         packageMetadatas: {},
         pathMetadatas: {},
       });
-      expect(logger.warn).toHaveBeenCalledWith(`Skipped generating invalid package at "/": Invalid package: Missing 'lsd:module' IRI in ${Path.normalize('/package.json')}`);
+      expect(logger.warn).toHaveBeenCalledWith(`Skipped generating invalid package at "/": Invalid package: Missing 'lsd:module' IRI in ${normalizeFilePath('/package.json')}`);
     });
 
     it('should a single valid paths', async() => {
       resolutionContext.contentsOverrides = {
-        [Path.normalize('/packages/pckg1/package.json')]: `{
+        [normalizeFilePath('/packages/pckg1/package.json')]: `{
   "name": "pckg1",
   "version": "1.2.3",
   "lsd:module": true,
@@ -85,7 +85,7 @@ describe('BulkPackageMetadataLoader', () => {
           pckg1: {
             minimalContext: expect.any(JsonLdContextNormalized),
             packageMetadata: {
-              componentsPath: Path.normalize('/packages/pckg1/components/components.jsonld'),
+              componentsPath: normalizeFilePath('/packages/pckg1/components/components.jsonld'),
               contexts: {
                 'https://linkedsoftwaredependencies.org/bundles/npm/pckg1/^1.0.0/components/context.jsonld':
                   'components/context.jsonld',
@@ -97,7 +97,7 @@ describe('BulkPackageMetadataLoader', () => {
               moduleIri: 'https://linkedsoftwaredependencies.org/bundles/npm/pckg1',
               name: 'pckg1',
               prefix: undefined,
-              typesPath: Path.normalize('/packages/pckg1/index'),
+              typesPath: normalizeFilePath('/packages/pckg1/index'),
               version: '1.2.3',
             },
             pathDestination: {
@@ -109,7 +109,7 @@ describe('BulkPackageMetadataLoader', () => {
         },
         pathMetadatas: {
           '/packages/pckg1': {
-            componentsPath: Path.normalize('/packages/pckg1/components/components.jsonld'),
+            componentsPath: normalizeFilePath('/packages/pckg1/components/components.jsonld'),
             contexts: {
               'https://linkedsoftwaredependencies.org/bundles/npm/pckg1/^1.0.0/components/context.jsonld':
                 'components/context.jsonld',
@@ -121,7 +121,7 @@ describe('BulkPackageMetadataLoader', () => {
             moduleIri: 'https://linkedsoftwaredependencies.org/bundles/npm/pckg1',
             name: 'pckg1',
             prefix: undefined,
-            typesPath: Path.normalize('/packages/pckg1/index'),
+            typesPath: normalizeFilePath('/packages/pckg1/index'),
             version: '1.2.3',
           },
         },
@@ -131,19 +131,19 @@ describe('BulkPackageMetadataLoader', () => {
 
     it('should multiple valid paths', async() => {
       resolutionContext.contentsOverrides = {
-        [Path.normalize('/packages/pckg1/package.json')]: `{
+        [normalizeFilePath('/packages/pckg1/package.json')]: `{
   "name": "pckg1",
   "version": "1.2.3",
   "lsd:module": true,
   "types": "./index.d.ts"
 }`,
-        [Path.normalize('/packages/pckg2/package.json')]: `{
+        [normalizeFilePath('/packages/pckg2/package.json')]: `{
   "name": "pckg2",
   "version": "1.2.3",
   "lsd:module": true,
   "types": "./index.d.ts"
 }`,
-        [Path.normalize('/packages/pckg3/package.json')]: `{
+        [normalizeFilePath('/packages/pckg3/package.json')]: `{
   "name": "pckg3",
   "version": "1.2.3",
   "lsd:module": true,

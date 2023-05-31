@@ -1,6 +1,6 @@
 import * as fs from 'fs';
-import * as Path from 'path';
 import { ResolutionContext } from '../../lib/resolution/ResolutionContext';
+import { joinFilePath, normalizeFilePath } from '../../lib/util/PathUtil';
 
 describe('ResolutionContext', () => {
   let resolutionContext: ResolutionContext;
@@ -111,23 +111,23 @@ describe('ResolutionContext', () => {
 
   describe('resolvePackageIndex', () => {
     it('Should resolve from the currentFilePath for a package without separate typings', async() => {
-      expect(resolutionContext.resolvePackageIndex('asynciterator', Path.join(__dirname, '../../')))
-        .toEqual(Path.join(__dirname, '../../node_modules/asynciterator/dist/asynciterator.d.ts'));
+      expect(resolutionContext.resolvePackageIndex('asynciterator', joinFilePath(__dirname, '../../')))
+        .toEqual(joinFilePath(__dirname, '../../node_modules/asynciterator/dist/asynciterator.d.ts'));
     });
 
     it('Should resolve from the currentFilePath for a package with separate typings', async() => {
-      expect(resolutionContext.resolvePackageIndex('lru-cache', Path.join(__dirname, '../../')))
-        .toEqual(Path.join(__dirname, '../../node_modules/@types/lru-cache/index.d.ts'));
+      expect(resolutionContext.resolvePackageIndex('lru-cache', joinFilePath(__dirname, '../../')))
+        .toEqual(joinFilePath(__dirname, '../../node_modules/@types/lru-cache/index.d.ts'));
     });
 
     it('Should resolve from the currentFilePath for a package without separate typings without extension', async() => {
-      expect(resolutionContext.resolvePackageIndex('@comunica/bus-rdf-parse', Path.join(__dirname, '../../')))
-        .toEqual(Path.join(__dirname, '../../node_modules/@comunica/bus-rdf-parse/lib/index.d.ts'));
+      expect(resolutionContext.resolvePackageIndex('@comunica/bus-rdf-parse', joinFilePath(__dirname, '../../')))
+        .toEqual(joinFilePath(__dirname, '../../node_modules/@comunica/bus-rdf-parse/lib/index.d.ts'));
     });
 
     it('Should resolve from the currentFilePath for a built-in package', async() => {
-      expect(resolutionContext.resolvePackageIndex('stream', Path.join(__dirname, '../../')))
-        .toEqual(Path.join(__dirname, '../../node_modules/@types/node/stream.d.ts'));
+      expect(resolutionContext.resolvePackageIndex('stream', joinFilePath(__dirname, '../../')))
+        .toEqual(joinFilePath(__dirname, '../../node_modules/@types/node/stream.d.ts'));
     });
   });
 
@@ -138,7 +138,7 @@ describe('ResolutionContext', () => {
       });
       req.resolve = () => '/root/a/';
       expect(resolutionContext.resolvePackageIndexInner(req, 'asynciterator', ''))
-        .toEqual(Path.normalize('/root/abc.d.ts'));
+        .toEqual(normalizeFilePath('/root/abc.d.ts'));
     });
 
     it('Should handle package.json with typings field', async() => {
@@ -147,7 +147,7 @@ describe('ResolutionContext', () => {
       });
       req.resolve = () => '/root/a/';
       expect(resolutionContext.resolvePackageIndexInner(req, 'asynciterator', ''))
-        .toEqual(Path.normalize('/root/abc.d.ts'));
+        .toEqual(normalizeFilePath('/root/abc.d.ts'));
     });
 
     it('Should handle package.json with implicit types field', async() => {
@@ -156,7 +156,7 @@ describe('ResolutionContext', () => {
       });
       req.resolve = () => '/root/a/';
       expect(resolutionContext.resolvePackageIndexInner(req, 'asynciterator', ''))
-        .toEqual(Path.normalize('/root/abc.d.ts'));
+        .toEqual(normalizeFilePath('/root/abc.d.ts'));
     });
 
     it('Should handle package.json with types field without extension', async() => {
@@ -165,14 +165,14 @@ describe('ResolutionContext', () => {
       });
       req.resolve = () => '/root/a/';
       expect(resolutionContext.resolvePackageIndexInner(req, 'asynciterator', ''))
-        .toEqual(Path.normalize('/root/abc.d.ts'));
+        .toEqual(normalizeFilePath('/root/abc.d.ts'));
     });
   });
 
   describe('resolveTypesPath', () => {
     it('Should resolve a types path of a directory', async() => {
       expect(await resolutionContext.resolveTypesPath(`${__dirname}/../data/directory`))
-        .toEqual(Path.normalize(`${__dirname}/../data/directory/index`));
+        .toEqual(normalizeFilePath(`${__dirname}/../data/directory/index`));
     });
 
     it('Should resolve a types path of a file', async() => {

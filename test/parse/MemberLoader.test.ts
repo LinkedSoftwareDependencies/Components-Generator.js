@@ -1,5 +1,3 @@
-import * as Path from 'path';
-
 import { ClassFinder } from '../../lib/parse/ClassFinder';
 import type { ClassReferenceLoadedClassOrInterface } from '../../lib/parse/ClassIndex';
 import { ClassIndexer } from '../../lib/parse/ClassIndexer';
@@ -7,6 +5,7 @@ import { ClassLoader } from '../../lib/parse/ClassLoader';
 import { CommentLoader } from '../../lib/parse/CommentLoader';
 import { MemberLoader } from '../../lib/parse/MemberLoader';
 import { ParameterLoader } from '../../lib/parse/ParameterLoader';
+import { normalizeFilePath } from '../../lib/util/PathUtil';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
 describe('MemberLoader', () => {
@@ -111,7 +110,7 @@ describe('MemberLoader', () => {
   });
 
   describe('collectClassFields', () => {
-    const fileName = Path.normalize('dir/file');
+    const fileName = normalizeFilePath('dir/file');
 
     function getClassBody(contents: string): ClassReferenceLoadedClassOrInterface {
       const body = classLoader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`declare class A{${contents}}`)).declaredClasses.A.body;

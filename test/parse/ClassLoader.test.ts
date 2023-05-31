@@ -1,8 +1,8 @@
-import * as Path from 'path';
 import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import { ClassLoader } from '../../lib/parse/ClassLoader';
 import { CommentLoader } from '../../lib/parse/CommentLoader';
+import { normalizeFilePath } from '../../lib/util/PathUtil';
 import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
 describe('ClassLoader', () => {
@@ -2363,7 +2363,7 @@ export = NS`,
       expect(loader.importTargetToAbsolutePath('package', 'dir/lib/fileA', './subdir/fileB'))
         .toEqual({
           packageName: 'package',
-          fileName: Path.normalize('dir/lib/subdir/fileB'),
+          fileName: normalizeFilePath('dir/lib/subdir/fileB'),
           fileNameReferenced: 'dir/lib/fileA',
         });
     });
@@ -2387,21 +2387,22 @@ export = NS`,
     });
 
     it('for a file in a package', () => {
-      resolutionContext.packageNameIndexOverrides['other-package'] = Path.normalize('/some-dir/index.js');
+      resolutionContext.packageNameIndexOverrides['other-package'] = normalizeFilePath('/some-dir/index.js');
       expect(loader.importTargetToAbsolutePath('package', 'dir/lib/fileA', 'other-package/lib/bla'))
         .toEqual({
           packageName: 'other-package',
-          fileName: Path.normalize('/some-dir/lib/bla'),
+          fileName: normalizeFilePath('/some-dir/lib/bla'),
           fileNameReferenced: 'dir/lib/fileA',
         });
     });
 
     it('for a scoped package', () => {
-      resolutionContext.packageNameIndexOverrides['@rubensworks/other-package'] = Path.normalize('/some-dir/index.js');
+      resolutionContext
+        .packageNameIndexOverrides['@rubensworks/other-package'] = normalizeFilePath('/some-dir/index.js');
       expect(loader.importTargetToAbsolutePath('package', 'dir/lib/fileA', '@rubensworks/other-package'))
         .toEqual({
           packageName: '@rubensworks/other-package',
-          fileName: Path.normalize('/some-dir/index'),
+          fileName: normalizeFilePath('/some-dir/index'),
           fileNameReferenced: 'dir/lib/fileA',
         });
     });
@@ -2412,18 +2413,19 @@ export = NS`,
     });
 
     it('for a file in a scoped package', () => {
-      resolutionContext.packageNameIndexOverrides['@rubensworks/other-package'] = Path.normalize('/some-dir/index.js');
+      resolutionContext
+        .packageNameIndexOverrides['@rubensworks/other-package'] = normalizeFilePath('/some-dir/index.js');
       expect(loader.importTargetToAbsolutePath('package', 'dir/lib/fileA', '@rubensworks/other-package/lib/bla'))
         .toEqual({
           packageName: '@rubensworks/other-package',
-          fileName: Path.normalize('/some-dir/lib/bla'),
+          fileName: normalizeFilePath('/some-dir/lib/bla'),
           fileNameReferenced: 'dir/lib/fileA',
         });
     });
   });
 
   describe('getClassElements', () => {
-    const fileName = Path.normalize('dir/file');
+    const fileName = normalizeFilePath('dir/file');
 
     it('for an empty file', () => {
       expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(``)))
@@ -2489,7 +2491,7 @@ export = NS`,
           importedElements: {
             B: {
               localName: 'A',
-              fileName: Path.normalize('dir/lib/A'),
+              fileName: normalizeFilePath('dir/lib/A'),
             },
           },
         });
@@ -2499,7 +2501,7 @@ export = NS`,
       expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`import * as A from './lib/A'`)))
         .toMatchObject({
           importedElementsAllNamed: {
-            A: { packageName: 'package', fileName: Path.normalize('dir/lib/A') },
+            A: { packageName: 'package', fileName: normalizeFilePath('dir/lib/A') },
           },
         });
     });
@@ -2572,7 +2574,7 @@ export = NS`,
       expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export * from './lib/A'`)))
         .toMatchObject({
           exportedImportedAll: [
-            { packageName: 'package', fileName: Path.normalize('dir/lib/A') },
+            { packageName: 'package', fileName: normalizeFilePath('dir/lib/A') },
           ],
         });
     });
@@ -2591,7 +2593,7 @@ export = NS`,
       expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export * as A from './lib/A'`)))
         .toMatchObject({
           exportedImportedAllNamed: {
-            A: { packageName: 'package', fileName: Path.normalize('dir/lib/A') },
+            A: { packageName: 'package', fileName: normalizeFilePath('dir/lib/A') },
           },
         });
     });
@@ -2654,7 +2656,7 @@ export = NS`,
           exportedImportedElements: {
             B: {
               localName: 'A',
-              fileName: Path.normalize('dir/lib/A'),
+              fileName: normalizeFilePath('dir/lib/A'),
             },
           },
         });
@@ -2687,15 +2689,15 @@ export = NS`,
           exportedImportedElements: {
             B: {
               localName: 'A',
-              fileName: Path.normalize('dir/lib/A'),
+              fileName: normalizeFilePath('dir/lib/A'),
             },
             D: {
               localName: 'C',
-              fileName: Path.normalize('dir/lib/A'),
+              fileName: normalizeFilePath('dir/lib/A'),
             },
             X: {
               localName: 'X',
-              fileName: Path.normalize('dir/lib/A'),
+              fileName: normalizeFilePath('dir/lib/A'),
             },
           },
         });
@@ -2786,11 +2788,11 @@ import {D as X} from './lib/D'
           importedElements: {
             C: {
               localName: 'C',
-              fileName: Path.normalize('dir/lib/C'),
+              fileName: normalizeFilePath('dir/lib/C'),
             },
             X: {
               localName: 'D',
-              fileName: Path.normalize('dir/lib/D'),
+              fileName: normalizeFilePath('dir/lib/D'),
             },
           },
         });
