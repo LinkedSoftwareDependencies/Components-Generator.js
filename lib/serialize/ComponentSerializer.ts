@@ -1,5 +1,5 @@
-import * as Path from 'path';
 import type { ResolutionContext } from '../resolution/ResolutionContext';
+import { joinFilePath } from '../util/PathUtil';
 import type { PathDestinationDefinition } from './ComponentConstructor';
 import type { ComponentDefinitions, ComponentDefinitionsIndex } from './ComponentDefinitions';
 import type { ContextRaw } from './ContextConstructor';
@@ -50,7 +50,7 @@ export class ComponentSerializer {
    * @return The absolute file path that was created.
    */
   public async serializeComponentsIndex(componentsIndex: ComponentDefinitionsIndex): Promise<string> {
-    const filePathBase = Path.join(
+    const filePathBase = joinFilePath(
       this.pathDestination.replacementPath,
       'components',
     );
@@ -63,7 +63,7 @@ export class ComponentSerializer {
    * @return The absolute file path that was created.
    */
   public async serializeContext(contextRaw: ContextRaw): Promise<string> {
-    const filePathBase = Path.join(
+    const filePathBase = joinFilePath(
       this.pathDestination.replacementPath,
       'context',
     );

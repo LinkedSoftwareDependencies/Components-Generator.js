@@ -1,8 +1,8 @@
 import * as fs from 'fs';
-import * as Path from 'path';
 import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
 import { parse } from '@typescript-eslint/typescript-estree';
 import * as LRUCache from 'lru-cache';
+import { filePathDirName, joinFilePath, normalizeFilePath } from '../util/PathUtil';
 
 /**
  * Context for loading files.
@@ -44,7 +44,7 @@ export class ResolutionContext {
       fs.access(`${filePath}.d.ts`, error => {
         if (error) {
           // No file found, treat as directory with an index
-          filePath = Path.normalize(`${filePath}/index`);
+          filePath = normalizeFilePath(`${filePath}/index`);
         }
         resolve(filePath);
       });
@@ -60,7 +60,7 @@ export class ResolutionContext {
    */
   public async writeFileContent(filePath: string, content: string): Promise<void> {
     await new Promise<void>((resolve, reject) => {
-      fs.mkdir(Path.dirname(filePath), { recursive: true }, error => {
+      fs.mkdir(filePathDirName(filePath), { recursive: true }, error => {
         if (error) {
           reject(error);
         } else {
@@ -155,6 +155,6 @@ export class ResolutionContext {
     if (!typesPath.endsWith('.d.ts')) {
       typesPath += '.d.ts';
     }
-    return Path.join(Path.dirname(packageJsonPath), typesPath);
+    return joinFilePath(filePathDirName(packageJsonPath), typesPath);
   }
 }

@@ -1,6 +1,6 @@
-import * as Path from 'path';
 import semverMajor = require('semver/functions/major');
 import type { ResolutionContext } from '../resolution/ResolutionContext';
+import { joinFilePath } from '../util/PathUtil';
 
 /**
  * Load metadata from a package.
@@ -20,7 +20,7 @@ export class PackageMetadataLoader {
    */
   public async load(packageRootDirectory: string): Promise<PackageMetadata> {
     // Read package.json
-    const packageJsonPath = Path.join(packageRootDirectory, 'package.json');
+    const packageJsonPath = joinFilePath(packageRootDirectory, 'package.json');
     const packageJsonRaw = await this.resolutionContext.getFileContent(packageJsonPath);
     let packageJson: any;
     try {
@@ -54,7 +54,7 @@ export class PackageMetadataLoader {
     if (!('lsd:components' in packageJson)) {
       throw new Error(`Invalid package: Missing 'lsd:components' in ${packageJsonPath}`);
     }
-    const componentsPath = Path.join(packageRootDirectory, packageJson['lsd:components']);
+    const componentsPath = joinFilePath(packageRootDirectory, packageJson['lsd:components']);
     if (!('lsd:contexts' in packageJson)) {
       throw new Error(`Invalid package: Missing 'lsd:contexts' in ${packageJsonPath}`);
     }
@@ -66,7 +66,7 @@ export class PackageMetadataLoader {
     if (!('types' in packageJson) && !('typings' in packageJson)) {
       throw new Error(`Invalid package: Missing 'types' or 'typings' in ${packageJsonPath}`);
     }
-    let typesPath = Path.join(packageRootDirectory, packageJson.types || packageJson.typings);
+    let typesPath = joinFilePath(packageRootDirectory, packageJson.types || packageJson.typings);
     if (typesPath.endsWith('.d.ts')) {
       typesPath = typesPath.slice(0, -5);
     }

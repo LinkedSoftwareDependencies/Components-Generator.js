@@ -1,4 +1,3 @@
-import * as Path from 'path';
 import type { ContextParser, JsonLdContextNormalized } from 'jsonld-context-parser';
 import semverMajor = require('semver/functions/major');
 import type {
@@ -135,11 +134,7 @@ export class ComponentConstructor {
       throw new Error(`Tried to reference a file outside the current package: ${sourcePath}`);
     }
 
-    let strippedPath = sourcePath.slice(pathDestination.packageRootDirectory.length + 1);
-    if (Path.sep !== '/') {
-      strippedPath = strippedPath.split(Path.sep).join('/');
-    }
-
+    const strippedPath = sourcePath.slice(pathDestination.packageRootDirectory.length + 1);
     return strippedPath.replace(`${pathDestination.originalPath}/`, '');
   }
 

@@ -1,7 +1,7 @@
-import * as Path from 'path';
 import type { LogLevel } from 'componentsjs';
 import { Generator } from '../generate/Generator';
 import type { ResolutionContext } from '../resolution/ResolutionContext';
+import { joinFilePath } from '../util/PathUtil';
 import { FileConfigLoader } from './FileConfigLoader';
 import type { GeneratorConfig } from './GeneratorConfig';
 
@@ -30,11 +30,11 @@ export class GeneratorFactory {
       resolutionContext: this.resolutionContext,
       pathDestinations: packageRootDirectories
         .filter(packageRootDirectory => !config.ignorePackagePaths
-          .some(ignorePackagePath => packageRootDirectory.startsWith(Path.join(cwd, ignorePackagePath))))
+          .some(ignorePackagePath => packageRootDirectory.startsWith(joinFilePath(cwd, ignorePackagePath))))
         .map(packageRootDirectory => ({
           packageRootDirectory,
-          originalPath: Path.posix.join(packageRootDirectory, config.source),
-          replacementPath: Path.posix.join(packageRootDirectory, config.destination),
+          originalPath: joinFilePath(packageRootDirectory, config.source),
+          replacementPath: joinFilePath(packageRootDirectory, config.destination),
         })),
       fileExtension: config.extension,
       logLevel: <LogLevel> config.logLevel,
