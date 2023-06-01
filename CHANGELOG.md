@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.1.1"></a>
+## [v3.1.1](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.1.0...v3.1.1) - 2023-06-01
+
+### Fixed
+* [Ensure paths are treated correctly on Windows (#116)](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/2a2a766bbc474954235cbea85558411ae03ecaf4)
+
 <a name="v3.1.0"></a>
 ## [v3.1.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.0.4...v3.1.0) - 2022-08-12
 
