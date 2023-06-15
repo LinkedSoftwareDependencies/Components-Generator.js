@@ -2368,6 +2368,15 @@ export = NS`,
         });
     });
 
+    it('for a local file imported with an extension', () => {
+      expect(loader.importTargetToAbsolutePath('package', 'dir/lib/fileA', './subdir/fileB.js'))
+        .toEqual({
+          packageName: 'package',
+          fileName: normalizeFilePath('dir/lib/subdir/fileB'),
+          fileNameReferenced: 'dir/lib/fileA',
+        });
+    });
+
     it('for a package', () => {
       resolutionContext.packageNameIndexOverrides['other-package'] = '/some-dir/index.js';
       expect(loader.importTargetToAbsolutePath('package', 'dir/lib/fileA', 'other-package'))

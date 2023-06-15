@@ -484,9 +484,14 @@ export class ClassLoader {
   ): { packageName: string; fileName: string; fileNameReferenced: string } | undefined {
     // Handle import paths within the current package
     if (importPath.startsWith('.')) {
+      const fileName = joinFilePath(filePathDirName(currentFilePath), importPath);
+      const indexOfExtension = fileName.indexOf('.', fileName.lastIndexOf('/'));
+      const fileNameWithoutExtension = indexOfExtension === -1 ?
+        fileName :
+        fileName.slice(0, indexOfExtension);
       return {
         packageName: currentPackageName,
-        fileName: joinFilePath(filePathDirName(currentFilePath), importPath),
+        fileName: fileNameWithoutExtension,
         fileNameReferenced: currentFilePath,
       };
     }
