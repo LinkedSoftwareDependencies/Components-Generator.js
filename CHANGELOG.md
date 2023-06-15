@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.1.2"></a>
+## [v3.1.2](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.1.1...v3.1.2) - 2023-06-15
+
+### Fixed
+* [Fix failing ESM imports with file extension](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/7301c3e40b11f811fc377cefe8a984ef262eaff4)
+
 <a name="v3.1.1"></a>
 ## [v3.1.1](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.1.0...v3.1.1) - 2023-06-01
 
