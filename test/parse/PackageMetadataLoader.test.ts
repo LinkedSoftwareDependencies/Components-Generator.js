@@ -178,8 +178,13 @@ describe('PackageMetadataLoader', () => {
       resolutionContext.contentsOverrides = {
         [normalizeFilePath('/package.json')]: `{`,
       };
-      await expect(loader.load('/')).rejects
-        .toThrow(new Error(`Invalid package: Syntax error in ${normalizeFilePath('/package.json')}: Unexpected end of JSON input`));
+      await expect(loader.load('/')).rejects.toMatchObject({
+        name: 'Error',
+        message: expect.stringMatching(
+          /* eslint-disable max-len */
+          /Invalid package: Syntax error in .*\/package.json: (Unexpected end of JSON input|Expected property name or '\}')/u,
+        ),
+      });
     });
 
     it('should error when lsd:module is missing', async() => {

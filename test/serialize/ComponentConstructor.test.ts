@@ -2221,7 +2221,10 @@ describe('ComponentConstructor', () => {
           defaults: [{ type: 'raw', value: '{"a":invalid}' }],
           comment: 'Hi',
         }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope))
-        .rejects.toThrow(`JSON parsing error in default value of mp:components/a/b/file-param.jsonld#MyClass_field: Unexpected token i in JSON at position 5`);
+        .rejects.toThrow(
+          /* eslint-disable max-len */
+          /JSON parsing error in default value of mp:components\/a\/b\/file-param.jsonld#MyClass_field: Unexpected token (i in JSON at position 5|'i', "\{"a":invalid\}" is not valid JSON)/u,
+        );
     });
   });
 

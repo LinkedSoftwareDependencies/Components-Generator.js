@@ -4,7 +4,7 @@
   "description": "Automatically generate component files from TypeScript classes for the Components.js dependency injection framework",
   "main": "index.js",
   "engines": {
-    "node": ">=12.0"
+    "node": ">=14"
   },
   "scripts": {
     "build": "tsc",
