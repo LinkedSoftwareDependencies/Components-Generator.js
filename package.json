@@ -103,8 +103,5 @@
     "rimraf": "latest",
     "ts-jest": "^29.0.0",
     "typescript": "^5.0.0"
-  },
-  "resolutions": {
-    "@comunica/bus-http": "^2.10.0"
   }
 }
