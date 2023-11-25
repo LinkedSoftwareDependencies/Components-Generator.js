@@ -3,6 +3,7 @@
   "version": "3.1.2",
   "description": "Automatically generate component files from TypeScript classes for the Components.js dependency injection framework",
   "main": "index.js",
+  "packageManager": "yarn@3.4.1",
   "engines": {
     "node": ">=16.9"
   },
@@ -54,9 +55,7 @@
   },
   "homepage": "https://github.com/LinkedSoftwareDependencies/Components-Generator.js#readme",
   "license": "MIT",
-  "bin": {
-    "componentsjs-generator": "bin/componentsjs-generator.js"
-  },
+  "bin": "bin/componentsjs-generator.js",
   "files": [
     "bin/**/*.d.ts",
     "bin/**/*.js",
