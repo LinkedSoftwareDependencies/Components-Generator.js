@@ -9,9 +9,9 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "jest ${1}",
+    "test": "jest",
     "lint": "eslint . --ext .ts --cache",
-    "prepare": "husky install && npm run build",
+    "postinstall": "husky install && yarn build",
     "version": "manual-git-changelog onversion"
   },
   "jest": {
