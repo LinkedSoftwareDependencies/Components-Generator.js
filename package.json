@@ -3,9 +3,9 @@
   "version": "3.1.2",
   "description": "Automatically generate component files from TypeScript classes for the Components.js dependency injection framework",
   "main": "index.js",
-  "packageManager": "yarn@3.4.1",
+  "packageManager": "yarn@4.0.1",
   "engines": {
-    "node": ">=16.9"
+    "node": ">=18.12"
   },
   "scripts": {
     "build": "tsc",
