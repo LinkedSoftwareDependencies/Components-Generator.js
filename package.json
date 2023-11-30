@@ -3,14 +3,15 @@
   "version": "3.1.2",
   "description": "Automatically generate component files from TypeScript classes for the Components.js dependency injection framework",
   "main": "index.js",
+  "packageManager": "yarn@4.0.1",
   "engines": {
-    "node": ">=14"
+    "node": ">=18.12"
   },
   "scripts": {
     "build": "tsc",
-    "test": "jest ${1}",
+    "test": "jest",
     "lint": "eslint . --ext .ts --cache",
-    "prepare": "husky install && npm run build",
+    "postinstall": "husky install && yarn build",
     "version": "manual-git-changelog onversion"
   },
   "jest": {
@@ -54,9 +55,7 @@
   },
   "homepage": "https://github.com/LinkedSoftwareDependencies/Components-Generator.js#readme",
   "license": "MIT",
-  "bin": {
-    "componentsjs-generator": "bin/componentsjs-generator.js"
-  },
+  "bin": "bin/componentsjs-generator.js",
   "files": [
     "bin/**/*.d.ts",
     "bin/**/*.js",

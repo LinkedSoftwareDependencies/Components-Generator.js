@@ -6,6 +6,7 @@
 test_files/
 output/
 .eslintcache
+.yarn/
 
 **/lib/**/*.js
 **/lib/**/*.js.map
