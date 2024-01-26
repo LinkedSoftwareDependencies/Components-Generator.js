@@ -2663,7 +2663,7 @@ __metadata:
     eslint-plugin-tsdoc: "npm:^0.2.7"
     eslint-plugin-unused-imports: "npm:^2.0.0"
     fs-extra: "npm:^11.0.0"
-    husky: "npm:^8.0.0"
+    husky: "npm:^9.0.0"
     jest: "npm:^29.0.0"
     jest-extended: "npm:^4.0.0"
     jsonld-context-parser: "npm:^2.1.5"
@@ -4064,12 +4064,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"husky@npm:^8.0.0":
-  version: 8.0.1
-  resolution: "husky@npm:8.0.1"
+"husky@npm:^9.0.0":
+  version: 9.0.6
+  resolution: "husky@npm:9.0.6"
   bin:
-    husky: lib/bin.js
-  checksum: 58c0e87c37f0aaea4e0ea02499444df11adb9ec182fd42735385045b51a55cbdcca48afeea337801e50435fbeb0e77c57c2b430695663774afb279bb0e8aa25f
+    husky: bin.js
+  checksum: 1ef034899dcdc35e5bf5436e1e02f8a7177dbb8a10dd91b77456d7fe110c204d8d4a7d53180e0651b87e35f39d7e0e95a53b4b7c334f68aefbc0d93bce4b54f8
   languageName: node
   linkType: hard
 
