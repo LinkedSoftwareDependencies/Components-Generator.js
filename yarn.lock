@@ -2667,7 +2667,7 @@ __metadata:
     jest: "npm:^29.0.0"
     jest-extended: "npm:^4.0.0"
     jsonld-context-parser: "npm:^2.1.5"
-    lru-cache: "npm:^6.0.0"
+    lru-cache: "npm:^10.0.0"
     manual-git-changelog: "npm:^1.0.1"
     minimist: "npm:^1.2.5"
     rdf-object: "npm:^1.13.1"
@@ -5255,7 +5255,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lru-cache@npm:^10.0.1, lru-cache@npm:^9.1.1 || ^10.0.0":
+"lru-cache@npm:^10.0.0, lru-cache@npm:^10.0.1, lru-cache@npm:^9.1.1 || ^10.0.0":
   version: 10.1.0
   resolution: "lru-cache@npm:10.1.0"
   checksum: 778bc8b2626daccd75f24c4b4d10632496e21ba064b126f526c626fbdbc5b28c472013fccd45d7646b9e1ef052444824854aed617b59cd570d01a8b7d651fc1e
