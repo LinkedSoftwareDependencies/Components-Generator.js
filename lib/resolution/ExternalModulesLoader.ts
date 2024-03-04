@@ -146,7 +146,7 @@ export class ExternalModulesLoader {
     // This loop makes sure that we also consider dependencies (recursively) of the given package names
     let nodeModulePaths: string[] = [];
     let packageJsons: Record<string, any> = {};
-    let componentModules: Record<string, string> = {};
+    let componentModules: Record<string, Record<number, string>> = {};
     let packageNamesNew: string[] = packageNames;
     while (packageNamesNew.length > 0) {
       const nodeModulePathsNew = this.buildNodeModulePathsSelective(req, nodeModuleImportPaths, packageNamesNew);
@@ -235,6 +235,7 @@ export class ExternalModulesLoader {
       logger: this.logger,
       componentResources,
       skipContextValidation: true,
+      remoteContextLookups: false,
     });
     await componentRegistry.registerAvailableModules();
     const componentFinalizer = new ComponentRegistryFinalizer({

@@ -2654,7 +2654,7 @@ __metadata:
     "@typescript-eslint/parser": "npm:^5.11.0"
     "@typescript-eslint/typescript-estree": "npm:^5.11.0"
     comment-parser: "npm:^0.7.6"
-    componentsjs: "npm:^5.0.1"
+    componentsjs: "npm:^6.0.0"
     eslint: "npm:^7.9.0"
     eslint-config-es: "npm:3.26.0"
     eslint-import-resolver-typescript: "npm:^2.3.0"
@@ -2680,9 +2680,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"componentsjs@npm:^5.0.1":
-  version: 5.4.2
-  resolution: "componentsjs@npm:5.4.2"
+"componentsjs@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "componentsjs@npm:6.0.0"
   dependencies:
     "@rdfjs/types": "npm:*"
     "@types/minimist": "npm:^1.2.0"
@@ -2700,7 +2700,7 @@ __metadata:
     winston: "npm:^3.3.3"
   bin:
     componentsjs-compile-config: bin/compile-config.js
-  checksum: 3f538333e0260722d9c10675bc2b426a66965986500e5c2086c14829297fabfb553b9fc7f66eb35345f49a50ce42eae947c9ae56a1db5c77de017c7a75820ba5
+  checksum: fac3e87ee496eac7d172d2848668cfc0017b3e229dbf0278486409f2bdd0ad00acafd43794928431283f68b01c637fd67b6eb7538e6f7eb00bbd2540d00b9e82
   languageName: node
   linkType: hard
 
