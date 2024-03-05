@@ -1,6 +1,6 @@
 {
   "name": "componentsjs-generator",
-  "version": "3.1.2",
+  "version": "4.0.0",
   "packageManager": "yarn@4.0.1",
   "description": "Automatically generate component files from TypeScript classes for the Components.js dependency injection framework",
   "author": "Ruben Taelman <rubensworks@gmail.com>",

@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v4.0.0"></a>
+## [v4.0.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.1.2...v4.0.0) - 2024-03-05
+
+### Changed
+* [Bump @typescript-eslint/typescript-estree to v7](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/e96ef49eba3c3c682348888f01cdf5a317274b08)
+* [Update to Components.js v6](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/dc60e5ce3a0097276971393312ba34b58da19d8d)
+
 <a name="v3.1.2"></a>
 ## [v3.1.2](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.1.1...v3.1.2) - 2023-06-15
 
