@@ -21,22 +21,27 @@ export class CommentLoader {
         constructorHolder.constructor,
       ))
       .reduce<ConstructorCommentData>((acc, commentData) => {
-      for (const [ key, value ] of Object.entries(commentData)) {
-        if (key in acc) {
-          acc[key] = {
-            range: acc[key].range || value.range,
-            defaults: [ ...acc[key].defaults || [], ...value.defaults || [] ],
-            ignored: acc[key].ignored || value.ignored,
-            description: acc[key].description || value.description,
-            params: { ...acc[key].params, ...value.params },
-            defaultNested: [ ...acc[key].defaultNested || [], ...value.defaultNested || [] ],
-          };
-        } else {
-          acc[key] = value;
+        for (const [ key, value ] of Object.entries(commentData)) {
+          if (key in acc) {
+            acc[key] = {
+              // eslint-disable-next-line ts/prefer-nullish-coalescing
+              range: acc[key].range || value.range,
+              // eslint-disable-next-line ts/prefer-nullish-coalescing
+              defaults: [ ...acc[key].defaults || [], ...value.defaults || [] ],
+              // eslint-disable-next-line ts/prefer-nullish-coalescing
+              ignored: acc[key].ignored || value.ignored,
+              // eslint-disable-next-line ts/prefer-nullish-coalescing
+              description: acc[key].description || value.description,
+              params: { ...acc[key].params, ...value.params },
+              // eslint-disable-next-line ts/prefer-nullish-coalescing
+              defaultNested: [ ...acc[key].defaultNested || [], ...value.defaultNested || [] ],
+            };
+          } else {
+            acc[key] = value;
+          }
         }
-      }
-      return acc;
-    }, {});
+        return acc;
+      }, {});
   }
 
   /**
@@ -69,7 +74,7 @@ export class CommentLoader {
     const commentData = CommentLoader.getCommentDataFromComment(comment, clazz);
     if (commentData.params) {
       for (const [ key, value ] of Object.entries(commentData.params)) {
-        const subCommentData = CommentLoader.getCommentDataFromComment(`/**${value.replace(/ @/gu, '\n * @')}*/`, clazz);
+        const subCommentData = CommentLoader.getCommentDataFromComment(`/**${value.replaceAll(' @', '\n * @')}*/`, clazz);
 
         // Since we're in the scope of a param (key), prepend the defaultNested paramPath array with the current param.
         if (subCommentData.defaultNested) {
@@ -125,7 +130,7 @@ export class CommentLoader {
     if (commentParsed) {
       // Extract description
       if (commentParsed.description.length > 0) {
-        data.description = commentParsed.description.replace(/\n/gu, ' ');
+        data.description = commentParsed.description.replaceAll('\n', ' ');
       }
 
       // Extract tags
@@ -201,7 +206,7 @@ export class CommentLoader {
     }
 
     const [ idRaw, typeRaw ] = value.startsWith('a ') ?
-      [ undefined, value.slice(2) ] :
+        [ undefined, value.slice(2) ] :
       value.split(' a ');
     return {
       type: 'iri',
@@ -227,7 +232,7 @@ export class CommentLoader {
    */
   public getCommentRaw(classLoaded: ClassReferenceLoaded, node: TSESTree.BaseNode): string | undefined {
     const line = node.loc.start.line;
-    for (const comment of classLoaded.ast.comments || []) {
+    for (const comment of classLoaded.ast.comments ?? []) {
       if (comment.loc.end.line === line - 1) {
         return `/*${comment.value}*/`;
       }

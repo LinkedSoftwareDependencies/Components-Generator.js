@@ -42,7 +42,7 @@ export class MemberLoader {
   ): MemberParameterData<ParameterRangeUnresolved>[] {
     const members: MemberParameterData<ParameterRangeUnresolved>[] = [];
     for (const element of classLoaded.declaration.body.body) {
-      // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
+      // eslint-disable-next-line ts/switch-exhaustiveness-check
       switch (element.type) {
         case AST_NODE_TYPES.PropertyDefinition:
         case AST_NODE_TYPES.TSAbstractPropertyDefinition:

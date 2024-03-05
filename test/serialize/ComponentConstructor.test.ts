@@ -4,7 +4,8 @@ import { ContextParser } from 'jsonld-context-parser';
 import type {
   ClassIndex,
   ClassLoaded,
-  ClassReferenceLoaded, ClassReferenceLoadedClassOrInterface,
+  ClassReferenceLoaded,
+  ClassReferenceLoadedClassOrInterface,
 } from '../../lib/parse/ClassIndex';
 import type { ConstructorData } from '../../lib/parse/ConstructorLoader';
 import type { MemberData } from '../../lib/parse/MemberLoader';
@@ -104,7 +105,7 @@ describe('ComponentConstructor', () => {
 
   describe('constructComponents', () => {
     it('should handle an empty index', async() => {
-      expect(await ctor.constructComponents()).toEqual({});
+      await expect(ctor.constructComponents()).resolves.toEqual({});
     });
 
     it('should handle a non-empty index for classes in the same file', async() => {
@@ -180,7 +181,7 @@ describe('ComponentConstructor', () => {
           classLoaded: <any> {},
         },
       };
-      expect(await ctor.constructComponents()).toEqual({
+      await expect(ctor.constructComponents()).resolves.toEqual({
         [normalizeFilePath('/docs/package/components/b/file')]: {
           '@context': [
             'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
@@ -280,7 +281,7 @@ describe('ComponentConstructor', () => {
           ],
         },
       };
-      expect(await ctor.constructComponents()).toEqual({
+      await expect(ctor.constructComponents()).resolves.toEqual({
         [normalizeFilePath('/docs/package/components/file1')]: {
           '@context': [
             'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
@@ -398,7 +399,7 @@ describe('ComponentConstructor', () => {
           MyClass: 'http://example.org/other-package.ttl#MyClass',
         },
       };
-      expect(await ctor.constructComponents()).toEqual({
+      await expect(ctor.constructComponents()).resolves.toEqual({
         [normalizeFilePath('/docs/package/components/b/file')]: {
           '@context': [
             'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
@@ -466,7 +467,7 @@ describe('ComponentConstructor', () => {
           MyClass: 'http://example.org/other-package.ttl#MyClass',
         },
       };
-      expect(await ctor.constructComponents()).toEqual({
+      await expect(ctor.constructComponents()).resolves.toEqual({
         [normalizeFilePath('/docs/package/components/b/file')]: {
           '@context': [
             'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
@@ -503,7 +504,7 @@ describe('ComponentConstructor', () => {
           generics: {},
         },
       };
-      expect(await ctor.constructComponents()).toEqual({
+      await expect(ctor.constructComponents()).resolves.toEqual({
         [normalizeFilePath('/docs/package/components/b/file')]: {
           '@context': [
             'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
@@ -532,7 +533,7 @@ describe('ComponentConstructor', () => {
 
   describe('constructComponentsIndex', () => {
     it('should handle an empty index', async() => {
-      expect(await ctor.constructComponentsIndex({})).toEqual({
+      await expect(ctor.constructComponentsIndex({})).resolves.toEqual({
         '@context': [
           'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
         ],
@@ -544,11 +545,11 @@ describe('ComponentConstructor', () => {
     });
 
     it('should handle a non-empty index', async() => {
-      expect(await ctor.constructComponentsIndex(<any> {
+      await expect(ctor.constructComponentsIndex(<any> {
         [normalizeFilePath('/docs/package/components/file1')]: true,
         [normalizeFilePath('/docs/package/components/file2')]: true,
         [normalizeFilePath('/docs/package/components/file/a/b/c')]: true,
-      })).toEqual({
+      })).resolves.toEqual({
         '@context': [
           'https://linkedsoftwaredependencies.org/bundles/npm/my-package/context.jsonld',
         ],
@@ -572,12 +573,12 @@ describe('ComponentConstructor', () => {
 
     it('should handle an applicable file, starting with a slash', () => {
       expect(ctor.getImportPathIri('/components/a/b'))
-        .toEqual('https://linkedsoftwaredependencies.org/bundles/npm/my-package/^1.0.0/components/a/b');
+        .toBe('https://linkedsoftwaredependencies.org/bundles/npm/my-package/^1.0.0/components/a/b');
     });
 
     it('should handle an applicable file, not starting with a slash', () => {
       expect(ctor.getImportPathIri('components/a/b'))
-        .toEqual('https://linkedsoftwaredependencies.org/bundles/npm/my-package/^1.0.0/components/a/b');
+        .toBe('https://linkedsoftwaredependencies.org/bundles/npm/my-package/^1.0.0/components/a/b');
     });
   });
 
@@ -589,7 +590,7 @@ describe('ComponentConstructor', () => {
 
     it('should handle a valid path', () => {
       expect(ComponentConstructor.getPathRelative(pathDestination, normalizeFilePath('/docs/package/src/a/b/myFile')))
-        .toEqual('a/b/myFile');
+        .toBe('a/b/myFile');
     });
 
     it('should generate the correct path.', () => {
@@ -597,7 +598,7 @@ describe('ComponentConstructor', () => {
       expect(ComponentConstructor.getPathRelative(
         pathDestination,
         normalizeFilePath('/docs/package/src/a/b/myFile'),
-      )).toEqual('a/b/myFile');
+      )).toBe('a/b/myFile');
     });
   });
 
@@ -615,13 +616,13 @@ describe('ComponentConstructor', () => {
 
   describe('constructComponent', () => {
     it('should handle a component with empty constructor', async() => {
-      expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
+      await expect(ctor.constructComponent(context, externalContextsCallback, classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
       }, {
         genericTypeParameters: [],
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
-      }, [], [])).toEqual({
+      }, [], [])).resolves.toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [],
@@ -631,7 +632,7 @@ describe('ComponentConstructor', () => {
     });
 
     it('should handle a component with non-empty constructor', async() => {
-      expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
+      await expect(ctor.constructComponent(context, externalContextsCallback, classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [
           {
@@ -650,7 +651,7 @@ describe('ComponentConstructor', () => {
       }, {
         genericTypeParameters: [],
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
-      }, [], [])).toEqual({
+      }, [], [])).resolves.toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [
@@ -675,13 +676,13 @@ describe('ComponentConstructor', () => {
 
     it('should handle a component with abstract class', async() => {
       (<ClassLoaded> classReference).abstract = true;
-      expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
+      await expect(ctor.constructComponent(context, externalContextsCallback, classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
       }, {
         genericTypeParameters: [],
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
-      }, [], [])).toEqual({
+      }, [], [])).resolves.toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'AbstractClass',
         constructorArguments: [],
@@ -691,7 +692,7 @@ describe('ComponentConstructor', () => {
     });
 
     it('should handle a component with super class', async() => {
-      expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
+      await expect(ctor.constructComponent(context, externalContextsCallback, classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
       }, {
@@ -706,7 +707,7 @@ describe('ComponentConstructor', () => {
           },
           genericTypeInstantiations: [],
         },
-      ], [])).toEqual({
+      ], [])).resolves.toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [],
@@ -717,7 +718,7 @@ describe('ComponentConstructor', () => {
     });
 
     it('should handle a component with implementing interfaces', async() => {
-      expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
+      await expect(ctor.constructComponent(context, externalContextsCallback, classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
       }, {
@@ -740,7 +741,7 @@ describe('ComponentConstructor', () => {
           },
           genericTypeInstantiations: [],
         },
-      ], [])).toEqual({
+      ], [])).resolves.toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [],
@@ -755,13 +756,13 @@ describe('ComponentConstructor', () => {
 
     it('should handle a component with comment', async() => {
       classReference.comment = 'Hi';
-      expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
+      await expect(ctor.constructComponent(context, externalContextsCallback, classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
       }, {
         genericTypeParameters: [],
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
-      }, [], [])).toEqual({
+      }, [], [])).resolves.toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [],
@@ -773,13 +774,13 @@ describe('ComponentConstructor', () => {
 
     it('should handle an interface component', async() => {
       classReference.type = 'interface';
-      expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
+      await expect(ctor.constructComponent(context, externalContextsCallback, classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
       }, {
         genericTypeParameters: [],
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
-      }, [], [])).toEqual({
+      }, [], [])).resolves.toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'AbstractClass',
         constructorArguments: [],
@@ -789,7 +790,7 @@ describe('ComponentConstructor', () => {
     });
 
     it('should handle a component with generic types', async() => {
-      expect(await ctor.constructComponent(context, externalContextsCallback, classReference, {
+      await expect(ctor.constructComponent(context, externalContextsCallback, classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [
           {
@@ -845,7 +846,7 @@ describe('ComponentConstructor', () => {
           },
         ],
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
-      }, [], [])).toEqual({
+      }, [], [])).resolves.toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass',
         '@type': 'Class',
         constructorArguments: [
@@ -900,20 +901,20 @@ describe('ComponentConstructor', () => {
 
   describe('constructExtensionDefinition', () => {
     it('should handle an extension without generics', async() => {
-      expect(await ctor.constructExtensionDefinition(context, externalContextsCallback, {
+      await expect(ctor.constructExtensionDefinition(context, externalContextsCallback, {
         classLoaded: classReference,
         genericTypeInstantiations: [],
-      })).toEqual('mp:components/a/b/file-param.jsonld#MyClass');
+      })).resolves.toBe('mp:components/a/b/file-param.jsonld#MyClass');
     });
 
     it('should handle an extension with generics', async() => {
-      expect(await ctor.constructExtensionDefinition(context, externalContextsCallback, {
+      await expect(ctor.constructExtensionDefinition(context, externalContextsCallback, {
         classLoaded: classReference,
         genericTypeInstantiations: [
           { type: 'raw', value: 'boolean' },
           { type: 'raw', value: 'string' },
         ],
-      })).toEqual({
+      })).resolves.toEqual({
         '@type': 'GenericComponentExtension',
         component: 'mp:components/a/b/file-param.jsonld#MyClass',
         genericTypeInstances: [ 'xsd:boolean', 'xsd:string' ],
@@ -924,18 +925,18 @@ describe('ComponentConstructor', () => {
   describe('moduleIriToId', () => {
     it('should return a compacted module IRI', () => {
       expect(ctor.moduleIriToId(context))
-        .toEqual('npmd:my-package');
+        .toBe('npmd:my-package');
     });
   });
 
   describe('classNameToId', () => {
     it('should return a compacted class IRI within the current package', async() => {
-      expect(await ctor.classNameToId(context, externalContextsCallback, {
+      await expect(ctor.classNameToId(context, externalContextsCallback, {
         packageName: 'my-package',
         localName: 'MyClass',
         fileName: normalizeFilePath('/docs/package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
-      })).toEqual('mp:components/a/b/MyOwnClass.jsonld#MyClass');
+      })).resolves.toBe('mp:components/a/b/MyOwnClass.jsonld#MyClass');
     });
 
     it('should return an existing IRI in another package that is being generated', async() => {
@@ -961,12 +962,12 @@ describe('ComponentConstructor', () => {
           skipValidation: true,
         }).parse(new ContextConstructorMocked({ packageMetadata }).constructContext()),
       };
-      expect(await ctor.classNameToId(context, externalContextsCallback, {
+      await expect(ctor.classNameToId(context, externalContextsCallback, {
         packageName: 'other-package',
         localName: 'MyClass',
         fileName: normalizeFilePath('/docs/other-package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
-      })).toEqual('op:components/a/b/MyOwnClass.jsonld#MyClass');
+      })).resolves.toBe('op:components/a/b/MyOwnClass.jsonld#MyClass');
       expect(externalContextsCallback).toHaveBeenCalledWith('http://example.org/context-other-package.jsonld');
     });
 
@@ -977,12 +978,12 @@ describe('ComponentConstructor', () => {
           MyClass: 'http://example.org/other-package.ttl#MyClass',
         },
       };
-      expect(await ctor.classNameToId(context, externalContextsCallback, {
+      await expect(ctor.classNameToId(context, externalContextsCallback, {
         packageName: 'other-package',
         localName: 'MyClass',
         fileName: normalizeFilePath('/docs/other-package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
-      })).toEqual('op:MyClass');
+      })).resolves.toBe('op:MyClass');
       expect(externalContextsCallback).toHaveBeenCalledWith('http://example.org/context-other-package.jsonld');
     });
 
@@ -1008,12 +1009,12 @@ describe('ComponentConstructor', () => {
           MyClass: 'http://example.org/other-package.ttl#MyClass',
         },
       };
-      expect(await ctor.classNameToId(context, externalContextsCallback, {
+      await expect(ctor.classNameToId(context, externalContextsCallback, {
         packageName: 'other-package',
         localName: 'MyClass',
         fileName: normalizeFilePath('/docs/other-package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
-      })).toEqual('urn:npm:other-package:MyClass');
+      })).resolves.toBe('urn:npm:other-package:MyClass');
     });
   });
 
@@ -1024,7 +1025,7 @@ describe('ComponentConstructor', () => {
         localName: 'MyClass',
         fileName: normalizeFilePath('/docs/package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
-      }, 'field', scope)).toEqual('mp:components/a/b/MyOwnClass.jsonld#MyClass_field');
+      }, 'field', scope)).toBe('mp:components/a/b/MyOwnClass.jsonld#MyClass_field');
     });
 
     it('should return a compacted field IRI for parent field names', () => {
@@ -1035,7 +1036,7 @@ describe('ComponentConstructor', () => {
         localName: 'MyClass',
         fileName: normalizeFilePath('/docs/package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
-      }, 'field', scope)).toEqual('mp:components/a/b/MyOwnClass.jsonld#MyClass_a_b_field');
+      }, 'field', scope)).toBe('mp:components/a/b/MyOwnClass.jsonld#MyClass_a_b_field');
     });
 
     it('should return unique compacted field IRIs', () => {
@@ -1044,19 +1045,19 @@ describe('ComponentConstructor', () => {
         localName: 'MyClass',
         fileName: normalizeFilePath('/docs/package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
-      }, 'field', scope)).toEqual('mp:components/a/b/MyOwnClass.jsonld#MyClass_field');
+      }, 'field', scope)).toBe('mp:components/a/b/MyOwnClass.jsonld#MyClass_field');
       expect(ctor.fieldNameToId(context, {
         packageName: 'my-package',
         localName: 'MyClass',
         fileName: normalizeFilePath('/docs/package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
-      }, 'field', scope)).toEqual('mp:components/a/b/MyOwnClass.jsonld#MyClass_field_1');
+      }, 'field', scope)).toBe('mp:components/a/b/MyOwnClass.jsonld#MyClass_field_1');
       expect(ctor.fieldNameToId(context, {
         packageName: 'my-package',
         localName: 'MyClass',
         fileName: normalizeFilePath('/docs/package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
-      }, 'field', scope)).toEqual('mp:components/a/b/MyOwnClass.jsonld#MyClass_field_2');
+      }, 'field', scope)).toBe('mp:components/a/b/MyOwnClass.jsonld#MyClass_field_2');
     });
 
     it('should return a compacted field IRI for a class in another package that is being generated', async() => {
@@ -1087,7 +1088,7 @@ describe('ComponentConstructor', () => {
         localName: 'MyClass',
         fileName: normalizeFilePath('/docs/other-package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
-      }, 'field', scope)).toEqual('npmd:other-package/^3.0.0/components/a/b/MyOwnClass.jsonld#MyClass_field');
+      }, 'field', scope)).toBe('npmd:other-package/^3.0.0/components/a/b/MyOwnClass.jsonld#MyClass_field');
     });
 
     it('should throw on a compacted field IRI for a class in another package that is not being generated', async() => {
@@ -1097,22 +1098,22 @@ describe('ComponentConstructor', () => {
         fileName: normalizeFilePath('/docs/other-package/src/a/b/MyOwnClass'),
         fileNameReferenced: 'unused',
       }, 'field', scope))
-        .toThrowError(/Tried to reference a field field in ".*" outside the current package: .*/u);
+        .toThrow(/Tried to reference a field field in ".*" outside the current package: .*/u);
     });
   });
 
   describe('constructGenericTypeParameters', () => {
     it('should handle a constructor with no generics', async() => {
-      expect(await ctor.constructGenericTypeParameters(context, externalContextsCallback, classReference, []))
+      await expect(ctor.constructGenericTypeParameters(context, externalContextsCallback, classReference, [])).resolves
         .toEqual([]);
     });
 
     it('should handle a constructor with a single untyped generic', async() => {
-      expect(await ctor.constructGenericTypeParameters(context, externalContextsCallback, classReference, [
+      await expect(ctor.constructGenericTypeParameters(context, externalContextsCallback, classReference, [
         {
           name: 'T',
         },
-      ])).toEqual([
+      ])).resolves.toEqual([
         {
           '@id': 'mp:components/a/b/file-param.jsonld#MyClass__generic_T',
         },
@@ -1120,7 +1121,7 @@ describe('ComponentConstructor', () => {
     });
 
     it('should handle a constructor with a single typed generic', async() => {
-      expect(await ctor.constructGenericTypeParameters(context, externalContextsCallback, classReference, [
+      await expect(ctor.constructGenericTypeParameters(context, externalContextsCallback, classReference, [
         {
           name: 'T',
           range: {
@@ -1128,7 +1129,7 @@ describe('ComponentConstructor', () => {
             value: 'number',
           },
         },
-      ])).toEqual([
+      ])).resolves.toEqual([
         {
           '@id': 'mp:components/a/b/file-param.jsonld#MyClass__generic_T',
           range: 'xsd:number',
@@ -1137,7 +1138,7 @@ describe('ComponentConstructor', () => {
     });
 
     it('should handle a constructor with a multiple generics', async() => {
-      expect(await ctor.constructGenericTypeParameters(context, externalContextsCallback, classReference, [
+      await expect(ctor.constructGenericTypeParameters(context, externalContextsCallback, classReference, [
         {
           name: 'T',
         },
@@ -1148,7 +1149,7 @@ describe('ComponentConstructor', () => {
             value: 'number',
           },
         },
-      ])).toEqual([
+      ])).resolves.toEqual([
         {
           '@id': 'mp:components/a/b/file-param.jsonld#MyClass__generic_T',
         },
@@ -1163,16 +1164,16 @@ describe('ComponentConstructor', () => {
   describe('constructParameters', () => {
     it('should handle a constructor with no params', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor.constructParameters(context, externalContextsCallback, <ClassLoaded> classReference, {
+      await expect(ctor.constructParameters(context, externalContextsCallback, <ClassLoaded> classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [],
-      }, parameters)).toEqual([]);
+      }, parameters)).resolves.toEqual([]);
       expect(parameters).toEqual([]);
     });
 
     it('should handle a constructor with two params', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor.constructParameters(context, externalContextsCallback, <ClassLoaded> classReference, {
+      await expect(ctor.constructParameters(context, externalContextsCallback, <ClassLoaded> classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [
           {
@@ -1188,7 +1189,7 @@ describe('ComponentConstructor', () => {
             comment: 'Hi2',
           },
         ],
-      }, parameters)).toEqual([
+      }, parameters)).resolves.toEqual([
         { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA' },
         { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldB' },
       ]);
@@ -1208,7 +1209,7 @@ describe('ComponentConstructor', () => {
 
     it('should handle a constructor with three params with identical names', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor.constructParameters(context, externalContextsCallback, <ClassLoaded> classReference, {
+      await expect(ctor.constructParameters(context, externalContextsCallback, <ClassLoaded> classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [
           {
@@ -1230,7 +1231,7 @@ describe('ComponentConstructor', () => {
             comment: 'Hi3',
           },
         ],
-      }, parameters)).toEqual([
+      }, parameters)).resolves.toEqual([
         { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field' },
         { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_1' },
         { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_2' },
@@ -1256,7 +1257,7 @@ describe('ComponentConstructor', () => {
 
     it('should handle a constructor with a nested param with two sub-params', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor.constructParameters(context, externalContextsCallback, <ClassLoaded> classReference, {
+      await expect(ctor.constructParameters(context, externalContextsCallback, <ClassLoaded> classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [
           {
@@ -1282,7 +1283,7 @@ describe('ComponentConstructor', () => {
             comment: 'Hi',
           },
         ],
-      }, parameters)).toEqual([
+      }, parameters)).resolves.toEqual([
         {
           '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field__constructorArgument',
           fields: [
@@ -1307,7 +1308,7 @@ describe('ComponentConstructor', () => {
 
     it('should handle a constructor with a nested param with a hash', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor.constructParameters(context, externalContextsCallback, <ClassLoaded> classReference, {
+      await expect(ctor.constructParameters(context, externalContextsCallback, <ClassLoaded> classReference, {
         classLoaded: (<any> ctor).classAndInterfaceIndex.MyClass1,
         parameters: [
           {
@@ -1337,7 +1338,7 @@ describe('ComponentConstructor', () => {
             comment: 'Hi',
           },
         ],
-      }, parameters)).toEqual([
+      }, parameters)).resolves.toEqual([
         {
           '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field__constructorArgument',
           fields: [
@@ -1384,13 +1385,13 @@ describe('ComponentConstructor', () => {
   describe('parameterDataToConstructorArgument', () => {
     it('should handle a raw parameter definition', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor
+      await expect(ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'field',
           range: { type: 'raw', value: 'boolean' },
           comment: 'Hi',
-        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope))
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).resolves
         .toEqual({ '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field' });
       expect(parameters).toEqual([
         {
@@ -1403,13 +1404,13 @@ describe('ComponentConstructor', () => {
 
     it('should handle an override parameter definition', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor
+      await expect(ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'field',
           range: { type: 'override', value: 'boolean' },
           comment: 'Hi',
-        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope))
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).resolves
         .toEqual({ '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field' });
       expect(parameters).toEqual([
         {
@@ -1422,7 +1423,7 @@ describe('ComponentConstructor', () => {
 
     it('should handle a class parameter definition', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor
+      await expect(ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'field',
@@ -1436,7 +1437,7 @@ describe('ComponentConstructor', () => {
             genericTypeParameterInstances: undefined,
           },
           comment: 'Hi',
-        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope))
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).resolves
         .toEqual({ '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field' });
       expect(parameters).toEqual([
         {
@@ -1449,13 +1450,13 @@ describe('ComponentConstructor', () => {
 
     it('should handle an undefined parameter definition', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor
+      await expect(ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'field',
           range: { type: 'undefined' },
           comment: 'Hi',
-        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope))
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).resolves
         .toEqual({ '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field' });
       expect(parameters).toEqual([
         {
@@ -1470,13 +1471,13 @@ describe('ComponentConstructor', () => {
 
     it('should handle an empty nested parameter definition', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor
+      await expect(ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'field',
           range: { type: 'nested', value: []},
           comment: 'Hi',
-        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).toEqual({
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).resolves.toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field__constructorArgument',
         fields: [],
       });
@@ -1485,7 +1486,7 @@ describe('ComponentConstructor', () => {
 
     it('should handle a nested parameter definition with raw field', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor
+      await expect(ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'field',
@@ -1501,7 +1502,7 @@ describe('ComponentConstructor', () => {
             ],
           },
           comment: 'Hi',
-        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).toEqual({
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).resolves.toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field__constructorArgument',
         fields: [
           { keyRaw: 'field', value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_field' }},
@@ -1518,7 +1519,7 @@ describe('ComponentConstructor', () => {
 
     it('should handle a nested parameter definition with multiple raw fields', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor
+      await expect(ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'field',
@@ -1540,7 +1541,7 @@ describe('ComponentConstructor', () => {
             ],
           },
           comment: 'Hi',
-        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).toEqual({
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).resolves.toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field__constructorArgument',
         fields: [
           { keyRaw: 'fieldA', value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA' }},
@@ -1563,7 +1564,7 @@ describe('ComponentConstructor', () => {
 
     it('should handle a nested parameter definition with multiple raw fields and scoped default', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor
+      await expect(ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'field',
@@ -1591,7 +1592,7 @@ describe('ComponentConstructor', () => {
             ],
           },
           comment: 'Hi',
-        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).toEqual({
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).resolves.toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field__constructorArgument',
         fields: [
           { keyRaw: 'fieldA', value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA' }},
@@ -1615,7 +1616,7 @@ describe('ComponentConstructor', () => {
 
     it('should handle a deep nested parameter definition with multiple raw fields and scoped default', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor
+      await expect(ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'field',
@@ -1659,7 +1660,7 @@ describe('ComponentConstructor', () => {
             ],
           },
           comment: 'Hi',
-        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).toEqual({
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).resolves.toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field__constructorArgument',
         fields: [
           {
@@ -1703,7 +1704,7 @@ describe('ComponentConstructor', () => {
 
     it('should handle a default and nested default', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor
+      await expect(ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'field',
@@ -1732,7 +1733,7 @@ describe('ComponentConstructor', () => {
             ],
           },
           comment: 'Hi',
-        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).toEqual({
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).resolves.toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field__constructorArgument',
         fields: [
           {
@@ -1763,7 +1764,7 @@ describe('ComponentConstructor', () => {
 
     it('should handle a recursive nested parameter definition', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor
+      await expect(ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'field',
@@ -1795,7 +1796,7 @@ describe('ComponentConstructor', () => {
             ],
           },
           comment: 'Hi',
-        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).toEqual({
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).resolves.toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field__constructorArgument',
         fields: [
           { keyRaw: 'fieldA', value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_fieldA' }},
@@ -1829,7 +1830,7 @@ describe('ComponentConstructor', () => {
 
     it('should handle a recursive nested parameter definition with identical field names', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor
+      await expect(ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'field',
@@ -1861,7 +1862,7 @@ describe('ComponentConstructor', () => {
             ],
           },
           comment: 'Hi',
-        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).toEqual({
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).resolves.toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field__constructorArgument',
         fields: [
           { keyRaw: 'field', value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field_field' }},
@@ -1892,7 +1893,7 @@ describe('ComponentConstructor', () => {
 
     it('should handle a nested field with indexed parameter definition', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor
+      await expect(ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'fieldA',
@@ -1908,7 +1909,7 @@ describe('ComponentConstructor', () => {
             ],
           },
           comment: 'Hi',
-        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_fieldA', scope)).toEqual({
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_fieldA', scope)).resolves.toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA__constructorArgument',
         fields: [
           {
@@ -1941,7 +1942,7 @@ describe('ComponentConstructor', () => {
 
     it('should handle a nested field with indexed parameter and field definition', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor
+      await expect(ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'fieldA',
@@ -1963,7 +1964,7 @@ describe('ComponentConstructor', () => {
             ],
           },
           comment: 'Hi',
-        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_fieldA', scope)).toEqual({
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_fieldA', scope)).resolves.toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA__constructorArgument',
         fields: [
           {
@@ -2005,7 +2006,7 @@ describe('ComponentConstructor', () => {
 
     it('should handle a nested field in a union with indexed parameter definition', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor
+      await expect(ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'fieldA',
@@ -2029,7 +2030,7 @@ describe('ComponentConstructor', () => {
             ],
           },
           comment: 'Hi',
-        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_fieldA', scope)).toEqual({
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_fieldA', scope)).resolves.toEqual({
         '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA__constructorArgument',
         fields: [
           {
@@ -2062,14 +2063,14 @@ describe('ComponentConstructor', () => {
 
     it('should handle a parameter with default raw value', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor
+      await expect(ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'field',
           range: { type: 'raw', value: 'boolean' },
           defaults: [{ type: 'raw', value: 'abc' }],
           comment: 'Hi',
-        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope))
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).resolves
         .toEqual({ '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field' });
       expect(parameters).toEqual([
         {
@@ -2083,14 +2084,14 @@ describe('ComponentConstructor', () => {
 
     it('should handle a parameter with default raw value with array range', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor
+      await expect(ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'field',
           range: { type: 'array', value: { type: 'raw', value: 'boolean' }},
           defaults: [{ type: 'raw', value: 'abc' }],
           comment: 'Hi',
-        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope))
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).resolves
         .toEqual({ '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field' });
       expect(parameters).toEqual([
         {
@@ -2111,14 +2112,14 @@ describe('ComponentConstructor', () => {
 
     it('should handle a parameter with default iri value', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor
+      await expect(ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'field',
           range: { type: 'raw', value: 'boolean' },
           defaults: [{ type: 'iri', value: 'ex:abc', baseComponent: classReference }],
           comment: 'Hi',
-        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope))
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).resolves
         .toEqual({ '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field' });
       expect(parameters).toEqual([
         {
@@ -2132,14 +2133,14 @@ describe('ComponentConstructor', () => {
 
     it('should handle a parameter with default iri value that is relative', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor
+      await expect(ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'field',
           range: { type: 'raw', value: 'boolean' },
           defaults: [{ type: 'iri', value: 'abc', baseComponent: classReference }],
           comment: 'Hi',
-        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope))
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).resolves
         .toEqual({ '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field' });
       expect(parameters).toEqual([
         {
@@ -2153,14 +2154,14 @@ describe('ComponentConstructor', () => {
 
     it('should handle a parameter with default json value', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor
+      await expect(ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'field',
           range: { type: 'override', value: 'json' },
           defaults: [{ type: 'raw', value: '{"a":true}' }],
           comment: 'Hi',
-        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope))
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).resolves
         .toEqual({ '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field' });
       expect(parameters).toEqual([
         {
@@ -2177,7 +2178,7 @@ describe('ComponentConstructor', () => {
 
     it('should handle a parameter with default optional json value', async() => {
       const parameters: ParameterDefinition[] = [];
-      expect(await ctor
+      await expect(ctor
         .parameterDataToConstructorArgument(context, externalContextsCallback, <ClassLoaded> classReference, {
           type: 'field',
           name: 'field',
@@ -2190,7 +2191,7 @@ describe('ComponentConstructor', () => {
           },
           defaults: [{ type: 'raw', value: '{"a":true}' }],
           comment: 'Hi',
-        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope))
+        }, parameters, 'mp:components/a/b/file-param.jsonld#MyClass_field', scope)).resolves
         .toEqual({ '@id': 'mp:components/a/b/file-param.jsonld#MyClass_field' });
       expect(parameters).toEqual([
         {
@@ -2235,7 +2236,7 @@ describe('ComponentConstructor', () => {
     });
 
     it('should construct a field', async() => {
-      const parameterData: ParameterData<ParameterRangeResolved> & { range: { type: 'nested' } } = {
+      const parameterData: ParameterData<ParameterRangeResolved> & { range: { type: 'nested' }} = {
         type: 'field',
         name: 'field',
         range: {
@@ -2252,7 +2253,7 @@ describe('ComponentConstructor', () => {
         comment: 'Hi',
       };
       const subParamData: ParameterData<ParameterRangeResolved> = (<any> parameterData).range.value[0];
-      expect(await ctor.constructFieldDefinitionNested(
+      await expect(ctor.constructFieldDefinitionNested(
         context,
         externalContextsCallback,
         <ClassLoaded> classReference,
@@ -2261,7 +2262,7 @@ describe('ComponentConstructor', () => {
         subParamData,
         '',
         scope,
-      ))
+      )).resolves
         .toEqual({ keyRaw: 'fieldA', value: { '@id': 'mp:components/a/b/file-param.jsonld#MyClass_fieldA' }});
       expect(parameters).toEqual([
         {
@@ -2273,7 +2274,7 @@ describe('ComponentConstructor', () => {
     });
 
     it('should construct a double nested field', async() => {
-      const parameterData: ParameterData<ParameterRangeResolved> & { range: { type: 'nested' } } = {
+      const parameterData: ParameterData<ParameterRangeResolved> & { range: { type: 'nested' }} = {
         type: 'field',
         name: 'field',
         range: {
@@ -2300,7 +2301,7 @@ describe('ComponentConstructor', () => {
         comment: 'Hi',
       };
       const subParamData: ParameterData<ParameterRangeResolved> = (<any> parameterData).range.value[0];
-      expect(await ctor.constructFieldDefinitionNested(
+      await expect(ctor.constructFieldDefinitionNested(
         context,
         externalContextsCallback,
         <ClassLoaded> classReference,
@@ -2309,7 +2310,7 @@ describe('ComponentConstructor', () => {
         subParamData,
         '',
         scope,
-      ))
+      )).resolves
         .toEqual({
           keyRaw: 'field',
           value: {
@@ -2334,7 +2335,7 @@ describe('ComponentConstructor', () => {
     });
 
     it('should construct an indexed element with raw values', async() => {
-      const parameterData: ParameterData<ParameterRangeResolved> & { range: { type: 'nested' } } = {
+      const parameterData: ParameterData<ParameterRangeResolved> & { range: { type: 'nested' }} = {
         type: 'field',
         name: 'fieldA',
         range: {
@@ -2351,7 +2352,7 @@ describe('ComponentConstructor', () => {
         comment: 'Hi',
       };
       const subParamData: ParameterData<ParameterRangeResolved> = (<any> parameterData).range.value[0];
-      expect(await ctor.constructFieldDefinitionNested(
+      await expect(ctor.constructFieldDefinitionNested(
         context,
         externalContextsCallback,
         <ClassLoaded> classReference,
@@ -2360,7 +2361,7 @@ describe('ComponentConstructor', () => {
         subParamData,
         'mp:components/a/b/file-param.jsonld#MyClass_fieldA',
         scope,
-      ))
+      )).resolves
         .toEqual({
           collectEntries: 'mp:components/a/b/file-param.jsonld#MyClass_fieldA',
           key: 'mp:components/a/b/file-param.jsonld#MyClass_fieldA_key',
@@ -2388,7 +2389,7 @@ describe('ComponentConstructor', () => {
     });
 
     it('should error on an indexed element inside another index', async() => {
-      const parameterData: ParameterData<ParameterRangeResolved> & { range: { type: 'nested' } } = {
+      const parameterData: ParameterData<ParameterRangeResolved> & { range: { type: 'nested' }} = {
         type: 'index',
         domain: 'string',
         range: {
@@ -2423,31 +2424,31 @@ describe('ComponentConstructor', () => {
   describe('constructParameterRange', () => {
     it('should construct a raw parameter range', async() => {
       const rangeValue = 'boolean';
-      expect(await ctor.constructParameterRange(
+      await expect(ctor.constructParameterRange(
         { type: 'raw', value: rangeValue },
         context,
         externalContextsCallback,
         'mp:components/a/b/file-param.jsonld#MyClass_field',
-      )).toEqual('xsd:boolean');
+      )).resolves.toBe('xsd:boolean');
     });
 
     it('should construct a JSON parameter range', async() => {
       const rangeValue = 'json';
-      expect(await ctor.constructParameterRange(
+      await expect(ctor.constructParameterRange(
         { type: 'override', value: rangeValue },
         context,
         externalContextsCallback,
         'mp:components/a/b/file-param.jsonld#MyClass_field',
-      )).toEqual('rdf:JSON');
+      )).resolves.toBe('rdf:JSON');
     });
 
     it('should construct a literal parameter range', async() => {
-      expect(await ctor.constructParameterRange(
+      await expect(ctor.constructParameterRange(
         { type: 'literal', value: 'abc' },
         context,
         externalContextsCallback,
         'mp:components/a/b/file-param.jsonld#MyClass_field',
-      )).toEqual({ '@type': 'ParameterRangeLiteral', parameterRangeValueLiteral: 'abc' });
+      )).resolves.toEqual({ '@type': 'ParameterRangeLiteral', parameterRangeValueLiteral: 'abc' });
     });
 
     it('should construct a class parameter range', async() => {
@@ -2456,12 +2457,12 @@ describe('ComponentConstructor', () => {
         localName: 'ClassParam',
         fileName: normalizeFilePath('/docs/package/src/a/b/file-param'),
       };
-      expect(await ctor.constructParameterRange(
+      await expect(ctor.constructParameterRange(
         { type: 'class', value: rangeValue, genericTypeParameterInstances: undefined },
         context,
         externalContextsCallback,
         'mp:components/a/b/file-param.jsonld#MyClass_field',
-      )).toEqual('mp:components/a/b/file-param.jsonld#ClassParam');
+      )).resolves.toBe('mp:components/a/b/file-param.jsonld#ClassParam');
     });
 
     it('should construct a class parameter range with generics', async() => {
@@ -2470,7 +2471,7 @@ describe('ComponentConstructor', () => {
         localName: 'ClassParam',
         fileName: normalizeFilePath('/docs/package/src/a/b/file-param'),
       };
-      expect(await ctor.constructParameterRange(
+      await expect(ctor.constructParameterRange(
         {
           type: 'class',
           value: rangeValue,
@@ -2489,7 +2490,7 @@ describe('ComponentConstructor', () => {
         context,
         externalContextsCallback,
         'mp:components/a/b/file-param.jsonld#MyClass_field',
-      )).toEqual({
+      )).resolves.toEqual({
         '@type': 'ParameterRangeGenericComponent',
         component: 'mp:components/a/b/file-param.jsonld#ClassParam',
         genericTypeInstances: [
@@ -2504,34 +2505,34 @@ describe('ComponentConstructor', () => {
 
     it('should construct on a nested parameter range as wildcard', async() => {
       const rangeValue: ParameterData<any>[] = [];
-      expect(await ctor.constructParameterRange(
+      await expect(ctor.constructParameterRange(
         { type: 'nested', value: rangeValue },
         context,
         externalContextsCallback,
         'mp:components/a/b/file-param.jsonld#MyClass_field',
-      )).toEqual({
+      )).resolves.toEqual({
         '@type': 'ParameterRangeWildcard',
       });
     });
 
     it('should construct an undefined parameter range', async() => {
-      expect(await ctor.constructParameterRange(
+      await expect(ctor.constructParameterRange(
         { type: 'undefined' },
         context,
         externalContextsCallback,
         'mp:components/a/b/file-param.jsonld#MyClass_field',
-      )).toEqual({
+      )).resolves.toEqual({
         '@type': 'ParameterRangeUndefined',
       });
     });
 
     it('should construct a wildcard parameter range', async() => {
-      expect(await ctor.constructParameterRange(
+      await expect(ctor.constructParameterRange(
         { type: 'wildcard' },
         context,
         externalContextsCallback,
         'mp:components/a/b/file-param.jsonld#MyClass_field',
-      )).toEqual({
+      )).resolves.toEqual({
         '@type': 'ParameterRangeWildcard',
       });
     });
@@ -2546,12 +2547,12 @@ describe('ComponentConstructor', () => {
         { type: 'raw', value: 'boolean' },
         { type: 'class', value: rangeValueClass, genericTypeParameterInstances: undefined },
       ];
-      expect(await ctor.constructParameterRange(
+      await expect(ctor.constructParameterRange(
         { type: 'union', elements: children },
         context,
         externalContextsCallback,
         'mp:components/a/b/file-param.jsonld#MyClass_field',
-      )).toEqual({
+      )).resolves.toEqual({
         '@type': 'ParameterRangeUnion',
         parameterRangeElements: [
           'xsd:boolean',
@@ -2570,12 +2571,12 @@ describe('ComponentConstructor', () => {
         { type: 'raw', value: 'boolean' },
         { type: 'class', value: rangeValueClass, genericTypeParameterInstances: undefined },
       ];
-      expect(await ctor.constructParameterRange(
+      await expect(ctor.constructParameterRange(
         { type: 'intersection', elements: children },
         context,
         externalContextsCallback,
         'mp:components/a/b/file-param.jsonld#MyClass_field',
-      )).toEqual({
+      )).resolves.toEqual({
         '@type': 'ParameterRangeIntersection',
         parameterRangeElements: [
           'xsd:boolean',
@@ -2594,12 +2595,12 @@ describe('ComponentConstructor', () => {
         { type: 'raw', value: 'boolean' },
         { type: 'class', value: rangeValueClass, genericTypeParameterInstances: undefined },
       ];
-      expect(await ctor.constructParameterRange(
+      await expect(ctor.constructParameterRange(
         { type: 'tuple', elements },
         context,
         externalContextsCallback,
         'mp:components/a/b/file-param.jsonld#MyClass_field',
-      )).toEqual({
+      )).resolves.toEqual({
         '@type': 'ParameterRangeTuple',
         parameterRangeElements: [
           'xsd:boolean',
@@ -2618,12 +2619,12 @@ describe('ComponentConstructor', () => {
         { type: 'rest', value: { type: 'raw', value: 'boolean' }},
         { type: 'class', value: rangeValueClass, genericTypeParameterInstances: undefined },
       ];
-      expect(await ctor.constructParameterRange(
+      await expect(ctor.constructParameterRange(
         { type: 'tuple', elements },
         context,
         externalContextsCallback,
         'mp:components/a/b/file-param.jsonld#MyClass_field',
-      )).toEqual({
+      )).resolves.toEqual({
         '@type': 'ParameterRangeTuple',
         parameterRangeElements: [
           {
@@ -2636,55 +2637,55 @@ describe('ComponentConstructor', () => {
     });
 
     it('should construct an array parameter range', async() => {
-      expect(await ctor.constructParameterRange(
+      await expect(ctor.constructParameterRange(
         { type: 'array', value: { type: 'raw', value: 'boolean' }},
         context,
         externalContextsCallback,
         'mp:a/b/file-param#MyClass_field',
-      )).toEqual({
+      )).resolves.toEqual({
         '@type': 'ParameterRangeArray',
         parameterRangeValue: 'xsd:boolean',
       });
     });
 
     it('should construct a generic type reference range', async() => {
-      expect(await ctor.constructParameterRange(
+      await expect(ctor.constructParameterRange(
         { type: 'genericTypeReference', value: 'T', origin: classReference },
         context,
         externalContextsCallback,
         'mp:a/b/file-param#MyClass_field',
-      )).toEqual({
+      )).resolves.toEqual({
         '@type': 'ParameterRangeGenericTypeReference',
         parameterRangeGenericType: 'mp:components/a/b/file-param.jsonld#MyClass__generic_T',
       });
     });
 
     it('should construct a keyof parameter range', async() => {
-      expect(await ctor.constructParameterRange(
+      await expect(ctor.constructParameterRange(
         { type: 'keyof', value: { type: 'raw', value: 'boolean' }},
         context,
         externalContextsCallback,
         'mp:a/b/file-param#MyClass_field',
-      )).toEqual({
+      )).resolves.toEqual({
         '@type': 'ParameterRangeKeyof',
         parameterRangeValue: 'xsd:boolean',
       });
     });
 
     it('should construct a typeof parameter range', async() => {
-      expect(await ctor.constructParameterRange(
+      await expect(ctor.constructParameterRange(
         { type: 'typeof', value: { type: 'raw', value: 'boolean' }},
         context,
         externalContextsCallback,
         'mp:a/b/file-param#MyClass_field',
-      )).toEqual({
+      )).resolves.toEqual({
         '@type': 'ParameterRangeTypeof',
         parameterRangeValue: 'xsd:boolean',
       });
     });
 
     it('should construct an indexed parameter range', async() => {
-      expect(await ctor.constructParameterRange(
+      await expect(ctor.constructParameterRange(
         {
           type: 'indexed',
           object: { type: 'raw', value: 'boolean' },
@@ -2693,7 +2694,7 @@ describe('ComponentConstructor', () => {
         context,
         externalContextsCallback,
         'mp:a/b/file-param#MyClass_field',
-      )).toEqual({
+      )).resolves.toEqual({
         '@type': 'ParameterRangeIndexed',
         parameterRangeIndexedObject: 'xsd:boolean',
         parameterRangeIndexedIndex: 'xsd:boolean',

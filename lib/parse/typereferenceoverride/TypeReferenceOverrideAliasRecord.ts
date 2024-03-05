@@ -10,11 +10,11 @@ export class TypeReferenceOverrideAliasRecord implements TypeReferenceOverride {
   public handle(typeNode: TSESTree.TSTypeReference): ParameterRangeUnresolved | undefined {
     if (typeNode.typeName.type === AST_NODE_TYPES.Identifier &&
       typeNode.typeName.name === 'Record' &&
-      typeNode.typeParameters &&
-      typeNode.typeParameters.params.length === 2) {
+      typeNode.typeArguments &&
+      typeNode.typeArguments.params.length === 2) {
       const loc: TSESTree.SourceLocation = { start: { line: 0, column: 0 }, end: { line: 0, column: 7 }};
       const range: TSESTree.Range = [ 0, 0 ];
-      const typeLiteral: TSESTree.TSTypeLiteral = {
+      const typeLiteral: TSESTree.TSTypeLiteral = <any> {
         type: AST_NODE_TYPES.TSTypeLiteral,
         members: [
           {
@@ -25,7 +25,7 @@ export class TypeReferenceOverrideAliasRecord implements TypeReferenceOverride {
                 name: 'key',
                 typeAnnotation: {
                   type: AST_NODE_TYPES.TSTypeAnnotation,
-                  typeAnnotation: typeNode.typeParameters.params[0],
+                  typeAnnotation: typeNode.typeArguments.params[0],
                   loc,
                   range,
                 },
@@ -35,7 +35,7 @@ export class TypeReferenceOverrideAliasRecord implements TypeReferenceOverride {
             ],
             typeAnnotation: {
               type: AST_NODE_TYPES.TSTypeAnnotation,
-              typeAnnotation: typeNode.typeParameters.params[1],
+              typeAnnotation: typeNode.typeArguments.params[1],
               loc,
               range,
             },

@@ -651,7 +651,7 @@ export class A{}`,
 
   describe('getIriValue', () => {
     it('should handle valid IRIs', async() => {
-      expect(CommentLoader.getIriValue('<ex:abc>')).toEqual('ex:abc');
+      expect(CommentLoader.getIriValue('<ex:abc>')).toBe('ex:abc');
     });
 
     it('should return undefined for invalid IRIs', async() => {
@@ -713,7 +713,7 @@ export class A{}`,
 }`,
       };
       const { loader, field, classLoaded } = await createLoader();
-      expect(loader.getCommentRaw(classLoaded, field)).toEqual('/**\n   * This is a comment!\n   */');
+      expect(loader.getCommentRaw(classLoaded, field)).toBe('/**\n   * This is a comment!\n   */');
     });
   });
 });

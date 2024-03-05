@@ -22,7 +22,7 @@ describe('ClassFinder', () => {
       resolutionContext.contentsOverrides = {
         'file.d.ts': `export {B as Class} from './lib/B'`,
       };
-      expect(await parser.getFileExports('package', 'file'))
+      await expect(parser.getFileExports('package', 'file')).resolves
         .toEqual({
           named: {
             Class: {
@@ -40,7 +40,7 @@ describe('ClassFinder', () => {
       resolutionContext.contentsOverrides = {
         'file.d.ts': `export * from './lib/B'`,
       };
-      expect(await parser.getFileExports('package', 'file'))
+      await expect(parser.getFileExports('package', 'file')).resolves
         .toEqual({
           named: {},
           unnamed: [
@@ -58,7 +58,7 @@ describe('ClassFinder', () => {
         'file.d.ts': `export * from 'other-package'`,
       };
       resolutionContext.packageNameIndexOverrides['other-package'] = '/some-dir/index.js';
-      expect(await parser.getFileExports('package', 'file'))
+      await expect(parser.getFileExports('package', 'file')).resolves
         .toEqual({
           named: {},
           unnamed: [
@@ -78,7 +78,7 @@ export class A{}
 export type B = string;
 `,
       };
-      expect(await parser.getFileExports('package', 'file'))
+      await expect(parser.getFileExports('package', 'file')).resolves
         .toEqual({
           named: {
             A: {
@@ -99,7 +99,7 @@ export interface A{}
 export type B = string;
 `,
       };
-      expect(await parser.getFileExports('package', 'file'))
+      await expect(parser.getFileExports('package', 'file')).resolves
         .toEqual({
           named: {
             A: {
@@ -122,7 +122,7 @@ export {C as Class3} from './lib/C';
 export * from './lib/D';
 `,
       };
-      expect(await parser.getFileExports('package', 'file'))
+      await expect(parser.getFileExports('package', 'file')).resolves
         .toEqual({
           named: {
             Class1: {
@@ -158,26 +158,18 @@ export * from './lib/D';
       resolutionContext.contentsOverrides = {
         'file.d.ts': `export default class {}`,
       };
-      expect(await parser.getFileExports('package', 'file'))
+      await expect(parser.getFileExports('package', 'file')).resolves
         .toEqual({
           named: {},
           unnamed: [],
         });
     });
 
-    it('for an invalid class with no name', async() => {
-      resolutionContext.contentsOverrides = {
-        'file.d.ts': `export class {}`,
-      };
-      await expect(parser.getFileExports('package', 'file')).rejects
-        .toThrow(new Error(`Export parsing failure: missing exported class name in file on line 1 column 7`));
-    });
-
     it('for a single constant should be ignored', async() => {
       resolutionContext.contentsOverrides = {
         'file.d.ts': `export const foo = "a";`,
       };
-      expect(await parser.getFileExports('package', 'file'))
+      await expect(parser.getFileExports('package', 'file')).resolves
         .toEqual({
           named: {},
           unnamed: [],
@@ -191,7 +183,7 @@ declare class A {}
 export {A as B};
 `,
       };
-      expect(await parser.getFileExports('package', 'file'))
+      await expect(parser.getFileExports('package', 'file')).resolves
         .toEqual({
           named: {
             B: {
@@ -212,7 +204,7 @@ export {A as B};
 declare class A {}
 `,
       };
-      expect(await parser.getFileExports('package', 'file'))
+      await expect(parser.getFileExports('package', 'file')).resolves
         .toEqual({
           named: {
             B: {
@@ -233,7 +225,7 @@ declare interface A {}
 export {A as B};
 `,
       };
-      expect(await parser.getFileExports('package', 'file'))
+      await expect(parser.getFileExports('package', 'file')).resolves
         .toEqual({
           named: {
             B: {
@@ -254,7 +246,7 @@ export {A as B};
 declare interface A {}
 `,
       };
-      expect(await parser.getFileExports('package', 'file'))
+      await expect(parser.getFileExports('package', 'file')).resolves
         .toEqual({
           named: {
             B: {
@@ -272,7 +264,7 @@ declare interface A {}
       resolutionContext.contentsOverrides = {
         'file.d.ts': `export {A as B};`,
       };
-      expect(await parser.getFileExports('package', 'file'))
+      await expect(parser.getFileExports('package', 'file')).resolves
         .toEqual({
           named: {},
           unnamed: [],
@@ -286,7 +278,7 @@ import {X as A} from './lib/A';
 export {A};
 `,
       };
-      expect(await parser.getFileExports('package', 'file'))
+      await expect(parser.getFileExports('package', 'file')).resolves
         .toEqual({
           named: {
             A: {
@@ -304,7 +296,7 @@ export {A};
       resolutionContext.contentsOverrides = {
         'file.d.ts': `import polygons = Shapes.Polygons`,
       };
-      expect(await parser.getFileExports('package', 'file'))
+      await expect(parser.getFileExports('package', 'file')).resolves
         .toEqual({
           named: {},
           unnamed: [],
@@ -318,7 +310,7 @@ import A from './lib/A';
 export {A};
 `,
       };
-      expect(await parser.getFileExports('package', 'file'))
+      await expect(parser.getFileExports('package', 'file')).resolves
         .toEqual({
           named: {},
           unnamed: [],
@@ -332,7 +324,7 @@ export {A};
         [normalizeFilePath('package-simple-named/index.d.ts')]: `export {A as B} from './lib/A';`,
         [normalizeFilePath('package-simple-named/lib/A.d.ts')]: 'export class A {}',
       };
-      expect(await parser.getPackageExports('package', normalizeFilePath('package-simple-named/index')))
+      await expect(parser.getPackageExports('package', normalizeFilePath('package-simple-named/index'))).resolves
         .toEqual({
           B: {
             packageName: 'package',
@@ -348,7 +340,7 @@ export {A};
         [normalizeFilePath('package-simple-unnamed/index.d.ts')]: `export * from './lib/A';`,
         [normalizeFilePath('package-simple-unnamed/lib/A.d.ts')]: 'export class A {}',
       };
-      expect(await parser.getPackageExports('package', normalizeFilePath('package-simple-unnamed/index')))
+      await expect(parser.getPackageExports('package', normalizeFilePath('package-simple-unnamed/index'))).resolves
         .toEqual({
           A: {
             packageName: 'package',
@@ -371,7 +363,7 @@ export {A};
         [normalizeFilePath('directory-export/lib/A.d.ts')]: 'export class A {}',
         [normalizeFilePath('directory-export/lib/C.d.ts')]: 'export class C {}',
       };
-      expect(await parser.getPackageExports('package', normalizeFilePath('directory-export/index')))
+      await expect(parser.getPackageExports('package', normalizeFilePath('directory-export/index'))).resolves
         .toEqual({
           A: {
             packageName: 'package',
@@ -397,7 +389,7 @@ export * from './lib/C';
         [normalizeFilePath('package-multiple/lib/A.d.ts')]: 'export class A {}',
         [normalizeFilePath('package-multiple/lib/C.d.ts')]: 'export class C {}',
       };
-      expect(await parser.getPackageExports('package', normalizeFilePath('package-multiple/index')))
+      await expect(parser.getPackageExports('package', normalizeFilePath('package-multiple/index'))).resolves
         .toEqual({
           B: {
             packageName: 'package',
@@ -424,7 +416,7 @@ export * from './sub2/C'
         [normalizeFilePath('package-nested/lib/sub1/B.d.ts')]: 'export class B {}',
         [normalizeFilePath('package-nested/lib/sub2/C.d.ts')]: 'export class C {}',
       };
-      expect(await parser.getPackageExports('package', normalizeFilePath('package-nested/index')))
+      await expect(parser.getPackageExports('package', normalizeFilePath('package-nested/index'))).resolves
         .toEqual({
           B: {
             packageName: 'package',

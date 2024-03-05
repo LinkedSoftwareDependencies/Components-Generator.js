@@ -46,7 +46,7 @@ export class ClassLoader {
       // Extensions in the form of `class A extends B`
       return {
         value: declaration.superClass.name,
-        genericTypeInstantiations: declaration.superTypeParameters,
+        genericTypeInstantiations: declaration.superTypeArguments,
       };
     }
     if (declaration.superClass.type === AST_NODE_TYPES.MemberExpression &&
@@ -62,27 +62,27 @@ export class ClassLoader {
    * Find the super interfaces of the given interface.
    * Throws an error for interface definitions that could not be interpreted.
    * @param declaration An interface declaration.
-   * @param fileName The file name of the current class.
+   * @param _fileName The file name of the current class.
    */
   public getSuperInterfaceNames(
     declaration: TSESTree.TSInterfaceDeclaration,
-    fileName: string,
+    _fileName: string,
   ): GenericallyTyped<string>[] {
-    return <GenericallyTyped<string>[]> (declaration.extends || [])
+    return <GenericallyTyped<string>[]> declaration.extends
       // eslint-disable-next-line array-callback-return
-      .map(extendsExpression => {
+      .map((extendsExpression) => {
         if (extendsExpression.type === AST_NODE_TYPES.TSInterfaceHeritage &&
           extendsExpression.expression.type === AST_NODE_TYPES.Identifier) {
           // Extensions in the form of `interface A extends B`
           return {
             value: extendsExpression.expression.name,
-            genericTypeInstantiations: extendsExpression.typeParameters,
+            genericTypeInstantiations: extendsExpression.typeArguments,
           };
         }
         // Ignore interfaces that we don't understand
         this.logger.debug(`Ignored an interface expression of unknown type ${extendsExpression.expression.type} on ${declaration.id.name}`);
       })
-      .filter(iface => Boolean(iface));
+      .filter(Boolean);
   }
 
   /**
@@ -102,7 +102,7 @@ export class ClassLoader {
         }
         interfaceNames.push({
           value: implement.expression.name,
-          genericTypeInstantiations: implement.typeParameters,
+          genericTypeInstantiations: implement.typeArguments,
         });
       }
     }
@@ -375,15 +375,23 @@ export class ClassLoader {
                 name: enumKey,
                 loc: <any> undefined,
                 range: <any> undefined,
+                parent: <any> undefined,
+                typeAnnotation: <any> undefined,
+                optional: <any> undefined,
+                decorators: <any> undefined,
               },
               typeAnnotation: {
                 type: AST_NODE_TYPES.TSLiteralType,
                 literal: enumMember.initializer,
                 loc: <any> undefined,
                 range: <any> undefined,
+                parent: <any> undefined,
               },
               loc: <any> undefined,
               range: <any> undefined,
+              parent: <any> undefined,
+              declare: <any> undefined,
+              typeParameters: <any> undefined,
             };
             return <any> <TypeLoaded> {
               type: 'type',

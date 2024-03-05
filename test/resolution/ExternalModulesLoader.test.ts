@@ -8,14 +8,14 @@ import { ResolutionContextMocked } from '../ResolutionContextMocked';
 
 let packageJsons: Record<string, any> = {};
 let loadComponentResources: (componentResources: Record<string, Resource>, objectLoader: RdfObjectLoader) => void;
-jest.mock('componentsjs', () => ({
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-  ...<any>jest.requireActual('componentsjs'),
+// eslint-disable-next-line ts/no-unnecessary-type-assertion
+jest.mock<typeof import('componentsjs')>('componentsjs', () => (<any>{
+  ...jest.requireActual('componentsjs'),
   ModuleStateBuilder: jest.fn().mockImplementation(() => ({
     buildNodeModuleImportPaths: () => [ '/path/1/', '/path/2/' ],
     buildPackageJsons(nodeModulePaths: string[]) {
       return Object.fromEntries(Object.entries(packageJsons)
-        .filter(([ key, value ]) => nodeModulePaths.some(nodeModulePath => nodeModulePath === value.path)));
+        .filter(([ key, value ]) => nodeModulePaths.includes(value.path)));
     },
     preprocessPackageJsons: jest.fn(),
     buildComponentModules(packageJsonsArg: Record<string, any>) {
@@ -614,7 +614,7 @@ describe('ExternalModulesLoader', () => {
 
   describe('buildModuleStateSelective', () => {
     it('should create a module state', async() => {
-      expect(await loader.buildModuleStateSelective(req, [ 'package1', 'package2' ]))
+      await expect(loader.buildModuleStateSelective(req, [ 'package1', 'package2' ])).resolves
         .toEqual({
           componentModules: {
             'urn:package1': {
@@ -750,7 +750,7 @@ describe('ExternalModulesLoader', () => {
         },
       };
 
-      expect(await loader.buildModuleStateSelective(req, [ 'package1', 'package3' ]))
+      await expect(loader.buildModuleStateSelective(req, [ 'package1', 'package3' ])).resolves
         .toEqual({
           componentModules: {
             'urn:package1': {
@@ -960,7 +960,7 @@ describe('ExternalModulesLoader', () => {
 
   describe('loadExternalComponents', () => {
     it('should load external components', async() => {
-      expect(await loader.loadExternalComponents(req, [ 'package1', 'package2' ]))
+      await expect(loader.loadExternalComponents(req, [ 'package1', 'package2' ])).resolves
         .toEqual({
           components: {
             package1: {
@@ -1000,7 +1000,7 @@ describe('ExternalModulesLoader', () => {
         });
       };
 
-      expect(await loader.loadExternalComponents(req, [ 'package1', 'package2' ]))
+      await expect(loader.loadExternalComponents(req, [ 'package1', 'package2' ])).resolves
         .toEqual({
           components: {
             package1: {
@@ -1037,7 +1037,7 @@ describe('ExternalModulesLoader', () => {
           requireElement: '"Component1"',
         });
       };
-      expect(await loader.loadExternalComponents(req, [ 'package3' ]))
+      await expect(loader.loadExternalComponents(req, [ 'package3' ])).resolves
         .toEqual({
           components: {},
           moduleState: expect.anything(),
@@ -1069,7 +1069,7 @@ describe('ExternalModulesLoader', () => {
         logger,
       });
 
-      expect(await loader.loadExternalComponents(req, [ 'package1', 'package2' ]))
+      await expect(loader.loadExternalComponents(req, [ 'package1', 'package2' ])).resolves
         .toEqual({
           components: {
             package1: {

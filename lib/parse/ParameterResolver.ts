@@ -11,13 +11,16 @@ import type { ClassLoader } from './ClassLoader';
 import type { ConstructorData } from './ConstructorLoader';
 import type { GenericsData } from './GenericsLoader';
 import type { MemberData } from './MemberLoader';
-import type { ExtensionData,
+import type {
+  ExtensionData,
   GenericTypeParameterData,
   ParameterData,
   ParameterDataField,
   ParameterRangeResolved,
   ParameterRangeUnresolved,
-  ParameterLoader, MemberParameterData } from './ParameterLoader';
+  ParameterLoader,
+  MemberParameterData,
+} from './ParameterLoader';
 
 export class ParameterResolver {
   private readonly classLoader: ClassLoader;
@@ -255,7 +258,7 @@ export class ParameterResolver {
         }
 
         // If we detect an infinite recursion for a nested interface field, stop the recursion.
-        // eslint-disable-next-line no-case-declarations
+
         if (getNestedFields) {
           const interfaceKey = this.hashParameterRangeUnresolved(range);
           if (handlingInterfaces.has(interfaceKey)) {
@@ -315,7 +318,7 @@ export class ParameterResolver {
           if (classOrInterface.type === 'enum') {
             const enumRangeTypes: ParameterRangeResolved[] = await Promise.all(classOrInterface.declaration.members
               // eslint-disable-next-line array-callback-return
-              .map((enumMember, i) => {
+              .map((enumMember) => {
                 const key = <TSESTree.PropertyNameNonComputed> enumMember.id;
                 switch (key.type) {
                   case AST_NODE_TYPES.Literal:
@@ -424,7 +427,7 @@ export class ParameterResolver {
       genericTypeParameterInstances.map(genericTypeParameterInstance => this
         .hashParameterRangeUnresolved(genericTypeParameterInstance)).join(',') :
       '';
-    const cacheKey = `${interfaceName}::${(qualifiedPath || []).join('.')}::${cacheKeyGenerics}::${owningClass.fileName}::${getNestedFields}`;
+    const cacheKey = `${interfaceName}::${(qualifiedPath ?? []).join('.')}::${cacheKeyGenerics}::${owningClass.fileName}::${getNestedFields}`;
     let promise = this.cacheInterfaceRange.get(cacheKey);
     if (!promise) {
       promise = this.resolveRangeInterfaceInner(
@@ -514,6 +517,7 @@ export class ParameterResolver {
                 literal: enumMember.initializer,
                 loc: <any> undefined,
                 range: <any> undefined,
+                parent: <any> undefined,
               },
               `enum ${classOrInterface.localName} in ${classOrInterface.fileName}`,
             ), owningClass, genericTypeRemappings, getNestedFields, handlingInterfaces);
@@ -578,7 +582,7 @@ export class ParameterResolver {
       classOrInterface.superInterfaces = await Promise.all(this.classLoader
         .getSuperInterfaceNames(classOrInterface.declaration, classOrInterface.fileName)
         .filter(interfaceName => !this.isIgnored(classReference.qualifiedPath, interfaceName.value))
-        .map(async interfaceName => {
+        .map(async(interfaceName) => {
           const superInterface = await this.loadClassOrInterfacesChain({
             packageName: classOrInterface.packageName,
             localName: interfaceName.value,

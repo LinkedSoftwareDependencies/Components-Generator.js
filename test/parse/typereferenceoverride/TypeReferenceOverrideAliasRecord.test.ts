@@ -55,7 +55,7 @@ describe('TypeReferenceOverrideAliasRecord', () => {
           type: AST_NODE_TYPES.Identifier,
           name: 'Record',
         },
-        typeParameters: {
+        typeArguments: {
           params: [
             'TYPE0',
             'TYPE1',

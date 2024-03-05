@@ -421,9 +421,7 @@ class A{
       resolutionContext.contentsOverrides = {
         'file.d.ts': ``,
       };
-      await expect(async() => parser.getClass('A',
-        await resolutionContext.parseTypescriptFile('file'),
-        'file')).rejects
+      await expect(async() => parser.getClass('A', await resolutionContext.parseTypescriptFile('file'), 'file')).rejects
         .toThrow(new Error('Could not find class A in file'));
     });
 
@@ -431,9 +429,7 @@ class A{
       resolutionContext.contentsOverrides = {
         'file.d.ts': `export const foo = "a";`,
       };
-      await expect(async() => parser.getClass('A',
-        await resolutionContext.parseTypescriptFile('file'),
-        'file')).rejects
+      await expect(async() => parser.getClass('A', await resolutionContext.parseTypescriptFile('file'), 'file')).rejects
         .toThrow(new Error('Could not find class A in file'));
     });
 
@@ -441,9 +437,7 @@ class A{
       resolutionContext.contentsOverrides = {
         'file.d.ts': `class A{}`,
       };
-      expect(parser.getClass('A',
-        await resolutionContext.parseTypescriptFile('file'),
-        'file')).toMatchObject({
+      expect(parser.getClass('A', await resolutionContext.parseTypescriptFile('file'), 'file')).toMatchObject({
         body: {
           body: [],
           type: 'ClassBody',
@@ -461,9 +455,7 @@ class A{
       resolutionContext.contentsOverrides = {
         'file.d.ts': `export class A{}`,
       };
-      expect(parser.getClass('A',
-        await resolutionContext.parseTypescriptFile('file'),
-        'file')).toMatchObject({
+      expect(parser.getClass('A', await resolutionContext.parseTypescriptFile('file'), 'file')).toMatchObject({
         body: {
           body: [],
           type: 'ClassBody',

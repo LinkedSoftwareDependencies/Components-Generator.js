@@ -14,38 +14,38 @@ describe('GeneratorFactory', () => {
 
   describe('createGenerator', () => {
     it('should create a new generator without custom options', async() => {
-      expect(await factory.createGenerator(
+      await expect(factory.createGenerator(
         normalizeFilePath('/root'),
         {},
         [ normalizeFilePath('/root') ],
-      )).toBeInstanceOf(Generator);
+      )).resolves.toBeInstanceOf(Generator);
     });
 
     it('should create a new generator with custom options', async() => {
       resolutionContext.contentsOverrides[normalizeFilePath('/root/.componentsjs-generator-config.json')] = `{ "source": "FILESRC/", "extension": "FILEEXT", "debugState": true }`;
       resolutionContext.contentsOverrides[normalizeFilePath('/root/.componentsignore')] = '[ "a", "b" ]';
-      expect(await factory.createGenerator('/root', {
+      await expect(factory.createGenerator('/root', {
         c: 'COMPONENTS/',
         e: 'EXT',
         r: 'PRE',
         i: normalizeFilePath('/root/.componentsignore'),
-      }, [ normalizeFilePath('/root') ])).toBeInstanceOf(Generator);
+      }, [ normalizeFilePath('/root') ])).resolves.toBeInstanceOf(Generator);
     });
 
     it('should create a new generator when ignoring certain packages', async() => {
       resolutionContext.contentsOverrides[normalizeFilePath('/root/.componentsjs-generator-config.json')] = `{ "ignorePackagePaths": [ "ignored1/", "ignored2/" ] }`;
-      expect(await factory.createGenerator(normalizeFilePath('/root'), {
+      await expect(factory.createGenerator(normalizeFilePath('/root'), {
         c: 'COMPONENTS/',
         e: 'EXT',
         r: 'PRE',
-      }, [ normalizeFilePath('/root'), normalizeFilePath('/ignored1'), normalizeFilePath('/ignored2') ]))
+      }, [ normalizeFilePath('/root'), normalizeFilePath('/ignored1'), normalizeFilePath('/ignored2') ])).resolves
         .toBeInstanceOf(Generator);
     });
   });
 
   describe('getConfig', () => {
     it('should handle no cli args and no config file', async() => {
-      expect(await factory.getConfig('root', {})).toEqual({
+      await expect(factory.getConfig('root', {})).resolves.toEqual({
         source: 'lib',
         destination: 'components',
         extension: 'jsonld',
@@ -60,7 +60,7 @@ describe('GeneratorFactory', () => {
 
     it('should handle no cli args and config file', async() => {
       resolutionContext.contentsOverrides[normalizeFilePath('/root/.componentsjs-generator-config.json')] = `{ "source": "FILESRC/", "extension": "FILEEXT", "debugState": true }`;
-      expect(await factory.getConfig(normalizeFilePath('/root'), {})).toEqual({
+      await expect(factory.getConfig(normalizeFilePath('/root'), {})).resolves.toEqual({
         source: 'FILESRC/',
         destination: 'components',
         extension: 'FILEEXT',
@@ -74,12 +74,12 @@ describe('GeneratorFactory', () => {
     });
 
     it('should handle cli args and no config file', async() => {
-      expect(await factory.getConfig('root', {
+      await expect(factory.getConfig('root', {
         s: 'SOURCE/',
         c: 'COMPONENTS/',
         e: 'EXT',
         r: 'PRE',
-      })).toEqual({
+      })).resolves.toEqual({
         source: 'SOURCE/',
         destination: 'COMPONENTS/',
         extension: 'EXT',
@@ -94,11 +94,11 @@ describe('GeneratorFactory', () => {
 
     it('should handle cli args and config file', async() => {
       resolutionContext.contentsOverrides[normalizeFilePath('/root/.componentsjs-generator-config.json')] = `{ "source": "FILESRC/", "extension": "FILEEXT", "debugState": true }`;
-      expect(await factory.getConfig(normalizeFilePath('/root'), {
+      await expect(factory.getConfig(normalizeFilePath('/root'), {
         c: 'COMPONENTS/',
         e: 'EXT',
         r: 'PRE',
-      })).toEqual({
+      })).resolves.toEqual({
         source: 'FILESRC/',
         destination: 'COMPONENTS/',
         extension: 'EXT',
@@ -130,12 +130,12 @@ describe('GeneratorFactory', () => {
 
   describe('getCliConfig', () => {
     it('should handle empty CLI args', async() => {
-      expect(await factory.getCliConfig({})).toEqual({});
+      await expect(factory.getCliConfig({})).resolves.toEqual({});
     });
 
     it('should handle complete CLI args', async() => {
       resolutionContext.contentsOverrides['.componentsignore'] = '[ "a", "b" ]';
-      expect(await factory.getCliConfig({
+      await expect(factory.getCliConfig({
         s: 'lib/',
         c: 'components/',
         e: 'jsonld',
@@ -144,7 +144,7 @@ describe('GeneratorFactory', () => {
         r: 'pre',
         debugState: true,
         lenient: true,
-      })).toEqual({
+      })).resolves.toEqual({
         source: 'lib/',
         destination: 'components/',
         extension: 'jsonld',

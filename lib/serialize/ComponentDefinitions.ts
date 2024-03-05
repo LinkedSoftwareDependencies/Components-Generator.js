@@ -62,7 +62,7 @@ export type ParameterDefinitionRange = string | { '@id': string; parameters: Par
   '@type': 'ParameterRangeWildcard';
 } | {
   '@type': 'ParameterRangeCollectEntries';
-  'parameterRangeCollectEntriesParameters': ParameterDefinition[];
+  parameterRangeCollectEntriesParameters: ParameterDefinition[];
 } | {
   '@type': 'ParameterRangeLiteral';
   parameterRangeValueLiteral: number | string | boolean;

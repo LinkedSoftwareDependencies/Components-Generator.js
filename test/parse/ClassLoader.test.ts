@@ -165,8 +165,14 @@ describe('ClassLoader', () => {
     });
 
     it('should error on a class that is implemented anonymously', async() => {
-      await expect(async() => loader.getClassInterfaceNames(<any>(resolutionContext
-        .parseTypescriptContents(`interface A implements {} {}`)).body[0], 'file'))
+      await expect(async() => loader.getClassInterfaceNames(<any> {
+        implements: [{
+          expression: {
+            type: 'other',
+            loc: { start: { line: '1', column: 23 }},
+          },
+        }],
+      }, 'file'))
         .rejects.toThrow(new Error('Could not interpret the implements type on a class in file on line 1 column 23'));
     });
   });
@@ -274,12 +280,12 @@ declare interface A{};
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, false))
+        }, false, false)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -298,12 +304,12 @@ declare interface A{};
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, false))
+        }, false, false)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -323,12 +329,12 @@ declare interface A{};
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, false))
+        }, false, false)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -348,12 +354,12 @@ declare interface A{};
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, false))
+        }, false, false)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -374,12 +380,12 @@ declare interface A{};
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, false))
+        }, false, false)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -404,12 +410,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, false))
+        }, false, false)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -431,12 +437,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, false))
+        }, false, false)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file4',
@@ -458,12 +464,12 @@ export = NS`,
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, false))
+        }, false, false)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -542,12 +548,12 @@ export * from './lib/D';
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true, false))
+        }, true, false)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -566,12 +572,12 @@ export * from './lib/D';
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true, false))
+        }, true, false)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -591,12 +597,12 @@ export * from './lib/D';
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true, false))
+        }, true, false)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -616,12 +622,12 @@ export * from './lib/D';
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true, false))
+        }, true, false)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -641,12 +647,12 @@ export * from './lib/D';
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true, false))
+        }, true, false)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -670,12 +676,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true, false))
+        }, true, false)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -697,12 +703,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true, false))
+        }, true, false)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file4',
@@ -721,12 +727,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true, false))
+        }, true, false)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -745,12 +751,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true, false))
+        }, true, false)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -770,12 +776,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true, false))
+        }, true, false)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -795,12 +801,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true, false))
+        }, true, false)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -820,12 +826,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true, false))
+        }, true, false)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -849,12 +855,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true, false))
+        }, true, false)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -876,12 +882,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true, false))
+        }, true, false)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file4',
@@ -905,12 +911,12 @@ export class A{}
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, false))
+        }, false, false)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -935,12 +941,12 @@ declare class A{}
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, false))
+        }, false, false)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -965,12 +971,12 @@ export interface A{}
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true, false))
+        }, true, false)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -995,12 +1001,12 @@ declare interface A{}
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true, false))
+        }, true, false)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -1023,12 +1029,12 @@ export = NS`,
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, true, false))
+        }, true, false)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -1089,12 +1095,12 @@ export * from './lib/D';
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -1113,12 +1119,12 @@ export * from './lib/D';
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -1138,12 +1144,12 @@ export * from './lib/D';
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -1163,12 +1169,12 @@ export * from './lib/D';
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -1188,12 +1194,12 @@ export * from './lib/D';
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -1217,12 +1223,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -1244,12 +1250,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file4',
@@ -1268,12 +1274,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -1292,12 +1298,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -1319,12 +1325,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -1344,12 +1350,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -1369,12 +1375,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -1394,12 +1400,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -1423,12 +1429,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -1450,12 +1456,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file4',
@@ -1474,12 +1480,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -1498,12 +1504,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -1523,12 +1529,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -1548,12 +1554,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -1573,12 +1579,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -1602,12 +1608,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -1629,12 +1635,12 @@ export * from './file3'
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file4',
@@ -1658,12 +1664,12 @@ export class A{}
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -1688,12 +1694,12 @@ declare class A{}
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -1718,12 +1724,12 @@ export type A = number;
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -1748,12 +1754,12 @@ declare type A = number;
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -1776,12 +1782,12 @@ export = NS`,
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'A',
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             localName: 'A',
             fileName: 'file',
@@ -1800,13 +1806,13 @@ export = NS`,
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'a',
           qualifiedPath: [ 'A' ],
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             type: 'type',
             localName: 'a',
@@ -1837,13 +1843,13 @@ export = NS`,
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'a',
           qualifiedPath: [ 'A' ],
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, true))
+        }, false, true)).resolves
           .toMatchObject({
             type: 'type',
             localName: 'a',
@@ -1881,7 +1887,7 @@ export = NS`,
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
         }, false, true))
-          .rejects.toThrowError(`Could not load class or other type A.a from file`);
+          .rejects.toThrow(`Could not load class or other type A.a from file`);
       });
 
       it('for no exported enum value should error', async() => {
@@ -1899,7 +1905,7 @@ export = NS`,
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
         }, false, true))
-          .rejects.toThrowError(`Could not load class or other type A.a from file`);
+          .rejects.toThrow(`Could not load class or other type A.a from file`);
       });
     });
 
@@ -1911,12 +1917,12 @@ export = NS`,
         logger,
         commentLoader,
       });
-      expect(await loader.loadClassDeclaration({
+      await expect(loader.loadClassDeclaration({
         packageName: 'p',
         localName: 'A',
         fileName: 'file',
         fileNameReferenced: 'fileReferenced',
-      }, true, false))
+      }, true, false)).resolves
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -1936,12 +1942,12 @@ export = NS`,
         logger,
         commentLoader,
       });
-      expect(await loader.loadClassDeclaration({
+      await expect(loader.loadClassDeclaration({
         packageName: 'p',
         localName: 'A',
         fileName: 'file',
         fileNameReferenced: 'fileReferenced',
-      }, true, false))
+      }, true, false)).resolves
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -1961,12 +1967,12 @@ export = NS`,
         logger,
         commentLoader,
       });
-      expect(await loader.loadClassDeclaration({
+      await expect(loader.loadClassDeclaration({
         packageName: 'p',
         localName: 'A',
         fileName: 'file',
         fileNameReferenced: 'fileReferenced',
-      }, true, false))
+      }, true, false)).resolves
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -1988,12 +1994,12 @@ export = NS`,
         logger,
         commentLoader,
       });
-      expect(await loader.loadClassDeclaration({
+      await expect(loader.loadClassDeclaration({
         packageName: 'p',
         localName: 'A',
         fileName: 'file',
         fileNameReferenced: 'fileReferenced',
-      }, true, false))
+      }, true, false)).resolves
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -2015,12 +2021,12 @@ export = NS`,
         logger,
         commentLoader,
       });
-      expect(await loader.loadClassDeclaration({
+      await expect(loader.loadClassDeclaration({
         packageName: 'p',
         localName: 'A',
         fileName: 'file',
         fileNameReferenced: 'fileReferenced',
-      }, true, false))
+      }, true, false)).resolves
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -2042,12 +2048,12 @@ export = NS`,
         logger,
         commentLoader,
       });
-      expect(await loader.loadClassDeclaration({
+      await expect(loader.loadClassDeclaration({
         packageName: 'p',
         localName: 'A',
         fileName: 'file',
         fileNameReferenced: 'fileReferenced',
-      }, true, false))
+      }, true, false)).resolves
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -2069,12 +2075,12 @@ export = NS`,
         logger,
         commentLoader,
       });
-      expect(await loader.loadClassDeclaration({
+      await expect(loader.loadClassDeclaration({
         packageName: 'p',
         localName: 'A',
         fileName: 'file',
         fileNameReferenced: 'fileReferenced',
-      }, true, false))
+      }, true, false)).resolves
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -2096,12 +2102,12 @@ export = NS`,
         logger,
         commentLoader,
       });
-      expect(await loader.loadClassDeclaration({
+      await expect(loader.loadClassDeclaration({
         packageName: 'p',
         localName: 'A',
         fileName: 'file',
         fileNameReferenced: 'fileReferenced',
-      }, true, false))
+      }, true, false)).resolves
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -2123,12 +2129,12 @@ export = NS`,
         logger,
         commentLoader,
       });
-      expect(await loader.loadClassDeclaration({
+      await expect(loader.loadClassDeclaration({
         packageName: 'p',
         localName: 'A',
         fileName: 'file',
         fileNameReferenced: 'fileReferenced',
-      }, true, false))
+      }, true, false)).resolves
         .toMatchObject({
           localName: 'A',
           fileName: 'file',
@@ -2154,13 +2160,13 @@ export = NS`,
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           qualifiedPath: [ 'A' ],
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, false))
+        }, false, false)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -2183,13 +2189,13 @@ export = NS`,
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'D',
           qualifiedPath: [ 'A', 'B', 'C' ],
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, false))
+        }, false, false)).resolves
           .toMatchObject({
             localName: 'D',
             fileName: 'file4',
@@ -2211,13 +2217,13 @@ export = NS`,
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           qualifiedPath: [ 'A' ],
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, false))
+        }, false, false)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file3',
@@ -2239,13 +2245,13 @@ export = NS`,
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           qualifiedPath: [ 'A' ],
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, false))
+        }, false, false)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file3',
@@ -2267,13 +2273,13 @@ export = NS`,
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           qualifiedPath: [ 'A' ],
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, false))
+        }, false, false)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file3',
@@ -2295,13 +2301,13 @@ export = NS`,
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           qualifiedPath: [ 'A' ],
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, false))
+        }, false, false)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file3',
@@ -2322,13 +2328,13 @@ export = NS`,
           logger,
           commentLoader,
         });
-        expect(await loader.loadClassDeclaration({
+        await expect(loader.loadClassDeclaration({
           packageName: 'p',
           localName: 'B',
           qualifiedPath: [ 'A' ],
           fileName: 'file',
           fileNameReferenced: 'fileReferenced',
-        }, false, false))
+        }, false, false)).resolves
           .toMatchObject({
             localName: 'B',
             fileName: 'file2',
@@ -2347,7 +2353,7 @@ export = NS`,
       resolutionContext.contentsOverrides = {
         'file.d.ts': `declare class A{}`,
       };
-      expect(await loader.loadClassElements('package', 'file'))
+      await expect(loader.loadClassElements('package', 'file')).resolves
         .toMatchObject({
           declaredClasses: {
             A: {
@@ -2646,7 +2652,17 @@ export = NS`,
     });
 
     it('for a single named export without name should error', () => {
-      expect(() => loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export class{}`)))
+      expect(() => loader.getClassElements('package', fileName, <any> {
+        body: [
+          {
+            type: AST_NODE_TYPES.ExportNamedDeclaration,
+            declaration: {
+              type: AST_NODE_TYPES.ClassDeclaration,
+              loc: { start: { line: 1, column: 7 }},
+            },
+          },
+        ],
+      }))
         .toThrow(new Error(`Export parsing failure: missing exported class name in ${fileName} on line 1 column 7`));
     });
 

@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import { ResolutionContext } from '../../lib/resolution/ResolutionContext';
 import { joinFilePath, normalizeFilePath } from '../../lib/util/PathUtil';
 
@@ -11,12 +11,13 @@ describe('ResolutionContext', () => {
 
   describe('getFileContent', () => {
     it('Should read file contents', async() => {
-      expect(await resolutionContext.getFileContent(`${__dirname}/../data/file.d.ts`))
-        .toEqual(`export class MyClass {}\n`);
+      await expect(resolutionContext.getFileContent(`${__dirname}/../data/file.d.ts`)).resolves
+        .toBe(`export class MyClass {}\n`);
     });
 
     it('Should error on a non-existing file', async() => {
-      await expect(resolutionContext.getFileContent(`${__dirname}/../data/file-not-exist.d.ts`)).rejects.toThrow();
+      await expect(resolutionContext.getFileContent(`${__dirname}/../data/file-not-exist.d.ts`))
+        .rejects.toThrow('no such file or directory');
     });
   });
 
@@ -24,7 +25,7 @@ describe('ResolutionContext', () => {
     it('Should write file contents in an existing directory', async() => {
       const path = `${__dirname}/../data/file-new.json`;
       await resolutionContext.writeFileContent(path, `{}`);
-      expect(await resolutionContext.getFileContent(path)).toEqual(`{}`);
+      await expect(resolutionContext.getFileContent(path)).resolves.toBe(`{}`);
 
       // Remove created file again
       fs.unlinkSync(path);
@@ -33,7 +34,7 @@ describe('ResolutionContext', () => {
     it('Should write file contents in a non-existing directory', async() => {
       const path = `${__dirname}/../data/a/b/c/file-new.json`;
       await resolutionContext.writeFileContent(path, `{}`);
-      expect(await resolutionContext.getFileContent(path)).toEqual(`{}`);
+      await expect(resolutionContext.getFileContent(path)).resolves.toBe(`{}`);
 
       // Remove created file and folders again
       fs.unlinkSync(path);
@@ -59,14 +60,14 @@ describe('ResolutionContext', () => {
 
   describe('getTypeScriptFileContent', () => {
     it('Should read file contents', async() => {
-      expect(await resolutionContext.getTypeScriptFileContent(`${__dirname}/../data/file`))
-        .toEqual(`export class MyClass {}\n`);
+      await expect(resolutionContext.getTypeScriptFileContent(`${__dirname}/../data/file`)).resolves
+        .toBe(`export class MyClass {}\n`);
     });
   });
 
   describe('parseTypescriptFile', () => {
     it('Should parse a valid class definition', async() => {
-      expect(await resolutionContext.parseTypescriptFile(`${__dirname}/../data/file`))
+      await expect(resolutionContext.parseTypescriptFile(`${__dirname}/../data/file`)).resolves
         .toMatchObject({
           body: [
             {
@@ -94,8 +95,8 @@ describe('ResolutionContext', () => {
     });
 
     it('Should error on an invalid typescript file', async() => {
-      await expect(resolutionContext.parseTypescriptFile(`${__dirname}/../data/file-invalid`)).rejects
-        .toThrow();
+      await expect(resolutionContext.parseTypescriptFile(`${__dirname}/../data/file-invalid`))
+        .rejects.toThrow('Could not parse file');
     });
 
     it('Should cache the same file', async() => {
@@ -171,13 +172,13 @@ describe('ResolutionContext', () => {
 
   describe('resolveTypesPath', () => {
     it('Should resolve a types path of a directory', async() => {
-      expect(await resolutionContext.resolveTypesPath(`${__dirname}/../data/directory`))
+      await expect(resolutionContext.resolveTypesPath(`${__dirname}/../data/directory`)).resolves
         .toEqual(normalizeFilePath(`${__dirname}/../data/directory/index`));
     });
 
     it('Should resolve a types path of a file', async() => {
-      expect(await resolutionContext.resolveTypesPath(`${__dirname}/../data/file`))
-        .toEqual(`${__dirname}/../data/file`);
+      await expect(resolutionContext.resolveTypesPath(`${__dirname}/../data/file`)).resolves
+        .toBe(`${__dirname}/../data/file`);
     });
   });
 });

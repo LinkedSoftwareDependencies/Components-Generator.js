@@ -1,8 +1,13 @@
 import type { TSESTree } from '@typescript-eslint/typescript-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import type { Logger } from 'winston';
-import type { ClassReferenceLoaded, InterfaceLoaded, ClassReference,
-  ClassReferenceLoadedClassOrInterface, ClassIndex } from './ClassIndex';
+import type {
+  ClassReferenceLoaded,
+  InterfaceLoaded,
+  ClassReference,
+  ClassReferenceLoadedClassOrInterface,
+  ClassIndex,
+} from './ClassIndex';
 import type { CommentData, ConstructorCommentData, CommentLoader } from './CommentLoader';
 import type { ConstructorData, ConstructorHolder } from './ConstructorLoader';
 import type { GenericsData } from './GenericsLoader';
@@ -60,7 +65,7 @@ export class ParameterLoader {
               classReference.superClass.genericTypeInstantiations,
               classReference,
             ) :
-            [],
+              [],
         });
       }
       if (classReference.implementsInterfaces) {
@@ -69,7 +74,7 @@ export class ParameterLoader {
             classLoaded: iface.value,
             genericTypeInstantiations: iface.genericTypeInstantiations ?
               this.getGenericTypeParameterInstantiations(iface.genericTypeInstantiations, classReference) :
-              [],
+                [],
           });
         }
       }
@@ -79,7 +84,7 @@ export class ParameterLoader {
           classLoaded: iface.value,
           genericTypeInstantiations: iface.genericTypeInstantiations ?
             this.getGenericTypeParameterInstantiations(iface.genericTypeInstantiations, classReference) :
-            [],
+              [],
         });
       }
     }
@@ -148,12 +153,12 @@ export class ParameterLoader {
     genericTypeParameters.push({
       name: genericName,
       ...genericType ?
-        { range: this.getRangeFromTypeNode(
-          classLoaded,
-          genericType,
-          this.getErrorIdentifierGeneric(classLoaded, genericName),
-        ) } :
-        {},
+          { range: this.getRangeFromTypeNode(
+            classLoaded,
+            genericType,
+            this.getErrorIdentifierGeneric(classLoaded, genericName),
+          ) } :
+          {},
     });
   }
 
@@ -194,6 +199,7 @@ export class ParameterLoader {
       .filter(Boolean);
     if (iface.superInterfaces && iface.superInterfaces.length > 0) {
       // TODO: pass down superIface.genericTypeInstantiations to loadInterfaceFields
+      // eslint-disable-next-line unicorn/prefer-spread
       fields = fields.concat(...iface.superInterfaces.map(superIface => this.loadInterfaceFields(superIface.value)));
     }
     return fields;
@@ -305,7 +311,7 @@ export class ParameterLoader {
     errorIdentifier: string,
   ): ParameterRangeUnresolved {
     let typeAliasOverride: ParameterRangeUnresolved | undefined;
-    // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
+    // eslint-disable-next-line ts/switch-exhaustiveness-check
     switch (typeNode.type) {
       case AST_NODE_TYPES.TSTypeReference:
         if (typeNode.typeName.type === AST_NODE_TYPES.Identifier) {
@@ -318,10 +324,10 @@ export class ParameterLoader {
             case 'String':
               return { type: 'raw', value: 'string' };
             case 'Array':
-              if (typeNode.typeParameters && typeNode.typeParameters.params.length === 1) {
+              if (typeNode.typeArguments && typeNode.typeArguments.params.length === 1) {
                 return {
                   type: 'array',
-                  value: this.getRangeFromTypeNode(classLoaded, typeNode.typeParameters.params[0], errorIdentifier),
+                  value: this.getRangeFromTypeNode(classLoaded, typeNode.typeArguments.params[0], errorIdentifier),
                 };
               }
               this.throwOrWarn(new Error(`Found invalid Array field type at ${errorIdentifier
@@ -346,20 +352,20 @@ export class ParameterLoader {
               return {
                 type: 'interface',
                 value: typeNode.typeName.name,
-                genericTypeParameterInstantiations: typeNode.typeParameters ?
-                  this.getGenericTypeParameterInstantiations(typeNode.typeParameters, classLoaded) :
+                genericTypeParameterInstantiations: typeNode.typeArguments ?
+                  this.getGenericTypeParameterInstantiations(typeNode.typeArguments, classLoaded) :
                   undefined,
                 origin: classLoaded,
               };
           }
         } else {
-          // Otherwise we have a qualified name: AST_NODE_TYPES.TSQualifiedName
+          // Case: typeNode.typeName.type === AST_NODE_TYPES.TSQualifiedName
           return {
             type: 'interface',
-            value: typeNode.typeName.right.name,
-            qualifiedPath: this.getQualifiedPath(typeNode.typeName.left),
-            genericTypeParameterInstantiations: typeNode.typeParameters ?
-              this.getGenericTypeParameterInstantiations(typeNode.typeParameters, classLoaded) :
+            value: (<TSESTree.TSQualifiedName> typeNode.typeName).right.name,
+            qualifiedPath: this.getQualifiedPath((<TSESTree.TSQualifiedName> typeNode.typeName).left),
+            genericTypeParameterInstantiations: typeNode.typeArguments ?
+              this.getGenericTypeParameterInstantiations(typeNode.typeArguments, classLoaded) :
               undefined,
             origin: classLoaded,
           };
@@ -434,13 +440,16 @@ export class ParameterLoader {
             origin: classLoaded,
           };
         }
-        // Otherwise we have a qualified name: AST_NODE_TYPES.TSQualifiedName
-        return {
-          type: 'typeof',
-          value: typeNode.exprName.right.name,
-          qualifiedPath: this.getQualifiedPath(typeNode.exprName.left),
-          origin: classLoaded,
-        };
+        if (typeNode.exprName.type === AST_NODE_TYPES.TSQualifiedName) {
+          // Otherwise we have a qualified name: AST_NODE_TYPES.TSQualifiedName
+          return {
+            type: 'typeof',
+            value: typeNode.exprName.right.name,
+            qualifiedPath: this.getQualifiedPath(typeNode.exprName.left),
+            origin: classLoaded,
+          };
+        }
+        break;
       case AST_NODE_TYPES.TSIndexedAccessType:
         return {
           type: 'indexed',
@@ -471,6 +480,9 @@ export class ParameterLoader {
         return [ ...this.getQualifiedPath(qualifiedEntity.left), qualifiedEntity.right.name ];
       case AST_NODE_TYPES.Identifier:
         return [ qualifiedEntity.name ];
+      case AST_NODE_TYPES.ThisExpression: {
+        throw new Error('Not implemented yet: AST_NODE_TYPES.ThisExpression case');
+      }
     }
   }
 

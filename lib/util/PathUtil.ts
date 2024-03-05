@@ -1,4 +1,4 @@
-import * as Path from 'path';
+import * as Path from 'node:path';
 
 /**
  * Changes a potential Windows path into a POSIX path.
@@ -8,7 +8,7 @@ import * as Path from 'path';
  * @returns The potentially changed path (POSIX).
  */
 function windowsToPosixPath(path: string): string {
-  return path.replace(/\\+/gu, '/');
+  return path.replaceAll(/\\+/gu, '/');
 }
 
 /**

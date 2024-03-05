@@ -1497,7 +1497,7 @@ export interface A{
     it('should get the field name of an Identifier', () => {
       expect(loader.getFieldName(classLoadedDummy, <any> {
         name: 'fieldA',
-      })).toEqual('fieldA');
+      })).toBe('fieldA');
     });
 
     it('should get the field name of a TSPropertySignature', () => {
@@ -1506,7 +1506,7 @@ export interface A{
           type: AST_NODE_TYPES.Identifier,
           name: 'fieldA',
         },
-      })).toEqual('fieldA');
+      })).toBe('fieldA');
     });
 
     it('should error on getting the field name of an unknown type', () => {
@@ -1542,61 +1542,61 @@ export interface A{
     }
 
     it('should get the range of a raw Boolean field type and ignore empty comment data', async() => {
-      expect(await getFieldRange('fieldA: Boolean', {}))
+      await expect(getFieldRange('fieldA: Boolean', {})).resolves
         .toEqual({ type: 'raw', value: 'boolean' });
     });
 
     it('should get the range of the comment data', async() => {
-      expect(await getFieldRange('fieldA: Boolean', {
+      await expect(getFieldRange('fieldA: Boolean', {
         range: {
           type: 'override',
           value: 'number',
         },
-      })).toEqual({ type: 'override', value: 'number' });
+      })).resolves.toEqual({ type: 'override', value: 'number' });
     });
 
     it('should get the range of a raw Boolean field type', async() => {
-      expect(await getFieldRange('fieldA: Boolean', {}))
+      await expect(getFieldRange('fieldA: Boolean', {})).resolves
         .toEqual({ type: 'raw', value: 'boolean' });
     });
 
     it('should get the range of a raw boolean field type', async() => {
-      expect(await getFieldRange('fieldA: boolean', {}))
+      await expect(getFieldRange('fieldA: boolean', {})).resolves
         .toEqual({ type: 'raw', value: 'boolean' });
     });
 
     it('should get the range of a raw Number field type', async() => {
-      expect(await getFieldRange('fieldA: Number', {}))
+      await expect(getFieldRange('fieldA: Number', {})).resolves
         .toEqual({ type: 'raw', value: 'number' });
     });
 
     it('should get the range of a raw number field type', async() => {
-      expect(await getFieldRange('fieldA: number', {}))
+      await expect(getFieldRange('fieldA: number', {})).resolves
         .toEqual({ type: 'raw', value: 'number' });
     });
 
     it('should get the range of a raw String field type', async() => {
-      expect(await getFieldRange('fieldA: String', {}))
+      await expect(getFieldRange('fieldA: String', {})).resolves
         .toEqual({ type: 'raw', value: 'string' });
     });
 
     it('should get the range of a raw string field type', async() => {
-      expect(await getFieldRange('fieldA: string', {}))
+      await expect(getFieldRange('fieldA: string', {})).resolves
         .toEqual({ type: 'raw', value: 'string' });
     });
 
     it('should get the range of a string array field type', async() => {
-      expect(await getFieldRange('fieldA: string[]', {}))
+      await expect(getFieldRange('fieldA: string[]', {})).resolves
         .toEqual({ type: 'array', value: { type: 'raw', value: 'string' }});
     });
 
     it('should get the range of a String array field type', async() => {
-      expect(await getFieldRange('fieldA: String[]', {}))
+      await expect(getFieldRange('fieldA: String[]', {})).resolves
         .toEqual({ type: 'array', value: { type: 'raw', value: 'string' }});
     });
 
     it('should get the range of a string Array field type', async() => {
-      expect(await getFieldRange('fieldA: Array<string>', {}))
+      await expect(getFieldRange('fieldA: Array<string>', {})).resolves
         .toEqual({ type: 'array', value: { type: 'raw', value: 'string' }});
     });
 
@@ -1606,7 +1606,7 @@ export interface A{
     });
 
     it('should log on an Array field type with no params', async() => {
-      expect(await getFieldRange('fieldA: Array<>', {}, false))
+      await expect(getFieldRange('fieldA: Array<>', {}, false)).resolves
         .toEqual({ type: 'wildcard' });
       expect(logger.error).toHaveBeenCalledWith('Found invalid Array field type at field fieldA in A at file');
     });
@@ -1617,28 +1617,28 @@ export interface A{
     });
 
     it('should log on an Array field type with too many params', async() => {
-      expect(await getFieldRange('fieldA: Array<string, string>', {}, false))
+      await expect(getFieldRange('fieldA: Array<string, string>', {}, false)).resolves
         .toEqual({ type: 'wildcard' });
       expect(logger.error).toHaveBeenCalledWith('Found invalid Array field type at field fieldA in A at file');
     });
 
     it('should handle a nested array', async() => {
-      expect(await getFieldRange('fieldA: string[][]', {}))
+      await expect(getFieldRange('fieldA: string[][]', {})).resolves
         .toEqual({ type: 'array', value: { type: 'array', value: { type: 'raw', value: 'string' }}});
     });
 
     it('should handle a nested Array', async() => {
-      expect(await getFieldRange('fieldA: Array<Array<string>>', {}))
+      await expect(getFieldRange('fieldA: Array<Array<string>>', {})).resolves
         .toEqual({ type: 'array', value: { type: 'array', value: { type: 'raw', value: 'string' }}});
     });
 
     it('should get the range of a class', async() => {
-      expect(await getFieldRange('fieldA: MyClass', {}))
+      await expect(getFieldRange('fieldA: MyClass', {})).resolves
         .toEqual({ type: 'interface', value: 'MyClass', origin: expect.anything() });
     });
 
     it('should get the range of a generic class', async() => {
-      expect(await getFieldRange('fieldA: MyClass<T>', {}))
+      await expect(getFieldRange('fieldA: MyClass<T>', {})).resolves
         .toEqual({
           type: 'interface',
           value: 'MyClass',
@@ -1654,7 +1654,7 @@ export interface A{
     });
 
     it('should get the range of a qualified name with generic', async() => {
-      expect(await getFieldRange('fieldA: a.B<T>', {}))
+      await expect(getFieldRange('fieldA: a.B<T>', {})).resolves
         .toEqual({
           type: 'interface',
           value: 'B',
@@ -1670,8 +1670,18 @@ export interface A{
         });
     });
 
+    it('should error on a range with typeof this', async() => {
+      await expect(async() => await getFieldRange('fieldA: typeof this', {}))
+        .rejects.toThrow(new Error(`Could not understand parameter type TSTypeQuery of field fieldA in A at file`));
+    });
+
+    it('should error on a range with typeof this.abc', async() => {
+      await expect(async() => await getFieldRange('fieldA: typeof this.abc', {}))
+        .rejects.toThrow(new Error(`Not implemented yet: AST_NODE_TYPES.ThisExpression case`));
+    });
+
     it('should get the range of a hash', async() => {
-      expect(await getFieldRange('fieldA: { a: number }', {}))
+      await expect(getFieldRange('fieldA: { a: number }', {})).resolves
         .toMatchObject({
           type: 'hash',
           value: {
@@ -1697,12 +1707,12 @@ export interface A{
     });
 
     it('should get the range of a qualified name', async() => {
-      expect(await getFieldRange('fieldA: a.B', {}))
+      await expect(getFieldRange('fieldA: a.B', {})).resolves
         .toEqual({ type: 'interface', value: 'B', qualifiedPath: [ 'a' ], origin: expect.anything() });
     });
 
     it('should get the range of a long qualified name', async() => {
-      expect(await getFieldRange('fieldA: a.b.c.D', {}))
+      await expect(getFieldRange('fieldA: a.b.c.D', {})).resolves
         .toEqual({ type: 'interface', value: 'D', qualifiedPath: [ 'a', 'b', 'c' ], origin: expect.anything() });
     });
 
@@ -1712,7 +1722,7 @@ export interface A{
     });
 
     it('should log on a field without type', async() => {
-      expect(await getFieldRange('fieldA', {}, false))
+      await expect(getFieldRange('fieldA', {}, false)).resolves
         .toEqual({ type: 'wildcard' });
       expect(logger.error).toHaveBeenCalledWith('Missing field type on fieldA in A at file');
     });
@@ -1763,7 +1773,7 @@ export interface A{
     });
 
     it('should get the range of a Record', async() => {
-      expect(await getFieldRange('fieldA: Record<string, number>', {}))
+      await expect(getFieldRange('fieldA: Record<string, number>', {})).resolves
         .toMatchObject({
           type: 'hash',
           value: {
@@ -1796,39 +1806,39 @@ export interface A{
     });
 
     it('should get the range of an unknown type as wildcard', async() => {
-      expect(await getFieldRange('fieldA: unknown', {}))
+      await expect(getFieldRange('fieldA: unknown', {})).resolves
         .toEqual({ type: 'wildcard' });
     });
 
     it('should get the range of an undefined type as undefined', async() => {
-      expect(await getFieldRange('fieldA: undefined', {}))
+      await expect(getFieldRange('fieldA: undefined', {})).resolves
         .toEqual({ type: 'undefined' });
     });
 
     it('should get the range of an any type as wildcard', async() => {
-      expect(await getFieldRange('fieldA: any', {}))
+      await expect(getFieldRange('fieldA: any', {})).resolves
         .toEqual({ type: 'wildcard' });
     });
 
     it('should get the range of an void type as wildcard', async() => {
-      expect(await getFieldRange('fieldA: void', {}))
+      await expect(getFieldRange('fieldA: void', {})).resolves
         .toEqual({ type: 'wildcard' });
     });
 
     it('should get the range of a null type as wildcard', async() => {
-      expect(await getFieldRange('fieldA: null', {}))
+      await expect(getFieldRange('fieldA: null', {})).resolves
         .toEqual({ type: 'wildcard' });
     });
 
     it('should get the range of unsupported types as wildcard', async() => {
-      expect(await getFieldRange('fieldA: () => void', {}))
+      await expect(getFieldRange('fieldA: () => void', {})).resolves
         .toEqual({ type: 'wildcard' });
-      expect(await getFieldRange('fieldA: never', {}))
+      await expect(getFieldRange('fieldA: never', {})).resolves
         .toEqual({ type: 'wildcard' });
     });
 
     it('should get the range of a union type of two raw types', async() => {
-      expect(await getFieldRange('fieldA: number | string', {}))
+      await expect(getFieldRange('fieldA: number | string', {})).resolves
         .toEqual({
           type: 'union',
           elements: [
@@ -1839,7 +1849,7 @@ export interface A{
     });
 
     it('should get the range of a union type of a raw type and undefined', async() => {
-      expect(await getFieldRange('fieldA: number | undefined', {}))
+      await expect(getFieldRange('fieldA: number | undefined', {})).resolves
         .toEqual({
           type: 'union',
           elements: [
@@ -1850,7 +1860,7 @@ export interface A{
     });
 
     it('should get the range of a union type of two raw types and undefined', async() => {
-      expect(await getFieldRange('fieldA: number | string | undefined', {}))
+      await expect(getFieldRange('fieldA: number | string | undefined', {})).resolves
         .toEqual({
           type: 'union',
           elements: [
@@ -1862,7 +1872,7 @@ export interface A{
     });
 
     it('should get the range of a union type of three classes', async() => {
-      expect(await getFieldRange('fieldA: MyClass1 | MyClass2 | MyClass3', {}))
+      await expect(getFieldRange('fieldA: MyClass1 | MyClass2 | MyClass3', {})).resolves
         .toEqual({
           type: 'union',
           elements: [
@@ -1874,7 +1884,7 @@ export interface A{
     });
 
     it('should get the range of an intersection type of two raw types', async() => {
-      expect(await getFieldRange('fieldA: number & string', {}))
+      await expect(getFieldRange('fieldA: number & string', {})).resolves
         .toEqual({
           type: 'intersection',
           elements: [
@@ -1885,7 +1895,7 @@ export interface A{
     });
 
     it('should get the range of a intersection type of three classes', async() => {
-      expect(await getFieldRange('fieldA: MyClass1 & MyClass2 & MyClass3', {}))
+      await expect(getFieldRange('fieldA: MyClass1 & MyClass2 & MyClass3', {})).resolves
         .toEqual({
           type: 'intersection',
           elements: [
@@ -1897,7 +1907,7 @@ export interface A{
     });
 
     it('should get the range of nested union and types', async() => {
-      expect(await getFieldRange('fieldA: (MyClass1 | MyClass2) & MyClass3', {}))
+      await expect(getFieldRange('fieldA: (MyClass1 | MyClass2) & MyClass3', {})).resolves
         .toEqual({
           type: 'intersection',
           elements: [
@@ -1914,7 +1924,7 @@ export interface A{
     });
 
     it('should get the range of a tuple type of fixed length', async() => {
-      expect(await getFieldRange('fieldA: [ number, string ]', {}))
+      await expect(getFieldRange('fieldA: [ number, string ]', {})).resolves
         .toEqual({
           type: 'tuple',
           elements: [
@@ -1925,7 +1935,7 @@ export interface A{
     });
 
     it('should get the range of a tuple type with rest types', async() => {
-      expect(await getFieldRange('fieldA: [ number, ...string, ...number, ...(boolean | string) ]', {}))
+      await expect(getFieldRange('fieldA: [ number, ...string, ...number, ...(boolean | string) ]', {})).resolves
         .toEqual({
           type: 'tuple',
           elements: [
@@ -1947,17 +1957,17 @@ export interface A{
     });
 
     it('should get the range of a literal number field type', async() => {
-      expect(await getFieldRange('fieldA: 123', {}))
+      await expect(getFieldRange('fieldA: 123', {})).resolves
         .toEqual({ type: 'literal', value: 123 });
     });
 
     it('should get the range of a literal string field type', async() => {
-      expect(await getFieldRange('fieldA: "abc"', {}))
+      await expect(getFieldRange('fieldA: "abc"', {})).resolves
         .toEqual({ type: 'literal', value: 'abc' });
     });
 
     it('should get the range of a literal boolean field type', async() => {
-      expect(await getFieldRange('fieldA: true', {}))
+      await expect(getFieldRange('fieldA: true', {})).resolves
         .toEqual({ type: 'literal', value: true });
     });
 
@@ -1967,13 +1977,13 @@ export interface A{
     });
 
     it('should log on a literal of unsupported type', async() => {
-      expect(await getFieldRange('fieldA: 100n', {}, false))
+      await expect(getFieldRange('fieldA: 100n', {}, false)).resolves
         .toEqual({ type: 'wildcard' });
       expect(logger.error).toHaveBeenCalledWith(`Could not understand parameter type TSLiteralType of field fieldA in A at file`);
     });
 
     it('should get the range of a keyof field type', async() => {
-      expect(await getFieldRange('fieldA: keyof MyClass', {}))
+      await expect(getFieldRange('fieldA: keyof MyClass', {})).resolves
         .toEqual({
           type: 'keyof',
           value: { type: 'interface', value: 'MyClass', origin: expect.anything() },
@@ -1986,7 +1996,7 @@ export interface A{
     });
 
     it('should get the range of a typeof field type', async() => {
-      expect(await getFieldRange('fieldA: typeof MyClass', {}))
+      await expect(getFieldRange('fieldA: typeof MyClass', {})).resolves
         .toEqual({
           type: 'typeof',
           value: 'MyClass',
@@ -1995,7 +2005,7 @@ export interface A{
     });
 
     it('should get the range of a typeof field type with qualified path', async() => {
-      expect(await getFieldRange('fieldA: typeof A.B.MyClass', {}))
+      await expect(getFieldRange('fieldA: typeof A.B.MyClass', {})).resolves
         .toEqual({
           type: 'typeof',
           value: 'MyClass',
@@ -2005,7 +2015,7 @@ export interface A{
     });
 
     it('should get the range of a static indexed access field type', async() => {
-      expect(await getFieldRange('fieldA: MyClass["field"]', {}))
+      await expect(getFieldRange('fieldA: MyClass["field"]', {})).resolves
         .toEqual({
           type: 'indexed',
           object: { type: 'interface', value: 'MyClass', origin: expect.anything() },
@@ -2014,7 +2024,7 @@ export interface A{
     });
 
     it('should get the range of a dynamic indexed access field type', async() => {
-      expect(await getFieldRange('fieldA: MyClass["fieldA" | "fieldB"]', {}))
+      await expect(getFieldRange('fieldA: MyClass["fieldA" | "fieldB"]', {})).resolves
         .toEqual({
           type: 'indexed',
           object: { type: 'interface', value: 'MyClass', origin: expect.anything() },
@@ -2307,7 +2317,7 @@ export interface A{
     });
 
     it('should be defined with description', () => {
-      expect(loader.getFieldComment({ description: 'abc' })).toEqual('abc');
+      expect(loader.getFieldComment({ description: 'abc' })).toBe('abc');
     });
   });
 
@@ -2336,8 +2346,8 @@ export interface A{
     }
 
     it('should get the domain of a raw Boolean', async() => {
-      expect(await getIndexDomain('{[k: Boolean]: string}'))
-        .toEqual('boolean');
+      await expect(getIndexDomain('{[k: Boolean]: string}')).resolves
+        .toBe('boolean');
     });
 
     it('should error on missing parameters', async() => {
@@ -2396,17 +2406,17 @@ export interface A{
     }
 
     it('should get the range of a raw Boolean field type and ignore empty comment data', async() => {
-      expect(await getIndexRange('{[k: string]: Boolean}', {}))
+      await expect(getIndexRange('{[k: string]: Boolean}', {})).resolves
         .toEqual({ type: 'raw', value: 'boolean' });
     });
 
     it('should get the range of the comment data', async() => {
-      expect(await getIndexRange('{[k: string]: Boolean}', {
+      await expect(getIndexRange('{[k: string]: Boolean}', {
         range: {
           type: 'override',
           value: 'number',
         },
-      })).toEqual({ type: 'override', value: 'number' });
+      })).resolves.toEqual({ type: 'override', value: 'number' });
     });
 
     it('should error on a missing range', async() => {
@@ -2415,7 +2425,7 @@ export interface A{
     });
 
     it('should log on a missing range', async() => {
-      expect(await getIndexRange('{[k: string]}', {}, false))
+      await expect(getIndexRange('{[k: string]}', {}, false)).resolves
         .toEqual({ type: 'wildcard' });
       expect(logger.error).toHaveBeenCalledWith('Missing field type on an index signature in A at file');
     });
@@ -2444,11 +2454,11 @@ export interface A{
     }
 
     it('should do nothing on an unsupported type', async() => {
-      expect(await handleTypeOverride('String')).toBeUndefined();
+      await expect(handleTypeOverride('String')).resolves.toBeUndefined();
     });
 
     it('handle a Record type alias', async() => {
-      expect(await handleTypeOverride('Record<string, number>')).toMatchObject({
+      await expect(handleTypeOverride('Record<string, number>')).resolves.toMatchObject({
         type: 'hash',
         value: {
           members: [

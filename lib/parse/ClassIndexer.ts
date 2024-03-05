@@ -3,12 +3,14 @@
  */
 import type { Logger } from 'winston';
 import type { ClassFinder } from './ClassFinder';
-import type { ClassIndex,
+import type {
+  ClassIndex,
   ClassReference,
   ClassReferenceLoaded,
   ClassReferenceLoadedClassOrInterface,
   InterfaceLoaded,
-  GenericallyTyped } from './ClassIndex';
+  GenericallyTyped,
+} from './ClassIndex';
 
 import type { ClassLoader } from './ClassLoader';
 
@@ -55,8 +57,8 @@ export class ClassIndexer {
 
     if (classReferenceLoaded.type === 'class') {
       // If the class has a super class, load it recursively
-      const superClassName = this.classLoader.getSuperClassName(classReferenceLoaded.declaration,
-        classReferenceLoaded.fileName);
+      const superClassName = this.classLoader
+        .getSuperClassName(classReferenceLoaded.declaration, classReferenceLoaded.fileName);
       if (superClassName && !(superClassName.value in this.ignoreClasses)) {
         let superClassLoaded;
         try {
@@ -80,13 +82,13 @@ export class ClassIndexer {
       }
 
       // If the class implements interfaces, load them
-      const interfaceNames = this.classLoader.getClassInterfaceNames(classReferenceLoaded.declaration,
-        classReferenceLoaded.fileName);
+      const interfaceNames = this.classLoader
+        .getClassInterfaceNames(classReferenceLoaded.declaration, classReferenceLoaded.fileName);
       classReferenceLoaded.implementsInterfaces = <GenericallyTyped<ClassReferenceLoadedClassOrInterface>[]> (
         await Promise
           .all(interfaceNames
             .filter(interfaceName => !(interfaceName.value in this.ignoreClasses))
-            .map(async interfaceName => {
+            .map(async(interfaceName) => {
               let interfaceOrClassLoaded;
               try {
                 interfaceOrClassLoaded = await this.classLoader.loadClassDeclaration({
@@ -106,14 +108,14 @@ export class ClassIndexer {
                 genericTypeInstantiations: interfaceName.genericTypeInstantiations,
               };
             })))
-        .filter(iface => Boolean(iface));
+        .filter(Boolean);
     } else {
       const superInterfaceNames = this.classLoader
         .getSuperInterfaceNames(classReferenceLoaded.declaration, classReferenceLoaded.fileName);
       classReferenceLoaded.superInterfaces = <GenericallyTyped<InterfaceLoaded>[]> (await Promise
         .all(superInterfaceNames
           .filter(interfaceName => !(interfaceName.value in this.ignoreClasses))
-          .map(async interfaceName => {
+          .map(async(interfaceName) => {
             let superInterface;
             try {
               superInterface = await this.loadClassChain({
@@ -136,7 +138,7 @@ export class ClassIndexer {
               genericTypeInstantiations: interfaceName.genericTypeInstantiations,
             };
           })))
-        .filter(iface => Boolean(iface));
+        .filter(Boolean);
     }
 
     return classReferenceLoaded;

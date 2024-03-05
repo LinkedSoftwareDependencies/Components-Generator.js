@@ -2,6 +2,7 @@ import semverMajor = require('semver/functions/major');
 import type { PackageMetadata } from '../../lib/parse/PackageMetadataLoader';
 import { ContextConstructor } from '../../lib/serialize/ContextConstructor';
 
+// eslint-disable-next-line import/extensions
 const CJS_MAJOR_VERSION = semverMajor(require('componentsjs/package.json').version);
 
 describe('ContextConstructor', () => {
@@ -26,19 +27,19 @@ describe('ContextConstructor', () => {
 
     describe('getPackageNamePrefix', () => {
       it('should handle a name with one component', () => {
-        expect(ContextConstructor.getPackageNamePrefix('package')).toEqual('p');
+        expect(ContextConstructor.getPackageNamePrefix('package')).toBe('p');
       });
 
       it('should handle a name with two components', () => {
-        expect(ContextConstructor.getPackageNamePrefix('my-package')).toEqual('mp');
+        expect(ContextConstructor.getPackageNamePrefix('my-package')).toBe('mp');
       });
 
       it('should handle a name with three components', () => {
-        expect(ContextConstructor.getPackageNamePrefix('my-package-stuff')).toEqual('mps');
+        expect(ContextConstructor.getPackageNamePrefix('my-package-stuff')).toBe('mps');
       });
 
       it('should handle a scoped name with three components', () => {
-        expect(ContextConstructor.getPackageNamePrefix('@personal/my-package-stuff')).toEqual('pmps');
+        expect(ContextConstructor.getPackageNamePrefix('@personal/my-package-stuff')).toBe('pmps');
       });
     });
 

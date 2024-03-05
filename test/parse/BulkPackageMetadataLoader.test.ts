@@ -23,20 +23,20 @@ describe('BulkPackageMetadataLoader', () => {
 
   describe('load', () => {
     it('should handle empty paths', async() => {
-      expect(await loader.load([])).toEqual({
+      await expect(loader.load([])).resolves.toEqual({
         packageMetadatas: {},
         pathMetadatas: {},
       });
     });
 
     it('should skip a package that does not exist', async() => {
-      expect(await loader.load([
+      await expect(loader.load([
         {
           packageRootDirectory: '/',
           originalPath: 'src',
           replacementPath: 'components',
         },
-      ])).toEqual({
+      ])).resolves.toEqual({
         packageMetadatas: {},
         pathMetadatas: {},
       });
@@ -51,13 +51,13 @@ describe('BulkPackageMetadataLoader', () => {
 }`,
       };
 
-      expect(await loader.load([
+      await expect(loader.load([
         {
           packageRootDirectory: '/',
           originalPath: 'src',
           replacementPath: 'components',
         },
-      ])).toEqual({
+      ])).resolves.toEqual({
         packageMetadatas: {},
         pathMetadatas: {},
       });
@@ -74,13 +74,13 @@ describe('BulkPackageMetadataLoader', () => {
 }`,
       };
 
-      expect(await loader.load([
+      await expect(loader.load([
         {
           packageRootDirectory: '/packages/pckg1',
           originalPath: 'src',
           replacementPath: 'components',
         },
-      ])).toEqual({
+      ])).resolves.toEqual({
         packageMetadatas: {
           pckg1: {
             minimalContext: expect.any(JsonLdContextNormalized),
@@ -151,7 +151,7 @@ describe('BulkPackageMetadataLoader', () => {
 }`,
       };
 
-      expect(await loader.load([
+      await expect(loader.load([
         {
           packageRootDirectory: '/packages/pckg1',
           originalPath: 'src',
@@ -167,7 +167,7 @@ describe('BulkPackageMetadataLoader', () => {
           originalPath: 'src',
           replacementPath: 'components',
         },
-      ])).toEqual({
+      ])).resolves.toEqual({
         packageMetadatas: {
           pckg1: {
             minimalContext: expect.any(JsonLdContextNormalized),

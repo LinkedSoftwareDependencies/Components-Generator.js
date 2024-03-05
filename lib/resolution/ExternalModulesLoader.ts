@@ -155,9 +155,8 @@ export class ExternalModulesLoader {
       const componentModulesNew = await moduleStateBuilder.buildComponentModules(packageJsonsNew);
 
       // Determine (Components.js) modules that we haven't seen yet
-      const newComponentModuleIris = Object.keys(componentModulesNew)
-        // eslint-disable-next-line @typescript-eslint/no-loop-func
-        .filter(componentModuleNew => !componentModules[componentModuleNew]);
+      const newComponentModuleIris = new Set(Object.keys(componentModulesNew)
+        .filter(componentModuleNew => !componentModules[componentModuleNew]));
 
       nodeModulePaths = [ ...nodeModulePaths, ...nodeModulePathsNew ];
       packageJsons = { ...packageJsons, ...packageJsonsNew };
@@ -166,10 +165,8 @@ export class ExternalModulesLoader {
 
       // For the new modules, extract their dependencies, and handle them in the next iteration
       for (const packageJson of Object.values(packageJsonsNew)) {
-        if (packageJson.dependencies) {
-          if (newComponentModuleIris.some(iri => packageJson['lsd:module'] === iri)) {
-            packageNamesNew.push(...Object.keys(packageJson.dependencies));
-          }
+        if (packageJson.dependencies && newComponentModuleIris.has(packageJson['lsd:module'])) {
+          packageNamesNew.push(...Object.keys(packageJson.dependencies));
         }
       }
     }
@@ -265,14 +262,14 @@ export class ExternalModulesLoader {
         // Initialize metadata for a package if it doesn't exist yet
         if (!externalComponents.components[packageName]) {
           const packageJson = packageJsons[packageName];
-          if (!packageJson) {
-            this.logger.warn(`Could not find a package.json for '${packageName}'`);
-          } else {
+          if (packageJson) {
             const contexts = packageJson.contents['lsd:contexts'];
             externalComponents.components[packageName] = {
               contextIris: Object.keys(contexts),
               componentNamesToIris: {},
             };
+          } else {
+            this.logger.warn(`Could not find a package.json for '${packageName}'`);
           }
         }
 

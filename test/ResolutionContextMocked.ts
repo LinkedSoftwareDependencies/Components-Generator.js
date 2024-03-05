@@ -17,7 +17,7 @@ export class ResolutionContextMocked extends ResolutionContext {
   }
 
   public resolveTypesPath(filePath: string): Promise<string> {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       if (!(`${filePath}.d.ts` in this.contentsOverrides)) {
         return resolve(normalizeFilePath(`${filePath}/index`));
       }

@@ -1,27 +1,51 @@
 {
   "name": "componentsjs-generator",
   "version": "3.1.2",
-  "description": "Automatically generate component files from TypeScript classes for the Components.js dependency injection framework",
-  "main": "index.js",
   "packageManager": "yarn@4.0.1",
+  "description": "Automatically generate component files from TypeScript classes for the Components.js dependency injection framework",
+  "author": "Ruben Taelman <rubensworks@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/LinkedSoftwareDependencies/Components-Generator.js#readme",
+  "repository": "git@github.com:LinkedSoftwareDependencies/Components-Generator.js.git",
+  "bugs": {
+    "url": "https://github.com/LinkedSoftwareDependencies/Components-Generator.js/issues"
+  },
+  "keywords": [
+    "lsd",
+    "linked software dependencies",
+    "components",
+    "dependency injection",
+    "typescript"
+  ],
+  "main": "index.js",
+  "bin": "bin/componentsjs-generator.js",
+  "files": [
+    "bin/**/*.d.ts",
+    "bin/**/*.js",
+    "index.d.ts",
+    "index.ts",
+    "lib/**/*.d.ts",
+    "lib/**/*.js",
+    "lib/**/*.json"
+  ],
   "engines": {
     "node": ">=18.12"
   },
   "scripts": {
     "build": "tsc",
     "test": "jest",
-    "lint": "eslint . --ext .ts --cache",
+    "lint": "eslint . --cache",
     "postinstall": "husky install && yarn build",
     "version": "manual-git-changelog onversion"
   },
   "jest": {
-    "globals": {
-      "ts-jest": {
-        "tsconfig": "tsconfig.json"
-      }
-    },
     "transform": {
-      "^.+\\.ts$": "ts-jest"
+      "^.+\\.ts$": [
+        "ts-jest",
+        {
+          "tsconfig": "tsconfig.json"
+        }
+      ]
     },
     "testRegex": "(/test/.*|(\\.|/)(test|spec))\\.test.ts$",
     "moduleFileExtensions": [
@@ -41,34 +65,10 @@
       }
     }
   },
-  "keywords": [
-    "lsd",
-    "linked software dependencies",
-    "components",
-    "dependency injection",
-    "typescript"
-  ],
-  "author": "Ruben Taelman <rubensworks@gmail.com>",
-  "repository": "git@github.com:LinkedSoftwareDependencies/Components-Generator.js.git",
-  "bugs": {
-    "url": "https://github.com/LinkedSoftwareDependencies/Components-Generator.js/issues"
-  },
-  "homepage": "https://github.com/LinkedSoftwareDependencies/Components-Generator.js#readme",
-  "license": "MIT",
-  "bin": "bin/componentsjs-generator.js",
-  "files": [
-    "bin/**/*.d.ts",
-    "bin/**/*.js",
-    "lib/**/*.d.ts",
-    "lib/**/*.js",
-    "lib/**/*.json",
-    "index.d.ts",
-    "index.ts"
-  ],
   "dependencies": {
     "@types/lru-cache": "^5.1.0",
     "@types/semver": "^7.3.4",
-    "@typescript-eslint/typescript-estree": "^5.11.0",
+    "@typescript-eslint/typescript-estree": "^7.1.0",
     "comment-parser": "^0.7.6",
     "componentsjs": "^6.0.0",
     "jsonld-context-parser": "^2.1.5",
@@ -78,29 +78,20 @@
     "semver": "^7.3.2"
   },
   "devDependencies": {
-    "@rubensworks/eslint-config": "^1.0.1",
+    "@rubensworks/eslint-config": "^3.0.0",
     "@types/fs-extra": "^11.0.0",
     "@types/jest": "^29.0.0",
-    "@types/jsonld": "^1.5.0",
     "@types/minimist": "^1.2.0",
     "@types/node": "^20.0.0",
     "@types/rimraf": "^3.0.0",
-    "@typescript-eslint/eslint-plugin": "^5.11.0",
-    "@typescript-eslint/parser": "^5.11.0",
-    "eslint": "^7.9.0",
-    "eslint-config-es": "3.26.0",
-    "eslint-import-resolver-typescript": "^2.3.0",
-    "eslint-plugin-import": "^2.22.0",
-    "eslint-plugin-jest": "^26.0.0",
-    "eslint-plugin-tsdoc": "^0.2.7",
-    "eslint-plugin-unused-imports": "^2.0.0",
+    "eslint": "^8.57.0",
     "fs-extra": "^11.0.0",
     "husky": "^9.0.0",
-    "jest": "^29.0.0",
-    "jest-extended": "^4.0.0",
+    "jest": "^29.7.0",
+    "jest-extended": "^4.0.2",
     "manual-git-changelog": "^1.0.1",
     "rimraf": "latest",
-    "ts-jest": "^29.0.0",
-    "typescript": "^5.0.0"
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.3.3"
   }
 }

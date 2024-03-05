@@ -22,12 +22,12 @@ describe('ComponentSerializer', () => {
 
   describe('serializeComponents', () => {
     it('should not create files for no components', async() => {
-      expect(await serializer.serializeComponents({})).toEqual([]);
+      await expect(serializer.serializeComponents({})).resolves.toEqual([]);
       expect(resolutionContext.contentsOverrides).toEqual({});
     });
 
     it('should create files for components', async() => {
-      expect(await serializer.serializeComponents({
+      await expect(serializer.serializeComponents({
         'a/b/file1': {
           '@context': [],
           '@id': 'myfile',
@@ -38,7 +38,7 @@ describe('ComponentSerializer', () => {
           '@id': 'myfile',
           components: [],
         },
-      })).toEqual([
+      })).resolves.toEqual([
         'a/b/file1.jsonld',
         'a/b/file2.jsonld',
       ]);
@@ -59,7 +59,7 @@ describe('ComponentSerializer', () => {
 
   describe('serializeComponentsIndex', () => {
     it('should handle a valid components index', async() => {
-      expect(await serializer.serializeComponentsIndex({
+      await expect(serializer.serializeComponentsIndex({
         '@context': [
           'http://example.org/my-package/context.jsonld',
         ],
@@ -71,7 +71,7 @@ describe('ComponentSerializer', () => {
           'ex:my-package/file2.jsonld',
           'ex:my-package/file/a/b/c.jsonld',
         ],
-      })).toEqual(normalizeFilePath('/components/components.jsonld'));
+      })).resolves.toEqual(normalizeFilePath('/components/components.jsonld'));
       expect(resolutionContext.contentsOverrides).toEqual({
         [normalizeFilePath('/components/components.jsonld')]: `{
   "@context": [
@@ -92,13 +92,13 @@ describe('ComponentSerializer', () => {
 
   describe('serializeContext', () => {
     it('should handle a valid context', async() => {
-      expect(await serializer.serializeContext({
+      await expect(serializer.serializeContext({
         '@context': [
           {
             a: 'b',
           },
         ],
-      })).toEqual(normalizeFilePath('/components/context.jsonld'));
+      })).resolves.toEqual(normalizeFilePath('/components/context.jsonld'));
       expect(resolutionContext.contentsOverrides).toEqual({
         [normalizeFilePath('/components/context.jsonld')]: `{
   "@context": [

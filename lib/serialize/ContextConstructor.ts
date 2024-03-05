@@ -20,7 +20,7 @@ export class ContextConstructor {
    */
   public static getPackageNamePrefix(packageName: string): string {
     return packageName
-      .replace(/@/gu, '')
+      .replaceAll('@', '')
       .split(/[/-]/u)
       .map(part => part.charAt(0))
       .join('');
@@ -75,8 +75,8 @@ export class ContextConstructor {
             ...parameter.range === 'rdf:JSON' ? { '@type': '@json' } : {},
             // Mark as list container if range is array
             ...ContextConstructor.isParameterRangeList(parameter.range) ?
-              { '@container': '@list' } :
-              {},
+                { '@container': '@list' } :
+                {},
           };
           shortcutAliases.push(shortcut);
         }

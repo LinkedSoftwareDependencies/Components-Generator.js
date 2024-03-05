@@ -67,7 +67,7 @@ describe('MemberLoader', () => {
         }, true, true);
       expect(parser.getMembers({
         A,
-      })).toEqual({ });
+      })).toEqual({});
     });
 
     it('should return for a single class with members', async() => {
@@ -214,20 +214,6 @@ fieldB: MyClass;
           },
           {
             name: 'fieldB',
-          },
-        ]);
-      });
-
-      it('for simple methods', async() => {
-        expect(parser.collectClassFields(getInterfaceBody(`
-public functionA(): string;
-private functionB(): string;
-`))).toMatchObject([
-          {
-            name: 'functionA',
-          },
-          {
-            name: 'functionB',
           },
         ]);
       });

@@ -66,7 +66,7 @@ describe('GenericsLoader', () => {
         }, true, true);
       expect(parser.getGenerics({
         A,
-      })).toEqual({ });
+      })).toEqual({});
     });
 
     it('should return for a single class with generic types', async() => {

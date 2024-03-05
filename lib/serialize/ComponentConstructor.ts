@@ -16,15 +16,22 @@ import type {
   GenericTypeParameterData,
   ParameterData,
   ParameterRangeResolved,
-  ExtensionData, MemberParameterData,
+  ExtensionData,
+  MemberParameterData,
 } from '../parse/ParameterLoader';
 import type { ExternalComponents } from '../resolution/ExternalModulesLoader';
 import type {
   ComponentDefinition,
-  ComponentDefinitions, ComponentDefinitionsIndex,
-  ConstructorArgumentDefinition, ConstructorFieldDefinition, DefaultValueDefinition,
-  ParameterDefinition, ParameterDefinitionRange,
-  GenericTypeParameterDefinition, ExtensionDefinition, MemberFieldDefinition,
+  ComponentDefinitions,
+  ComponentDefinitionsIndex,
+  ConstructorArgumentDefinition,
+  ConstructorFieldDefinition,
+  DefaultValueDefinition,
+  ParameterDefinition,
+  ParameterDefinitionRange,
+  GenericTypeParameterDefinition,
+  ExtensionDefinition,
+  MemberFieldDefinition,
 } from './ComponentDefinitions';
 import { ContextConstructor } from './ContextConstructor';
 
@@ -69,9 +76,9 @@ export class ComponentConstructor {
 
     for (const [ className, classReference ] of Object.entries(this.classAndInterfaceIndex)) {
       // Initialize or get context and component array
-      const sourcePath = classReference.packageName !== this.packageMetadata.name ?
-        classReference.fileNameReferenced :
-        classReference.fileName;
+      const sourcePath = classReference.packageName === this.packageMetadata.name ?
+        classReference.fileName :
+        classReference.fileNameReferenced;
       const path = ComponentConstructor.getPathDestination(this.pathDestination, sourcePath);
       if (!(path in definitions)) {
         definitions[path] = {
@@ -85,7 +92,7 @@ export class ComponentConstructor {
       // Construct the component for this class
       components.push(await this.constructComponent(
         context,
-        externalContextUrl => {
+        (externalContextUrl) => {
           // Append external contexts URLs to @context array
           if (!contexts.includes(externalContextUrl)) {
             contexts.push(externalContextUrl);
@@ -207,7 +214,7 @@ export class ComponentConstructor {
         constructorData,
         parameters,
       ) :
-      [];
+        [];
 
     // Determine extends field based on super class and implementing interfaces.
     // Components.js makes no distinction between a super class and implementing interface, so we merge them here.
@@ -301,7 +308,9 @@ export class ComponentConstructor {
     // Use existing IRI if class is in another package (that is also being built currently)
     const otherPackageMetadata = this.externalComponents.packagesBeingGenerated[classReference.packageName];
     if (otherPackageMetadata) {
-      Object.keys(otherPackageMetadata.packageMetadata.contexts).forEach(iri => externalContextsCallback(iri));
+      for (const iri of Object.keys(otherPackageMetadata.packageMetadata.contexts)) {
+        externalContextsCallback(iri);
+      }
       return await ComponentConstructor.classNameToIdForPackage(
         otherPackageMetadata.minimalContext,
         otherPackageMetadata.packageMetadata,
@@ -317,7 +326,9 @@ export class ComponentConstructor {
       // Mint a dummy IRI if the component is not exposing components files
       return `urn:npm:${classReference.packageName}:${classReference.localName}`;
     }
-    moduleComponents.contextIris.forEach(iri => externalContextsCallback(iri));
+    for (const iri of moduleComponents.contextIris) {
+      externalContextsCallback(iri);
+    }
     const componentIri = moduleComponents.componentNamesToIris[classReference.localName];
     if (!componentIri) {
       throw new Error(`Tried to reference a class '${classReference.localName}' from an external module '${classReference.packageName}' that does not expose this component`);
@@ -459,8 +470,8 @@ export class ComponentConstructor {
       definitions.push({
         '@id': id,
         ...genericType.range ?
-          { range: await this.constructParameterRange(genericType.range, context, externalContextsCallback, id) } :
-          {},
+            { range: await this.constructParameterRange(genericType.range, context, externalContextsCallback, id) } :
+            {},
       });
     }
     return definitions;
@@ -487,10 +498,10 @@ export class ComponentConstructor {
         '@id': id,
         memberFieldName: member.name,
         ...member.range ?
-          {
-            range: await this.constructParameterRange(member.range, context, externalContextsCallback, id),
-          } :
-          {},
+            {
+              range: await this.constructParameterRange(member.range, context, externalContextsCallback, id),
+            } :
+            {},
       });
     }
     return definitions;
@@ -573,13 +584,13 @@ export class ComponentConstructor {
       const fields: ConstructorFieldDefinition[] = [];
       const subParams: ParameterData<ParameterRangeResolved>[] = parameterData.range.type === 'nested' ?
         parameterData.range.value :
-        (<any> parameterData.range.elements.find(element => element.type === 'nested')).value;
+          (<any> parameterData.range.elements.find(element => element.type === 'nested')).value;
       for (const subParamData of subParams) {
         fields.push(await this.constructFieldDefinitionNested(
           context,
           externalContextsCallback,
           classReference,
-          <ParameterData<ParameterRangeResolved> & { range: { type: 'nested' } }>parameterData,
+          <ParameterData<ParameterRangeResolved> & { range: { type: 'nested' }}>parameterData,
           parameters,
           subParamData,
           fieldId,
@@ -590,7 +601,7 @@ export class ComponentConstructor {
     }
 
     // Check if we have a defaultNested value that applies on this field
-    const defaultValues: DefaultValue[] = parameterData.defaults || [];
+    const defaultValues: DefaultValue[] = parameterData.defaults ?? [];
     for (const defaultNested of scope.defaultNested) {
       if (defaultNested.paramPath.join('_') === scope.parentFieldNames.join('_')) {
         defaultValues.push(defaultNested.value);
@@ -612,12 +623,12 @@ export class ComponentConstructor {
       '@id': fieldId,
       range,
       ...defaultValuesConstructed.length > 0 ?
-        {
-          default: defaultValuesConstructed.length > 1 || ContextConstructor.isParameterRangeList(range) ?
-            { '@list': defaultValuesConstructed } :
-            defaultValuesConstructed[0],
-        } :
-        {},
+          {
+            default: defaultValuesConstructed.length > 1 || ContextConstructor.isParameterRangeList(range) ?
+                { '@list': defaultValuesConstructed } :
+              defaultValuesConstructed[0],
+          } :
+          {},
     };
 
     // Fill in optional fields
@@ -675,7 +686,7 @@ export class ComponentConstructor {
     context: JsonLdContextNormalized,
     externalContextsCallback: ExternalContextCallback,
     classReference: ClassLoaded,
-    parameterData: ParameterData<ParameterRangeResolved> & { range: { type: 'nested' } },
+    parameterData: ParameterData<ParameterRangeResolved> & { range: { type: 'nested' }},
     parameters: ParameterDefinition[],
     subParamData: ParameterData<ParameterRangeResolved>,
     fieldId: string,

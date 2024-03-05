@@ -34,7 +34,7 @@ describe('PackageMetadataLoader', () => {
   "types": "./index.d.ts"
 }`,
       };
-      expect(await loader.load('/')).toEqual({
+      await expect(loader.load('/')).resolves.toEqual({
         componentsPath: normalizeFilePath('/components/components.jsonld'),
         contexts: {
           'https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/components/context.jsonld':
@@ -68,7 +68,7 @@ describe('PackageMetadataLoader', () => {
   "typings": "./index.d.ts"
 }`,
       };
-      expect(await loader.load('/')).toEqual({
+      await expect(loader.load('/')).resolves.toEqual({
         componentsPath: normalizeFilePath('/components/components.jsonld'),
         contexts: {
           'https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/components/context.jsonld':
@@ -102,7 +102,7 @@ describe('PackageMetadataLoader', () => {
   "typings": "./index"
 }`,
       };
-      expect(await loader.load('/')).toEqual({
+      await expect(loader.load('/')).resolves.toEqual({
         componentsPath: normalizeFilePath('/components/components.jsonld'),
         contexts: {
           'https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/components/context.jsonld':
@@ -128,7 +128,7 @@ describe('PackageMetadataLoader', () => {
   "types": "./index.d.ts"
 }`,
       };
-      expect(await loader.load('/')).toEqual({
+      await expect(loader.load('/')).resolves.toEqual({
         componentsPath: normalizeFilePath('/components/components.jsonld'),
         contexts: {
           'https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/components/context.jsonld':
@@ -156,7 +156,7 @@ describe('PackageMetadataLoader', () => {
   "types": "./index.d.ts"
 }`,
       };
-      expect(await loader.load('/')).toEqual({
+      await expect(loader.load('/')).resolves.toEqual({
         componentsPath: normalizeFilePath('/dist/components/components.jsonld'),
         contexts: {
           'https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/components/context.jsonld':
@@ -286,7 +286,7 @@ describe('PackageMetadataLoader', () => {
   "types": "./index.d.ts"
 }`,
         };
-        expect(await loader.load('/')).toEqual({
+        await expect(loader.load('/')).resolves.toEqual({
           componentsPath: normalizeFilePath('/components/components.jsonld'),
           contexts: {
             [`https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/components/context.jsonld`]:
@@ -333,7 +333,7 @@ describe('PackageMetadataLoader', () => {
   "types": "./index.d.ts"
 }`,
         };
-        expect(await loader.load('/')).toEqual({
+        await expect(loader.load('/')).resolves.toEqual({
           componentsPath: normalizeFilePath('/components/components.jsonld'),
           contexts: {
             [`https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^1.0.0/components/context.jsonld`]:

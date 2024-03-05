@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import * as minimist from 'minimist';
 import { GeneratorFactory } from '../lib/config/GeneratorFactory';
 import { ResolutionContext } from '../lib/resolution/ResolutionContext';
@@ -38,7 +38,7 @@ if (args.help) {
 } else {
   const packageRootDirectories = (args._.length > 0 ? args._ : [ '' ])
     .map(path => joinFilePath(normalizeFilePath(process.cwd()), path))
-    .flatMap(path => {
+    .flatMap((path) => {
       // Since path expansion does not work on Windows, we may receive wildcard paths, so let's expand those here
       if (path.endsWith('*')) {
         path = path.slice(0, -1);
@@ -56,4 +56,3 @@ if (args.help) {
       process.exit(1);
     });
 }
-

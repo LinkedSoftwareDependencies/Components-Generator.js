@@ -125,8 +125,8 @@ The following shows an example of the possible options:
   "source": "lib",
   "destination": "components",
   "extension": "jsonld",
-  "ignorePackagePaths": [ "path/to/package-ignored1", "path/to/package-ignored2" ],
-  "ignoreComponents": [ "Class1", "Class2" ],
+  "ignorePackagePaths": ["path/to/package-ignored1", "path/to/package-ignored2"],
+  "ignoreComponents": ["Class1", "Class2"],
   "logLevel": "info",
   "modulePrefix": "myprefix",
   "debugState": "true",
@@ -170,7 +170,7 @@ export class MyClass extends OtherClass {
    * @param paramA - My parameter
    */
   constructor(paramA: boolean, paramB: number, paramC: string[]) {
-  
+
   }
 }
 ```
@@ -221,13 +221,13 @@ Component file:
 
 Each argument in the constructor of the class must be one of the following:
 
-* A primitive type such as `boolean, number, string`, which will be mapped to an [XSD type](https://componentsjs.readthedocs.io/en/latest/configuration/components/parameters/) 
+* A primitive type such as `boolean, number, string`, which will be mapped to an [XSD type](https://componentsjs.readthedocs.io/en/latest/configuration/components/parameters/)
 * Another class, which will be mapped to the component `@id`.
 * A record or interface containing key-value pairs where each value matches one of the possible options. Nesting is allowed.
 * Reference to a generic type that is defined on the class.
 * An array, `keyof`, tuple, union, or intersection over any of the allowed types.
-  
-Here is an example that showcases all of these options:  
+
+Here is an example that showcases all of these options:
    ```typescript
   import {Logger} from "@comunica/core";
   export class SampleActor {
@@ -252,7 +252,7 @@ Here is an example that showcases all of these options:
   export interface ExtendsTest {
       string: string;
   }
-``` 
+```
 
 ### Argument tags
 
@@ -286,7 +286,7 @@ export class MyActor {
     /**
      * @param myByte - This is an array of bytes @range {byte}
      * @param ignoredArg - @ignored
-     */ 
+     */
     constructor(myByte: number[], ignoredArg: string) {
 
     }
@@ -326,7 +326,7 @@ export class MyActor {
     /**
      * @param myValue - Values will be passed as parsed JSON @range {json}
      * @param ignoredArg - @ignored
-     */ 
+     */
     constructor(myValue: any, ignoredArg: string) {
 
     }
@@ -364,7 +364,7 @@ When instantiating TestClass as follows, its JSON value will be passed directly 
     "someKey": {
       "someOtherKey1": 1,
       "someOtherKey2": "abc"
-    }  
+    }
   }
 }
 ```
