@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v4.0.1"></a>
+## [v4.0.1](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v4.0.0...v4.0.1) - 2024-03-05
+
+### Fixed
+* [Fix invalid postinstall script](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/de5b89666a661a21b13c54e256551e2f720bf61f)
+
 <a name="v4.0.0"></a>
 ## [v4.0.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v3.1.2...v4.0.0) - 2024-03-05
 
