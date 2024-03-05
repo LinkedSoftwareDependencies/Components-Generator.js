@@ -35,7 +35,7 @@
     "build": "tsc",
     "test": "jest",
     "lint": "eslint . --cache",
-    "postinstall": "husky install && yarn build",
+    "prepare": "husky install && yarn build",
     "version": "manual-git-changelog onversion"
   },
   "jest": {
