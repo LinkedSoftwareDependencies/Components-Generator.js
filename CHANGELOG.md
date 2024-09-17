@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v4.1.0"></a>
+## [v4.1.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v4.0.1...v4.1.0) - 2024-09-17
+
+### Added
+* [Output the default values of generic types](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/7b85bcd0f59fd1b3a284a286dad7e6c9307cf4e2)
+
 <a name="v4.0.1"></a>
 ## [v4.0.1](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v4.0.0...v4.0.1) - 2024-03-05
 
