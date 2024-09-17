@@ -119,5 +119,42 @@ describe('GenericsLoader', () => {
         },
       });
     });
+
+    it('should return for a single class with default generic types', async() => {
+      resolutionContext.contentsOverrides = {
+        'file.d.ts': `export class A<A, B extends number = 3>{
+  constructor(){}
+}`,
+      };
+      const A = await classIndexer.loadClassChain({
+        packageName: 'p',
+        localName: 'A',
+        fileName: 'file',
+        fileNameReferenced: 'fileReferenced',
+      });
+      expect(parser.getGenerics({
+        A,
+      })).toEqual({
+        A: {
+          genericTypeParameters: [
+            {
+              name: 'A',
+            },
+            {
+              name: 'B',
+              range: {
+                type: 'raw',
+                value: 'number',
+              },
+              default: {
+                type: 'literal',
+                value: 3,
+              },
+            },
+          ],
+          classLoaded: A,
+        },
+      });
+    });
   });
 });

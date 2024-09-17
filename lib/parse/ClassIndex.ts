@@ -59,7 +59,7 @@ export interface ClassLoaded extends ClassReference {
 /**
  * A hash of generic type name to its properties.
  */
-export type GenericTypes = Record<string, { type?: TSESTree.TypeNode }>;
+export type GenericTypes = Record<string, { type?: TSESTree.TypeNode; default?: TSESTree.TypeNode }>;
 
 /**
  * Something (like a class or interface) that may have generic types assigned to it as instantiation.

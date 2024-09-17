@@ -36,6 +36,7 @@ export type ExtensionDefinition = string | {
 export interface GenericTypeParameterDefinition {
   '@id': string;
   range?: ParameterDefinitionRange;
+  default?: ParameterDefinitionRange;
 }
 
 export interface ParameterDefinition {

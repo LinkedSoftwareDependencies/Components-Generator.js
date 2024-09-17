@@ -128,6 +128,7 @@ export class ParameterLoader {
         genericTypeParameters,
         genericName,
         genericType.type,
+        genericType.default,
       );
     }
 
@@ -143,12 +144,14 @@ export class ParameterLoader {
    * @param genericTypeParameters The array of generic type parameters that will be appended to.
    * @param genericName The generic type name.
    * @param genericType The optional generic type range.
+   * @param genericDefault The optional generic default value.
    */
   public loadClassGeneric(
     classLoaded: ClassReferenceLoaded,
     genericTypeParameters: GenericTypeParameterData<ParameterRangeUnresolved>[],
     genericName: string,
     genericType: TSESTree.TypeNode | undefined,
+    genericDefault: TSESTree.TypeNode | undefined,
   ): void {
     genericTypeParameters.push({
       name: genericName,
@@ -156,6 +159,13 @@ export class ParameterLoader {
           { range: this.getRangeFromTypeNode(
             classLoaded,
             genericType,
+            this.getErrorIdentifierGeneric(classLoaded, genericName),
+          ) } :
+          {},
+      ...genericDefault ?
+          { default: this.getRangeFromTypeNode(
+            classLoaded,
+            genericDefault,
             this.getErrorIdentifierGeneric(classLoaded, genericName),
           ) } :
           {},
@@ -753,6 +763,10 @@ export interface GenericTypeParameterData<R> {
    * The range of the generic type parameter.
    */
   range?: R;
+  /**
+   * The default value.
+   */
+  default?: R;
   /**
    * The human-readable description of this parameter.
    */

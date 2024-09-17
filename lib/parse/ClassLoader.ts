@@ -444,7 +444,7 @@ export class ClassLoader {
     const genericTypes: GenericTypes = {};
     if (classDeclaration.typeParameters) {
       for (const param of classDeclaration.typeParameters.params) {
-        genericTypes[param.name.name] = { type: param.constraint };
+        genericTypes[param.name.name] = { type: param.constraint, default: param.default };
       }
     }
     return genericTypes;

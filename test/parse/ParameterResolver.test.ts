@@ -184,6 +184,13 @@ describe('ParameterResolver', () => {
             value: 'number',
           },
         },
+        {
+          name: 'C',
+          default: {
+            type: 'literal',
+            value: 3,
+          },
+        },
       ], classReference, {})).resolves.toEqual([
         {
           name: 'A',
@@ -193,6 +200,13 @@ describe('ParameterResolver', () => {
           range: {
             type: 'raw',
             value: 'number',
+          },
+        },
+        {
+          name: 'C',
+          default: {
+            type: 'literal',
+            value: 3,
           },
         },
       ]);

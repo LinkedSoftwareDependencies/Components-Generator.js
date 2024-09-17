@@ -472,6 +472,11 @@ export class ComponentConstructor {
         ...genericType.range ?
             { range: await this.constructParameterRange(genericType.range, context, externalContextsCallback, id) } :
             {},
+        ...genericType.default ?
+            {
+              default: await this.constructParameterRange(genericType.default, context, externalContextsCallback, id),
+            } :
+            {},
       });
     }
     return definitions;

@@ -115,6 +115,9 @@ export class ParameterResolver {
         range: generic.range ?
           await this.resolveRange(generic.range, owningClass, genericTypeRemappings, false, new Set()) :
           undefined,
+        default: generic.default ?
+          await this.resolveRange(generic.default, owningClass, genericTypeRemappings, false, new Set()) :
+          undefined,
       })));
   }
 

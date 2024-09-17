@@ -1137,6 +1137,26 @@ describe('ComponentConstructor', () => {
       ]);
     });
 
+    it('should handle a constructor with a single generic with default', async() => {
+      await expect(ctor.constructGenericTypeParameters(context, externalContextsCallback, classReference, [
+        {
+          name: 'T',
+          default: {
+            type: 'literal',
+            value: 3,
+          },
+        },
+      ])).resolves.toEqual([
+        {
+          '@id': 'mp:components/a/b/file-param.jsonld#MyClass__generic_T',
+          default: {
+            '@type': 'ParameterRangeLiteral',
+            parameterRangeValueLiteral: 3,
+          },
+        },
+      ]);
+    });
+
     it('should handle a constructor with a multiple generics', async() => {
       await expect(ctor.constructGenericTypeParameters(context, externalContextsCallback, classReference, [
         {
