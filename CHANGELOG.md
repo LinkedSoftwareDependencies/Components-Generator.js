@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v4.2.0"></a>
+## [v4.2.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v4.1.0...v4.2.0) - 2024-09-27
+
+### Changed
+* [Update to jsonld-context-parser v3](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/26fbe7e60df4cbaa4a41845b34ee14d73d72e4b6)
+
 <a name="v4.1.0"></a>
 ## [v4.1.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v4.0.1...v4.1.0) - 2024-09-17
 
