@@ -3395,17 +3395,17 @@ __metadata:
     "@types/semver": "npm:^7.3.4"
     "@typescript-eslint/typescript-estree": "npm:^7.1.0"
     comment-parser: "npm:^0.7.6"
-    componentsjs: "npm:^6.0.0"
+    componentsjs: "npm:^6.2.0"
     eslint: "npm:^8.57.0"
     fs-extra: "npm:^11.0.0"
     husky: "npm:^9.0.0"
     jest: "npm:^29.7.0"
     jest-extended: "npm:^4.0.2"
-    jsonld-context-parser: "npm:^2.1.5"
+    jsonld-context-parser: "npm:^3.0.0"
     lru-cache: "npm:^6.0.0"
     manual-git-changelog: "npm:^1.0.1"
     minimist: "npm:^1.2.5"
-    rdf-object: "npm:^1.13.1"
+    rdf-object: "npm:^2.0.0"
     rimraf: "npm:latest"
     semver: "npm:^7.3.2"
     ts-jest: "npm:^29.1.2"
@@ -3415,18 +3415,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"componentsjs@npm:^6.0.0":
-  version: 6.0.0
-  resolution: "componentsjs@npm:6.0.0"
+"componentsjs@npm:^6.2.0":
+  version: 6.2.0
+  resolution: "componentsjs@npm:6.2.0"
   dependencies:
     "@rdfjs/types": "npm:*"
     "@types/minimist": "npm:^1.2.0"
     "@types/node": "npm:^18.0.0"
     "@types/semver": "npm:^7.3.4"
-    jsonld-context-parser: "npm:^2.1.1"
+    jsonld-context-parser: "npm:^3.0.0"
     minimist: "npm:^1.2.0"
     rdf-data-factory: "npm:^1.1.0"
-    rdf-object: "npm:^1.14.0"
+    rdf-object: "npm:^2.0.0"
     rdf-parse: "npm:^2.0.0"
     rdf-quad: "npm:^1.5.0"
     rdf-string: "npm:^1.6.0"
@@ -3435,7 +3435,7 @@ __metadata:
     winston: "npm:^3.3.3"
   bin:
     componentsjs-compile-config: bin/compile-config.js
-  checksum: fac3e87ee496eac7d172d2848668cfc0017b3e229dbf0278486409f2bdd0ad00acafd43794928431283f68b01c637fd67b6eb7538e6f7eb00bbd2540d00b9e82
+  checksum: 6836e2a619023830df77b6cc36dfcbf3222439a76c6a6d5dc41ea68835b44adeb158f99516445937764d7c3dae9e0112fc02b6bf51d3a25b79cd84c57a80175b
   languageName: node
   linkType: hard
 
@@ -6788,7 +6788,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsonld-context-parser@npm:^2.0.2, jsonld-context-parser@npm:^2.1.1, jsonld-context-parser@npm:^2.1.5, jsonld-context-parser@npm:^2.2.2, jsonld-context-parser@npm:^2.4.0":
+"jsonld-context-parser@npm:^2.2.2, jsonld-context-parser@npm:^2.4.0":
   version: 2.4.0
   resolution: "jsonld-context-parser@npm:2.4.0"
   dependencies:
@@ -6800,6 +6800,20 @@ __metadata:
   bin:
     jsonld-context-parse: bin/jsonld-context-parse.js
   checksum: 7d27257ac4a18698cf2750798d59f9fb956e13999c91536ceb0d5f2480b2b6b26c7966fe1f60a7d507d381a3bf460d209a3e3a23e2854c4821d010cf36718b21
+  languageName: node
+  linkType: hard
+
+"jsonld-context-parser@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "jsonld-context-parser@npm:3.0.0"
+  dependencies:
+    "@types/http-link-header": "npm:^1.0.1"
+    "@types/node": "npm:^18.0.0"
+    http-link-header: "npm:^1.0.2"
+    relative-to-absolute-iri: "npm:^1.0.5"
+  bin:
+    jsonld-context-parse: bin/jsonld-context-parse.js
+  checksum: 8f459d609d84d15ef37d20c6056f6701f4afac846a188fcfeb850b8a98a903444be6b3f5039025ed71e6db2eab3c0f6f10368db5e89bb872e9901bf3584c94cc
   languageName: node
   linkType: hard
 
@@ -8201,16 +8215,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rdf-object@npm:^1.13.1, rdf-object@npm:^1.14.0":
-  version: 1.14.0
-  resolution: "rdf-object@npm:1.14.0"
+"rdf-object@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "rdf-object@npm:2.0.0"
   dependencies:
     "@rdfjs/types": "npm:*"
-    jsonld-context-parser: "npm:^2.0.2"
+    jsonld-context-parser: "npm:^3.0.0"
     rdf-data-factory: "npm:^1.1.0"
     rdf-string: "npm:^1.6.0"
     streamify-array: "npm:^1.0.1"
-  checksum: 22b7662d652895406d983fcc669e47505bc83eb9fba836c6d5f3cd36b9bb8c240724b27c9def3d791680b41265ce0c12738ddc641c6bd75a5f8eb28aa2ba435a
+  checksum: adda0eb7e8555c4f7fe00cbcbaad9e209d486567c6ac325ad8612ca31de26e782eba2ded610ef0f66aafc2986e5ac4ec6bf015c7fd9e25e883efdce60c3c1b11
   languageName: node
   linkType: hard
 

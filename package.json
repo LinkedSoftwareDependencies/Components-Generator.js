@@ -70,11 +70,11 @@
     "@types/semver": "^7.3.4",
     "@typescript-eslint/typescript-estree": "^7.1.0",
     "comment-parser": "^0.7.6",
-    "componentsjs": "^6.0.0",
-    "jsonld-context-parser": "^2.1.5",
+    "componentsjs": "^6.2.0",
+    "jsonld-context-parser": "^3.0.0",
     "lru-cache": "^6.0.0",
     "minimist": "^1.2.5",
-    "rdf-object": "^1.13.1",
+    "rdf-object": "^2.0.0",
     "semver": "^7.3.2"
   },
   "devDependencies": {
