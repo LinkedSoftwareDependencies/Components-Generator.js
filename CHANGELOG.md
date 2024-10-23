@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v4.3.0"></a>
+## [v4.3.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v4.2.0...v4.3.0) - 2024-10-23
+
+### Added
+* [Support @json ranges in arrays](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/commit/10d7e48c489f3d5fcaa59015a4f409ee31047ba1)
+
 <a name="v4.2.0"></a>
 ## [v4.2.0](https://github.com/LinkedSoftwareDependencies/Components-Generator.js/compare/v4.1.0...v4.2.0) - 2024-09-27
 
