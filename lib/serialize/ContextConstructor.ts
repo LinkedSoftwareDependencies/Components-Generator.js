@@ -72,7 +72,7 @@ export class ContextConstructor {
           const shortcut = parameter['@id'].slice(Math.max(0, component['@id'].length + 1));
           typeScopedContext[shortcut] = {
             '@id': parameter['@id'],
-            ...parameter.range === 'rdf:JSON' ? { '@type': '@json' } : {},
+            ...ContextConstructor.isParameterRangeJson(parameter.range) ? { '@type': '@json' } : {},
             // Mark as list container if range is array
             ...ContextConstructor.isParameterRangeList(parameter.range) ?
                 { '@container': '@list' } :
@@ -132,6 +132,14 @@ export class ContextConstructor {
 
   public static isParameterRangeUndefined(range: ParameterDefinitionRange): boolean {
     return typeof range !== 'string' && '@type' in range && range['@type'] === 'ParameterRangeUndefined';
+  }
+
+  public static isParameterRangeJson(range: ParameterDefinitionRange | undefined): boolean {
+    if (range && typeof range !== 'string' && '@type' in range &&
+      range['@type'] === 'ParameterRangeArray' && this.isParameterRangeJson(range.parameterRangeValue)) {
+      return true;
+    }
+    return range === 'rdf:JSON';
   }
 }
 
