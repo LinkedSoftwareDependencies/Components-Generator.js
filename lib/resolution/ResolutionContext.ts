@@ -1,7 +1,7 @@
 import * as fs from 'node:fs';
 import type { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
 import { parse } from '@typescript-eslint/typescript-estree';
-import * as LRUCache from 'lru-cache';
+import { LRUCache } from 'lru-cache';
 import { filePathDirName, joinFilePath, normalizeFilePath } from '../util/PathUtil';
 
 /**
@@ -11,7 +11,7 @@ export class ResolutionContext {
   private readonly parsedCache: LRUCache<string, AST<TSESTreeOptions>>;
 
   public constructor() {
-    this.parsedCache = new LRUCache(2_048);
+    this.parsedCache = new LRUCache({ max: 2_048 });
   }
 
   /**

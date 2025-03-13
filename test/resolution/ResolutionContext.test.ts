@@ -118,7 +118,7 @@ describe('ResolutionContext', () => {
 
     it('Should resolve from the currentFilePath for a package with separate typings', async() => {
       expect(resolutionContext.resolvePackageIndex('lru-cache', joinFilePath(__dirname, '../../')))
-        .toEqual(joinFilePath(__dirname, '../../node_modules/@types/lru-cache/index.d.ts'));
+        .toEqual(joinFilePath(__dirname, '../../node_modules/@types/node/lru-cache.d.ts'));
     });
 
     it('Should resolve from the currentFilePath for a package without separate typings without extension', async() => {
