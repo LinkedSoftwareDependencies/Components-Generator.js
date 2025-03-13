@@ -17,7 +17,6 @@
     "sourceMap": true
   },
   "include": [
-    "index.ts",
     "bin/**/*",
     "lib/**/*"
   ],
