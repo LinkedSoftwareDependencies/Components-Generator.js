@@ -1,6 +1,6 @@
 import type { TSESTree } from '@typescript-eslint/typescript-estree';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import * as LRUCache from 'lru-cache';
+import { LRUCache } from 'lru-cache';
 import type {
   ClassIndex,
   ClassReference,
@@ -15,7 +15,6 @@ import type {
   ExtensionData,
   GenericTypeParameterData,
   ParameterData,
-  ParameterDataField,
   ParameterRangeResolved,
   ParameterRangeUnresolved,
   ParameterLoader,
@@ -32,7 +31,7 @@ export class ParameterResolver {
     this.classLoader = args.classLoader;
     this.parameterLoader = args.parameterLoader;
     this.ignoreClasses = args.ignoreClasses;
-    this.cacheInterfaceRange = new LRUCache(2_048);
+    this.cacheInterfaceRange = new LRUCache({ max: 2_048 });
   }
 
   /**
@@ -63,7 +62,7 @@ export class ParameterResolver {
     unresolvedConstructorData: ConstructorData<ParameterRangeUnresolved>,
   ): Promise<ConstructorData<ParameterRangeResolved>> {
     return {
-      parameters: <ParameterDataField<ParameterRangeResolved>[]> (await this.resolveParameterData(
+      parameters: (await this.resolveParameterData(
         unresolvedConstructorData.parameters,
         unresolvedConstructorData.classLoaded,
         {},

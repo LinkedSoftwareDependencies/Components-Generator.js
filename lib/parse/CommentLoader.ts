@@ -1,5 +1,5 @@
 import type { TSESTree } from '@typescript-eslint/typescript-estree';
-import * as commentParse from 'comment-parser';
+import { parse } from 'comment-parser';
 import type { ClassReference, ClassReferenceLoaded } from './ClassIndex';
 import type { ConstructorHolder } from './ConstructorLoader';
 import type { DefaultNested, DefaultValue, ParameterRangeUnresolved } from './ParameterLoader';
@@ -126,7 +126,7 @@ export class CommentLoader {
   public static getCommentDataFromComment(comment: string, clazz: ClassReference): CommentData {
     const data: CommentData = {};
 
-    const commentParsed = commentParse(comment)[0];
+    const commentParsed = parse(comment)[0];
     if (commentParsed) {
       // Extract description
       if (commentParsed.description.length > 0) {

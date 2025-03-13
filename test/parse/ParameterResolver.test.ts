@@ -1749,7 +1749,7 @@ class ClassA {}
           new Set(),
         );
       expect(first).toBe(second);
-      expect((<any> loader).cacheInterfaceRange.keys()).toEqual([ 'ClassA::::::A::true' ]);
+      expect([ ...(<any>loader).cacheInterfaceRange.keys() ]).toEqual([ 'ClassA::::::A::true' ]);
     });
 
     it('should resolve a class multiple times with different generics without cache', async() => {
@@ -1767,7 +1767,7 @@ class ClassA {}
           { type: 'raw', value: 'number' },
         ], classReference, classReference, {}, true, new Set());
       expect(first).not.toBe(second);
-      expect((<any> loader).cacheInterfaceRange.keys())
+      expect([ ...(<any> loader).cacheInterfaceRange.keys() ])
         .toEqual([ 'ClassA::::raw:number::A::true', 'ClassA::::raw:boolean::A::true' ]);
     });
 
