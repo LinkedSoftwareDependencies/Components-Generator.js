@@ -1,65 +1,86 @@
 name: CI
 on: [push, pull_request]
-jobs:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DEFAULT_NODE_VERSION: 22.x
+
+jobs:
   lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - name: Use Node.js ${{ env.DEFAULT_NODE_VERSION }}
+        uses: actions/setup-node@v4
         with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-lint-modules-${{ hashFiles('**/yarn.lock') }}
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 20.x
-      - run: corepack enable
-      - run: yarn install
-      - run: yarn run lint
-
-  test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        node-version:
-          - 18.x
-          - 20.x
-          - 21.x
-    steps:
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Enable CorePack
+          node-version: ${{ env.DEFAULT_NODE_VERSION }}
+      - name: Enable corepack
         run: corepack enable
       - name: Ensure line endings are consistent
         run: git config --global core.autocrlf input
-      - name: Check out repository
-        uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Load dependency cache
+        uses: actions/cache@v4
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-test-modules-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-modules-${{ hashFiles('yarn.lock') }}
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --immutable
+      - name: Run ESLint
+        run: yarn run lint
+  test:
+    name: Test
+    needs: lint
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+        node-version:
+          - 18.x
+          - 20.x
+          - 22.x
+    steps:
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Enable corepack
+        run: corepack enable
+      - name: Ensure line endings are consistent
+        run: git config --global core.autocrlf input
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Load dependency cache
+        uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('yarn.lock') }}
+      - name: Install dependencies
+        run: yarn install --immutable
       - name: Build project
         run: yarn run build
       - name: Run tests
         run: yarn run test
       - name: Submit coverage results
-        uses: coverallsapp/github-action@master
+        uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.github_token }}
-          flag-name: run-${{ matrix.node-version }}
+          flag-name: ${{ matrix.node-version }}-${{ matrix.os }}
           parallel: true
-
   coveralls:
+    name: Coverage
     needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Consolidate test coverage from different jobs
-        uses: coverallsapp/github-action@master
+        uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.github_token }}
           parallel-finished: true
