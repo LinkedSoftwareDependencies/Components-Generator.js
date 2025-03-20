@@ -44,7 +44,7 @@
     "jsonld-context-parser": "^3.0.0",
     "lru-cache": "^11.0.0",
     "minimist": "^1.2.0",
-    "rdf-object": "^3.0.0",
+    "rdf-object": "^2.0.0",
     "semver": "^7.0.0"
   },
   "devDependencies": {
