@@ -83,7 +83,7 @@
     "@types/jest": "^29.0.0",
     "@types/minimist": "^1.2.0",
     "@types/node": "^22.0.0",
-    "@types/rimraf": "^3.0.0",
+    "@types/rimraf": "^4.0.0",
     "eslint": "^8.57.0",
     "fs-extra": "^11.0.0",
     "husky": "^9.0.0",
