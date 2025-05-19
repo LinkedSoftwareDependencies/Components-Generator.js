@@ -2954,7 +2954,7 @@ __metadata:
     fs-extra: "npm:^11.0.0"
     husky: "npm:^9.0.0"
     jest: "npm:^29.0.0"
-    jest-extended: "npm:^4.0.0"
+    jest-extended: "npm:^5.0.0"
     jsonld-context-parser: "npm:^3.0.0"
     lru-cache: "npm:^11.0.0"
     manual-git-changelog: "npm:^1.0.0"
@@ -5678,22 +5678,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-extended@npm:^4.0.0":
-  version: 4.0.2
-  resolution: "jest-extended@npm:4.0.2"
+"jest-extended@npm:^5.0.0":
+  version: 5.0.1
+  resolution: "jest-extended@npm:5.0.1"
   dependencies:
     jest-diff: "npm:^29.0.0"
-    jest-get-type: "npm:^29.0.0"
   peerDependencies:
     jest: ">=27.2.5"
   peerDependenciesMeta:
     jest:
       optional: true
-  checksum: 10/6633c425636751462b0f2106915c6ed91ab07a0e55d28477ae2405361e0a05f617f4dae60b0d4332096e2757644a2a6c5d40e618be6a6c0d47a0325f7e696ce6
+  checksum: 10/8f49df7507617f8932abac197317e62cab35dac5d914982a74d33de5c40713975cc1c25317fac1bea0d9fbf9a89577eb3056708342999973e5e0d871d1fb9a40
   languageName: node
   linkType: hard
 
-"jest-get-type@npm:^29.0.0, jest-get-type@npm:^29.6.3":
+"jest-get-type@npm:^29.6.3":
   version: 29.6.3
   resolution: "jest-get-type@npm:29.6.3"
   checksum: 10/88ac9102d4679d768accae29f1e75f592b760b44277df288ad76ce5bf038c3f5ce3719dea8aa0f035dac30e9eb034b848ce716b9183ad7cc222d029f03e92205
