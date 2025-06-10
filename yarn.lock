@@ -2954,7 +2954,7 @@ __metadata:
     fs-extra: "npm:^11.0.0"
     husky: "npm:^9.0.0"
     jest: "npm:^29.0.0"
-    jest-extended: "npm:^5.0.0"
+    jest-extended: "npm:^6.0.0"
     jsonld-context-parser: "npm:^3.0.0"
     lru-cache: "npm:^11.0.0"
     manual-git-changelog: "npm:^1.0.0"
@@ -5678,17 +5678,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-extended@npm:^5.0.0":
-  version: 5.0.1
-  resolution: "jest-extended@npm:5.0.1"
+"jest-extended@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "jest-extended@npm:6.0.0"
   dependencies:
     jest-diff: "npm:^29.0.0"
   peerDependencies:
     jest: ">=27.2.5"
+    typescript: ">=5.0.0"
   peerDependenciesMeta:
     jest:
       optional: true
-  checksum: 10/8f49df7507617f8932abac197317e62cab35dac5d914982a74d33de5c40713975cc1c25317fac1bea0d9fbf9a89577eb3056708342999973e5e0d871d1fb9a40
+    typescript:
+      optional: false
+  checksum: 10/9b23c9a42c46dd364dc9edcd8a6314b0ce6ec518d5453059b8b33fd5d559eadbbba1cb7c30cf7d642e50b41a433f107e55a278ea7cf8ba9c5f15663728ce79ae
   languageName: node
   linkType: hard
 
