@@ -140,7 +140,14 @@ export class ResolutionContext {
 
         // If so, require the Node.js types, and resolve the file for the built-in package
         const rootFile = this.resolvePackageIndexInner(require, `@types/node`, currentFilePath);
-        return rootFile.replace(/index\.d\.ts$/u, `${packageName}.d.ts`);
+        const result = rootFile.replace(/index\.d\.ts$/u, `${packageName}.d.ts`);
+        // eslint-disable-next-line no-sync
+        if (!fs.existsSync(result)) {
+          throw new Error(`Could not dereference path ${result}.
+In case the listed package is not a Node.js type, you might have an issue with dual packaging:
+Your export should list your package.json explicitly.`);
+        }
+        return result;
       }
     }
   }
