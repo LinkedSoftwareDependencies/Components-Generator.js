@@ -145,7 +145,7 @@ export class ResolutionContext {
         if (!fs.existsSync(result)) {
           throw new Error(`Could not dereference path ${result}.
 In case the listed package is not a Node.js type, you might have an issue with dual packaging:
-Your export should list your package.json explicitly.`);
+Your export should list your package.json explicitly. See: https://nodejs.org/api/packages.html#package-entry-points`);
         }
         return result;
       }

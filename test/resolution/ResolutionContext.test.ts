@@ -130,6 +130,11 @@ describe('ResolutionContext', () => {
       expect(resolutionContext.resolvePackageIndex('stream', joinFilePath(__dirname, '../../')))
         .toEqual(joinFilePath(__dirname, '../../node_modules/@types/node/stream.d.ts'));
     });
+
+    it('Should warn users when packages do not export their package.json', async() => {
+      expect(() => resolutionContext.resolvePackageIndex('@traqula/core', joinFilePath(__dirname, '../../')))
+        .toThrow('Your export should list your package.json explicitly');
+    });
   });
 
   describe('resolvePackageIndexInner', () => {

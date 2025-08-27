@@ -49,6 +49,7 @@
   },
   "devDependencies": {
     "@rubensworks/eslint-config": "^3.0.0",
+    "@traqula/core": "0.0.1",
     "@types/fs-extra": "^11.0.0",
     "@types/jest": "^29.0.0",
     "@types/minimist": "^1.2.0",
