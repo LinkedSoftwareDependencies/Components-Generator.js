@@ -675,298 +675,305 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@comunica/actor-abstract-mediatyped@npm:^2.10.0":
-  version: 2.10.0
-  resolution: "@comunica/actor-abstract-mediatyped@npm:2.10.0"
+"@comunica/actor-abstract-mediatyped@npm:^4.5.0":
+  version: 4.5.0
+  resolution: "@comunica/actor-abstract-mediatyped@npm:4.5.0"
   dependencies:
-    "@comunica/core": "npm:^2.10.0"
-    "@comunica/types": "npm:^2.10.0"
-  checksum: 10/52f4b35eff7342a2f407fcafa713bed6df8a006c885b942add983daad9466a0dfdd0d29afe995c6ec8b7c844a9867c79e43cd882c4ca9e5a2a34a2a44b00317c
+    "@comunica/core": "npm:^4.5.0"
+    "@comunica/types": "npm:^4.5.0"
+  checksum: 10/0257998a3ee34447efd0f20245e654d82ff8ed2e0d0db3b4457f545ef3cbd6c554f612aaa24b3a2850d93316e28c499dbdfa9849d6be47e791ce1efb6f9fc3c5
   languageName: node
   linkType: hard
 
-"@comunica/actor-abstract-parse@npm:^2.10.0":
-  version: 2.10.0
-  resolution: "@comunica/actor-abstract-parse@npm:2.10.0"
+"@comunica/actor-abstract-parse@npm:^4.5.0":
+  version: 4.5.0
+  resolution: "@comunica/actor-abstract-parse@npm:4.5.0"
   dependencies:
-    "@comunica/core": "npm:^2.10.0"
-    readable-stream: "npm:^4.4.2"
-  checksum: 10/76675e52d54a3406bf6228946aa20fde69c555017c30913efeeeef30da57d4b056d4677f074ac775bfc8086e3fd7ed414f4854301175600e57752d290e74fa60
+    "@comunica/core": "npm:^4.5.0"
+    readable-stream: "npm:^4.5.2"
+  checksum: 10/4963acffdabd92d4823c3806f6688c2a278c8ba0e75d4a6c4710fefc45d4b697f2627d7e9c131ac868ef57a8c01be86bf7185218c5e67dd29c27872a61f03883
   languageName: node
   linkType: hard
 
-"@comunica/actor-http-fetch@npm:^2.0.1":
-  version: 2.10.2
-  resolution: "@comunica/actor-http-fetch@npm:2.10.2"
+"@comunica/actor-http-fetch@npm:^4.0.1":
+  version: 4.5.0
+  resolution: "@comunica/actor-http-fetch@npm:4.5.0"
   dependencies:
-    "@comunica/bus-http": "npm:^2.10.2"
-    "@comunica/context-entries": "npm:^2.10.0"
-    "@comunica/mediatortype-time": "npm:^2.10.0"
-    abort-controller: "npm:^3.0.0"
-    cross-fetch: "npm:^4.0.0"
-  checksum: 10/b5176ff12cfcb5283b44bc15087969595a49362a28be55f7bacf5c22e3574dedd228711ac61178ce23e6463d1bb02e6d779e62a3463d7691245cecbee81b7b4c
+    "@comunica/bus-http": "npm:^4.5.0"
+    "@comunica/context-entries": "npm:^4.5.0"
+    "@comunica/core": "npm:^4.5.0"
+    "@comunica/mediatortype-time": "npm:^4.5.0"
+  checksum: 10/4fca6328cb2e4823eb641c5ebdd61caeacf90946b22c43ac31369db165372f97b36ba00d2b9e1de213ebea59a99ae13e9fee8b85fd997c61508328bbf090a3b2
   languageName: node
   linkType: hard
 
-"@comunica/actor-http-proxy@npm:^2.0.1":
-  version: 2.10.2
-  resolution: "@comunica/actor-http-proxy@npm:2.10.2"
+"@comunica/actor-http-proxy@npm:^4.0.1":
+  version: 4.5.0
+  resolution: "@comunica/actor-http-proxy@npm:4.5.0"
   dependencies:
-    "@comunica/bus-http": "npm:^2.10.2"
-    "@comunica/context-entries": "npm:^2.10.0"
-    "@comunica/mediatortype-time": "npm:^2.10.0"
-    "@comunica/types": "npm:^2.10.0"
-  checksum: 10/d8cc07dd1909418eb04cb7ccd73b130986b5d83cb5b31b39f7523788786fea20a1e56e1dc71b1f3c7b36c4f24dbefdc7044454ddc8504e30a719f521dbec3fda
+    "@comunica/bus-http": "npm:^4.5.0"
+    "@comunica/context-entries": "npm:^4.5.0"
+    "@comunica/core": "npm:^4.5.0"
+    "@comunica/mediatortype-time": "npm:^4.5.0"
+    "@comunica/types": "npm:^4.5.0"
+  checksum: 10/014588f6794a3b00b649597ee9e3a06a881d45e37cbfbd668aa2d1d1b84f57fbfff35f241ede6929ef6582df9ecc4a5737e2951ab9b88b070c815fce0ddbdf2e
   languageName: node
   linkType: hard
 
-"@comunica/actor-rdf-parse-html-microdata@npm:^2.0.1":
-  version: 2.10.0
-  resolution: "@comunica/actor-rdf-parse-html-microdata@npm:2.10.0"
+"@comunica/actor-rdf-parse-html-microdata@npm:^4.0.1":
+  version: 4.5.0
+  resolution: "@comunica/actor-rdf-parse-html-microdata@npm:4.5.0"
   dependencies:
-    "@comunica/bus-rdf-parse-html": "npm:^2.10.0"
-    "@comunica/core": "npm:^2.10.0"
+    "@comunica/bus-rdf-parse-html": "npm:^4.5.0"
+    "@comunica/context-entries": "npm:^4.5.0"
+    "@comunica/core": "npm:^4.5.0"
+    "@comunica/types": "npm:^4.5.0"
     microdata-rdf-streaming-parser: "npm:^2.0.1"
-  checksum: 10/8b7ed66942c17855fe4dd3d94ec18b558f743359e57dc1be7cc25d57339ca6c9e877cc3cc1afaeab3caba5c6b1d84c46c397ab135020bc80c0fe22b186dd1d78
+  checksum: 10/2f8624c72495a428aa6e51a3b4c7b85b8d3a4ecba53f1fdb71aa9c5aae36cc523e44856ba54006614967d50c30345dcd404b39c4bea287b2eb89a9c35a8001e4
   languageName: node
   linkType: hard
 
-"@comunica/actor-rdf-parse-html-rdfa@npm:^2.0.1":
-  version: 2.10.0
-  resolution: "@comunica/actor-rdf-parse-html-rdfa@npm:2.10.0"
+"@comunica/actor-rdf-parse-html-rdfa@npm:^4.0.1":
+  version: 4.5.0
+  resolution: "@comunica/actor-rdf-parse-html-rdfa@npm:4.5.0"
   dependencies:
-    "@comunica/bus-rdf-parse-html": "npm:^2.10.0"
-    "@comunica/core": "npm:^2.10.0"
+    "@comunica/bus-rdf-parse-html": "npm:^4.5.0"
+    "@comunica/context-entries": "npm:^4.5.0"
+    "@comunica/core": "npm:^4.5.0"
+    "@comunica/types": "npm:^4.5.0"
     rdfa-streaming-parser: "npm:^2.0.1"
-  checksum: 10/59a5c174ffe378795c16b19b115d50367f21fb88d2203d2240b19a7307009b6cb326db7b3076602bd862c800031f838a4eecd39c506111d2ef0d61745caa268d
+  checksum: 10/0714d4bc56c946b49157b421809fc22707562f75b4911c051a75d709cd9483e32b892772d2813060729b2c2562cc9b23bc6b6e0adbb0f40b029e7be0e07c86b3
   languageName: node
   linkType: hard
 
-"@comunica/actor-rdf-parse-html-script@npm:^2.0.1":
-  version: 2.10.0
-  resolution: "@comunica/actor-rdf-parse-html-script@npm:2.10.0"
+"@comunica/actor-rdf-parse-html-script@npm:^4.0.1":
+  version: 4.5.0
+  resolution: "@comunica/actor-rdf-parse-html-script@npm:4.5.0"
   dependencies:
-    "@comunica/bus-rdf-parse": "npm:^2.10.0"
-    "@comunica/bus-rdf-parse-html": "npm:^2.10.0"
-    "@comunica/context-entries": "npm:^2.10.0"
-    "@comunica/core": "npm:^2.10.0"
-    "@comunica/types": "npm:^2.10.0"
+    "@comunica/bus-rdf-parse": "npm:^4.5.0"
+    "@comunica/bus-rdf-parse-html": "npm:^4.5.0"
+    "@comunica/context-entries": "npm:^4.5.0"
+    "@comunica/core": "npm:^4.5.0"
+    "@comunica/types": "npm:^4.5.0"
     "@rdfjs/types": "npm:*"
-    readable-stream: "npm:^4.4.2"
+    readable-stream: "npm:^4.5.2"
     relative-to-absolute-iri: "npm:^1.0.7"
-  checksum: 10/f1a239da0611062ebf60bcc295a91ee7bfeb7dd91f65c80b0ded15d1f06e14384bc5920097d2c736362fdab505384bf72f5819c09fed1ce1ccb69f0af993ae4c
+  checksum: 10/a6cc8ec62b6e8866cf9703d382cb8fca0bee113beb94dcef24f28f7bf770bfc97ea65a960968e673d97aa91d4fc94f87866542228d3dca14af2035cb62735aa5
   languageName: node
   linkType: hard
 
-"@comunica/actor-rdf-parse-html@npm:^2.0.1":
-  version: 2.10.0
-  resolution: "@comunica/actor-rdf-parse-html@npm:2.10.0"
+"@comunica/actor-rdf-parse-html@npm:^4.0.1":
+  version: 4.5.0
+  resolution: "@comunica/actor-rdf-parse-html@npm:4.5.0"
   dependencies:
-    "@comunica/bus-rdf-parse": "npm:^2.10.0"
-    "@comunica/bus-rdf-parse-html": "npm:^2.10.0"
-    "@comunica/core": "npm:^2.10.0"
-    "@comunica/types": "npm:^2.10.0"
+    "@comunica/bus-rdf-parse": "npm:^4.5.0"
+    "@comunica/bus-rdf-parse-html": "npm:^4.5.0"
+    "@comunica/core": "npm:^4.5.0"
+    "@comunica/types": "npm:^4.5.0"
     "@rdfjs/types": "npm:*"
-    htmlparser2: "npm:^9.0.0"
-    readable-stream: "npm:^4.4.2"
-  checksum: 10/bf3174301af434cfe8343dbbfca161fa0872cc2aa4ba853d12c4494d41be45c38945d317dd383cf03045e7fe6047f884adc32288c519ae27b0fea41f84d6ba71
+    htmlparser2: "npm:^10.0.0"
+    readable-stream: "npm:^4.5.2"
+  checksum: 10/22f717476af83481e53a035d06fd6375004dbda2739329bd6c1d55c7e1c5a93fcb6904dc8c0ea714930e862021bdb0daee661e7d9f0248bff44906be07a2a09b
   languageName: node
   linkType: hard
 
-"@comunica/actor-rdf-parse-jsonld@npm:^2.0.1":
-  version: 2.10.2
-  resolution: "@comunica/actor-rdf-parse-jsonld@npm:2.10.2"
+"@comunica/actor-rdf-parse-jsonld@npm:^4.0.1":
+  version: 4.5.0
+  resolution: "@comunica/actor-rdf-parse-jsonld@npm:4.5.0"
   dependencies:
-    "@comunica/bus-http": "npm:^2.10.2"
-    "@comunica/bus-rdf-parse": "npm:^2.10.0"
-    "@comunica/context-entries": "npm:^2.10.0"
-    "@comunica/core": "npm:^2.10.0"
-    "@comunica/types": "npm:^2.10.0"
+    "@comunica/bus-http": "npm:^4.5.0"
+    "@comunica/bus-rdf-parse": "npm:^4.5.0"
+    "@comunica/context-entries": "npm:^4.5.0"
+    "@comunica/core": "npm:^4.5.0"
+    "@comunica/types": "npm:^4.5.0"
+    "@jeswr/stream-to-string": "npm:^2.0.0"
     jsonld-context-parser: "npm:^2.2.2"
-    jsonld-streaming-parser: "npm:^3.0.1"
-    stream-to-string: "npm:^1.2.0"
-  checksum: 10/a4efffd5ef06b34205c527197a3df8b9ce558269973d22f4c6dafb479d686b513d7a08f08e0bcd139a52860cb961946ad91c7554e5b6d8eca7bad38752a1ce43
+    jsonld-streaming-parser: "npm:^4.0.1"
+  checksum: 10/475fa274d7f92a38ddc2ceb1c1cf4bb47969a2faa1bf70d8be9ec9a27a93132fff7d91c6e902951f5343cf89c208c358e014773136068dcc0f8226860e0743d4
   languageName: node
   linkType: hard
 
-"@comunica/actor-rdf-parse-n3@npm:^2.0.1":
-  version: 2.10.0
-  resolution: "@comunica/actor-rdf-parse-n3@npm:2.10.0"
+"@comunica/actor-rdf-parse-n3@npm:^4.0.1":
+  version: 4.5.0
+  resolution: "@comunica/actor-rdf-parse-n3@npm:4.5.0"
   dependencies:
-    "@comunica/bus-rdf-parse": "npm:^2.10.0"
-    "@comunica/types": "npm:^2.10.0"
-    n3: "npm:^1.17.0"
-  checksum: 10/976019223dd3b0e3f4f3705ebfc746933e8ca20fdbf525be78b0155f4e0c4dd3fae1b3f400b8989d9fff64b9dee0962ee9cfe6e8b6c68b9ec3e70cd9cff74818
+    "@comunica/bus-rdf-parse": "npm:^4.5.0"
+    "@comunica/context-entries": "npm:^4.5.0"
+    "@comunica/types": "npm:^4.5.0"
+    n3: "npm:^1.26.0"
+  checksum: 10/efc27cf8b8b5acfbf67f657e068bbd1fe8159753437e4591882ebb66baee52cb8dc5b248f553a73864e384e88d62ca9c7f596136fb0348f061f94c43d9095978
   languageName: node
   linkType: hard
 
-"@comunica/actor-rdf-parse-rdfxml@npm:^2.0.1":
-  version: 2.10.0
-  resolution: "@comunica/actor-rdf-parse-rdfxml@npm:2.10.0"
+"@comunica/actor-rdf-parse-rdfxml@npm:^4.0.1":
+  version: 4.5.0
+  resolution: "@comunica/actor-rdf-parse-rdfxml@npm:4.5.0"
   dependencies:
-    "@comunica/bus-rdf-parse": "npm:^2.10.0"
-    "@comunica/types": "npm:^2.10.0"
+    "@comunica/bus-rdf-parse": "npm:^4.5.0"
+    "@comunica/context-entries": "npm:^4.5.0"
     rdfxml-streaming-parser: "npm:^2.2.3"
-  checksum: 10/f7afdb413b450f8ad7f62e571c9913fc32b3e6aad87ebfff00bd4ae5d3cef862e8492dd403c991d4d61aea3463ee8542c9ce05f6900f2b8c2df1f461f5dcaadc
+  checksum: 10/f99ae1e225f32a21e37578f14f70d5eddfecef2d7380716013a826caa92d534a1b709890642046afc9362cbf27e275dca0973d74ad63fb995b8c15c5fe6b9fc9
   languageName: node
   linkType: hard
 
-"@comunica/actor-rdf-parse-shaclc@npm:^2.6.2":
-  version: 2.10.0
-  resolution: "@comunica/actor-rdf-parse-shaclc@npm:2.10.0"
+"@comunica/actor-rdf-parse-shaclc@npm:^4.0.1":
+  version: 4.5.0
+  resolution: "@comunica/actor-rdf-parse-shaclc@npm:4.5.0"
   dependencies:
-    "@comunica/bus-rdf-parse": "npm:^2.10.0"
-    "@comunica/types": "npm:^2.10.0"
+    "@comunica/bus-rdf-parse": "npm:^4.5.0"
+    "@comunica/types": "npm:^4.5.0"
+    "@jeswr/stream-to-string": "npm:^2.0.0"
     "@rdfjs/types": "npm:*"
-    asynciterator: "npm:^3.8.1"
-    readable-stream: "npm:^4.4.2"
+    asynciterator: "npm:^3.9.0"
+    readable-stream: "npm:^4.5.2"
     shaclc-parse: "npm:^1.4.0"
-    stream-to-string: "npm:^1.2.0"
-  checksum: 10/5ac8fa8326d26f2cefa45fc48da19b75cf18553f89c6f323832799e7126eb821aa4cbce8f148f43fd2e73d7fc48fce3d27b04f0f60dc64becc2725f2a5e6d0fa
+  checksum: 10/2339d7fd9baa58af35f6958b1f0e4a48f2d5e9b6adcc327e8c5cc48186fd34a3f66059103056fd79f125c6fc0c53a51cb110d993c17c56bf5f8d6d1532a09115
   languageName: node
   linkType: hard
 
-"@comunica/actor-rdf-parse-xml-rdfa@npm:^2.0.1":
-  version: 2.10.0
-  resolution: "@comunica/actor-rdf-parse-xml-rdfa@npm:2.10.0"
+"@comunica/actor-rdf-parse-xml-rdfa@npm:^4.0.1":
+  version: 4.5.0
+  resolution: "@comunica/actor-rdf-parse-xml-rdfa@npm:4.5.0"
   dependencies:
-    "@comunica/bus-rdf-parse": "npm:^2.10.0"
-    "@comunica/types": "npm:^2.10.0"
+    "@comunica/bus-rdf-parse": "npm:^4.5.0"
+    "@comunica/context-entries": "npm:^4.5.0"
+    "@comunica/types": "npm:^4.5.0"
     rdfa-streaming-parser: "npm:^2.0.1"
-  checksum: 10/66c9d5594c75291702dd5b444ca24a389404d52334927bad89ded2e396131cf38d35b6b93f8e1105a1587bba34666f6957d5c37209975caf55e5816b755c460c
+  checksum: 10/cabe1ee21b1d4b949bd992e1a8459f3159c84a9cda4fc305145382bcf72b885d115818649da17ba5f0876960fc0c2dd9318f4b1e1edc1556f65393b7aba1f7fe
   languageName: node
   linkType: hard
 
-"@comunica/bus-http@npm:^2.0.1, @comunica/bus-http@npm:^2.10.2":
-  version: 2.10.2
-  resolution: "@comunica/bus-http@npm:2.10.2"
+"@comunica/bus-http@npm:^4.0.1, @comunica/bus-http@npm:^4.5.0":
+  version: 4.5.0
+  resolution: "@comunica/bus-http@npm:4.5.0"
   dependencies:
-    "@comunica/core": "npm:^2.10.0"
-    "@smessie/readable-web-to-node-stream": "npm:^3.0.3"
+    "@comunica/core": "npm:^4.5.0"
+    "@jeswr/stream-to-string": "npm:^2.0.0"
     is-stream: "npm:^2.0.1"
+    readable-from-web: "npm:^1.0.0"
     readable-stream-node-to-web: "npm:^1.0.1"
-    web-streams-ponyfill: "npm:^1.4.2"
-  checksum: 10/bb4381a26b32da13d62c376edc7a0132853ff79772210915f189d14bf8b0e8b8de3738386783dfe1ab47c952bd481cf94df7696863ac1abb7269fae52c18f9fc
+  checksum: 10/92f25355bab06bd536da58e5264a526d93f8c3ea3ca9825cb599bb2de10d9bede11297a017baad8a0d22ad0fe0d29b2e2f160cf8cf97b7b4e04f6d972fb32b28
   languageName: node
   linkType: hard
 
-"@comunica/bus-init@npm:^2.0.1":
-  version: 2.10.0
-  resolution: "@comunica/bus-init@npm:2.10.0"
+"@comunica/bus-init@npm:^4.0.1":
+  version: 4.5.0
+  resolution: "@comunica/bus-init@npm:4.5.0"
   dependencies:
-    "@comunica/core": "npm:^2.10.0"
-    readable-stream: "npm:^4.4.2"
-  checksum: 10/f615db4c2f8c07b04898654890354d4dc22df098df4fb7b81ccf066af70c4b908a096329f3a280c3f74f648d22003576b98e2db9edaefed720bb04f4b9fae5c2
+    "@comunica/core": "npm:^4.5.0"
+    readable-stream: "npm:^4.5.2"
+  checksum: 10/e8e16ce9e1fb500557c9fc760960e1816a63bc8cab538ee22bdc89307fa06adf0ea3fbb7b61bae1f55d8fa45ecbe8b90e9f80007d920a6de1fb73b21d0de966a
   languageName: node
   linkType: hard
 
-"@comunica/bus-rdf-parse-html@npm:^2.0.1, @comunica/bus-rdf-parse-html@npm:^2.10.0":
-  version: 2.10.0
-  resolution: "@comunica/bus-rdf-parse-html@npm:2.10.0"
+"@comunica/bus-rdf-parse-html@npm:^4.0.1, @comunica/bus-rdf-parse-html@npm:^4.5.0":
+  version: 4.5.0
+  resolution: "@comunica/bus-rdf-parse-html@npm:4.5.0"
   dependencies:
-    "@comunica/core": "npm:^2.10.0"
+    "@comunica/core": "npm:^4.5.0"
     "@rdfjs/types": "npm:*"
-  checksum: 10/c6eab29a1fe4cc96ec521c347c719e8154eb7985c920d6d386e17c2f196f67289a588931818a9c092227a3375b2501221263665d92813770fe8194a5f6218b8e
+  checksum: 10/897f1934ceb66b8bc024d4fa64aacca0edf440ec4d0f77d54b582f023b01c4748744ca34c3c5aa5bd304e08c4e672069179d399747446edb24ccee5deee98e53
   languageName: node
   linkType: hard
 
-"@comunica/bus-rdf-parse@npm:^2.0.1, @comunica/bus-rdf-parse@npm:^2.10.0":
-  version: 2.10.0
-  resolution: "@comunica/bus-rdf-parse@npm:2.10.0"
+"@comunica/bus-rdf-parse@npm:^4.0.1, @comunica/bus-rdf-parse@npm:^4.5.0":
+  version: 4.5.0
+  resolution: "@comunica/bus-rdf-parse@npm:4.5.0"
   dependencies:
-    "@comunica/actor-abstract-mediatyped": "npm:^2.10.0"
-    "@comunica/actor-abstract-parse": "npm:^2.10.0"
-    "@comunica/core": "npm:^2.10.0"
+    "@comunica/actor-abstract-mediatyped": "npm:^4.5.0"
+    "@comunica/actor-abstract-parse": "npm:^4.5.0"
+    "@comunica/core": "npm:^4.5.0"
     "@rdfjs/types": "npm:*"
-  checksum: 10/c206d054f93b13d989daa1e02704b129c4d25503ef3e3485e80fd8447137106cbf6a891bca5887ed135fe531828aae403eaa96eb3bb9b2a5be1ccd8e81012b32
+  checksum: 10/7ae5d145db2b7befd362cae3d56d3f3638ed9de74863670d220cd35d9e079cef1e8fb538ae52b47a3339028410b4c9effb1e84474cd11f6d7a5ddf6278e607e0
   languageName: node
   linkType: hard
 
-"@comunica/config-query-sparql@npm:^2.0.1":
-  version: 2.7.0
-  resolution: "@comunica/config-query-sparql@npm:2.7.0"
-  checksum: 10/be657b723d3f8251c0009724e257df5178a835e5e59664d86b5aae6999dde9fcea2d5bec562d9dfc57ad157aa864dc2c6da690405a2b5270b32c735ec5fd41f5
+"@comunica/config-query-sparql@npm:^4.0.1":
+  version: 4.4.0
+  resolution: "@comunica/config-query-sparql@npm:4.4.0"
+  checksum: 10/2c2f480d544fb40f06c0b176d75de249161dfbb97f16090e16de838a6a50b9a099a6f24ede18f0c4c8d55b8909ec3b429426e3875a46405f586b2ab64dc64b3c
   languageName: node
   linkType: hard
 
-"@comunica/context-entries@npm:^2.10.0":
-  version: 2.10.0
-  resolution: "@comunica/context-entries@npm:2.10.0"
+"@comunica/context-entries@npm:^4.0.1, @comunica/context-entries@npm:^4.5.0":
+  version: 4.5.0
+  resolution: "@comunica/context-entries@npm:4.5.0"
   dependencies:
-    "@comunica/core": "npm:^2.10.0"
-    "@comunica/types": "npm:^2.10.0"
+    "@comunica/core": "npm:^4.5.0"
+    "@comunica/types": "npm:^4.5.0"
     "@rdfjs/types": "npm:*"
     jsonld-context-parser: "npm:^2.2.2"
-    sparqlalgebrajs: "npm:^4.2.0"
-  checksum: 10/ee538e6680626542d690d3887a921ae8c084b38f586e341c0cd3d7aefe0b0f1f4ec71a477ac525079a1ed9217e52fa41aff2e595afe1c027eca11ce751271d17
+    sparqlalgebrajs: "npm:^5.0.2"
+  checksum: 10/9dee36e5420d0134a4cd72f1f5d2d86e55ebf5a151db755309123072e7bc7d20786185384e1b2c7598930927d642b3e11c5456eb96a8f42eb9557b56f0064c8e
   languageName: node
   linkType: hard
 
-"@comunica/core@npm:^2.0.1, @comunica/core@npm:^2.10.0":
-  version: 2.10.0
-  resolution: "@comunica/core@npm:2.10.0"
+"@comunica/core@npm:^4.0.1, @comunica/core@npm:^4.5.0":
+  version: 4.5.0
+  resolution: "@comunica/core@npm:4.5.0"
   dependencies:
-    "@comunica/types": "npm:^2.10.0"
-    immutable: "npm:^4.1.0"
-  checksum: 10/6a0765bb38a86f6b29dc6d45f397a079b87404709fe9083019a60c0199da276c9e8b6a17c5d7cafd12907d9ecfb040f332991b9c79e2242fa223aee6f6dd458b
+    "@comunica/types": "npm:^4.5.0"
+    immutable: "npm:^5.1.3"
+  checksum: 10/f26506d47979837accee71cc283675bc29200dfe01ea3bb20b4306a2f297ba5fa2e68dac6fc8731baa6c6779e0fe302908ccdebe715a6165cb37cd89649a69dd
   languageName: node
   linkType: hard
 
-"@comunica/mediator-combine-pipeline@npm:^2.0.1":
-  version: 2.10.0
-  resolution: "@comunica/mediator-combine-pipeline@npm:2.10.0"
+"@comunica/mediator-combine-pipeline@npm:^4.0.1":
+  version: 4.5.0
+  resolution: "@comunica/mediator-combine-pipeline@npm:4.5.0"
   dependencies:
-    "@comunica/core": "npm:^2.10.0"
-    "@comunica/types": "npm:^2.10.0"
-  checksum: 10/b6bf65706b3e3906831bd146fe3052e4b45426303831ff6d4250a1c654580e4fda62a8caa7bcfe546df06f46b81a4af2c198130f1c6faa016c3e16b64bc14f4b
+    "@comunica/core": "npm:^4.5.0"
+    "@comunica/types": "npm:^4.5.0"
+  checksum: 10/26ff2c32f34f8d3eb3f337bb6797a278c8abccb8169b0be511f606e0abbe50d338797b424e95c299518b0cc34ba4f04456ee8309026883ec2e394918af992137
   languageName: node
   linkType: hard
 
-"@comunica/mediator-combine-union@npm:^2.0.1":
-  version: 2.10.0
-  resolution: "@comunica/mediator-combine-union@npm:2.10.0"
+"@comunica/mediator-combine-union@npm:^4.0.1":
+  version: 4.5.0
+  resolution: "@comunica/mediator-combine-union@npm:4.5.0"
   dependencies:
-    "@comunica/core": "npm:^2.10.0"
-  checksum: 10/aa38403bfe73b049976e9acc5862a105a00972f844104a0e34d7293b093ef72e3a00d1542aee09464ae9e1bcbabbc8035a66cdaf907d28df79accb1fd7c2b578
+    "@comunica/core": "npm:^4.5.0"
+  checksum: 10/89ebb7cc5efc48af75131565a97b4bcef968de533d57704b072ac110e20829eec13c4ed9975b1e6a1eec05a695dc32d2a0c07c0819bfd3b9a1ac6ba235d4b38f
   languageName: node
   linkType: hard
 
-"@comunica/mediator-number@npm:^2.0.1":
-  version: 2.10.0
-  resolution: "@comunica/mediator-number@npm:2.10.0"
+"@comunica/mediator-number@npm:^4.0.1":
+  version: 4.5.0
+  resolution: "@comunica/mediator-number@npm:4.5.0"
   dependencies:
-    "@comunica/core": "npm:^2.10.0"
-  checksum: 10/883a4cbaa4a102930bad539513914d81aa3be7a9e519af7ef6ce43e99ace45618da615ae9398bcedcbff8315d874b7aadf32295e7aa8aa79eecb7d601ede6acf
+    "@comunica/core": "npm:^4.5.0"
+  checksum: 10/03bdf80f3d81068dacc7bec950b843341f668eae8159fb9d8d39a55843a47e52d0193635edcbeabf69ceb99dc095b7621ac56280fae17c59c77c54b7c1e629e3
   languageName: node
   linkType: hard
 
-"@comunica/mediator-race@npm:^2.0.1":
-  version: 2.10.0
-  resolution: "@comunica/mediator-race@npm:2.10.0"
+"@comunica/mediator-race@npm:^4.0.1":
+  version: 4.5.0
+  resolution: "@comunica/mediator-race@npm:4.5.0"
   dependencies:
-    "@comunica/core": "npm:^2.10.0"
-  checksum: 10/8f0378290364d2256f93815208dc54065dacfd93e7a6e49390f55b97cd388e9d3b6f06fda34133550573c1fce3bacb62a38b753798fcb6b3c26f7a47a293f129
+    "@comunica/core": "npm:^4.5.0"
+  checksum: 10/1df197d592238097885853c13e04fb388bd1ecc54e852901140191e22a9e27a4551f37e9e6667616f89cc0fbd6660b9a3b4bc41b8bd288256107673ef0797836
   languageName: node
   linkType: hard
 
-"@comunica/mediatortype-time@npm:^2.10.0":
-  version: 2.10.0
-  resolution: "@comunica/mediatortype-time@npm:2.10.0"
+"@comunica/mediatortype-time@npm:^4.5.0":
+  version: 4.5.0
+  resolution: "@comunica/mediatortype-time@npm:4.5.0"
   dependencies:
-    "@comunica/core": "npm:^2.10.0"
-  checksum: 10/c700e6e6e1d01cb1c535c72235e6ce9f3c92fe62d47f3024bc8824b4d1c08de910f779447e242e5189864ebc0ab8865e67b178b28b7dd495f465ed08170b09e7
+    "@comunica/core": "npm:^4.5.0"
+  checksum: 10/29814ff16ba3780167bc4242137bed0586bf65c7cd1ff013e8abf8bfa57fc2b1f18aeb3d49ce8f5e333dcebe433964332e3c07b19ec3250b16cb1b847ec3468f
   languageName: node
   linkType: hard
 
-"@comunica/types@npm:^2.10.0":
-  version: 2.10.0
-  resolution: "@comunica/types@npm:2.10.0"
+"@comunica/types@npm:^4.5.0":
+  version: 4.5.0
+  resolution: "@comunica/types@npm:4.5.0"
   dependencies:
     "@rdfjs/types": "npm:*"
     "@types/yargs": "npm:^17.0.24"
-    asynciterator: "npm:^3.8.1"
-    sparqlalgebrajs: "npm:^4.2.0"
-  checksum: 10/03c33b2612fc7bb9742d6871b375c3acba02a6691f8f357d0005c7d0bd0419def83255c89ddc15b19772efed9a7d7f72dc94aa977cd2628cc402751277fdb19e
+    asynciterator: "npm:^3.9.0"
+    lru-cache: "npm:^10.0.1"
+    sparqlalgebrajs: "npm:^5.0.2"
+  checksum: 10/c9aa900bb02e2ca7fb9a1881efdd1a61465de58116e05cfbf978ca81b513c21445d4be8f7bbb6435b8fd36d0a8a10192c5be754a2df82f3e0025eceb64ba273b
   languageName: node
   linkType: hard
 
@@ -1499,6 +1506,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@jeswr/stream-to-string@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@jeswr/stream-to-string@npm:2.0.0"
+  dependencies:
+    event-emitter-promisify: "npm:^1.1.0"
+  checksum: 10/e16f1e07096b8de7807a1ed8b3cb145a5c76d7ea2c4577e558118779a7ad9e7c92afc4d8575e83de72367bc3f04537656f0cb849d3b795b0f36b6b1f796f7232
+  languageName: node
+  linkType: hard
+
 "@jridgewell/gen-mapping@npm:^0.3.12":
   version: 0.3.13
   resolution: "@jridgewell/gen-mapping@npm:0.3.13"
@@ -1719,7 +1735,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rdfjs/types@npm:*, @rdfjs/types@npm:>=1.0.0":
+"@rdfjs/types@npm:*, @rdfjs/types@npm:>=1.0.0, @rdfjs/types@npm:^2.0.0":
   version: 2.0.1
   resolution: "@rdfjs/types@npm:2.0.1"
   dependencies:
@@ -1800,16 +1816,6 @@ __metadata:
   dependencies:
     "@sinonjs/commons": "npm:^3.0.1"
   checksum: 10/3960a9fe065f38a4228c66d184eeb101e8a6af9cbfc8454dd5d45ac397201da72134048d4e808a25993494885b172dd6deecdad9949bbf4c1d3a220ef561f6cc
-  languageName: node
-  linkType: hard
-
-"@smessie/readable-web-to-node-stream@npm:^3.0.3":
-  version: 3.0.3
-  resolution: "@smessie/readable-web-to-node-stream@npm:3.0.3"
-  dependencies:
-    process: "npm:^0.11.10"
-    readable-stream: "npm:^4.5.1"
-  checksum: 10/bc6dabc4be04b59b5db20499908555c0cac4ec55f6fe0829db229104e4ba97c0516a6dd3a885220596c4d45927611f77eca0efe3fa90913bd6f8c84cb4974460
   languageName: node
   linkType: hard
 
@@ -2120,6 +2126,15 @@ __metadata:
     "@types/node": "npm:*"
     safe-buffer: "npm:~5.1.1"
   checksum: 10/49b51e56f9cc401cb31c72973a7565ef4208d7e2465a789843104ec0fcbe609727b0b5bf4682fbec773c7f7bd14858e5dba739fd85e14d8a85e41185d65984d3
+  languageName: node
+  linkType: hard
+
+"@types/readable-stream@npm:^4.0.0":
+  version: 4.0.24
+  resolution: "@types/readable-stream@npm:4.0.24"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10/e96af36f032495f28fac2df2a13d92ced3c7f76cd51d418fb60f960f997f79c6116ad40831539d76260b2e831a914f758f68d810bd52aeb2dc8b8a603238a0fb
   languageName: node
   linkType: hard
 
@@ -3023,10 +3038,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"asynciterator@npm:^3.8.1":
-  version: 3.9.0
-  resolution: "asynciterator@npm:3.9.0"
-  checksum: 10/7be3809e91e80369ca6bc056477ed2f8d8813e1c416e46d67729b78b83de844fe5d34bc1116b69251a30c6e31764d8d1007c27d5a948a3b3e3b70c2b16a479bf
+"asynciterator@npm:^3.9.0":
+  version: 3.10.0
+  resolution: "asynciterator@npm:3.10.0"
+  dependencies:
+    tiny-set-immediate: "npm:^1.0.2"
+  checksum: 10/29d4344d06b550c24fb4f8d54d00c4b205ae49ec03c94bf1d1096de639ee68640e9f2000064a98b036f5192f414929aa2af4e3167f3d9956da70ccb530169c41
   languageName: node
   linkType: hard
 
@@ -3557,7 +3574,7 @@ __metadata:
     "@types/semver": "npm:^7.0.0"
     "@typescript-eslint/typescript-estree": "npm:^8.0.0"
     comment-parser: "npm:^1.4.0"
-    componentsjs: "npm:^6.3.0"
+    componentsjs: "npm:^6.4.0"
     eslint: "npm:^8.0.0"
     fs-extra: "npm:^11.0.0"
     husky: "npm:^9.0.0"
@@ -3567,7 +3584,7 @@ __metadata:
     lru-cache: "npm:^11.0.0"
     manual-git-changelog: "npm:^1.0.0"
     minimist: "npm:^1.2.0"
-    rdf-object: "npm:^2.0.0"
+    rdf-object: "npm:^3.0.0"
     rimraf: "npm:^6.0.1"
     semver: "npm:^7.0.0"
     ts-jest: "npm:^29.0.0"
@@ -3578,9 +3595,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"componentsjs@npm:^6.3.0":
-  version: 6.3.0
-  resolution: "componentsjs@npm:6.3.0"
+"componentsjs@npm:^6.4.0":
+  version: 6.4.0
+  resolution: "componentsjs@npm:6.4.0"
   dependencies:
     "@rdfjs/types": "npm:*"
     "@types/minimist": "npm:^1.2.0"
@@ -3588,17 +3605,17 @@ __metadata:
     "@types/semver": "npm:^7.3.4"
     jsonld-context-parser: "npm:^3.0.0"
     minimist: "npm:^1.2.0"
-    rdf-data-factory: "npm:^1.1.0"
-    rdf-object: "npm:^2.0.0"
-    rdf-parse: "npm:^2.0.0"
-    rdf-quad: "npm:^1.5.0"
-    rdf-string: "npm:^1.6.0"
-    rdf-terms: "npm:^1.7.0"
+    rdf-data-factory: "npm:^2.0.2"
+    rdf-object: "npm:^3.0.0"
+    rdf-parse: "npm:^4.0.0"
+    rdf-quad: "npm:^2.0.0"
+    rdf-string: "npm:^2.0.1"
+    rdf-terms: "npm:^2.0.0"
     semver: "npm:^7.3.2"
     winston: "npm:^3.3.3"
   bin:
     componentsjs-compile-config: bin/compile-config.js
-  checksum: 10/edd988d1f8c5e08dbc178ccd38d184f63cea8636eb93e3a32064d3bd28e3384f7e06d16976dd83f99442cc864ecc8eba17786877c759e7671ccb875db3bdaf54
+  checksum: 10/b3dc2d1345c30342cb805e3c7131c26fa3792b4351b543845b9050349195ae1ba75866139e17ebc13449df024f510805793a58b94341dd0a4e3126b0c1616662
   languageName: node
   linkType: hard
 
@@ -3652,15 +3669,6 @@ __metadata:
   dependencies:
     node-fetch: "npm:^2.7.0"
   checksum: 10/e4ab1d390a5b6ca8bb0605f028af2ffc1127d2e407b954654949f506d04873c4863ece264662c074865d7874060e35f938cec74fe7b5736d46d545e2685f6aec
-  languageName: node
-  linkType: hard
-
-"cross-fetch@npm:^4.0.0":
-  version: 4.1.0
-  resolution: "cross-fetch@npm:4.1.0"
-  dependencies:
-    node-fetch: "npm:^2.7.0"
-  checksum: 10/07624940607b64777d27ec9c668ddb6649e8c59ee0a5a10e63a51ce857e2bbb1294a45854a31c10eccb91b65909a5b199fcb0217339b44156f85900a7384f489
   languageName: node
   linkType: hard
 
@@ -3890,7 +3898,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"domutils@npm:^3.0.1, domutils@npm:^3.1.0":
+"domutils@npm:^3.0.1, domutils@npm:^3.2.2":
   version: 3.2.2
   resolution: "domutils@npm:3.2.2"
   dependencies:
@@ -3974,10 +3982,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"entities@npm:^4.2.0, entities@npm:^4.4.0, entities@npm:^4.5.0":
+"entities@npm:^4.2.0, entities@npm:^4.4.0":
   version: 4.5.0
   resolution: "entities@npm:4.5.0"
   checksum: 10/ede2a35c9bce1aeccd055a1b445d41c75a14a2bb1cd22e242f20cf04d236cdcd7f9c859eb83f76885327bfae0c25bf03303665ee1ce3d47c5927b98b0e3e3d48
+  languageName: node
+  linkType: hard
+
+"entities@npm:^7.0.1":
+  version: 7.0.1
+  resolution: "entities@npm:7.0.1"
+  checksum: 10/3c0c58d869c45148463e96d21dee2d1b801bd3fe4cf47aa470cd26dfe81d59e9e0a9be92ae083fa02fa441283c883a471486e94538dcfb8544428aa80a55271b
   languageName: node
   linkType: hard
 
@@ -4846,6 +4861,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"event-emitter-promisify@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "event-emitter-promisify@npm:1.1.0"
+  checksum: 10/09e65ae6a8870373ecd4c7ba2e10f499d6ac44a80d1411d35ca14f0655899bd46db6429c51abaac7d8f73268a71e9ce4dcbf7d23adb7f19b23178b351c63ee0d
+  languageName: node
+  linkType: hard
+
 "event-target-shim@npm:^5.0.0":
   version: 5.0.1
   resolution: "event-target-shim@npm:5.0.1"
@@ -5473,16 +5495,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hash.js@npm:^1.1.7":
-  version: 1.1.7
-  resolution: "hash.js@npm:1.1.7"
-  dependencies:
-    inherits: "npm:^2.0.3"
-    minimalistic-assert: "npm:^1.0.1"
-  checksum: 10/0c89ee4006606a40f92df5cc3c263342e7fea68110f3e9ef032bd2083650430505db01b6b7926953489517d4027535e4fdc7f970412893d3031c361d3ec8f4b3
-  languageName: node
-  linkType: hard
-
 "hasown@npm:^2.0.0, hasown@npm:^2.0.2":
   version: 2.0.2
   resolution: "hasown@npm:2.0.2"
@@ -5515,6 +5527,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"htmlparser2@npm:^10.0.0":
+  version: 10.1.0
+  resolution: "htmlparser2@npm:10.1.0"
+  dependencies:
+    domelementtype: "npm:^2.3.0"
+    domhandler: "npm:^5.0.3"
+    domutils: "npm:^3.2.2"
+    entities: "npm:^7.0.1"
+  checksum: 10/660fb094a53fb77a3c771db969778b58af0e8a572a1bdc8e5952a4241e4b04e0a6063b16f6422e22c821441081c8de339e3f06ddda362ac2a42c8767d5e5ad53
+  languageName: node
+  linkType: hard
+
 "htmlparser2@npm:^8.0.0":
   version: 8.0.2
   resolution: "htmlparser2@npm:8.0.2"
@@ -5524,18 +5548,6 @@ __metadata:
     domutils: "npm:^3.0.1"
     entities: "npm:^4.4.0"
   checksum: 10/ea5512956eee06f5835add68b4291d313c745e8407efa63848f4b8a90a2dee45f498a698bca8614e436f1ee0cfdd609938b71d67c693794545982b76e53e6f11
-  languageName: node
-  linkType: hard
-
-"htmlparser2@npm:^9.0.0":
-  version: 9.1.0
-  resolution: "htmlparser2@npm:9.1.0"
-  dependencies:
-    domelementtype: "npm:^2.3.0"
-    domhandler: "npm:^5.0.3"
-    domutils: "npm:^3.1.0"
-    entities: "npm:^4.5.0"
-  checksum: 10/6352fa2a5495781fa9a02c9049908334cd068ff36d753870d30cd13b841e99c19646717567a2f9e9c44075bbe43d364e102f9d013a731ce962226d63746b794f
   languageName: node
   linkType: hard
 
@@ -5612,10 +5624,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"immutable@npm:^4.1.0":
-  version: 4.3.7
-  resolution: "immutable@npm:4.3.7"
-  checksum: 10/37d963c5050f03ae5f3714ba7a43d469aa482051087f4c65d673d1501c309ea231d87480c792e19fa85e2eaf965f76af5d0aa92726505f3cfe4af91619dfb80b
+"immutable@npm:^5.1.3":
+  version: 5.1.9
+  resolution: "immutable@npm:5.1.9"
+  checksum: 10/dc61ea6f79897320a048f193dec703dff25ad7bb633c3a0294677d2f258764c88da06e7c2b53d1aa51b6657c98d9f1c7341f49735b9b802fe6e834122cf78dcd
   languageName: node
   linkType: hard
 
@@ -6769,7 +6781,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsonld-context-parser@npm:^2.2.2, jsonld-context-parser@npm:^2.4.0":
+"jsonld-context-parser@npm:^2.2.2":
   version: 2.4.0
   resolution: "jsonld-context-parser@npm:2.4.0"
   dependencies:
@@ -6798,21 +6810,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsonld-streaming-parser@npm:^3.0.1":
-  version: 3.4.0
-  resolution: "jsonld-streaming-parser@npm:3.4.0"
+"jsonld-streaming-parser@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "jsonld-streaming-parser@npm:4.0.1"
   dependencies:
     "@bergos/jsonparse": "npm:^1.4.0"
     "@rdfjs/types": "npm:*"
     "@types/http-link-header": "npm:^1.0.1"
-    "@types/readable-stream": "npm:^2.3.13"
+    "@types/readable-stream": "npm:^4.0.0"
     buffer: "npm:^6.0.3"
     canonicalize: "npm:^1.0.1"
     http-link-header: "npm:^1.0.2"
-    jsonld-context-parser: "npm:^2.4.0"
+    jsonld-context-parser: "npm:^3.0.0"
     rdf-data-factory: "npm:^1.1.0"
     readable-stream: "npm:^4.0.0"
-  checksum: 10/28bed279f7d60aa886e717d2936fc649b4a9c81563a31a68290ce92883e148f07fd280b824cede564b7996cdd6de340da6837075004d8c6903430f8a5ec3a0ee
+  checksum: 10/a1c31dd37351b64651c6db7c36b1ffe685d07f6371de3ec48c19f9cb3857285452aae242cbfc43493e309e5aaef7d4552377ea32d97b10a5129ab6ca22c2e498
   languageName: node
   linkType: hard
 
@@ -7168,13 +7180,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimalistic-assert@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "minimalistic-assert@npm:1.0.1"
-  checksum: 10/cc7974a9268fbf130fb055aff76700d7e2d8be5f761fb5c60318d0ed010d839ab3661a533ad29a5d37653133385204c503bfac995aaa4236f4e847461ea32ba7
-  languageName: node
-  linkType: hard
-
 "minimatch@npm:9.0.3":
   version: 9.0.3
   resolution: "minimatch@npm:9.0.3"
@@ -7352,7 +7357,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"n3@npm:^1.16.3, n3@npm:^1.17.0":
+"n3@npm:^1.16.3":
   version: 1.24.2
   resolution: "n3@npm:1.24.2"
   dependencies:
@@ -7360,6 +7365,16 @@ __metadata:
     queue-microtask: "npm:^1.1.2"
     readable-stream: "npm:^4.0.0"
   checksum: 10/618470455af24120234fb9dcb3ddd7c5d59c08a1f34082ac4d4920dee8c025e002980363494e850e9164a6c814076a2903ee316a7f7ed24cb7ffffab9b7a308c
+  languageName: node
+  linkType: hard
+
+"n3@npm:^1.26.0":
+  version: 1.26.0
+  resolution: "n3@npm:1.26.0"
+  dependencies:
+    buffer: "npm:^6.0.3"
+    readable-stream: "npm:^4.0.0"
+  checksum: 10/01fa858a5146c4b8c4f6dbc6d03db7f78f0736e03bca7c103ceb930bbf835af0c56080155f956d94351f3e4aa158a57aca70b07f99e7f877d3a0d2de6dac577d
   languageName: node
   linkType: hard
 
@@ -8013,7 +8028,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rdf-data-factory@npm:^1.0.1, rdf-data-factory@npm:^1.1.0, rdf-data-factory@npm:^1.1.2":
+"rdf-data-factory@npm:^1.1.0, rdf-data-factory@npm:^1.1.2":
   version: 1.1.3
   resolution: "rdf-data-factory@npm:1.1.3"
   dependencies:
@@ -8022,102 +8037,108 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rdf-isomorphic@npm:^1.3.0":
-  version: 1.3.1
-  resolution: "rdf-isomorphic@npm:1.3.1"
+"rdf-data-factory@npm:^2.0.0, rdf-data-factory@npm:^2.0.1, rdf-data-factory@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "rdf-data-factory@npm:2.0.2"
   dependencies:
-    "@rdfjs/types": "npm:*"
-    hash.js: "npm:^1.1.7"
-    rdf-string: "npm:^1.6.0"
-    rdf-terms: "npm:^1.7.0"
-  checksum: 10/8fa688dce01254afdda90cbb5099b2124d67a66991d8b504d518725f09e517ffaa6b0535374f61aa6bda19788f4f6138a6e340d81145e79b67a008a355f5a4f7
+    "@rdfjs/types": "npm:^2.0.0"
+  checksum: 10/f568ab0133a23b5b850eab0a39708de4cce4b1ca427ce02e4dcdcb57b71a108be23ccb1bfd2d6b705437a1c1c62a391a7218a1de6f7226bd5f4307187a9c1d9c
   languageName: node
   linkType: hard
 
-"rdf-literal@npm:^1.2.0":
-  version: 1.3.2
-  resolution: "rdf-literal@npm:1.3.2"
+"rdf-isomorphic@npm:^2.0.0":
+  version: 2.0.1
+  resolution: "rdf-isomorphic@npm:2.0.1"
   dependencies:
-    "@rdfjs/types": "npm:*"
-    rdf-data-factory: "npm:^1.1.0"
-  checksum: 10/10dc3f91e7bf5b979df4c4b57406e4dff268cce5418533c54bfd52b053e2a37acbd0f30b348eeb05339248592bff46014d59f3cc42b8398ad37d260feeb0f9c6
+    imurmurhash: "npm:^0.1.4"
+    rdf-string: "npm:^2.0.0"
+    rdf-terms: "npm:^2.0.0"
+  checksum: 10/654cb6ea84f06159d897efaaeeb057181d3523bc64e06f0993008414b86d12d89b740dc10c0f367330a86cf4b71f7080a16feae6ef5faf20d49d1d5fcd48b533
   languageName: node
   linkType: hard
 
-"rdf-object@npm:^2.0.0":
+"rdf-literal@npm:^2.0.0":
   version: 2.0.0
-  resolution: "rdf-object@npm:2.0.0"
+  resolution: "rdf-literal@npm:2.0.0"
   dependencies:
-    "@rdfjs/types": "npm:*"
+    rdf-data-factory: "npm:^2.0.0"
+  checksum: 10/3e49023afec3912a7598e28ae3d774f0356de7810ef3a4150760a927b361fa76c63b79f455da1eebaeb7645bafd773596d3f7b702a7fbb610042917db42c9a0d
+  languageName: node
+  linkType: hard
+
+"rdf-object@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "rdf-object@npm:3.0.0"
+  dependencies:
     jsonld-context-parser: "npm:^3.0.0"
-    rdf-data-factory: "npm:^1.1.0"
-    rdf-string: "npm:^1.6.0"
+    rdf-data-factory: "npm:^2.0.1"
+    rdf-string: "npm:^2.0.0"
     streamify-array: "npm:^1.0.1"
-  checksum: 10/246016461aa3bab62209289fa033d5f9bd9432f8c804f29685a97215718637c272c5b34f09d4487619ed97eb7b5096dead6b39f1303891e1fe916de81c6b1c03
+  checksum: 10/8f89bcd3d23ae06f487703dbfdc9c979280056cd7984dbea4e4b4595f2148d0e6b6e031818e684c9db07b5b3a554d528b2c9383a9a9bf16ea2e1d49f5e0040f6
   languageName: node
   linkType: hard
 
-"rdf-parse@npm:^2.0.0":
-  version: 2.3.3
-  resolution: "rdf-parse@npm:2.3.3"
+"rdf-parse@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "rdf-parse@npm:4.0.0"
   dependencies:
-    "@comunica/actor-http-fetch": "npm:^2.0.1"
-    "@comunica/actor-http-proxy": "npm:^2.0.1"
-    "@comunica/actor-rdf-parse-html": "npm:^2.0.1"
-    "@comunica/actor-rdf-parse-html-microdata": "npm:^2.0.1"
-    "@comunica/actor-rdf-parse-html-rdfa": "npm:^2.0.1"
-    "@comunica/actor-rdf-parse-html-script": "npm:^2.0.1"
-    "@comunica/actor-rdf-parse-jsonld": "npm:^2.0.1"
-    "@comunica/actor-rdf-parse-n3": "npm:^2.0.1"
-    "@comunica/actor-rdf-parse-rdfxml": "npm:^2.0.1"
-    "@comunica/actor-rdf-parse-shaclc": "npm:^2.6.2"
-    "@comunica/actor-rdf-parse-xml-rdfa": "npm:^2.0.1"
-    "@comunica/bus-http": "npm:^2.0.1"
-    "@comunica/bus-init": "npm:^2.0.1"
-    "@comunica/bus-rdf-parse": "npm:^2.0.1"
-    "@comunica/bus-rdf-parse-html": "npm:^2.0.1"
-    "@comunica/config-query-sparql": "npm:^2.0.1"
-    "@comunica/core": "npm:^2.0.1"
-    "@comunica/mediator-combine-pipeline": "npm:^2.0.1"
-    "@comunica/mediator-combine-union": "npm:^2.0.1"
-    "@comunica/mediator-number": "npm:^2.0.1"
-    "@comunica/mediator-race": "npm:^2.0.1"
+    "@comunica/actor-http-fetch": "npm:^4.0.1"
+    "@comunica/actor-http-proxy": "npm:^4.0.1"
+    "@comunica/actor-rdf-parse-html": "npm:^4.0.1"
+    "@comunica/actor-rdf-parse-html-microdata": "npm:^4.0.1"
+    "@comunica/actor-rdf-parse-html-rdfa": "npm:^4.0.1"
+    "@comunica/actor-rdf-parse-html-script": "npm:^4.0.1"
+    "@comunica/actor-rdf-parse-jsonld": "npm:^4.0.1"
+    "@comunica/actor-rdf-parse-n3": "npm:^4.0.1"
+    "@comunica/actor-rdf-parse-rdfxml": "npm:^4.0.1"
+    "@comunica/actor-rdf-parse-shaclc": "npm:^4.0.1"
+    "@comunica/actor-rdf-parse-xml-rdfa": "npm:^4.0.1"
+    "@comunica/bus-http": "npm:^4.0.1"
+    "@comunica/bus-init": "npm:^4.0.1"
+    "@comunica/bus-rdf-parse": "npm:^4.0.1"
+    "@comunica/bus-rdf-parse-html": "npm:^4.0.1"
+    "@comunica/config-query-sparql": "npm:^4.0.1"
+    "@comunica/context-entries": "npm:^4.0.1"
+    "@comunica/core": "npm:^4.0.1"
+    "@comunica/mediator-combine-pipeline": "npm:^4.0.1"
+    "@comunica/mediator-combine-union": "npm:^4.0.1"
+    "@comunica/mediator-number": "npm:^4.0.1"
+    "@comunica/mediator-race": "npm:^4.0.1"
     "@rdfjs/types": "npm:*"
-    readable-stream: "npm:^4.3.0"
-    stream-to-string: "npm:^1.2.0"
-  checksum: 10/d922d8becf579ebcf72841350c8cfd560aa5e3662684671ad1576e9c2467d50361be238ea0f8b449929d0ed8d9dc8ea83ac4105ddfab563497b2727171efc8fc
+    rdf-data-factory: "npm:^1.1.2"
+    readable-stream: "npm:^4.5.2"
+    stream-to-string: "npm:^1.2.1"
+  checksum: 10/c60be5920727a656b44092ffc3cf05ef09fd9b77e4a1f406ed2b9d990436c775e1dfabe632a314bd0ff78411f32dfe7c8fa5e4837f436e55fea13eea983c041a
   languageName: node
   linkType: hard
 
-"rdf-quad@npm:^1.5.0":
-  version: 1.5.0
-  resolution: "rdf-quad@npm:1.5.0"
+"rdf-quad@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "rdf-quad@npm:2.0.0"
   dependencies:
-    rdf-data-factory: "npm:^1.0.1"
-    rdf-literal: "npm:^1.2.0"
-    rdf-string: "npm:^1.5.0"
-  checksum: 10/3ecaaa0a3139bf0c96767935386b152e65abc2b9e51f30c141072eaa00c6f1748df77fb99ce18a62693fd48c4a6e9dfce1ab4f31935f287a08f8952663beace4
+    rdf-data-factory: "npm:^2.0.1"
+    rdf-literal: "npm:^2.0.0"
+    rdf-string: "npm:^2.0.0"
+  checksum: 10/b88eefb151aa2c7387dc9214b0cd207946a8b107e7892fd7a9a21ca5e1c12d965940ad5d94f26c360a2dd39ddc8c65404de46b4341a0893771f9ccf5211a7c70
   languageName: node
   linkType: hard
 
-"rdf-string@npm:^1.5.0, rdf-string@npm:^1.6.0":
-  version: 1.6.3
-  resolution: "rdf-string@npm:1.6.3"
+"rdf-string@npm:^2.0.0, rdf-string@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "rdf-string@npm:2.0.1"
   dependencies:
-    "@rdfjs/types": "npm:*"
-    rdf-data-factory: "npm:^1.1.0"
-  checksum: 10/bb3b565e50556a77442945c2d0f7a3b1a60fae02d21c7b9d3d682d042c374da09a65cea36f7799f5cc637eccafec98fb559d64c124ca9507cf94841dddf1a109
+    rdf-data-factory: "npm:^2.0.0"
+  checksum: 10/fe311825125134703d6d33e587b55be6f3d66b3b5b7938581c8c2b05fbe008f93f1cb9d8311ced3610932125bb08458ce153e1499765963f06351ac5c4fcd67f
   languageName: node
   linkType: hard
 
-"rdf-terms@npm:^1.10.0, rdf-terms@npm:^1.7.0":
-  version: 1.11.0
-  resolution: "rdf-terms@npm:1.11.0"
+"rdf-terms@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "rdf-terms@npm:2.0.0"
   dependencies:
-    "@rdfjs/types": "npm:*"
-    rdf-data-factory: "npm:^1.1.0"
-    rdf-string: "npm:^1.6.0"
-  checksum: 10/3038f02d6a252408ffbc1486b4e7ccd6331028e00613ee43b69684b01d89debcdcd467749014ee1c057cac441125d3f6f1c99296be19f22d690d8528a3b2f33a
+    rdf-data-factory: "npm:^2.0.0"
+    rdf-string: "npm:^2.0.0"
+  checksum: 10/132949b92af34faf1971a1e3c037b569499f460482326be48d72b0c0f63f3948adaf5c6949b473ee3741f9de08b34bc8c2cac814b770fafeee8ec287bc119db0
   languageName: node
   linkType: hard
 
@@ -8194,6 +8215,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"readable-from-web@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "readable-from-web@npm:1.0.0"
+  dependencies:
+    "@types/readable-stream": "npm:^4.0.0"
+    readable-stream: "npm:^4.0.0"
+  checksum: 10/c76686e41bc301484ced8c9ec886d6da1a30651694820be08aa72b7abe7f0acd3f1f750237a6d2689ce00d9738fa3801a2f83db224a537d0721c91573cc1ecab
+  languageName: node
+  linkType: hard
+
 "readable-stream-node-to-web@npm:^1.0.1":
   version: 1.0.1
   resolution: "readable-stream-node-to-web@npm:1.0.1"
@@ -8212,7 +8243,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"readable-stream@npm:^4.0.0, readable-stream@npm:^4.1.0, readable-stream@npm:^4.3.0, readable-stream@npm:^4.4.2, readable-stream@npm:^4.5.1":
+"readable-stream@npm:^4.0.0, readable-stream@npm:^4.1.0, readable-stream@npm:^4.4.2, readable-stream@npm:^4.5.2":
   version: 4.7.0
   resolution: "readable-stream@npm:4.7.0"
   dependencies:
@@ -8813,22 +8844,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sparqlalgebrajs@npm:^4.2.0":
-  version: 4.3.8
-  resolution: "sparqlalgebrajs@npm:4.3.8"
+"sparqlalgebrajs@npm:^5.0.2":
+  version: 5.0.2
+  resolution: "sparqlalgebrajs@npm:5.0.2"
   dependencies:
-    "@rdfjs/types": "npm:*"
     "@types/sparqljs": "npm:^3.1.3"
     fast-deep-equal: "npm:^3.1.3"
     minimist: "npm:^1.2.6"
-    rdf-data-factory: "npm:^1.1.0"
-    rdf-isomorphic: "npm:^1.3.0"
-    rdf-string: "npm:^1.6.0"
-    rdf-terms: "npm:^1.10.0"
+    rdf-data-factory: "npm:^2.0.1"
+    rdf-isomorphic: "npm:^2.0.0"
+    rdf-string: "npm:^2.0.0"
+    rdf-terms: "npm:^2.0.0"
     sparqljs: "npm:^3.7.1"
   bin:
     sparqlalgebrajs: bin/sparqlalgebrajs.js
-  checksum: 10/c1c7cd256f12eb9f0d5db3470d59a67118b20dd01b86bb7d052112cdd598093299cc27417a4e179392ab02e4fb29100c3f4af2a7c1f4ebe4d59b0d6996860474
+  checksum: 10/5ffd04a7444f633e7e46d0ea5246ba08f675ee49bc1580ab7c5ac044af8aca0a6891fab891caa0e2b3c2944e2fc45242ccc0370e159b80fa01e3f632c5925834
   languageName: node
   linkType: hard
 
@@ -8942,7 +8972,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stream-to-string@npm:^1.2.0":
+"stream-to-string@npm:^1.2.1":
   version: 1.2.1
   resolution: "stream-to-string@npm:1.2.1"
   dependencies:
@@ -9237,6 +9267,13 @@ __metadata:
   dependencies:
     readable-stream: "npm:3"
   checksum: 10/72c246233d9a989bbebeb6b698ef0b7b9064cb1c47930f79b25d87b6c867e075432811f69b7b2ac8da00ca308191c507bdab913944be8019ac43b036ce88f6ba
+  languageName: node
+  linkType: hard
+
+"tiny-set-immediate@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "tiny-set-immediate@npm:1.0.2"
+  checksum: 10/d229084674ff7de39e44e026f3b7ade18e3f7ae56cc7618f62b79110904c7b8d110f90d16f4192fa517693fb0f10761d4dc636dcfab74b451525d235e73aa2fe
   languageName: node
   linkType: hard
 
@@ -9819,13 +9856,6 @@ __metadata:
   dependencies:
     makeerror: "npm:1.0.12"
   checksum: 10/ad7a257ea1e662e57ef2e018f97b3c02a7240ad5093c392186ce0bcf1f1a60bbadd520d073b9beb921ed99f64f065efb63dfc8eec689a80e569f93c1c5d5e16c
-  languageName: node
-  linkType: hard
-
-"web-streams-ponyfill@npm:^1.4.2":
-  version: 1.4.2
-  resolution: "web-streams-ponyfill@npm:1.4.2"
-  checksum: 10/a99359dea544873c2982bac4bb2b6ddb75c57d1a6dcca752fe25492b5d72c4527d284882f126214a5b793df813aa7a9eb377583b7b4b9ee827ddf3a8c8882b75
   languageName: node
   linkType: hard
 
