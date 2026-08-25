@@ -388,7 +388,6 @@ export class ParameterLoader {
         return { type: 'raw', value: 'string' };
       case AST_NODE_TYPES.TSLiteralType:
         if (typeNode.literal.type !== AST_NODE_TYPES.UnaryExpression &&
-          typeNode.literal.type !== AST_NODE_TYPES.UpdateExpression &&
           'value' in typeNode.literal &&
           (typeof typeNode.literal.value === 'number' ||
             typeof typeNode.literal.value === 'string' ||

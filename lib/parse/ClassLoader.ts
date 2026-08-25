@@ -382,7 +382,7 @@ export class ClassLoader {
               },
               typeAnnotation: {
                 type: AST_NODE_TYPES.TSLiteralType,
-                literal: enumMember.initializer,
+                literal: <TSESTree.TSLiteralType['literal']> enumMember.initializer,
                 loc: <any> undefined,
                 range: <any> undefined,
                 parent: <any> undefined,
@@ -552,6 +552,15 @@ export class ClassLoader {
   }
 
   /**
+   * Get the name of an import or export specifier,
+   * which can either be an identifier or a string literal, such as in `export { A as "b" }`.
+   * @param name A specifier name node.
+   */
+  public getSpecifierName(name: TSESTree.Identifier | TSESTree.StringLiteral): string {
+    return name.type === AST_NODE_TYPES.Identifier ? name.name : name.value;
+  }
+
+  /**
    * Get all class elements in a file.
    * @param packageName Package name we are importing from.
    * @param fileName A file path.
@@ -612,8 +621,8 @@ export class ClassLoader {
           for (const specifier of statement.specifiers) {
             const entry = this.importTargetToAbsolutePath(packageName, fileName, statement.source.value);
             if (entry) {
-              exportedImportedElements[specifier.exported.name] = {
-                localName: specifier.local.name,
+              exportedImportedElements[this.getSpecifierName(specifier.exported)] = {
+                localName: this.getSpecifierName(specifier.local),
                 qualifiedPath: undefined,
                 ...entry,
               };
@@ -622,7 +631,7 @@ export class ClassLoader {
         } else {
           // Form: `export { A as B }`
           for (const specifier of statement.specifiers) {
-            exportedUnknowns[specifier.exported.name] = specifier.local.name;
+            exportedUnknowns[this.getSpecifierName(specifier.exported)] = this.getSpecifierName(specifier.local);
           }
         }
       } else if (statement.type === AST_NODE_TYPES.ExportAllDeclaration) {
@@ -673,7 +682,7 @@ export class ClassLoader {
             if (specifier.type === AST_NODE_TYPES.ImportSpecifier) {
               // Form: `import {A} from './lib/A'`
               importedElements[specifier.local.name] = {
-                localName: specifier.imported.name,
+                localName: this.getSpecifierName(specifier.imported),
                 qualifiedPath: undefined,
                 ...entry,
               };

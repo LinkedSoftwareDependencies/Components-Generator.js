@@ -87,21 +87,21 @@ describe('ClassLoader', () => {
         ]);
     });
 
-    it('should ignore on an interface that is extended anonymously', async() => {
+    it('should ignore on an interface that is extended via a qualified name', async() => {
       expect(loader.getSuperInterfaceNames(<any>(resolutionContext
-        .parseTypescriptContents('interface A extends {} {}')).body[0], 'file'))
+        .parseTypescriptContents('interface A extends B.C {}')).body[0], 'file'))
         .toEqual([]);
-      expect(logger.debug).toHaveBeenCalledWith(`Ignored an interface expression of unknown type ObjectExpression on A`);
+      expect(logger.debug).toHaveBeenCalledWith(`Ignored an interface expression of unknown type MemberExpression on A`);
     });
 
-    it('should ignore on an interface that is extended anonymously, but still handle other interfaces', async() => {
+    it('should ignore on an interface that is extended via a qualified name, but handle others', async() => {
       expect(loader.getSuperInterfaceNames(<any>(resolutionContext
-        .parseTypescriptContents('interface A extends B, {}, D {}')).body[0], 'file'))
+        .parseTypescriptContents('interface A extends B, C.D, E {}')).body[0], 'file'))
         .toEqual([
           { value: 'B' },
-          { value: 'D' },
+          { value: 'E' },
         ]);
-      expect(logger.debug).toHaveBeenCalledWith(`Ignored an interface expression of unknown type ObjectExpression on A`);
+      expect(logger.debug).toHaveBeenCalledWith(`Ignored an interface expression of unknown type MemberExpression on A`);
     });
 
     it('should return on an interface with generics', async() => {
@@ -2677,6 +2677,19 @@ export = NS`,
 
     it('for a single export from file', () => {
       expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export { A as B } from './lib/A'`)))
+        .toMatchObject({
+          exportedImportedElements: {
+            B: {
+              localName: 'A',
+              fileName: normalizeFilePath('dir/lib/A'),
+            },
+          },
+        });
+    });
+
+    it('for a single export from file with string literal names', () => {
+      expect(loader.getClassElements('package', fileName, resolutionContext
+        .parseTypescriptContents(`export { 'A' as 'B' } from './lib/A'`)))
         .toMatchObject({
           exportedImportedElements: {
             B: {
