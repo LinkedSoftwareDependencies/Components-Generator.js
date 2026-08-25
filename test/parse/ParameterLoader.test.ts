@@ -1601,12 +1601,12 @@ export interface A{
     });
 
     it('should error on an Array field type with no params', async() => {
-      await expect(async() => await getFieldRange('fieldA: Array<>', {}))
+      await expect(async() => await getFieldRange('fieldA: Array', {}))
         .rejects.toThrow(new Error('Found invalid Array field type at field fieldA in A at file'));
     });
 
     it('should log on an Array field type with no params', async() => {
-      await expect(getFieldRange('fieldA: Array<>', {}, false)).resolves
+      await expect(getFieldRange('fieldA: Array', {}, false)).resolves
         .toEqual({ type: 'wildcard' });
       expect(logger.error).toHaveBeenCalledWith('Found invalid Array field type at field fieldA in A at file');
     });

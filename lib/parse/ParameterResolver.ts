@@ -516,7 +516,7 @@ export class ParameterResolver {
               classOrInterface,
               {
                 type: AST_NODE_TYPES.TSLiteralType,
-                literal: enumMember.initializer,
+                literal: <TSESTree.TSLiteralType['literal']> enumMember.initializer,
                 loc: <any> undefined,
                 range: <any> undefined,
                 parent: <any> undefined,
