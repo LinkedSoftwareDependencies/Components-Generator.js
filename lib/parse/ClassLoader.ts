@@ -95,16 +95,14 @@ export class ClassLoader {
     fileName: string,
   ): GenericallyTyped<string>[] {
     const interfaceNames: GenericallyTyped<string>[] = [];
-    if (declaration.implements) {
-      for (const implement of declaration.implements) {
-        if (implement.expression.type !== AST_NODE_TYPES.Identifier) {
-          throw new Error(`Could not interpret the implements type on a class in ${fileName} on line ${implement.expression.loc.start.line} column ${implement.expression.loc.start.column}`);
-        }
-        interfaceNames.push({
-          value: implement.expression.name,
-          genericTypeInstantiations: implement.typeArguments,
-        });
+    for (const implement of declaration.implements) {
+      if (implement.expression.type !== AST_NODE_TYPES.Identifier) {
+        throw new Error(`Could not interpret the implements type on a class in ${fileName} on line ${implement.expression.loc.start.line} column ${implement.expression.loc.start.column}`);
       }
+      interfaceNames.push({
+        value: implement.expression.name,
+        genericTypeInstantiations: implement.typeArguments,
+      });
     }
     return interfaceNames;
   }

@@ -2585,6 +2585,26 @@ export = NS`,
       ));
     });
 
+    it('for a single export from an unknown package', () => {
+      expect(loader.getClassElements('package', fileName, resolutionContext
+        .parseTypescriptContents(`export {A as B} from 'unknown-package'`)).exportedImportedElements)
+        .toEqual({});
+      expect(logger.warn).toHaveBeenCalledTimes(1);
+      expect(logger.warn).toHaveBeenLastCalledWith(expect.stringMatching(
+        /Ignoring invalid package "unknown-package": Could not resolve 'unknown-package' from path .*/u,
+      ));
+    });
+
+    it('for export all from an unknown package', () => {
+      expect(loader.getClassElements('package', fileName, resolutionContext
+        .parseTypescriptContents(`export * from 'unknown-package'`)).exportedImportedAll)
+        .toEqual([]);
+      expect(logger.warn).toHaveBeenCalledTimes(1);
+      expect(logger.warn).toHaveBeenLastCalledWith(expect.stringMatching(
+        /Ignoring invalid package "unknown-package": Could not resolve 'unknown-package' from path .*/u,
+      ));
+    });
+
     it('for export all', () => {
       expect(loader.getClassElements('package', fileName, resolutionContext.parseTypescriptContents(`export * from './lib/A'`)))
         .toMatchObject({
