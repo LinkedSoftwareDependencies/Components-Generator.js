@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@types/semver": "^7.0.0",
-    "@typescript-eslint/typescript-estree": "^7.1.0",
+    "@typescript-eslint/typescript-estree": "^8.0.0",
     "comment-parser": "^1.4.0",
     "componentsjs": "^6.3.0",
     "jsonld-context-parser": "^3.0.0",
