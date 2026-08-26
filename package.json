@@ -63,7 +63,7 @@
     "rimraf": "^6.0.1",
     "ts-jest": "^29.0.0",
     "ts-node": "^10.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^7.0.0"
   },
   "resolutions": {
     "@comunica/types/lru-cache": "^11.0.0"
